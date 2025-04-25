@@ -1,0 +1,14 @@
+@if (isLoading) {
+    <div class=" text-center d-flex justify-content-center align-items-center ">
+      <div class="spinner-border bs-primary" role="status">
+         <span class="visually-hidden">Loading...</span>
+       </div>
+   </div>
+    } @else {
+      <div id="won-chart">
+        <apx-chart [series]="chartOptions2.series" [chart]="chartOptions2.chart"
+          [dataLabels]="chartOptions2.dataLabels" [plotOptions]="chartOptions2.plotOptions"
+          [xaxis]="chartOptions2.xaxis"></apx-chart>
+      </div>
+    }
+  

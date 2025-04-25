@@ -1,0 +1,58 @@
+{
+	"data":[
+		{
+			"id" : 1,
+			"lead_name" : "NovaWaveLLC",
+			"lead_img" : "img/icons/company-icon-01.svg",
+			"phone" : "+1 124547845",
+			"email" : "caroo3@example.com",
+			"date" : "25 Sep 2023, 12:12 pm"
+		},
+		{
+			"id" : 2,
+			"lead_name" : "SilverHawk",
+			"lead_img" : "img/icons/company-icon-03.svg",
+			"phone" : "+1 478845447",
+			"email" : "dercha@example.com",
+			"date" : "27 Sep 2023, 11:23 pm"
+		},
+		{
+			"id" : 3,
+			"lead_name" : "SummitPeak",
+			"lead_img" : "img/icons/company-icon-04.svg",
+			"phone" : "+1 215544845",
+			"email" : "rael@example.com",
+			"date" : "04 Oct 2023, 04:12 pm"
+		},
+		{
+			"id" : 4,
+			"lead_name" : "RiverStone Ventur",
+			"lead_img" : "img/icons/company-icon-05.svg",
+			"phone" : "+1 124547845",
+			"email" : "joe@example.com",
+			"date" : "17 Oct 2023, 11:34 am"
+		},
+		{
+			"id" : 5,
+			"lead_name" : "CoastalStar Co.",
+			"lead_img" : "img/icons/company-icon-07.svg",
+			"phone" : "+1 124547845",
+			"email" : "joe@example.com",
+			"date" : "17 Oct 2023, 11:34 am"
+		},
+		{
+			"id" : 6,
+			"lead_name" : "Redwood Inc",
+			"lead_img" : "img/icons/company-icon-10.svg",
+			"phone" : "+1 466701256",
+			"email" : "sharon@gmail.com",
+			"date" : "15 Nov 2023, 07:26 pm"
+		}
+
+	]
+	
+}
+
+
+
+

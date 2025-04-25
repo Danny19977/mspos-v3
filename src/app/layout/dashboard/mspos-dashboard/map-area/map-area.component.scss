@@ -1,0 +1,190 @@
+$marker-width: 20px;
+$marker-height: 20px;
+$marker-color: rgba(255, 0, 0, 0.7);
+$marker-border-color: red;
+
+.map-container {
+  position: relative;
+  display: inline-block;
+
+  /* Map image styling */
+  .map-image {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Markers */
+  .map-marker {
+    position: absolute;
+    // width: $marker-width;
+    // height: $marker-height;
+    background-color: $marker-color;
+    border: 2px solid $marker-border-color;
+    border-radius: 50%;
+    cursor: pointer;
+    // opacity: 0.4;
+
+    // Kongo central
+    &.marker-1 {
+      top: 54%;
+      left: 5%;
+    }
+
+    // Kinshasa
+    &.marker-2 {
+      top: 50%;
+      left: 17%;
+    }
+
+    // Mai-Ndombe
+    &.marker-3 {
+      top: 40%;
+      left: 28%;
+    }
+
+    // Kwango
+    &.marker-4 {
+      top: 60%;
+      left: 25%;
+    }
+
+    // Kwilu
+    &.marker-5 {
+      top: 50%;
+      left: 30%;
+    }
+
+    // Kwilu 2 Kasai
+    &.marker-6 {
+      top: 53%;
+      left: 43%;
+    }
+
+    // Kasai central
+    &.marker-7 {
+      top: 55%;
+      left: 53%;
+    }
+
+    // Kasai Oriental
+    &.marker-8 {
+      top: 60%;
+      left: 57%;
+    }
+
+    // Lomami
+    &.marker-9 {
+      top: 55%;
+      left: 65%;
+    }
+
+    // Lualaba
+    &.marker-10 {
+      top: 75%;
+      left: 55%;
+    }
+
+    // Haut lomami
+    &.marker-11 {
+      top: 70%;
+      left: 65%;
+    }
+
+    // Haut katanaga
+    &.marker-12 {
+      top: 80%;
+      left: 80%;
+    }
+
+    // Tanganyka
+    &.marker-13 {
+      top: 60%;
+      left: 85%;
+    }
+
+    // SUd kivu
+    &.marker-14 {
+      top: 45%;
+      left: 85%;
+    }
+
+    // Maniema
+    &.marker-15 {
+      top: 45%;
+      left: 70%;
+    }
+
+    // Nord kivu
+    &.marker-16 {
+      top: 30%;
+      left: 85%;
+    }
+
+    // Ituri
+    &.marker-17 {
+      top: 20%;
+      left: 85%;
+    }
+
+    // Haut uele
+    &.marker-18 {
+      top: 12%;
+      left: 85%;
+    }
+
+    // Tshiopo
+    &.marker-19 {
+      top: 22%;
+      left: 60%;
+    }
+
+    // Tshuapa
+    &.marker-20 {
+      top: 30%;
+      left: 44%;
+    }
+
+    // Sunkuru
+    &.marker-21 {
+      top: 43%;
+      left: 60%;
+    }
+
+    // Equateur
+    &.marker-22 {
+      top: 25%;
+      left: 33%;
+    }
+
+    // Mongala
+    &.marker-23 {
+      top: 15%;
+      left: 50%;
+    }
+
+    // Nord ubungi
+    &.marker-24 {
+      top: 10%;
+      left: 45%;
+    }
+
+    // Sud ubangi
+    &.marker-25 {
+      top: 15%;
+      left: 35%;
+    }
+
+    // Bas-uele
+    &.marker-26 {
+      top: 8%;
+      left: 65%;
+    }
+  }
+
+  /* Media query for responsiveness */
+  // @media screen and (max-width: 600px) {
+  //   width: 100%;
+  //   /* Map container becomes responsive */
+  // }
+}

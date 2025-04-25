@@ -1,0 +1,60 @@
+{
+	"data":[
+		{
+			"id" : 1,
+			"lead_name" : "Carol Thomas",
+			"lead_city" : "UI /UX Designer",
+			"lead_img" : "img/profiles/avatar-16.jpg",
+			"phone" : "+1 124547845",
+			"email" : "caroo3@example.com",
+			"date" : "25 Sep 2023, 12:12 pm"
+		},
+		{
+			"id" : 2,
+			"lead_name" : "Dawn Mercha",
+			"lead_city" : "Technician",
+			"lead_img" : "img/profiles/avatar-22.jpg",
+			"phone" : "+1 478845447",
+			"email" : "dercha@example.com",
+			"date" : "27 Sep 2023, 11:23 pm"
+		},
+		{
+			"id" : 3,
+			"lead_name" : "Rachel Hampton",
+			"lead_city" : "Software developer",
+			"lead_img" : "img/profiles/avatar-23.jpg",
+			"phone" : "+1 215544845",
+			"email" : "rael@example.com",
+			"date" : "04 Oct 2023, 04:12 pm"
+		},
+		{
+			"id" : 4,
+			"lead_name" : "Jonelle Curtiss",
+			"lead_city" : "Supervisor",
+			"lead_img" : "img/profiles/avatar-24.jpg",
+			"phone" : "+1 124547845",
+			"email" : "joe@example.com",
+			"date" : "17 Oct 2023, 11:34 am"
+		},
+		{
+			"id" : 5,
+			"lead_name" : "Rachel Hampton",
+			"lead_city" : "Software developer",
+			"lead_img" : "img/profiles/avatar-23.jpg",
+			"phone" : "+1 215544845",
+			"email" : "rael@example.com",
+			"date" : "04 Oct 2023, 04:12 pm"
+		},
+		{
+			"id" : 6,
+			"lead_name" : "sharon Roy",
+			"lead_city" : "Installer",
+			"lead_img" : "img/profiles/avatar-20.jpg",
+			"phone" : "+1 466701256",
+			"email" : "sharon@example.com",
+			"date" : "15 Nov 2023, 07:26 pm"
+		}
+
+	]
+	
+}

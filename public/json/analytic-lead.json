@@ -1,0 +1,55 @@
+{
+	"data":[
+		{
+			"id" : 1,
+			"name" : "Collins",
+			"lead_name" : "NovaWaveLLC",
+			"lead_img" : "img/icons/company-icon-01.svg",
+			"lead_city" : "Newyork, USA",
+			"phone" : "+1 875455453",
+			"status" : "0"
+		},
+		{
+			"id" : 2,
+			"name" : "Collins",
+			"lead_name" : "Konopelski",
+			"lead_img" : "img/icons/company-icon-02.svg",
+			"lead_city" : "Winchester, KY",
+			"phone" : "+1 989757485",
+			"status" : "1"
+		},
+		{
+			"id" : 3,
+			"name" : "Adams",
+			"lead_name" : "SilverHawk",
+			"lead_img" : "img/icons/company-icon-03.svg",
+			"lead_city" : "Jametown, NY",
+			"phone" : "+1 546555455",
+			"status" : "0"
+		},
+		{
+			"id" : 4,
+			"name" : "Schumm",
+			"lead_name" : "SummitPeak",
+			"lead_img" : "img/icons/company-icon-04.svg",
+			"lead_city" : "Compton, RI",
+			"phone" : "+1 454478787",
+			"status" : "2"
+		},
+		{
+			"id" : 5,
+			"name" : "Wisozk",
+			"lead_name" : "RiverStone Ventur",
+			"lead_img" : "img/icons/company-icon-05.svg",
+			"lead_city" : "Dayton, OH",
+			"phone" : "+1 124547845",
+			"status" : "0"
+		}
+
+	]
+	
+}
+
+
+
+

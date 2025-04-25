@@ -1,0 +1,599 @@
+<!-- Page Wrapper -->
+<div class="page-wrapper">
+    <div class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <h4 class="page-title">
+                                PosForm<span class="count-title">{{total_records}}</span>
+                            </h4>
+                        </div>
+                        <div class="col-md-8 text-end">
+                            <div class="head-icons">
+                                <app-reload></app-reload>
+                                <app-collapse-header></app-collapse-header>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /Page Header -->
+
+                @if (currentUser) {
+                <div class="card">
+                    <div class="card-header">
+                        <!-- Search -->
+                        <div class="row align-items-center">
+                            <div class="col-sm-4">
+                                <div class="icon-form mb-3 mb-sm-0">
+                                    <span class="form-icon"><i class="ti ti-search"></i></span>
+                                    <!-- <input type="text" (keyup)="applyFilter($event)" class="form-control"
+                                            placeholder="Ex. jean kasongo" #input /> -->
+                                    <input type="text" #input [(ngModel)]="search"
+                                        (ngModelChange)="onSearchChange($event)" class="form-control"
+                                        placeholder="Ex. Jean paul">
+                                </div>
+                            </div>
+                            <div class="col-sm-8">
+                                <div class="d-flex align-items-center flex-wrap row-gap-2 justify-content-sm-end">
+                                    <div class="me-2">
+                                        <div *ngIf="dataListLocal.length > 0" class="alert alert-warning mt-2"
+                                            role="alert">
+                                            Total hors ligne : <span style="font-size: larger;">
+                                                {{ dataListLocal.length }}</span>
+                                        </div>
+                                    </div>
+                                    <form [formGroup]="dateRange">
+                                        <div class="daterange-picker">
+                                            <div class="form-sort me-2">
+                                                <i class="ti ti-calendar"></i>
+                                                <input type="text" class="form-control date-range bookingrange"
+                                                    bsDaterangepicker [bsConfig]="{ adaptivePosition: true }"
+                                                    formControlName="rangeValue" />
+                                            </div>
+                                        </div>
+                                    </form>
+                                    @if(currentUser.permission === 'ALL' ||
+                                    currentUser.permission === 'VAE' ||
+                                    currentUser.permission === 'VA') {
+                                    <a href="javascript:void(0);" (click)="onSubmitInit()" class="btn btn-primary"
+                                        data-bs-toggle="offcanvas" data-bs-target="#offcanvas_add">
+                                        <i class="ti ti-square-rounded-plus me-2"></i>
+                                        Add New PosForm
+                                    </a>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /Search -->
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive custom-table mb-3">
+                            <table class="table" id="campaign-list" matSort (matSortChange)="sortData($event)">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th mat-sort-header="synchronisation">Sync</th>
+                                        <th mat-sort-header="pos">POS</th>
+                                        <th mat-sort-header="country">Pays</th>
+                                        <th mat-sort-header="province">Province</th>
+                                        <th mat-sort-header="area">Area</th>
+                                        <th mat-sort-header="subarea">Subarea</th>
+                                        <th mat-sort-header="commune">Commune</th>
+                                        <th mat-sort-header="price">Price</th>
+                                        <th mat-sort-header="asm">ASM</th>
+                                        <th mat-sort-header="sup">Sup</th>
+                                        <th mat-sort-header="dr">DR</th>
+                                        <th mat-sort-header="cyclo">Cyclo</th>
+                                        @if (isOnline()) {
+                                        <th mat-sort-header="brand">Brand</th>
+                                        }
+                                        <th mat-sort-header="comment">Commentaire</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @for (data of dataListLocal; track data) {
+                                    <tr class="odd">
+                                        <td>
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="ti ti-clock"></i>
+                                            </span>
+                                        </td>
+                                        <td>{{ data.pos_name }}</td>
+                                        <td>{{ data.country_name }}</td>
+                                        <td>{{ data.province_name }}</td>
+                                        <td>{{ data.area_name }}</td>
+                                        <td>{{ data.subarea_name }}</td>
+                                        <td>{{ data.commune_name }}</td>
+                                        <td>{{ data.price }} FC</td>
+                                        <td>{{ data.asm_uuid }}</td>
+                                        <td>{{ data.sup_uuid }}</td>
+                                        <td>{{ data.dr_uuid }}</td>
+                                        <td>{{ data.cyclo_uuid }}</td>
+                                        <td>--</td>
+                                        <td>{{ data.comment }}</td>
+                                        <td>
+                                            <div class="dropdown table-action">
+                                                <a href="javascript:void(0);" class="action-icon"
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fa fa-ellipsis-v"></i>
+                                                </a>
+                                                <div class="dropdown-menu dropdown-menu-right">
+                                                    <a class="dropdown-item" data-bs-toggle="offcanvas"
+                                                        (click)="findValueLocal(data.id!)"
+                                                        data-bs-target="#offcanvas_add" href="javascript:void(0);"><i
+                                                            class="ti ti-eye text-blue"></i>
+                                                        Visibility
+                                                    </a>
+                                                    <a class="dropdown-item" href="javascript:void(0);"
+                                                        (click)="deletePosform(data.id!)">
+                                                        <i class="ti ti-trash text-danger"></i> Delete
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    }
+                                    @if (isLoadingData) {
+                                    <tr>
+                                        <td colspan="15" class="text-start">
+                                            <div class="d-flex align-items-center justify-content-center">
+                                                <strong role="status">Loading...</strong>
+                                                <div class="spinner-border ms-2" aria-hidden="true"></div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    } @else {
+                                    @for (data of dataSource.data; track $index) {
+                                    <tr class="odd">
+                                        <td>
+                                            <span class="badge bg-success text-white">
+                                                <i class="ti ti-check"></i>
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <a [routerLink]="['/pos/pos-view', data.pos_uuid, '/posforms']">
+                                                {{ data.Pos!.name }}
+                                            </a>
+                                        </td>
+                                        <td>{{ data.Country!.name }}</td>
+                                        <td>{{ data.Province!.name }}</td>
+                                        <td>{{ data.Area!.name }}</td>
+                                        <td>{{ data.SubArea!.name }}</td>
+                                        <td>{{ data.Commune!.name }}</td>
+                                        <td>{{ data.price }} FC</td>
+                                        <td>
+                                            <app-user-get *ngIf="data.asm_uuid" [uuid]="data.asm_uuid"></app-user-get>
+                                        </td>
+                                        <td>
+                                            <app-user-get *ngIf="data.sup_uuid" [uuid]="data.sup_uuid"></app-user-get>
+                                        </td>
+                                        <td>
+                                            <app-user-get *ngIf="data.dr_uuid" [uuid]="data.dr_uuid"></app-user-get>
+                                        </td>
+                                        <td>
+                                            <app-user-get *ngIf="data.cyclo_uuid"
+                                                [uuid]="data.cyclo_uuid"></app-user-get>
+                                        </td>
+                                        <td>{{ data.PosFormItems?.length }} </td>
+                                        <td>{{ data.comment }}</td>
+                                        <td>
+                                            <div class="dropdown table-action">
+                                                <a href="javascript:void(0);" class="action-icon"
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fa fa-ellipsis-v"></i>
+                                                </a>
+                                                <div class="dropdown-menu dropdown-menu-right">
+                                                    @if(currentUser.permission === 'ALL' ||
+                                                    currentUser.permission === 'VAE' ||
+                                                    currentUser.permission === 'VED' ||
+                                                    currentUser.permission === 'VE') {
+                                                    <a class="dropdown-item" data-bs-toggle="offcanvas"
+                                                        (click)="findValue(data.uuid!)" data-bs-target="#offcanvas_edit"
+                                                        href="javascript:void(0);"><i class="ti ti-edit text-blue"></i>
+                                                        Edit
+                                                    </a>
+                                                    }
+
+                                                    @if(currentUser.permission === 'ALL' ||
+                                                    currentUser.permission === 'VED') {
+                                                    <a class="dropdown-item" href="javascript:void(0);"
+                                                        (click)="findValue(data.uuid!)" data-bs-toggle="modal"
+                                                        data-bs-target="#delete_contact"><i
+                                                            class="ti ti-trash text-danger"></i> Delete
+                                                    </a>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <mat-paginator [length]="total_records" [pageSize]="page_size"
+                            [pageSizeOptions]="[15, 20, 30, 40, 50, 80, 100]" showFirstLastButtons
+                            (page)="onPageChange($event)" aria-label="Select page">
+                        </mat-paginator>
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="datatable-length"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="datatable-paginate"></div>
+                            </div>
+                        </div>
+                        <!-- /Projects List -->
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Page Wrapper -->
+<!-- Add New Contracts -->
+<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add">
+
+    <div class="offcanvas-header border-bottom">
+        <h4>Ajouter le rapport de visite</h4>
+        <button type="button"
+            class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle"
+            data-bs-dismiss="offcanvas" aria-label="Close">
+            <i class="ti ti-x"></i>
+        </button>
+    </div>
+    <div class="offcanvas-body">
+        <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="col-form-label" for="text">POS <span class="text-danger">*</span></label>
+                        <input #pos_uuid type="text" matInput formControlName="pos_uuid" [matAutocomplete]="autopos1"
+                            placeholder="Selectionner le POS" class="form-control" (input)="getAllRoutePlans()"
+                            (focus)="getAllRoutePlans()">
+                        @if (isload) {
+                        <div class="d-flex align-items-center">
+                            <strong role="status">Loading...</strong>
+                            <div class="spinner-border ms-auto" aria-hidden="true"></div>
+                        </div>
+                        }
+                        <mat-autocomplete requireSelection #autopos1="matAutocomplete"
+                            (optionSelected)="optionSelected($event)" [displayWith]="displayFn">
+                            @for (item of filteredOptions; track item.uuid) {
+                            <mat-option [value]="item">{{item.pos_name}} | {{item.pos_shop}}</mat-option>
+                            }
+                        </mat-autocomplete>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="col-form-label" for="price">Prix <span class="text-danger">*</span></label>
+                        <select class="form-control" formControlName="price" required>
+                            <option value="" disabled selected>Selectionner un prix</option>
+                            <option *ngFor="let price of priceList" [value]="price">{{ price }}</option>
+                        </select>
+                        <mat-error *ngIf="formGroup.controls['price'].hasError('required')">
+                            Ce champs est obligatoire
+                        </mat-error>
+                    </div>
+                </div>
+
+                <form [formGroup]="formGroupPosFormItem" (ngSubmit)="onSubmitItem()"
+                    style="background-color: rgba(10, 128, 179, 0.045);">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="col-form-label" for="text">Brand <span
+                                        class="text-danger">*</span></label>
+                                <input #brand_uuid type="text" matInput [matAutocomplete]="autopos3"
+                                    placeholder="Selectionner le brand" class="form-control" (input)="getAllBrand()"
+                                    (focus)="getAllBrand()">
+                                @if (isloadBrand) {
+                                <div class="d-flex align-items-center">
+                                    <strong role="status">Loading...</strong>
+                                    <div class="spinner-border ms-auto" aria-hidden="true"></div>
+                                </div>
+                                }
+                                <mat-autocomplete requireSelection #autopos3="matAutocomplete"
+                                    (optionSelected)="optionSelectedBrand($event)" [displayWith]="displayFnBrand">
+                                    @for (item of filteredOptionBrand; track item.uuid) {
+                                    <mat-option [value]="item">{{item.name}}</mat-option>
+                                    }
+                                </mat-autocomplete>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="col-form-label" for="text">Total de farde <span
+                                        class="text-danger">*</span></label>
+                                <input type="number" class="form-control" formControlName="number_farde" required />
+                                <mat-error *ngIf="formGroupPosFormItem.controls['number_farde'].hasError('required')">
+                                    Ce champs est obligatoire
+                                </mat-error>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="col-form-label" for="text">Ventes <span
+                                        class="text-danger">*</span></label>
+                                <input type="number" class="form-control" formControlName="sold" required />
+                                <mat-error *ngIf="formGroupPosFormItem.controls['sold'].hasError('required')">
+                                    Ce champs est obligatoire
+                                </mat-error>
+                            </div>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end mb-3">
+                            <button type="submit" class="btn btn-success">
+                                <i class="ti ti-check me-2"></i>
+                                Ajouter
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Pos List -->
+                <div class="task-wrapper">
+                    <div class="row">
+                        @if (isLoadingPosFormItem) {
+                        <div class="d-flex align-items-center justify-content-center w-100">
+                            <strong role="status">Loading...</strong>
+                            <div class="spinner-border ms-2" aria-hidden="true"></div>
+                        </div>
+                        } @else {
+                        @for (item of dataListLocalItem; track $index) {
+                        <div class="col-md-4 mb-3">
+                            <div class="card task-card">
+                                <div class="card-body">
+                                    <div class="task-info d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p class="mb-1"><strong>Brand:</strong> {{ item.brand_name }}</p>
+                                            <p class="mb-1"><strong>Nombre de Farde:</strong> {{ item.number_farde }}</p>
+                                            <p *ngIf="item.sold > 0" class="mb-1">
+                                                <strong>{{ item.sold > 1 ? 'Ventes:' : 'Vente:' }}</strong> 
+                                                {{ item.sold }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="task-actions mt-3 text-end">
+                                        <a href="javascript:void(0);" (click)="deletePosFormItem(item.id!)"
+                                            class="text-danger">
+                                            <i class="ti ti-trash"></i> Delete
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        }
+                        }
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="col-form-label" for="text">Commentaire <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" formControlName="comment" required />
+                        <mat-error *ngIf="formGroup.controls['comment'].hasError('required')">
+                            Ce champs est obligatoire
+                        </mat-error>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center justify-content-end">
+                <button type="button" data-bs-dismiss="offcanvas" class="btn btn-light me-2">Annuler</button>
+                @if (isLoading) {
+                <button disabled class="btn btn-primary">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </button>
+                }
+                @if (!isLoading) {
+                <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-dismiss="offcanvas"
+                    data-bs-target="#create_success">Soumettre</button>
+                }
+            </div>
+        </form>
+    </div>
+
+</div>
+<!-- /Add New Contracts -->
+
+
+<!-- Edit Contracts -->
+<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_edit">
+
+    <div class="offcanvas-header border-bottom">
+        <h4>Modifier le rapport de visite</h4>
+        <button type="button"
+            class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle"
+            data-bs-dismiss="offcanvas" aria-label="Close">
+            <i class="ti ti-x"></i>
+        </button>
+    </div>
+    <div class="offcanvas-body">
+        <form [formGroup]="formGroup" (ngSubmit)="onSubmitUpdate()">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="col-form-label" for="text">POS <span class="text-danger">*</span></label>
+                        <input #pos_uuid type="text" matInput formControlName="pos_uuid" [matAutocomplete]="autopos1"
+                            placeholder="Selectionner le POS" class="form-control" (input)="getAllRoutePlans()"
+                            (focus)="getAllRoutePlans()">
+                        @if (isload) {
+                        <div class="d-flex align-items-center">
+                            <strong role="status">Loading...</strong>
+                            <div class="spinner-border ms-auto" aria-hidden="true"></div>
+                        </div>
+                        }
+                        <mat-autocomplete requireSelection #autopos1="matAutocomplete"
+                            (optionSelected)="optionSelected($event)" [displayWith]="displayFn">
+                            @for (item of filteredOptions; track item.uuid) {
+                            <mat-option [value]="item">{{item.pos_name}} | {{item.pos_shop}}</mat-option>
+                            }
+                        </mat-autocomplete>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="col-form-label" for="price">Prix <span class="text-danger">*</span></label>
+                        <select class="form-control" formControlName="price" required>
+                            <option value="" disabled selected>Selectionner un prix</option>
+                            <option *ngFor="let price of priceList" [value]="price">{{ price }}</option>
+                        </select>
+                        <mat-error *ngIf="formGroup.controls['price'].hasError('required')">
+                            Ce champs est obligatoire
+                        </mat-error>
+                    </div>
+                </div>
+
+                <form [formGroup]="formGroupPosFormItem" (ngSubmit)="onSubmitItem()"
+                    style="background-color: rgba(10, 128, 179, 0.045);">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="col-form-label" for="text">Brand <span
+                                        class="text-danger">*</span></label>
+                                <input #brand_uuid type="text" matInput [matAutocomplete]="autopos3"
+                                    placeholder="Selectionner le brand" class="form-control" (input)="getAllBrand()"
+                                    (focus)="getAllBrand()">
+                                @if (isloadBrand) {
+                                <div class="d-flex align-items-center">
+                                    <strong role="status">Loading...</strong>
+                                    <div class="spinner-border ms-auto" aria-hidden="true"></div>
+                                </div>
+                                }
+                                <mat-autocomplete requireSelection #autopos3="matAutocomplete"
+                                    (optionSelected)="optionSelectedBrand($event)" [displayWith]="displayFnBrand">
+                                    @for (item of filteredOptionBrand; track item.uuid) {
+                                    <mat-option [value]="item">{{item.name}}</mat-option>
+                                    }
+                                </mat-autocomplete>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="col-form-label" for="text">Total de farde <span
+                                        class="text-danger">*</span></label>
+                                <input type="number" class="form-control" formControlName="number_farde" required />
+                                <mat-error *ngIf="formGroupPosFormItem.controls['number_farde'].hasError('required')">
+                                    Ce champs est obligatoire
+                                </mat-error>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="col-form-label" for="text">Ventes <span
+                                        class="text-danger">*</span></label>
+                                <input type="number" class="form-control" formControlName="sold" required />
+                                <mat-error *ngIf="formGroupPosFormItem.controls['sold'].hasError('required')">
+                                    Ce champs est obligatoire
+                                </mat-error>
+                            </div>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end mb-3">
+                            <button type="submit" class="btn btn-success">
+                                <i class="ti ti-check me-2"></i>
+                                Ajouter
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Pos List -->
+                <div class="task-wrapper">
+                    <div class="row">
+                        @if (isLoadingPosFormItem) {
+                        <div class="d-flex align-items-center justify-content-center w-100">
+                            <strong role="status">Loading...</strong>
+                            <div class="spinner-border ms-2" aria-hidden="true"></div>
+                        </div>
+                        } @else {
+                        @for (item of dataListPosFormItem; track $index) {
+                        <div class="col-md-4 mb-3">
+                            <div class="card task-card">
+                                <div class="card-body">
+                                    <div class="task-info d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p class="mb-1"><strong>Brand:</strong> {{ item.brand_name }}</p>
+                                            <p class="mb-1"><strong>Nombre de Farde:</strong> {{ item.number_farde }}</p>
+                                            <p class="mb-1">
+                                                <strong>{{ item.sold > 1 ? 'Ventes:' : 'Vente:' }}</strong> {{ item.sold }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="task-actions mt-3 text-end">
+                                        <a href="javascript:void(0);" (click)="deletePosFormItem(item.id!)"
+                                            class="text-danger">
+                                            <i class="ti ti-trash"></i> Delete
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        }
+                        }
+                    </div>
+                </div>
+
+                <div class="col-md-12">
+                    <div class="mb-3">
+                        <label class="col-form-label" for="text">Commentaire <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" formControlName="comment" required />
+                        <mat-error *ngIf="formGroup.controls['comment'].hasError('required')">
+                            Ce champs est obligatoire
+                        </mat-error>
+                    </div>
+                </div>
+            </div>
+            <div class="d-flex align-items-center justify-content-end">
+                <button type="button" data-bs-dismiss="offcanvas" class="btn btn-light me-2">Annuler</button>
+                @if (isLoading) {
+                <button disabled class="btn btn-primary">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </button>
+                }
+                @if (!isLoading) {
+                <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-dismiss="offcanvas"
+                    data-bs-target="#create_success">Enregistrer les modifications</button>
+                }
+            </div>
+        </form>
+    </div>
+
+</div>
+<!-- /Edit Contracts -->
+
+<!-- Delete User -->
+<div class="modal fade" id="delete_contact" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="text-center">
+                    <div class="avatar avatar-xl bg-danger-light rounded-circle mb-3">
+                        <i class="ti ti-trash-x fs-36 text-danger"></i>
+                    </div>
+                    <h4 class="mb-2">Supprimer l'article ?</h4>
+                    <p class="mb-0">Êtes-vous sûr de vouloir le supprimer ?</p>
+                    <div class="d-flex align-items-center justify-content-center mt-4">
+                        <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="modal">Annuler</a>
+                        <button (click)="delete()" class="btn btn-danger" data-bs-dismiss="modal">
+                            Oui, Supprimer le
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Delete User --> 
+ 
+

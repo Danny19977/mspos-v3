@@ -1,0 +1,62 @@
+@if (isLoading) {
+<div class=" text-center d-flex justify-content-center align-items-center ">
+  <div class="spinner-border bs-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+} @else {
+<div class="table-responsive custom-table">
+  <table class="table dataTable" id="deals-project">
+    <thead class="thead-light">
+      <tr>
+        <th>AREA</th>
+        <th>EQ</th>
+        <th>DHL</th>
+        <th>AR</th>
+        <th>SBL</th>
+        <th>PMF</th>
+        <th>PMM</th>
+        <th>TICKET</th>
+        <th>MTC</th>
+        <th>WS</th>
+        <th>MAST</th>
+        <th>ORIS</th>
+        <th>ELITE</th>
+        <th>YES</th>
+        <th>TIME</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of tableViewList; track $index) {
+      <tr class="odd">
+        <td>{{item.Area}}</td>
+        <td>
+          @if (item.Eq >= 95) { 
+            <span class="badge badge-pill bg-success" style="font-size: 16px;">{{item.Eq}} %</span>
+          }
+          @else if (item.Eq < 95 && item.Eq >= 80) {
+            <span class="badge badge-pill bg-warning" style="font-size: 16px;">{{item.Eq}} %</span>
+            } 
+          @else if (item.Eq < 80) {
+             <span class="badge badge-pill bg-danger" style="font-size: 16px;">{{item.Eq}} %</span>
+          }
+        </td>
+        <td>{{item.Dhl}} %</td>
+        <td>{{item.Ar}} %</td>
+        <td>{{item.Sbl}} %</td>
+        <td>{{item.Pmf}} %</td>
+        <td>{{item.Pmm}} %</td>
+        <td>{{item.Ticket}} %</td>
+        <td style="background-color: darkgray; text-align: center;">{{item.Mtc}} %</td>
+        <td>{{item.Ws}} %</td>
+        <td>{{item.Mast}} %</td>
+        <td>{{item.Oris}} %</td>
+        <td>{{item.Elite}} %</td>
+        <td>{{item.Yes}} %</td>
+        <td>{{item.Time}} %</td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
+}

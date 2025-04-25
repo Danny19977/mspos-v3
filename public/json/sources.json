@@ -1,0 +1,65 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "Phone Calls",
+      "created_date": "25 Sep 2023, 01:22 pm",
+      "status": "Active"
+    },
+    {
+      "id": 2,
+      "title": "Social Media",
+      "created_date": "29 Sep 2023, 04:15 pm",
+      "status": "Active"
+    },
+    {
+      "id": 3,
+      "title": "Referral Sites",
+      "created_date": "04 Oct 2023, 10:18 am",
+      "status": "Active"
+    },
+    {
+      "id": 4,
+      "title": "Web Analytics",
+      "created_date": "17 Oct 2023, 03:31 pm",
+      "status": "Inactive"
+    },
+    {
+      "id": 5,
+      "title": "Previous Purchases",
+      "created_date": "24 Oct 2023, 09:14 pm",
+      "status": "Active"
+    },
+    {
+      "id": 6,
+      "title": "Lead & Opportunity",
+      "created_date": "08 Nov 2023, 09:56 am",
+      "status": "Active"
+    },
+    {
+      "id": 7,
+      "title": "Image-based Features",
+      "created_date": "14 Nov 2023, 04:19 pm",
+      "status": "Active"
+    },
+    {
+      "id": 8,
+      "title": "Bots",
+      "created_date": "23 Nov 2023, 11:14 pm",
+      "status": "Active"
+    },
+    {
+      "id": 9,
+      "title": "Insights",
+      "created_date": "10 Dec 2023, 06:43 am",
+      "status": "Active"
+    },
+    {
+      "id": 10,
+      "title": "Commerce",
+      "created_date": "25 Dec 2023, 08:17 pm",
+      "status": "Active"
+    }
+  ],
+  "totalData": 10
+}

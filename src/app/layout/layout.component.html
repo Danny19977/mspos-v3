@@ -1,0 +1,37 @@
+<div class="main-wrapper" [ngClass]="{
+  'expand-menu': miniSidebar === true  && expandMenu === true,
+  'mini-sidebar': miniSidebar === true,
+  'menu-opened': mobileSidebar === true,
+  'slide-nav': mobileSidebar === true,
+  'light': themeMode === 'light_mode',
+  'themedark': themeMode === 'dark_mode', 
+  'nav-light': navigationColor === 'light_mode', 
+  'blue': navigationColor === 'blue_color', 
+  'green': navigationColor === 'green_color',
+  'dark':  navigationColor === 'dark_color',
+  'sidebarbg1': layoutMode === 'sidebar_bg1',
+  'sidebarbg2': layoutMode === 'sidebar_bg2', 
+  'sidebarbg3': layoutMode === 'sidebar_bg3', 
+  'sidebarbg4': layoutMode === 'sidebar_bg4',
+  'redFontColor': fontColor === 'red_font_color',
+  'yellowFontColor': fontColor === 'yellow_font_color',
+  'blueFontColor': fontColor === 'blue_font_color',
+  'greenFontColor': fontColor === 'green_font_color'
+}" [class.header-collapse]="isCollapsed">
+
+<div *ngIf="showPreloader" class="preloader">
+  <div class="preloader">
+    <div class="loader"></div>
+  </div>
+</div>
+
+
+@if (page !== 'coming-soon' && page !== 'under-maintenance') {
+<app-header></app-header>
+
+<app-sidebar></app-sidebar> 
+<app-layout-common></app-layout-common> 
+}
+
+<router-outlet></router-outlet>
+</div>

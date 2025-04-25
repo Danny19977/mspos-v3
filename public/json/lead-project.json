@@ -1,0 +1,43 @@
+{
+	"data":[
+		{
+			"id" : 1,
+			"lead" : "Collins",
+			"lead_name" : "NovaWave LLC",
+			"lead_city" : "Newyork, USA",
+			"lead_img" : "img/icons/company-icon-01.svg",
+			"phone" : "+1 875455453",
+			"status" : "1"
+		},
+		{
+			"id" : 2,
+			"lead" : "Konopelski",
+			"lead_name" : "BlueSky Industries",
+			"lead_city" : "Winchester, KY",
+			"lead_img" : "img/icons/company-icon-02.svg",
+			"phone" : "+1 989757485",
+			"status" : "2"
+		},
+		{
+			"id" : 3,
+			"lead" : "Adams",
+			"lead_name" : "SilverHawk",
+			"lead_city" : "Jametown, NY",
+			"lead_img" : "img/icons/company-icon-03.svg",
+			"phone" : "+1 546555455",
+			"status" : ""
+		},
+		{
+			"id" : 4,
+			"lead" : "Schumm",
+			"lead_name" : "SummitPeak",
+			"lead_city" : "Compton, RI",
+			"lead_img" : "img/icons/company-icon-04.svg",
+			"phone" : "+1 454478787",
+			"status" : "1"
+		}
+
+	]
+	
+}
+

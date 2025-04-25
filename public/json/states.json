@@ -1,0 +1,121 @@
+{
+	"data":[
+		{
+			"id" : 1,
+			"si_no" : "",
+			"select" : "",
+            "country_code" : "AS",
+			"state_name" : "American Samosa(+684)",
+			"country_image":"img/flags/as.png",
+			"state": "Swains Island",
+			"isRating": true,
+			"Action" : ""
+		},
+		{
+			"id" : 2,
+			"si_no" : "",
+			"select" : "",
+            "country_code" : "AD",
+			"state_name" : "Andorra(+376)",
+			"country_image":"img/flags/ad.png",
+			"state": "Andorra la Vella",
+			"isRating": true,
+			"Action" : ""
+			
+		},
+		{
+			"id" : 3,
+			"si_no" : "",
+			"select" : "",
+            "country_code" : "AO",
+			"state_name" : "Angola(+244)",
+			"country_image":"img/flags/ao.png",
+			"state": "Benguella",
+			"isRating": true,
+			"Action" : ""
+		},
+		{
+			"id" : 4,
+			"si_no" : "",
+			"select" : "",
+            "country_code" : "AI",
+			"state_name" : "Angulila(+1264)",
+			"country_image":"img/flags/ai.png",
+			"state": "The Valley",
+			"isRating": true,
+			"Action" : ""
+		},
+		{
+			"id" : 5,
+			"si_no" : "",
+			"select" : "",
+			"country_code" : "AQ",
+			"state_name" : "Antartica(+672)",
+			"country_image":"img/flags/qa.png",
+			"state": "Victoria Land",
+			"isRating": true,
+			"Action" : ""
+		},
+		{
+			"id" : 6,
+			"si_no" : "",
+			"select" : "",
+			"country_code" : "AG",
+			"state_name" : "Antigua & Barbuda(+1268)",
+			"country_image":"img/flags/ag.png",
+			"state": "Saint Paul",
+			"isRating": true,
+			"Action" : ""
+		},
+		{
+			"id" : 7,
+			"si_no" : "",
+			"select" : "",
+			"country_code" : "AR",
+			"state_name" : "Argentina(+54)",
+			"country_image":"img/flags/ar.png",
+			"state": "Santa Fe",
+			"isRating": true,
+			"Action" : ""
+		},
+		{
+			"id" : 8,
+			"si_no" : "",
+			"select" : "",
+			"country_code" : "AU",
+			"state_name" : "Australia(+61)",
+			"country_image":"img/flags/au.png",
+			"state": "Queensland",
+			"isRating": true,
+			"Action" : ""
+		},
+		{
+			"id" : 9,
+			"si_no" : "",
+			"select" : "",
+			"country_code" : "AT",
+			"state_name" : "Austria(+43)",
+			"country_image":"img/flags/at.png",
+			"state": "Tyrol",
+			"isRating": true,
+			"Action" : ""
+		}
+		,
+		{
+			"id" : 10,
+			"si_no" : "",
+			"select" : "",
+			"country_code" : "AZ",
+			"state_name" : "Azerbaijan(+994)",
+			"country_image":"img/flags/az.png",
+			"state": "Karabakh",
+			"isRating": true,
+			"Action" : ""
+		}
+		
+		
+	],
+	"totalData": 10
+	
+}
+

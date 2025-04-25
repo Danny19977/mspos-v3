@@ -1,0 +1,13 @@
+@if (isLoading) {
+    <div class=" text-center d-flex justify-content-center align-items-center ">
+      <div class="spinner-border bs-primary" role="status">
+         <span class="visually-hidden">Loading...</span>
+       </div>
+   </div>
+  } @else {
+    <div id="deals-year">
+      <apx-chart [series]="chartOptions4.series" [chart]="chartOptions4.chart" [xaxis]="chartOptions4.xaxis"
+        [dataLabels]="chartOptions4.dataLabels" [grid]="chartOptions4.grid" [stroke]="chartOptions4.stroke"
+        [title]="chartOptions4.title" [colors]="chartOptions4.colors"></apx-chart>
+    </div> 
+  }

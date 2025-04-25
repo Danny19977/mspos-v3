@@ -1,0 +1,210 @@
+<div class="sidebar-contact">
+    <!-- eslint-disable-next-line @angular-eslint/template/click-events-have-key-events, @angular-eslint/template/interactive-supports-focus -->
+    <div class="toggle-theme" (click)="showPreview = !showPreview"><i class="fa fa-cog fa-w-16 fa-spin"></i></div>
+     
+</div>
+ 
+<div class="sidebar-themesettings" [ngClass]="{ 'open': showPreview }">
+    <div class="themesettings-header">
+        <h4>Theme Customizer</h4>
+        <a href="javascript:void(0);" (click)="showPreview = !showPreview" id="theme-settings"><i
+                class="ti ti-x"></i></a>
+    </div>
+    <div class="themesettings-inner" [ngClass]="{ 'show-settings': showPreview }">
+        <div class="themesettings-content">
+            <h6>Layout</h6>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="input-themeselect" [class.active]="themeMode === 'light_mode'" (click)="changeThemeMode('light_mode')" (keydown.enter)="changeThemeMode('light_mode')" 
+                    (keydown.space)="changeThemeMode('light_mode')"  tabindex="0">
+                        <input type="radio" name="theme" id="lightTheme" value="light" checked>
+                        <label for="lightTheme">
+                            <img src="img/theme/theme-01.svg" alt="img">
+                            <span class="w-100">
+                                <span>Light</span>
+                                <span class="checkboxs-theme"></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="input-themeselect" [class.active]="themeMode === 'dark_mode'" (click)="changeThemeMode('dark_mode')" (keydown.enter)="changeThemeMode('dark_mode')" 
+                    (keydown.space)="changeThemeMode('dark_mode')" 
+                tabindex="0">
+                        <input type="radio" name="theme" id="darkTheme" value="dark">
+                        <label for="darkTheme">
+                            <img src="img/theme/theme-02.svg" alt="img">
+                            <span class="w-100">
+                                <span>Dark</span>
+                                <span class="checkboxs-theme"></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="themesettings-content">
+            <h6>Colors</h6>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="theme-colorsset">
+                        <ul>
+                            <li>
+                                <div class="input-themeselects" [class.active]="fontColor === 'red_font_color'" (click)="changeFontColor('red_font_color')" (keydown.enter)="changeThemeMode('red_font_color')" 
+                                (keydown.space)="changeThemeMode('red_font_color')" 
+                                tabindex="0">
+                                    <input type="radio" name="color" id="redColor" value="red" checked>
+                                    <label for="redColor" class="red-clr"></label>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="input-themeselects" [class.active]="fontColor === 'yellow_font_color'" (click)="changeFontColor('yellow_font_color')" (keydown.enter)="changeThemeMode('yellow_font_color')" 
+                                (keydown.space)="changeThemeMode('yellow_font_color')" 
+                                tabindex="0">
+                                    <input type="radio" name="color" id="yellowColor" value="yellow">
+                                    <label for="yellowColor" class="yellow-clr"></label>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="input-themeselects" [class.active]="fontColor === 'blue_font_color'" (click)="changeFontColor('blue_font_color')" (keydown.enter)="changeFontColor('blue_font_color')" 
+                                (keydown.space)="changeFontColor('blue_font_color')" 
+                                tabindex="0">
+                                    <input type="radio" name="color" id="blueColor" value="blue">
+                                    <label for="blueColor" class="blue-clr"></label>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="input-themeselects" [class.active]="fontColor === 'green_font_color'" (click)="changeFontColor('green_font_color')" (keydown.enter)="changeFontColor('green_font_color')"  (keydown.space)="changeFontColor('green_font_color')" 
+                                tabindex="0">
+                                    <input type="radio" name="color" id="greenColor" value="green">
+                                    <label for="greenColor" class="green-clr"></label>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="themesettings-content">
+            <h6>Sidebar</h6>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="input-themeselect" [class.active]="navigationColor === 'light_mode'" (click)="changeNavigationColor('light_mode')"  (keydown.enter)="changeNavigationColor('light_mode')" 
+                    (keydown.space)="changeNavigationColor('light_mode')"   tabindex="0">
+                        <input type="radio" name="sidebar" id="lightSidebar" value="light" checked>
+                        <label for="lightSidebar">
+                            <img src="img/theme/theme-03.svg" alt="img">
+                            <span class="w-100">
+                                <span>Light</span>
+                                <span class="checkboxs-theme"></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="input-themeselect" [class.active]="navigationColor === 'dark_color'" (click)="changeNavigationColor('dark_color')"  (keydown.enter)="changeNavigationColor('dark_color')" 
+                    (keydown.space)="changeNavigationColor('dark_color')"  tabindex="0">
+                        <input type="radio" name="sidebar" id="darkSidebar" value="dark">
+                        <label for="darkSidebar">
+                            <img src="img/theme/theme-04.svg" alt="img">
+                            <span class="w-100">
+                                <span>Dark</span>
+                                <span class="checkboxs-theme"></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="input-themeselect" [class.active]="navigationColor === 'blue_color'" (click)="changeNavigationColor('blue_color')" (keydown.enter)="changeNavigationColor('blue_color')" (keydown.space)="changeNavigationColor('blue_color')"  tabindex="0">
+                        <input type="radio" name="sidebar" id="blueSidebar" value="blue">
+                        <label for="blueSidebar">
+                            <img src="img/theme/theme-05.svg" alt="img">
+                            <span class="w-100">
+                                <span>Blue</span>
+                                <span class="checkboxs-theme"></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="input-themeselect" [class.active]="navigationColor === 'green_color'" (click)="changeNavigationColor('green_color')" (keydown.enter)="changeNavigationColor('green_color')" (keydown.space)="changeNavigationColor('green_color')"  tabindex="0">
+                        <input type="radio" name="sidebar" id="greenSidebar" value="green">
+                        <label for="greenSidebar">
+                            <img src="img/theme/theme-06.svg" alt="img">
+                            <span class="w-100">
+                                <span>Green</span>
+                                <span class="checkboxs-theme"></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="themesettings-content m-0 border-0">
+            <h6>Sidebar Background</h6>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="input-themeselect" [class.active]="layoutMode === 'sidebar_bg1'" (click)="changeLayoutMode('sidebar_bg1')" (keydown.enter)="changeLayoutMode('sidebar_bg1')" tabindex="0"
+                    (keydown.space)="changeLayoutMode('sidebar_bg1')" >
+                        <input type="radio" name="sidebar" id="sidebarBg1" value="sidebarbg1">
+                        <label for="sidebarBg1">
+                            <img src="img/theme/theme-07.svg" alt="img">
+                            <span class="w-100">
+                                <span>Bg-1</span>
+                                <span class="checkboxs-theme"></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="input-themeselect" [class.active]="layoutMode === 'sidebar_bg2'" (click)="changeLayoutMode('sidebar_bg2')" tabindex="0">
+                        <input type="radio" name="sidebar" id="sidebarBg2" value="sidebarbg2">
+                        <label for="sidebarBg2">
+                            <img src="img/theme/theme-08.svg" alt="img">
+                            <span class="w-100">
+                                <span>Bg-2</span>
+                                <span class="checkboxs-theme"></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="input-themeselect" [class.active]="layoutMode === 'sidebar_bg3'" (click)="changeLayoutMode('sidebar_bg3')" tabindex="0">
+                        <input type="radio" name="sidebar" id="sidebarBg3" value="sidebarbg3">
+                        <label for="sidebarBg3">
+                            <img src="img/theme/theme-09.svg" alt="img">
+                            <span class="w-100">
+                                <span>Bg-3</span>
+                                <span class="checkboxs-theme"></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="input-themeselect" [class.active]="layoutMode === 'sidebar_bg4'" (click)="changeLayoutMode('sidebar_bg4')" tabindex="0">
+                        <input type="radio" name="sidebar" id="sidebarBg4" value="sidebarbg4">
+                        <label for="sidebarBg4">
+                            <img src="img/theme/theme-10.svg" alt="img">
+                            <span class="w-100">
+                                <span>Bg-4</span>
+                                <span class="checkboxs-theme"></span>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="themesettings-footer">
+        <ul>
+            <li>
+                <a href="javascript:void(0);" class="btn btn-cancel close-theme">Annuler</a>
+            </li>
+            <li>
+                <a href="javascript:void(0);" (click)="resetAllMode()" id="resetbutton" class="btn btn-reset">Reset</a>
+            </li>
+        </ul>
+    </div>
+</div>
+ 
+<div *ngIf="showPreview" class="sidebar-themeoverlay open"></div>

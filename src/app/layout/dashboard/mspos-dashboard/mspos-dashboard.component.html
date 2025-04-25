@@ -1,0 +1,88 @@
+<div class="page-wrapper">
+  <div class="content">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="page-header">
+          <div class="row align-items-center">
+            <div class="col-md-4">
+              <h3 class="page-title">SUMMARY</h3>
+            </div>
+            <div class="col-md-8 float-end ms-auto">
+              <form [formGroup]="dateRange">
+                <div class="d-flex title-head">
+                  <div class="daterange-picker d-flex align-items-center justify-content-center">
+                    <div class="form-sort me-2">
+                      <i class="ti ti-calendar"></i>
+                      <input type="text" class="form-control date-range bookingrange" bsDaterangepicker
+                        [bsConfig]="{ adaptivePosition: true }"  formControlName="rangeValue" />
+                    </div>
+                    <div class="head-icons mb-0">
+                      <app-reload></app-reload>
+                      <app-collapse-header></app-collapse-header>
+                    </div> 
+                  </div>
+                </div>
+              </form> 
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Campaign Status -->
+    <app-stats-total [isLoading]="isLoading" [drCount]="drCount" [posCount]="posCount"
+      [provinceCount]="provinceCount" [areaCount]="areaCount"></app-stats-total>
+    <!-- /Campaign Status -->
+    <div class="row ">
+      <div class="col-md-6 d-flex">
+        <div class="card flex-fill">
+          <app-tracking-dr [isLoading]="isLoading" [perfVisitDRList]="perfVisitDRList"></app-tracking-dr>
+        </div> 
+      </div>
+      <div class="col-md-6 d-flex">
+        <div class="card flex-fill">
+          <app-map-area [isLoading]="isLoading" [sosMapList]="sosPieLIst"></app-map-area>
+        </div>
+      </div>
+    </div>
+    <div class="row ">
+      <div class="col-md-6 d-flex">
+        <div class="card flex-fill">
+          <!-- <app-sos-pie [isLoading]="isLoading" [sosPieLIst]="sosPieLIst"></app-sos-pie> -->
+           <app-price-sale [isLoading]="isLoading" [priceSaleLIst]="priceSaleLIst"></app-price-sale>
+       </div> 
+      </div>
+      <div class="col-md-6 d-flex">
+        <div class="card flex-fill">
+          <app-status-equipements [isLoading]="isLoading" [statusEquipementList]="statusEquipementList"></app-status-equipements>
+        </div> 
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-12 d-flex">
+        <div class="card shadow flex-fill">
+          <div
+          class="card-header d-flex justify-content-between align-items-center flex-wrap row-gap-2"
+        >
+          <h4>Report of provinces</h4> 
+        </div>
+        <div class="card-body">
+          <app-sumary-chart-bar [isLoading]="isLoading" [summaryChartList]="summaryChartList"></app-sumary-chart-bar> 
+        </div>  
+        </div> 
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6 d-flex">
+        <div class="card flex-fill">
+          <app-better-dr [isLoading]="isLoading" [betterDRList]="betterDRList"></app-better-dr>
+        </div>
+      </div>
+      <div class="col-md-6 d-flex">
+        <div class="card flex-fill">
+          <app-better-sup [isLoading]="isLoading" [betterSupList]="betterSupList"></app-better-sup>
+        </div>
+      </div>
+    </div> 
+    
+  </div>
+</div>

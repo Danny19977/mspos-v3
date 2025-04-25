@@ -1,0 +1,102 @@
+<div class="account-content">
+    <div class="d-flex flex-wrap w-100 vh-100 overflow-hidden account-bg-01">
+        <div
+            class="d-flex align-items-center justify-content-center flex-wrap vh-100 overflow-auto p-4 w-50 bg-backdrop">
+            <form [formGroup]="formGroup" (ngSubmit)="onSubmit()" class="flex-fill">
+                <div class="mx-auto mw-450">
+                    <div class="text-center mb-4">
+                        <img src="img/logo.png" class="img-fluid" alt="Logo">
+                    </div>
+                    <div class="mb-4">
+                        <h4 class="mb-2 fs-20">Inscription</h4>
+                        <p>Management System Point Of Sales.</p>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                          <div class="mb-3">
+                            <label class="col-form-label" for="user">Nom complet <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" formControlName="fullname" required />
+                            <mat-error *ngIf="formGroup.controls['fullname'].hasError('required')">
+                              Ce champs est obligatoire
+                            </mat-error>
+                          </div>
+                        </div>
+                         
+                        <div class="col-md-6">
+                          <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center">
+                              <label class="col-form-label" for="email">Adresse mail <span class="text-danger">*</span></label>
+                            </div>
+                            <input type="text" class="form-control" formControlName="email" required />
+                            <mat-error *ngIf="formGroup.controls['email'].hasError('required')">
+                              Ce champs est obligatoire
+                            </mat-error>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="mb-3">
+                            <label class="col-form-label" for="phone">
+                              Telephone
+                              <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control" formControlName="phone" required />
+                            <mat-error *ngIf="formGroup.controls['phone'].hasError('required')">
+                              Ce champs est obligatoire
+                            </mat-error>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="mb-3">
+                            <label class="col-form-label" for="Password">Mot de passe <span class="text-danger">*</span></label>
+                            <div class="icon-form-end">
+                              <span class="form-icon" (click)="togglePassword(1)" tabindex="0"><i class="ti"
+                                  [ngClass]="password[1] ? 'ti-eye' : 'ti-eye-off'"></i></span>
+                              <input [type]="password[1] ? 'text' : 'password'" class="form-control" formControlName="password"
+                                required />
+                              <mat-error *ngIf="formGroup.controls['password'].hasError('required')">
+                                Ce champs est obligatoire
+                              </mat-error>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <div class="mb-3">
+                            <label class="col-form-label" for="text">Répéter le mot de passe <span class="text-danger">*</span></label>
+                            <div class="icon-form-end">
+                              <span class="form-icon" (click)="togglePassword(2)" (keydown.enter)="togglePassword(2)"
+                                tabindex="0"><i class="ti" [ngClass]="password[2] ? 'ti-eye' : 'ti-eye-off'"></i></span>
+                              <input [type]="password[2] ? 'text' : 'password'" class="form-control"
+                                formControlName="password_confirm" required />
+                              <mat-error *ngIf="formGroup.controls['password_confirm'].hasError('required')">
+                                Ce champs est obligatoire
+                              </mat-error>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                     
+                    <div class="mb-3">
+                        @if (isLoading) {
+                            <button disabled class="btn btn-primary w-100">
+                                <div class="spinner-border" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </button>
+                        }
+                       @if (!isLoading) {
+                        <button type="submit" class="btn btn-primary w-100">Register</button>
+                       } 
+                    </div>
+                    <div class="mb-3">
+                        <h6>Déjà un compte ?<a [routerLink]="routes.login" class="text-purple link-hover"> 
+                            Connectez-vous ici</a>.</h6>
+                    </div>
+                    <div class="text-center">
+                        <p class="fw-medium text-gray">Copyright &copy; {{ dateY }} </p>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,44 @@
+<div class="card flex-fill">
+    <div class="card-header border-0 pb-0">
+        <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
+            <h4>
+                <i class="ti ti-grip-vertical me-1"></i>
+                Best sellers DRs
+            </h4>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive custom-table ">
+            <table class="table dataTable" id="deals-project">
+                <thead class="thead-light">
+                    <tr>
+                        <th>N</th> 
+                        <th>Fullname</th>
+                        <th>Province</th>
+                        <th>Area</th>
+                        <th>Sold</th> 
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (isLoading) {
+                    <div class=" text-center d-flex justify-content-center align-items-center ">
+                        <div class="spinner-border bs-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                    } @else {
+                        @for (item of betterDRDataList; track $index; let i = $index) {
+                        <tr class="odd">
+                            <td>{{ i +1 }} </td> 
+                            <td>{{item.Fullname}}</td> 
+                            <td>{{item.Province}}</td> 
+                            <td>{{item.Area}}</td> 
+                            <td>{{item.Ventes}}</td> 
+                        </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

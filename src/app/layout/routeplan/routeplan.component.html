@@ -1,0 +1,520 @@
+<!-- Page Wrapper -->
+<div class="page-wrapper">
+    <div class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="row align-items-center">
+                        <div class="col-md-4">
+                            <h4 class="page-title">
+                                RoutePlans <span class="count-title">{{ total_records }}</span>
+                            </h4>
+                        </div>
+                        <div class="col-md-8 text-end">
+                            <div class="head-icons">
+                                <app-reload></app-reload>
+                                <app-collapse-header></app-collapse-header>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /Page Header -->
+                @if (currentUser) {
+                <div class="card">
+                    <div class="card-header">
+                        <!-- Search -->
+                        <div class="row align-items-center">
+                            <div class="col-sm-4">
+                                <div class="icon-form mb-3 mb-sm-0">
+                                    <span class="form-icon"><i class="ti ti-search"></i></span>
+                                    <input type="text" #input [(ngModel)]="search"
+                                        (ngModelChange)="onSearchChange($event)" class="form-control"
+                                        placeholder="Ex. Funa">
+                                </div>
+                            </div>
+                            <div class="col-sm-8">
+                                <div class="d-flex align-items-center flex-wrap row-gap-2 justify-content-sm-end">
+                                    <div class="dropdown me-2">
+                                        <a href="javascript:void(0);" class="dropdown-toggle"
+                                            data-bs-toggle="dropdown"><i
+                                                class="ti ti-package-export me-2"></i>Export</a>
+                                        <div class="dropdown-menu  dropdown-menu-end">
+                                            <ul>
+                                                <li>
+                                                    <a href="javascript:void(0);" class="dropdown-item"><i
+                                                            class="ti ti-file-type-pdf text-danger me-1"></i>Export as
+                                                        PDF</a>
+                                                </li>
+                                                <li>
+                                                    <a href="javascript:void(0);" class="dropdown-item"><i
+                                                            class="ti ti-file-type-xls text-green me-1"></i>Export as
+                                                        Excel </a>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                    @if(
+                                    isCreatedRoutePlan ||
+                                    currentUser.permission === 'ALL' ||
+                                    currentUser.permission === 'VAE' ||
+                                    currentUser.permission === 'VA') {
+                                    <button type="submit" class="btn btn-primary" data-bs-toggle="offcanvas"
+                                        data-bs-toggle="modal" data-bs-target="#create_routeplan">
+                                        <i class="ti ti-square-rounded-plus me-2"></i>
+                                        Add New RoutePlan
+                                    </button>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <!-- /Search -->
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive custom-table">
+                            <table class="table mb-5" id="campaign-list" matSort (matSortChange)="sortData($event)">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th mat-sort-header="synchronisation">Sync</th>
+                                        <th mat-sort-header="created">Date</th>
+                                        <th mat-sort-header="country">Pays</th>
+                                        <th mat-sort-header="province">Province</th>
+                                        <th mat-sort-header="area">Area</th>
+                                        <th mat-sort-header="subarea">Subarea</th>
+                                        <th mat-sort-header="commune">Commune</th>
+                                        <th mat-sort-header="agent">Agent</th>
+                                        <th mat-sort-header="total_pos">Total Pos</th>
+                                        <th mat-sort-header="pourcent">Pourcent</th>
+                                        <th class="text-end">Action</th>
+                                    </tr>
+                                </thead>
+
+                                <tbody>
+                                    @if (dataListLocal.length > 0) {
+                                    @for (data of dataListLocal; track data) {
+                                    <tr class="odd" style="background-color: gainsboro;">
+                                        <td>
+                                            <span class="badge bg-warning text-dark">
+                                                <i class="ti ti-clock"></i>
+                                            </span>
+                                        </td>
+                                        <td>{{ data.CreatedAt | date: 'dd/MM/YYYY HH:mm' }}</td>
+                                        <td>{{ data.country_name }}</td>
+                                        <td>{{ data.province_name }}</td>
+                                        <td>{{ data.area_name }}</td>
+                                        <td>{{ data.subarea_name }}</td>
+                                        <td>{{ data.commune_name }}</td>
+                                        <td>{{ data.user_fullname }}</td>
+                                        <td>
+                                            --
+                                        </td>
+                                        <td>
+                                            --
+                                        </td>
+                                        <td>
+                                            <div class="dropdown table-action">
+                                                <a href="javascript:void(0);" class="action-icon"
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fa fa-ellipsis-v"></i>
+                                                </a>
+                                                <div class="dropdown-menu dropdown-menu-right">
+                                                    <a class="dropdown-item" data-bs-toggle="offcanvas"
+                                                        (click)="findValueLocal(data.id!)"
+                                                        data-bs-target="#offcanvas_pos" href="javascript:void(0);">
+                                                        <i class="ti ti-eye text-blue"></i>
+                                                        Visibility
+                                                    </a>
+                                                    <a class="dropdown-item" href="javascript:void(0);"
+                                                        data-bs-toggle="modal" (click)="findValueLocal(data.id!)"
+                                                        data-bs-target="#delete_route_plan">
+                                                        <i class="ti ti-trash text-danger"></i>
+                                                        Delete
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    }
+                                    }
+
+                                    @for (data of dataSource.data; track $index) {
+                                    <tr class="odd">
+                                        <td>
+                                            <span class="badge bg-success text-white">
+                                                <i class="ti ti-check"></i>
+                                            </span>
+                                        </td>
+                                        <td>{{ data.CreatedAt | date: 'dd/MM/YYYY HH:mm' }}</td>
+                                        <td>@if (data.Country) {
+                                            {{ data.Country!.name }}
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (data.Province) {
+                                            {{ data.Province!.name }}
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (data.Area) {
+                                            {{ data.Area!.name }}
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (data.Subarea) {
+                                            {{ data.Subarea!.name }}
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (data.Commune) {
+                                            {{ data.Commune!.name }}
+                                            }
+                                        </td>
+                                        <td>{{ data.User!.fullname }}</td>
+                                        <td
+                                            style="background-color: rgba(255, 0, 0, 0.173); font-size: larger; text-align: center;">
+                                            <a [routerLink]="['/web/pos/pos-list']">
+                                                {{ getRoutePlanItemTrueCount(data.RoutePlanItems!) }} / {{
+                                                getRoutePlanItemCount(data.RoutePlanItems!) }}
+                                            </a>
+                                        </td>
+                                        <td
+                                            style="background-color: rgba(0, 136, 255, 0.173); font-size: larger; text-align: center;">
+                                            <a [routerLink]="['/web/pos/pos-list']">
+                                                <ng-container
+                                                    *ngIf="+getRoutePlanItemTrueCount(data.RoutePlanItems!) > 1 && +getRoutePlanItemCount(data.RoutePlanItems!) > 1; else zeroPercent">
+                                                    {{ ((+getRoutePlanItemTrueCount(data.RoutePlanItems!) /
+                                                    +getRoutePlanItemCount(data.RoutePlanItems!)) * 100) |
+                                                    number:'1.0-2' }} %
+                                                </ng-container>
+                                                <ng-template #zeroPercent>
+                                                    0 %
+                                                </ng-template>
+                                            </a>
+                                        </td>
+                                        <td>
+                                            <div class="dropdown table-action">
+                                                <a href="javascript:void(0);" class="action-icon"
+                                                    data-bs-toggle="dropdown" aria-expanded="false">
+                                                    <i class="fa fa-ellipsis-v"></i>
+                                                </a>
+                                                <div class="dropdown-menu dropdown-menu-right">
+                                                    <a class="dropdown-item" data-bs-toggle="offcanvas"
+                                                        (click)="findValue(data.uuid)" data-bs-target="#offcanvas_api"
+                                                        href="javascript:void(0);"><i class="ti ti-eye text-blue"></i>
+                                                        Visibility
+                                                    </a>
+
+                                                    @if(currentUser.permission === 'ALL' ||
+                                                    currentUser.permission === 'VED') {
+                                                    <a class="dropdown-item" href="javascript:void(0);"
+                                                        (click)="findValue(data.uuid)" data-bs-toggle="modal"
+                                                        data-bs-target="#delete_contact"><i
+                                                            class="ti ti-trash text-danger"></i> Delete
+                                                    </a>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <mat-paginator [length]="total_records" [pageSize]="page_size"
+                            [pageSizeOptions]="[15, 20, 30, 40, 50, 80, 100]" showFirstLastButtons
+                            (page)="onPageChange($event)" aria-label="Select page">
+                        </mat-paginator>
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="datatable-length"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="datatable-paginate"></div>
+                            </div>
+                        </div>
+                        <!-- /Projects List -->
+                    </div>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Page Wrapper -->
+
+<!-- Liste RoutePLAnItem local -->
+<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_pos">
+    <div class="offcanvas-header border-bottom">
+        <h4>Liste des Points de vente</h4>
+        <button type="button"
+            class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle"
+            data-bs-dismiss="offcanvas" aria-label="Close">
+            <i class="ti ti-x"></i>
+        </button>
+    </div>
+    <div class="offcanvas-body">
+        <!-- Forms Task List -->
+        <div class="" style="background-color: aliceblue; padding: 10px;">
+
+            <div class="tasks-activity tasks collapse show" id="forms">
+                <form [formGroup]="formGroup" (ngSubmit)="onSubmitItem()">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="mb-3">
+                                <label class="col-form-label" for="text">POS <span class="text-danger">*</span></label>
+                                <input #pos_uuid type="text" matInput formControlName="pos_uuid"
+                                    [matAutocomplete]="autopos1" placeholder="Selectionner le POS" class="form-control"
+                                    (input)="getAllPos(currentUser)" (focus)="getAllPos(currentUser)">
+                                @if (isload) {
+                                <div class="d-flex align-items-center">
+                                    <strong role="status">Loading...</strong>
+                                    <div class="spinner-border ms-auto" aria-hidden="true"></div>
+                                </div>
+                                }
+                                <mat-autocomplete requireSelection #autopos1="matAutocomplete"
+                                    (optionSelected)="optionSelected($event)" [displayWith]="displayFn">
+                                    @for (item of filteredOptions; track item) {
+                                    <mat-option [value]="item">{{item.name}} | {{item.shop}}</mat-option>
+                                    }
+                                </mat-autocomplete>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-end">
+                        <button type="button" data-bs-dismiss="offcanvas" class="btn btn-light me-2">Annuler</button>
+                        @if (isLoadingItem) {
+                        <button disabled class="btn btn-primary">
+                            <div class="spinner-border" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </button>
+                        } @else {
+                        <button type="submit" class="btn btn-primary">Soumettre</button>
+                        }
+                    </div>
+                </form>
+            </div>
+        </div>
+        <!-- /Forms Task List -->
+
+
+        <!-- Pos List -->
+        <div class="task-wrapper">
+            <a href="javascript:void(0);" class="task-accordion" data-bs-toggle="collapse" data-bs-target="#recent">
+                <h4>Vos POS
+                    <span>{{ dataListLocalItem.length }}</span>
+                    <span class="bg-success">
+                        {{ dataItem ? getRoutePlanItemTrueCount(dataItem.RoutePlanItems!) : 0 }}</span>
+                </h4>
+            </a>
+            <div class="tasks-activity tasks collapse show" id="recent">
+                <ul>
+                    @for (item of dataListLocalItem; track $index) {
+                    <li class="task-wrap pending">
+                        <div class="task-info">
+                            <span class="task-icon"><i class="ti ti-grip-vertical"></i></span>
+                            <div class="task-checkbox">
+                                <label class="checkboxs">
+                                    <input type="checkbox" [checked]="item.status" readonly />
+                                    <span class="checkmarks"></span>
+                                </label>
+                            </div>
+                            <p>{{ item.pos_shop }} | {{ item.postype }}</p> <br>
+                            <p>{{ item.pos_name }} | {{ item.pos_gerant }}</p>
+                        </div>
+                        <div class="task-actions">
+                            <ul>
+                                <li class="task-owner">
+                                    <div class="dropdown table-action">
+                                        <a href="javascript:void(0);" class="action-icon" data-bs-toggle="dropdown"
+                                            aria-expanded="false">
+                                            <i class="fa fa-ellipsis-v"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right">
+                                            <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal"
+                                                (click)="findValueRoutePlanItemLocal(item.id!)"
+                                                data-bs-target="#delete_route_plan_item"><i
+                                                    class="ti ti-trash text-danger"></i>
+                                                Delete
+                                            </a>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    }
+                </ul>
+            </div>
+        </div>
+        <!-- /Pos List -->
+    </div>
+</div>
+<!-- /Liste RoutePLAnItem local -->
+
+<!-- Liste RoutePlanItem API -->
+<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_api">
+    <div class="offcanvas-header border-bottom">
+        <h4>Liste des Points de ventes</h4>
+        <button type="button"
+            class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle"
+            data-bs-dismiss="offcanvas" aria-label="Close">
+            <i class="ti ti-x"></i>
+        </button>
+    </div>
+    <div class="offcanvas-body">
+        <!-- Pos List -->
+        @if (dataItem) {
+        <div class="task-wrapper">
+            <a href="javascript:void(0);" class="task-accordion" data-bs-toggle="collapse" data-bs-target="#recent">
+                <h4>Vos POS
+                    <span>{{ dataItem.RoutePlanItems!.length }}</span>
+                    <span class="bg-success">
+                        {{ getRoutePlanItemTrueCount(dataItem.RoutePlanItems!) }}</span>
+                </h4>
+            </a>
+            <div class="tasks-activity tasks collapse show" id="recent">
+                <ul>
+                    @for (item of dataItem.RoutePlanItems!; track $index) {
+                    <li class="task-wrap pending">
+                        <div class="task-info">
+                            <span class="task-icon"><i class="ti ti-grip-vertical"></i></span>
+                            <div class="task-checkbox">
+                                <label class="checkboxs">
+                                    <input type="checkbox" [checked]="item.status" readonly />
+                                    <span class="checkmarks"></span>
+                                </label>
+                            </div>
+                            <p>{{ item.pos_shop }} | {{ item.postype }}</p> <br>
+                            <p>{{ item.pos_name }} | {{ item.pos_gerant }}</p>
+                        </div>
+                        <div class="task-actions">
+                            <ul>
+                                <li class="task-owner">
+                                    <div class="dropdown table-action">
+                                        <a href="javascript:void(0);" class="action-icon" data-bs-toggle="dropdown"
+                                            aria-expanded="false">
+                                            <i class="fa fa-ellipsis-v"></i>
+                                        </a>
+                                        <div class="dropdown-menu dropdown-menu-right">
+                                            <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal"
+                                                (click)="findValueRoutePlanItemLocal(item.id!)"
+                                                data-bs-target="#delete_route_plan_item"><i
+                                                    class="ti ti-trash text-danger"></i>
+                                                Delete
+                                            </a>
+                                        </div>
+                                    </div>
+                                </li>
+                            </ul>
+                        </div>
+                    </li>
+                    }
+                </ul>
+            </div>
+        </div>
+        }
+        <!-- /Pos List -->
+    </div>
+</div>
+<!-- /Liste RoutePlanItem API -->
+
+
+
+<!-- create routeplan User -->
+<div class="modal fade" id="create_routeplan" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="text-center">
+                    <div class="avatar avatar-xl bg-success-light rounded-circle mb-3">
+                        <i class="ti ti-map-pin fs-36 text-success"></i>
+                    </div>
+                    <h4 class="mb-2">Voulez-vous créer un RoutePlan ?</h4>
+                    <p class="mb-0">Cette action vous permet de créer le plan de route valide pendant 24h.</p>
+                    <div class="d-flex align-items-center justify-content-center mt-4">
+                        <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="modal">Annuler</a>
+                        <button (click)="onSubmit()" class="btn btn-success" data-bs-dismiss="modal">
+                            Oui, faites-le
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /create routeplan User -->
+
+
+<!-- Delete routePlan -->
+<div class="modal fade" id="delete_contact" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="text-center">
+                    <div class="avatar avatar-xl bg-danger-light rounded-circle mb-3">
+                        <i class="ti ti-trash-x fs-36 text-danger"></i>
+                    </div>
+                    <h4 class="mb-2">Supprimer l'article ?</h4>
+                    <p class="mb-0">Êtes-vous sûr de vouloir le supprimer ?</p>
+                    <div class="d-flex align-items-center justify-content-center mt-4">
+                        <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="modal">Annuler</a>
+                        <button (click)="delete()" class="btn btn-danger" data-bs-dismiss="modal">
+                            Oui, Supprimer le
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Delete routePlan -->
+
+<!-- Delete RoutePlan -->
+<div class="modal fade" id="delete_route_plan" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="text-center">
+                    <div class="avatar avatar-xl bg-danger-light rounded-circle mb-3">
+                        <i class="ti ti-trash-x fs-36 text-danger"></i>
+                    </div>
+                    <h4 class="mb-2">Supprimer le pos de la liste?</h4>
+                    <p class="mb-0">Êtes-vous sûr de vouloir le supprimer ?</p>
+                    <div class="d-flex align-items-center justify-content-center mt-4">
+                        <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="modal">Annuler</a>
+                        <button (click)="deletRouteplan()" class="btn btn-danger" data-bs-dismiss="modal">
+                            Oui, Supprimer le
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Delete RoutePlan -->
+
+<!-- Delete RoutePlanItem -->
+<div class="modal fade" id="delete_route_plan_item" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body">
+                <div class="text-center">
+                    <div class="avatar avatar-xl bg-danger-light rounded-circle mb-3">
+                        <i class="ti ti-trash-x fs-36 text-danger"></i>
+                    </div>
+                    <h4 class="mb-2">Supprimer le pos de la liste?</h4>
+                    <p class="mb-0">Êtes-vous sûr de vouloir le supprimer ?</p>
+                    <div class="d-flex align-items-center justify-content-center mt-4">
+                        <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="modal">Annuler</a>
+                        <button (click)="deletRouteplanItem()" class="btn btn-danger" data-bs-dismiss="modal">
+                            Oui, Supprimer le
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- /Delete RoutePlanItem -->

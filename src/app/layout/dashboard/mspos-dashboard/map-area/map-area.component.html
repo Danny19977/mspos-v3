@@ -1,0 +1,147 @@
+<div class="card-header border-0 pb-0">
+    <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
+        <h4><i class="ti ti-grip-vertical me-1"></i>Share of Stock Map</h4>
+    </div>
+    <div class="card-body">
+        @if (isLoading) {
+        <div class=" text-center d-flex justify-content-center align-items-center ">
+            <div class="spinner-border bs-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+        } @else {
+
+        <div id="leadpiechart">
+            <div class="map-container">
+
+                <img src="img/map.png" alt="Map" class="map-image">
+
+                <!-- [ngStyle]="{'top': marker1Top + '%', 'left': marker1Left + '%'}" -->
+                <div [ngStyle]="{'width': scaleKongoCentral + 'px', 'height': scaleKongoCentral + 'px'}"
+                    class="map-marker marker-1" [tooltip]="toolTip('Kongo Central', scaleKongoCentral)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleKinshasa + 'px', 'height': scaleKinshasa + 'px'}"
+                    class="map-marker marker-2" [tooltip]="toolTip('Kinshasa', scaleKinshasa)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleMaiNdombe + 'px', 'height': scaleMaiNdombe + 'px'}"
+                    class="map-marker marker-3" [tooltip]="toolTip('Mai-Ndombe', scaleMaiNdombe)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleKwango + 'px', 'height': scaleKwango + 'px'}" class="map-marker marker-4"
+                    [tooltip]="toolTip('Kwango', scaleKwango)" routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleKwilu + 'px', 'height': scaleKwilu + 'px'}" class="map-marker marker-5"
+                    [tooltip]="toolTip('Kwilu', scaleKwilu)" routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleKasai + 'px', 'height': scaleKasai + 'px'}" class="map-marker marker-6"
+                    [tooltip]="toolTip('Kasai', scaleKasai)" routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleKasaiCentral + 'px', 'height': scaleKasaiCentral + 'px'}"
+                    class="map-marker marker-7" [tooltip]="toolTip('Kasai-Central', scaleKasaiCentral)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleKasaiOriental + 'px', 'height': scaleKasaiOriental + 'px'}"
+                    class="map-marker marker-8" [tooltip]="toolTip('Kasai-Oriental', scaleKasaiOriental)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleLomami + 'px', 'height': scaleLomami + 'px'}" class="map-marker marker-9"
+                    [tooltip]="toolTip('Lomami', scaleLomami)" routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleLualaba + 'px', 'height': scaleLualaba + 'px'}"
+                    class="map-marker marker-10" [tooltip]="toolTip('Lualaba', scaleLualaba)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleHautLomami + 'px', 'height': scaleHautLomami + 'px'}"
+                    class="map-marker marker-11" [tooltip]="toolTip('Haut-Lomami', scaleHautLomami)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleHautKatanga + 'px', 'height': scaleHautKatanga + 'px'}"
+                    class="map-marker marker-12" [tooltip]="toolTip('Haut-Katanaga', scaleHautKatanga)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleTanganyka + 'px', 'height': scaleTanganyka + 'px'}"
+                    class="map-marker marker-13" [tooltip]="toolTip('Tanganyka', scaleTanganyka)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleSudKivu + 'px', 'height': scaleSudKivu + 'px'}"
+                    class="map-marker marker-14" [tooltip]="toolTip('Sud-Kivu', scaleSudKivu)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleManiema + 'px', 'height': scaleManiema + 'px'}"
+                    class="map-marker marker-15" [tooltip]="toolTip('Maniema', scaleManiema)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleNordKivu + 'px', 'height': scaleNordKivu + 'px'}"
+                    class="map-marker marker-16" [tooltip]="toolTip('Nord-Kivu', scaleNordKivu)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleIturi + 'px', 'height': scaleIturi + 'px'}" class="map-marker marker-17"
+                    [tooltip]="toolTip('Ituri', scaleIturi)" routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleHautUele + 'px', 'height': scaleHautUele + 'px'}"
+                    class="map-marker marker-18" [tooltip]="toolTip('Haut-Uele', scaleHautUele)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleTshiopo + 'px', 'height': scaleTshiopo + 'px'}"
+                    class="map-marker marker-19" [tooltip]="toolTip('Tshiopo', scaleTshiopo)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleTshuapa + 'px', 'height': scaleTshuapa + 'px'}"
+                    class="map-marker marker-20" [tooltip]="toolTip('Tshuapa', scaleTshuapa)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleSunkuru + 'px', 'height': scaleSunkuru + 'px'}"
+                    class="map-marker marker-21" [tooltip]="toolTip('Sunkuru', scaleSunkuru)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleEquateur + 'px', 'height': scaleEquateur + 'px'}"
+                    class="map-marker marker-22" [tooltip]="toolTip('Equateur', scaleEquateur)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleMongala + 'px', 'height': scaleMongala + 'px'}"
+                    class="map-marker marker-23" [tooltip]="toolTip('Mongala', scaleMongala)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleNordUbungi + 'px', 'height': scaleNordUbungi + 'px'}"
+                    class="map-marker marker-24" [tooltip]="toolTip('Nord-Ubungi', scaleNordUbungi)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleSudUbangi + 'px', 'height': scaleSudUbangi + 'px'}"
+                    class="map-marker marker-25" [tooltip]="toolTip('Sud-Ubangi', scaleSudUbangi)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+
+
+                <div [ngStyle]="{'width': scaleBasUele + 'px', 'height': scaleBasUele + 'px'}"
+                    class="map-marker marker-26" [tooltip]="toolTip('Bas-Uele', scaleBasUele)"
+                    routerLink="/web/dashboard/share-of-stock"></div>
+            </div>
+        </div>
+        }
+    </div>
+</div>

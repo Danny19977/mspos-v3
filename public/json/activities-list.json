@@ -1,0 +1,93 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "title": "We scheduled a meeting for next week",
+      "due_date": "25 Sep 2023, 12:12 pm",
+      "owner": "Hendry",
+      "created_date": "22 Sep 2023, 10:14 am",
+      "status": "Meeting"
+    },
+    {
+      "id": 2,
+      "title": "Had conversation with Fred regarding task",
+      "due_date": "29 Sep 2023, 04:12 pm",
+      "owner": "Monty Beer",
+      "created_date": "27 Sep 2023, 03:26 pm",
+      "status": "Calls"
+    },
+    {
+      "id": 3,
+      "title": "Analysing latest time estimation for new project",
+      "due_date": "11 Oct 2023, 05:00 pm",
+      "owner": "Bradtke",
+      "created_date": "03 Oct 2023, 03:53 pm",
+      "status": "Email"
+    },
+    {
+      "id": 4,
+      "title": "Store and manage contact data",
+      "due_date": "19 Oct 2023, 02:35 pm",
+      "owner": "Swaniawski",
+      "created_date": "14 Oct 2023, 01:25 pm",
+      "status": "Task"
+    },
+    {
+      "id": 5,
+      "title": "Will have a meeting before project start",
+      "due_date": "27 Oct 2023, 12:30 pm",
+      "owner": "Sally",
+      "created_date": "21 Oct 2023, 03:00 pm",
+      "status": "Meeting"
+    },
+    {
+      "id": 6,
+      "title": "Call John and discuss about project",
+      "due_date": "12 Nov 2023, 10:20 pm",
+      "owner": "Itzel",
+      "created_date": "02 Nov 2023, 05:35 pm",
+      "status": "Calls"
+    },
+    {
+      "id": 7,
+      "title": "Built landing pages",
+      "due_date": "25 Nov 2023, 01:40 pm",
+      "owner": "Danny",
+      "created_date": "20 Nov 2023, 08:20 am",
+      "status": "Task"
+    },
+    {
+      "id": 8,
+      "title": "Regarding latest updates in project",
+      "due_date": "30 Nov 2023, 09:20 pm",
+      "owner": " Lynch",
+      "created_date": "25 Nov 2023, 07:20 pm",
+      "status": "Email"
+    },
+    {
+      "id": 9,
+      "title": "Discussed budget proposal with Edwin",
+      "due_date": "08 Dec 2023, 04:35 pm",
+      "owner": "Merwin",
+      "created_date": "01 Dec 2023, 10:45 am",
+      "status": "Calls"
+    },
+    {
+      "id": 10,
+      "title": "Attach final proposal for upcoming project",
+      "due_date": "19 Dec 2023, 02:20 pm",
+      "owner": " Andrew",
+      "created_date": "10 Dec 2023, 06:30 pm",
+      "status": "Email"
+    },
+    {
+      "id": 11,
+      "title": "Discussed budget proposal with Edwin",
+      "due_date": "26 Dec 2023, 08:30 am",
+      "owner": "Clausen",
+      "created_date": "18 Dec 2023, 05:00 pm",
+      "status": "Calls"
+    }
+  ],
+  "totalData": 11
+}

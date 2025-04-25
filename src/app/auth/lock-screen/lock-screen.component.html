@@ -1,0 +1,53 @@
+<div class="account-content">
+    <div class="d-flex flex-wrap w-100 vh-100 overflow-hidden">
+        <div class="d-flex align-items-center justify-content-center flex-fill flex-wrap vh-100 overflow-auto">
+            <div class="login-shapes">
+                <div class="login-right-shape">
+                    <img src="img/authentication/shape-01.png" alt="Shape">
+                </div>
+                <div class="login-left-shape">
+                    <img src="img/authentication/shape-02.png" alt="Shape"> 
+                </div> 
+            </div>
+            @if (currentUser) {
+                <div class="container">
+                    <div class="row justify-content-center">
+                        <div class="col-md-5">
+                            <div class="login-content user-login">
+                                <div class="text-center mb-4">
+                                <img src="img/logo.png" class="img-fluid" alt="Logo">
+                            </div>
+                                <form >
+                                    <div class="card border p-sm-3">
+                                        <div class="card-body p-4">
+                                            <div class="text-center">
+                                                <p class="text-default mb-3">Bienvenue!</p>
+                                                <div class="mb-3">
+                                                    <span class="avatar avatar-xxxl rounded-circle mb-4">
+                                                        <img src="img/profiles/avatar-14.jpg" class="img-fluid rounded-circle" alt="Profile"> 
+                                                    </span>
+                                                    <h5 class="fs-18 fw-semibold">{{ currentUser.fullname }}</h5>
+                                                </div>
+                                            </div> 
+                                            <div class="mb-3">
+                                                <button class="btn btn-primary w-100" (click)="navigate()">Continuez</button>
+                                            </div>
+                                            <div class="mb-0">
+                                                <button class="btn btn-outline-primary w-100" (click)="authService.logout()">Deconnectez-vous</button>
+                                            </div>
+                                        </div>
+                                </div>
+                                </form>
+                            </div> 
+                            <div class="text-center">
+                                <p class="fw-medium text-gray">Copyright &copy; 2025 - MSPOS</p>
+                            </div>
+                        </div>
+                    </div>
+                
+                </div>
+            }
+            
+        </div>
+    </div>
+</div>

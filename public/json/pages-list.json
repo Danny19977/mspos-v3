@@ -1,0 +1,52 @@
+{
+    "data": [
+        {
+            "id": 1,
+            "title": "Categories",
+            "language": "English",
+            "location": "Top Menu",
+            "status": "1",
+            "created_date": "30 Sep 2023"
+        },
+        {
+            "id": 2,
+            "title": "Blog",
+            "language": "English",
+            "location": "Top Menu",
+            "status": "1",
+            "created_date": "12 Oct 2023"
+        },
+        {
+            "id": 3,
+            "title": "About Us",
+            "language": "English",
+            "location": "Top Menu",
+            "status": "1",
+            "created_date": "17 Oct 2023"
+        },
+        {
+            "id": 4,
+            "title": "Contact Us",
+            "language": "English",
+            "location": "Quick Links",
+            "status": "1",
+            "created_date": "28 Oct 2023"
+        },
+        {
+            "id": 5,
+            "title": "Categories",
+            "language": "English",
+            "location": "Top Menu",
+            "status": "1",
+            "created_date": "30 Sep 2023"
+        },
+        {
+            "id": 6,
+            "title": "Categories",
+            "language": "English",
+            "location": "Top Menu",
+            "status": "1",
+            "created_date": "30 Sep 2023"
+        }
+    ]
+}

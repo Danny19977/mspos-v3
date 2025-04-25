@@ -1,0 +1,34 @@
+{
+  "data": [
+    {
+      "medium": "Web",
+      "file": "Inventory",
+      "total": "3481",
+      "done": "2861",
+      "progress": "80%"
+    },
+    {
+      "medium": "Web",
+      "file": "Expense",
+      "total": "4815",
+      "done": "4815",
+      "progress": "100%",
+      "status": "Inactive"
+    },
+    {
+      "medium": "Web",
+      "file": "Product",
+      "total": "2590", 
+      "done": "250",
+      "progress": "5%"
+    },
+    {
+      "medium": "Web",
+      "file": "Settings",
+      "total": "1892",
+      "done": "387",
+      "progress": "40%"
+    }
+  ],
+  "totalData": 4
+}

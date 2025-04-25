@@ -1,0 +1,47 @@
+{
+	"data":[
+		{
+			"id" : 1,
+			"deal_name" : "Collins",
+			"stage" : "Conversation",
+			"deal_value" : "$04,51,000",
+			"probability" : "85%",
+			"status" : "1"
+		},
+		{
+			"id" : 2,
+			"deal_name" : "Konopelski",
+			"stage" : "Pipeline",
+			"deal_value" : "$14,51,000",
+			"probability" : "56%",
+			"status" : "2"
+		},
+		{
+			"id" : 3,
+			"deal_name" : "Adams",
+			"stage" : "Won",
+			"deal_value" : "$12,51,000",
+			"probability" : "15%",
+			"status" : ""
+		},
+		{
+			"id" : 4,
+			"deal_name" : "Schumm",
+			"stage" : "Lost",
+			"deal_value" : "$51,000",
+			"probability" : "45%",
+			"status" : "1"
+		},
+		{
+			"id" : 5,
+			"deal_name" : "Wisozk",
+			"stage" : "Follow Up",
+			"deal_value" : "$67,000",
+			"probability" : "5%",
+			"status" : "2"
+		}
+
+	]
+	
+}
+

@@ -1,0 +1,121 @@
+{
+	"data":[
+		{
+			"id" : 1,
+			"si_no" : "",
+			"select" : "",
+            "city_name" : "Gandzasar",
+			"country_name" : "American Samosa(+684)",
+			"country_image":"img/flags/as.png",
+			"state_name": "Swains Island",
+			"isStarFilled": false,
+			"Action" : ""
+		},
+		{
+			"id" : 2,
+			"si_no" : "",
+			"select" : "",
+            "city_name" : "Escaldes-Engordany",
+			"country_name" : "Andorra(+376)",
+			"country_image":"img/flags/ad.png",
+			"state_name": "Andorra la Vella",
+			"isStarFilled": false,
+			"Action" : ""
+			
+		},
+		{
+			"id" : 3,
+			"si_no" : "",
+			"select" : "",
+            "city_name" : "Chissamba",
+			"country_name" : "Angola(+244)",
+			"country_image":"img/flags/ao.png",
+			"state_name": "Benguella",
+			"isStarFilled": false,
+			"Action" : ""
+		},
+		{
+			"id" : 4,
+			"si_no" : "",
+			"select" : "",
+            "city_name" : "Illinois",
+			"country_name" : "Angulila(+1264)",
+			"country_image":"img/flags/ai.png",
+			"state_name": "The Valley",
+			"isStarFilled": false,
+			"Action" : ""
+		},
+		{
+			"id" : 5,
+			"si_no" : "",
+			"select" : "",
+			"city_name" : "Melbourne",
+			"country_name" : "Antartica(+672)",
+			"country_image":"img/flags/qa.png",
+			"state_name": "Victoria Land",
+			"isStarFilled": false,
+			"Action" : ""
+		},
+		{
+			"id" : 6,
+			"si_no" : "",
+			"select" : "",
+			"city_name" : "Maplewood",
+			"country_name" : "Antigua & Barbuda(+1268)",
+			"country_image":"img/flags/ag.png",
+			"state_name": "Saint Paul",
+			"isStarFilled": false,
+			"Action" : ""
+		},
+		{
+			"id" : 7,
+			"si_no" : "",
+			"select" : "",
+			"city_name" : "Rosario",
+			"country_name" : "Argentina(+54)",
+			"country_image":"img/flags/ar.png",
+			"state_name": "Santa Fe",
+			"isStarFilled": false,
+			"Action" : ""
+		},
+		{
+			"id" : 8,
+			"si_no" : "",
+			"select" : "",
+			"city_name" : "Atherton",
+			"country_name" : "Australia(+61)",
+			"country_image":"img/flags/au.png",
+			"state_name": "Queensland",
+			"isStarFilled": false,
+			"Action" : ""
+		},
+		{
+			"id" : 9,
+			"si_no" : "",
+			"select" : "",
+			"city_name" : "Mayrhofen",
+			"country_name" : "Austria(+43)",
+			"country_image":"img/flags/at.png",
+			"state_name": "Tyrol",
+			"isStarFilled": false,
+			"Action" : ""
+		}
+		,
+		{
+			"id" : 10,
+			"si_no" : "",
+			"select" : "",
+			"city_name" : "Askeran",
+			"country_name" : "Azerbaijan(+994)",
+			"country_image":"img/flags/az.png",
+			"state_name": "Karabakh",
+			"isStarFilled": false,
+			"Action" : ""
+		}
+		
+		
+	],
+	"totalData": 10
+	
+}
+

@@ -1,0 +1,17 @@
+{
+	"data":[
+		{
+			"id" : 1,
+			"customer_no" :"1245667",
+			"registered_on" : "01 Jan 2024",
+			"customer_image" : "img/users/user-01.jpg",
+			"customer_name" : "Mitchum Daniel",
+			"email" : "Printing",
+			"amount_due" : "$14,174",
+			"star" : "filled"
+			
+		}
+	]
+	
+}
+

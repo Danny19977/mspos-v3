@@ -1,0 +1,124 @@
+{
+	"data":[
+		{
+			"id" : "1",
+			"si_no" : "",
+			"star" : "",
+			"task_name" : "Add a form to Update Task",
+			"piority" : "High",
+			"start_date" : "25 Sep 2023",
+			"type" : "Calls",
+			"status" : "Inprogress",
+			"created_date" : "25 Sep 2023, 01:22 pm",
+			"img" : "img/profiles/avatar-14.jpg",
+			"assignee": "Adrian Davies"
+		},
+		{
+			"id" : "2",
+			"si_no" : "",
+			"star" : "",
+			"task_name" : "Make all strokes thinner",
+			"piority" : "Medium",
+			"start_date" : "29 Sep 2023",
+			"type" : "Meeting",
+			"status" : "Completed",
+			"created_date" : "29 Sep 2023, 04:15 pm",
+			"img" : "img/profiles/avatar-14.jpg",
+			"assignee": "Adrian Davies"
+		},
+		{
+			"id" : "3",
+			"si_no" : "",
+			"star" : "",
+			"task_name" : "Update orginal contentuelysell",
+			"piority" : "High",
+			"start_date" : "05 Oct 2023",
+			"type" : "Email",
+			"status" : "Inprogress",
+			"created_date" : "04 Oct 2023, 10:18 am",
+			"img" : "img/profiles/avatar-14.jpg",
+			"assignee": "Adrian Davies"
+		},
+		{
+			"id" : "4",
+			"si_no" : "",
+			"star" : "",
+			"task_name" : "Use only component colours",
+			"piority" : "Medium",
+			"start_date" : "14 Oct 2023",
+			"type" : "Meeting",
+			"status" : "Completed",
+			"created_date" : "17 Oct 2023, 03:31 pm",
+			"img" : "img/profiles/avatar-14.jpg",
+			"assignee": "Adrian Davies"
+		},
+		{
+			"id" : "5",
+			"si_no" : "",
+			"star" : "",
+			"task_name" : "Add images to the cards section",
+			"piority" : "Low",
+			"start_date" : "15 Nov 2023",
+			"type" : "Task",
+			"status" : "Inprogress",
+			"created_date" : "24 Oct 2023, 09:14 pm",
+			"img" : "img/profiles/avatar-14.jpg",
+			"assignee": "Adrian Davies"
+		},
+		{
+			"id" : "6",
+			"si_no" : "",
+			"star" : "",
+			"task_name" : "Design description banner & landing page",
+			"piority" : "High",
+			"start_date" : "25 Nov 2023",
+			"type" : "Calls",
+			"status" : "Completed",
+			"created_date" : "08 Nov 2023, 09:56 am",
+			"img" : "img/profiles/avatar-14.jpg",
+			"assignee": "Adrian Davies"
+		},
+		{
+			"id" : "7",
+			"si_no" : "",
+			"star" : "",
+			"task_name" : "Make sure all the padding should be 24px",
+			"piority" : "Low",
+			"start_date" : "08 Dec 2023",
+			"type" : "Email",
+			"status" : "Inprogress",
+			"created_date" : "14 Nov 2023, 04:19 pm",
+			"img" : "img/profiles/avatar-14.jpg",
+			"assignee": "Adrian Davies"
+		},
+		{
+			"id" : "8",
+			"si_no" : "",
+			"star" : "",
+			"task_name" : "Use border radius as 5px or 10 px",
+			"piority" : "Medium",
+			"start_date" : "21 Dec 2023",
+			"type" : "Task",
+			"status" : "Completed",
+			"created_date" : "23 Nov 2023, 11:14 pm",
+			"img" : "img/profiles/avatar-14.jpg",
+			"assignee": "Adrian Davies"
+		},
+		{
+			"id" : "9",
+			"si_no" : "",
+			"star" : "",
+			"task_name" : "Use Grey scale colors as body color",
+			"piority" : "Medium",
+			"start_date" : "21 Dec 2023",
+			"type" : "Meeting",
+			"status" : "Inprogress",
+			"created_date" : "10 Dec 2023, 06:43 am",
+			"img" : "img/profiles/avatar-14.jpg",
+			"assignee": "Adrian Davies"
+		}
+	],
+	"totalData": 9
+	
+}
+

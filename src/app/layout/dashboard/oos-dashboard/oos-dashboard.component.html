@@ -1,0 +1,108 @@
+<div class="page-wrapper">
+    <div class="content">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="page-header">
+            <div class="row align-items-center">
+              <div class="col-md-4">
+                <h3 class="page-title">OUT OF STOCK</h3>
+              </div>
+              <div class="col-md-8 float-end ms-auto">
+                @if (this.currentUser) {
+                  <form [formGroup]="dateRange">
+                    <div class="d-flex title-head">
+                      <div class="daterange-picker d-flex align-items-center justify-content-center">
+                        <div class="card mb-0">
+                          @if (this.currentUser.role != 'ASM') {
+                          <mat-select class="select custom-mat-select" placeholder="Select province"
+                            formControlName="province">
+                            @for (item of provinceDropdownList; track item) {
+                            <mat-option [value]="item">{{item.name}}</mat-option>
+                            }
+                          </mat-select>
+                          }
+                        </div>
+                        <div class="card m-2">
+                          <mat-select class="select custom-mat-select" placeholder="Select area" formControlName="area">
+                            @for (item of areaListFilter; track item) {
+                            <mat-option [value]="item">{{item.name}}</mat-option>
+                            }
+                          </mat-select>
+                        </div>
+                        <div class="form-sort me-2">
+                          <i class="ti ti-calendar"></i>
+                          <input type="text" class="form-control date-range bookingrange" bsDaterangepicker
+                            [bsConfig]="{ adaptivePosition: true }" formControlName="rangeValue" />
+                        </div>
+                        <div class="head-icons mb-0">
+                          <app-reload></app-reload>
+                          <app-collapse-header></app-collapse-header>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                } 
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-6 d-flex">
+          <div class="card flex-fill">
+            <div class="card-header border-0 pb-0">
+              <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
+                <h4><i class="ti ti-grip-vertical me-1"></i>OOS Average by area</h4> 
+              </div>
+            </div>
+            <div class="card-body">
+              <app-oos-average-area [isLoading]="isLoading" [averageAreaList]="averageAreaList" [areaCount]="areaCount"> 
+              </app-oos-average-area>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6 d-flex">
+          <div class="card flex-fill">
+            <div class="card-header border-0 pb-0">
+              <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
+                <h4><i class="ti ti-grip-vertical me-1"></i>Performances Area brand Equateur</h4>
+              </div>
+            </div>
+            <div class="card-body">
+              <app-oos-performance-area [isLoading]="isLoading" [performanceAreaList]="performanceAreaList"></app-oos-performance-area>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+  
+      <div class="row">
+        <div class="col-md-12 d-flex">
+          <div class="card w-100">
+            <div class="card-header border-0 pb-0">
+              <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
+                <h4><i class="ti ti-grip-vertical me-1"></i>OOS Table view </h4>
+              </div>
+            </div>
+            <div class="card-body">
+              <app-oos-table-view [isLoading]="isLoading" [tableView]="tableViewList"></app-oos-table-view>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <div class="row">
+        <div class="col-md-12 d-flex">
+          <div class="card w-100">
+            <div class="card-header border-0 pb-0">
+              <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
+                <h4><i class="ti ti-grip-vertical me-1"></i>OOS by Year</h4>
+              </div>
+            </div>
+            <div class="card-body">
+              <app-oos-by-year [isLoading]="isLoading" [oosYear]="ndYearList"></app-oos-by-year>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>

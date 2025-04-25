@@ -1,0 +1,85 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "customer_name": "Darlee Robertson",
+      "customer_image": "img/profiles/avatar-19.jpg",
+      "customer_no": "Facility Manager",
+      "created": "25 Sep 2023, 12:12 pm",
+      "delete_request": "25 Sep 2023, 12:12 pm"
+    },
+    {
+      "id": 2,
+      "customer_name": "Sharon Roy",
+      "customer_image": "img/profiles/avatar-20.jpg",
+      "customer_no": "Installer",
+      "created": "27 Sep 2023, 07:40 am",
+      "delete_request": "27 Sep 2023, 07:40 am"
+    },
+    {
+      "id": 3,
+      "customer_name": "Vaughan",
+      "customer_image": "img/profiles/avatar-21.jpg",
+      "customer_no": "Senior  Manager",
+      "created": "29 Sep 2023, 08:20 am",
+      "delete_request": "29 Sep 2023, 08:20 am"
+    },
+    {
+      "id": 4,
+      "customer_name": "Jessica",
+      "customer_image": "img/profiles/avatar-23.jpg",
+      "customer_no": "Test Engineer",
+      "created": "25 Sep 2023, 12:12 pm",
+      "delete_request": "25 Sep 2023, 12:12 pm"
+    },
+    {
+      "id": 5,
+      "customer_name": "Carol Thomas",
+      "customer_image": "img/profiles/avatar-16.jpg",
+      "customer_no": "UI /UX Designer",
+      "created": "02 Oct 2023, 10:10 am",
+      "delete_request": "02 Oct 2023, 10:10 am"
+    },
+    {
+      "id": 6,
+      "customer_name": "Dawn Mercha",
+      "customer_image": "img/profiles/avatar-22.jpg",
+      "customer_no": "Technician",
+      "created": "17 Oct 2023, 04:25 pm",
+      "delete_request": "17 Oct 2023, 04:25 pm"
+    },
+    {
+      "id": 7,
+      "customer_name": "Rachel Hampton",
+      "customer_image": "img/profiles/avatar-24.jpg",
+      "customer_no": "Software Developer",
+      "created": "28 Oct 2023, 07:16 am",
+      "delete_request": "28 Oct 2023, 07:16 am"
+    },
+    {
+      "id": 8,
+      "customer_name": "Jonelle Curtiss",
+      "customer_image": "img/profiles/avatar-25.jpg",
+      "customer_no": "Supervisor",
+      "created": "08 Nov 2023, 06:10 am",
+      "delete_request": "08 Nov 2023, 06:10 am"
+    },
+    {
+      "id": 9,
+      "customer_name": "Jonathan",
+      "customer_image": "img/profiles/avatar-26.jpg",
+      "customer_no": "Team Lead Dev",
+      "created": "15 Nov 2023, 11:50 am",
+      "delete_request": "15 Nov 2023, 11:50 am"
+    },
+    {
+      "id": 10,
+      "customer_name": "Brook",
+      "customer_image": "img/profiles/avatar-01.jpg",
+      "customer_no": "Team Lead Dev ",
+      "created": "25 Nov 2023, 06:34 pm",
+      "delete_request": "25 Nov 2023, 06:34 pm"
+    }
+  ],
+  "totalData": 10
+}

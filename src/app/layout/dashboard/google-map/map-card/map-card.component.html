@@ -1,0 +1,12 @@
+@if (isLoading) {
+<div class=" text-center d-flex justify-content-center align-items-center ">
+  <div class="spinner-border bs-primary" role="status">
+    <span class="visually-hidden">Loading...</span>
+  </div>
+</div>
+} @else {
+<google-map height="600px" width="1280px" [center]="center" [zoom]="zoom">
+  <map-marker *ngFor="let marker of markers" [position]="marker">
+  </map-marker>
+</google-map>
+}

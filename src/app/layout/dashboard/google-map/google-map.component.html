@@ -1,0 +1,36 @@
+<div class="page-wrapper">
+  <div class="content">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="page-header">
+          <div class="row align-items-center">
+            <div class="col-md-4">
+              <h3 class="page-title">Map DR</h3>
+            </div>
+            <div class="col-md-8 float-end ms-auto">
+              <form [formGroup]="dateRange">
+                <div class="d-flex title-head">
+                  <div class="daterange-picker d-flex align-items-center justify-content-center">
+                    <div class="form-sort me-2">
+                      <i class="ti ti-calendar"></i>
+                      <input type="text" class="form-control date-range bookingrange" bsDaterangepicker
+                        [bsConfig]="{ adaptivePosition: true }"  formControlName="rangeValue" />
+                    </div>
+                    <div class="head-icons mb-0">
+                      <app-reload></app-reload>
+                      <app-collapse-header></app-collapse-header>
+                    </div> 
+                  </div>
+                </div>
+              </form> 
+            </div>
+          </div>
+        </div>
+      </div>
+    </div> 
+    
+    <app-map-card [isLoading]="isLoading" [googleMapList]="googleMapList"></app-map-card> 
+   
+    
+  </div>
+</div>

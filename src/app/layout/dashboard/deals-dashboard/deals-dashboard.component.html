@@ -1,0 +1,342 @@
+<div class="page-wrapper">
+  <div class="content">
+    <div class="row">
+      <div class="col-md-12">
+        <div class="page-header">
+          <div class="row align-items-center">
+            <div class="col-md-4">
+              <h3 class="page-title">Deals Dashboard</h3>
+            </div>
+            <div class="col-md-8 float-end ms-auto">
+              <div class="d-flex title-head">
+                <div class="daterange-picker d-flex align-items-center justify-content-center">
+                  <div class="form-sort me-2">
+                    <i class="ti ti-calendar"></i>
+                    <input type="text" class="form-control date-range bookingrange" bsDaterangepicker
+                      [bsConfig]="{ adaptivePosition: true }" [(ngModel)]="bsRangeValue" />
+                  </div>
+                  <div class="head-icons mb-0">
+                    <a [routerLink]="routes.msposDashboard" data-bs-toggle="tooltip" data-bs-placement="top"
+                      data-bs-original-title="Refresh" matTooltip="Refresh"><i class="ti ti-refresh-dot"></i></a>
+                    <app-collapse-header></app-collapse-header>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6 d-flex">
+        <div class="card flex-fill">
+          <div class="card-header border-0 pb-0">
+            <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
+              <h4><i class="ti ti-grip-vertical me-1"></i>Recently Created Deals</h4>
+              <div class="dropdown">
+                <a class="dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);">
+                  <i class="ti ti-calendar-check me-2"></i>Last 30 days
+                </a>
+                <div class="dropdown-menu dropdown-menu-end">
+                  <a href="javascript:void(0);" class="dropdown-item">
+                    Last 15 days
+                  </a>
+                  <a href="javascript:void(0);" class="dropdown-item">
+                    Last 30 days
+                  </a>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div class="card-body">
+
+            <div class="table-responsive custom-table">
+              <table class="table dataTable" id="deals-project">
+                <thead class="thead-light">
+                  <tr>
+                    <th>Deal Name</th>
+                    <th>Stage</th>
+                    <th>Deal Value</th>
+                    <th>Probability</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr class="odd">
+                    <td>Collins</td>
+                    <td>Conversation</td>
+                    <td>$04,51,000</td>
+                    <td>85%</td>
+                    <td>
+                      <span class="badge badge-pill bg-danger">Lost</span>
+                    </td>
+                  </tr>
+                  <tr class="even">
+                    <td>Konopelski</td>
+                    <td>Pipeline</td>
+                    <td>$14,51,000</td>
+                    <td>56%</td>
+                    <td>
+                      <span class="badge badge-pill bg-success">Won</span>
+                    </td>
+                  </tr>
+                  <tr class="odd">
+                    <td>Adams</td>
+                    <td>Won</td>
+                    <td>$12,51,000</td>
+                    <td>15%</td>
+                    <td>
+                      <span class="badge badge-pill bg-success">Won</span>
+                    </td>
+                  </tr>
+                  <tr class="even">
+                    <td>Schumm</td>
+                    <td>Lost</td>
+                    <td>$51,000</td>
+                    <td>45%</td>
+                    <td>
+                      <span class="badge badge-pill bg-danger">Lost</span>
+                    </td>
+                  </tr>
+                  <tr class="odd">
+                    <td>Wisozk</td>
+                    <td>Follow Up</td>
+                    <td>$67,000</td>
+                    <td>5%</td>
+                    <td>
+                      <span class="badge badge-pill bg-success">Won</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 d-flex">
+        <div class="card flex-fill">
+          <div class="card-header border-0 pb-0">
+            <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
+              <h4><i class="ti ti-grip-vertical me-1"></i>Deals By Stage</h4>
+              <div class="d-flex align-items-center flex-wrap row-gap-2">
+                <div class="dropdown me-2">
+                  <a class="dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);">
+                    Sales Pipeline
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-end">
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Marketing Pipeline
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Sales Pipeline
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Email
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Chats
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Operational
+                    </a>
+                  </div>
+                </div>
+                <div class="dropdown">
+                  <a class="dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);">
+                    Last 30 Days
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-end">
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Last 30 Days
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Last 15 Days
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Last 7 Days
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="deals-chart">
+              <apx-chart [series]="chartOptions3.series" [chart]="chartOptions3.chart"
+                [dataLabels]="chartOptions3.dataLabels" [plotOptions]="chartOptions3.plotOptions"
+                [yaxis]="chartOptions3.yaxis" [xaxis]="chartOptions3.xaxis" [stroke]="chartOptions3.stroke"
+                [grid]="chartOptions3.grid" [fill]="chartOptions3.fill" [annotations]="chartOptions3.annotations"
+                [colors]="chartOptions3.colors"></apx-chart>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6 d-flex">
+        <div class="card flex-fill">
+          <div class="card-header border-0 pb-0">
+            <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
+              <h4><i class="ti ti-grip-vertical me-1"></i>Leads By Stage</h4>
+              <div class="d-flex align-items-center flex-wrap row-gap-2">
+                <div class="dropdown me-2">
+                  <a class="dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);">
+                    Marketing Pipeline
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-end">
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Marketing Pipeline
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Sales Pipeline
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Email
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Chats
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Operational
+                    </a>
+                  </div>
+                </div>
+                <div class="dropdown">
+                  <a class="dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);">
+                    Last 3 months
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-end">
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Last 3 months
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Last 6 months
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Last 12 months
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div id="last-chart">
+              <apx-chart [series]="chartOptions.series" [chart]="chartOptions.chart"
+                [dataLabels]="chartOptions.dataLabels" [plotOptions]="chartOptions.plotOptions"
+                [xaxis]="chartOptions.xaxis"></apx-chart>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6 d-flex">
+        <div class="card flex-fill">
+          <div class="card-header border-0 pb-0">
+            <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
+              <h4><i class="ti ti-grip-vertical me-1"></i>Won Deals Stage</h4>
+              <div class="d-flex align-items-center flex-wrap row-gap-2">
+                <div class="dropdown me-2">
+                  <a class="dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);">
+                    Marketing Pipeline
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-end">
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Marketing Pipeline
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Sales Pipeline
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Email
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Chats
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Operational
+                    </a>
+                  </div>
+                </div>
+                <div class="dropdown">
+                  <a class="dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);">
+                    Last 3 months
+                  </a>
+                  <div class="dropdown-menu dropdown-menu-end">
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Last 3 months
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Last 6 months
+                    </a>
+                    <a href="javascript:void(0);" class="dropdown-item">
+                      Last 12 months
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+
+            <div id="won-chart">
+              <apx-chart [series]="chartOptions2.series" [chart]="chartOptions2.chart"
+                [dataLabels]="chartOptions2.dataLabels" [plotOptions]="chartOptions2.plotOptions"
+                [xaxis]="chartOptions2.xaxis"></apx-chart>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-md-12 d-flex">
+          <div class="card w-100">
+            <div class="card-header border-0 pb-0">
+              <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
+                <h4><i class="ti ti-grip-vertical me-1"></i>Deals by Year</h4>
+                <div class="d-flex align-items-center flex-wrap row-gap-2">
+                  <div class="dropdown me-2">
+                    <a class="dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);">
+                      Sales Pipeline
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end">
+
+                      <a href="javascript:void(0);" class="dropdown-item">
+                        Marketing Pipeline
+                      </a>
+                      <a href="javascript:void(0);" class="dropdown-item">
+                        Sales Pipeline
+                      </a>
+                    </div>
+                  </div>
+                  <div class="dropdown">
+                    <a class="dropdown-toggle" data-bs-toggle="dropdown" href="javascript:void(0);">
+                      Last 3 months
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-end">
+                      <a href="javascript:void(0);" class="dropdown-item">
+                        Last 3 months
+                      </a>
+                      <a href="javascript:void(0);" class="dropdown-item">
+                        Last 6 months
+                      </a>
+                      <a href="javascript:void(0);" class="dropdown-item">
+                        Last 12 months
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="card-body">
+              <div id="deals-year">
+                <apx-chart [series]="chartOptions4.series" [chart]="chartOptions4.chart" [xaxis]="chartOptions4.xaxis"
+                  [dataLabels]="chartOptions4.dataLabels" [grid]="chartOptions4.grid" [stroke]="chartOptions4.stroke"
+                  [title]="chartOptions4.title" [colors]="chartOptions4.colors"></apx-chart>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

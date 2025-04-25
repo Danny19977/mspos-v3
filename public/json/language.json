@@ -1,0 +1,66 @@
+{
+	"data":[
+		{
+			"id" : 1,
+			"checkbox": "",
+			"rating": "",
+			"lang_img" : "img/icons/flag-01.svg",
+			"language" : "English",
+			"code" : "en",
+			"total" : "3481",
+			"done" : "2861",
+			"stage" : "1",
+			"rtl": "",
+			"progress": "80%",
+			"status" : "0",
+			"action": ""
+		},
+		{
+			"id" : 2,
+			"checkbox": "",
+			"rating": "",
+			"lang_img" : "img/icons/flag-02.svg",
+			"language" : "Arabic",
+			"code" : "ar",
+			"total" : "4815",
+			"done" : "4815",
+			"stage" : "0",
+			"rtl": "checked",
+			"progress": "100%",
+			"status" : "0",
+			"action": ""
+		},
+		{
+			"id" : 3,
+			"checkbox": "",
+			"rating": "",
+			"lang_img" : "img/icons/flag-03.svg",
+			"language" : "Chinese",
+			"code" : "zh",
+			"total" : "2590",
+			"done" : "250",
+			"stage" : "3",
+			"rtl": "checked",
+			"progress": "5%",
+			"status" : "0",
+			"action": ""
+		},
+		{
+			"id" : 4,
+			"checkbox": "",
+			"rating": "",
+			"lang_img" : "img/icons/flag-04.svg",
+			"language" : "Hindi",
+			"code" : "hi",
+			"total" : "1892",
+			"done" : "387",
+			"stage" : "2",
+			"rtl": "checked",
+			"progress": "40%",
+			"status" : "0",
+			"action": ""
+		}
+
+	]
+	
+}

@@ -1,0 +1,62 @@
+{
+	"data":[
+		{
+			"id" : "1",
+			"si_no" : "",
+			"title" : "Retail Industry",
+			"created_date" : "25 Sep 2023, 01:22 pm",
+			"status" : "Active",
+			"action" : ""
+		},
+		{
+			"id" : "2",
+			"si_no" : "",
+			"title" : "Banking",
+			"created_date" : "29 Sep 2023, 10:20 pm",
+			"status" : "Active",
+			"action" : ""
+		},
+		{
+			"id" : "3",
+			"si_no" : "",
+			"title" : "Hotels",
+			"created_date" : "04 Oct 2023, 08:30 am",
+			"status" : "Active",
+			"action" : ""
+		},
+		{
+			"id" : "4",
+			"si_no" : "",
+			"title" : "Financial Services",
+			"created_date" : "17 Oct 2023, 11:45 am",
+			"status" : "Inactive",
+			"action" : ""
+		},
+		{
+			"id" : "5",
+			"si_no" : "",
+			"title" : "Insurance",
+			"created_date" : "26 Oct 2023, 04:10 pm",
+			"status" : "Inactive",
+			"action" : ""
+		},
+		{
+			"id" : "6",
+			"si_no" : "",
+			"title" : "Consulting",
+			"created_date" : "08 Nov 2023, 05:23 am",
+			"status" : "Inactive",
+			"action" : ""
+		},
+		{
+			"id" : "7",
+			"si_no" : "",
+			"title" : "Agriculture",
+			"created_date" : "11 Nov 2023, 02:32 pm",
+			"status" : "Inactive",
+			"action" : ""
+		}
+
+	],
+	"totalData": 7
+}

@@ -1,0 +1,73 @@
+{
+  "data": [
+    {
+      "id": 1,
+      "name": "Distribution",
+      "type": "Public Relations",
+      "mem_image1": "img/profiles/avatar-14.jpg",
+      "mem_image2": "img/profiles/avatar-15.jpg",
+      "mem_image3": "img/profiles/avatar-16.jpg",
+      "start_date": "25 Sep 2023",
+      "end_date": "29 Sep 2023",
+      "created_date": "25 Sep 2023",
+      "open": "40.5%",
+      "close": "20.5%",
+      "unscubscribe": "30.5%",
+      "delivered": "70.5%",
+      "converstion": "35.0%",
+      "status": "Success"
+    },
+    {
+      "id": 2,
+      "name": "Merchandising",
+      "type": "Content Marketing",
+      "mem_image1": "img/profiles/avatar-03.jpg",
+      "mem_image2": "img/profiles/avatar-05.jpg",
+      "mem_image3": "img/profiles/avatar-06.jpg",
+      "start_date": "03 Oct 2023",
+      "end_date": "16 Oct 2023",
+      "created_date": "03 Oct 2023",
+      "open": "65.5%",
+      "close": "83.5%",
+      "unscubscribe": "67.5%",
+      "delivered": "32.0%",
+      "converstion": "22.5%",
+      "status": "Pending"
+    },
+    {
+      "id": 3,
+      "name": "Pricing",
+      "type": "Social Marketing",
+      "mem_image1": "img/profiles/avatar-04.jpg",
+      "mem_image2": "img/profiles/avatar-01.jpg",
+      "mem_image3": "img/profiles/avatar-16.jpg",
+      "start_date": "17 Oct 2023",
+      "end_date": "28 Oct 2023",
+      "created_date": "17 Oct 2023",
+      "open": "64.0%",
+      "close": "97.0%",
+      "unscubscribe": "14.5%",
+      "delivered": "38.5%",
+      "converstion": "53.0%",
+      "status": "Success"
+    },
+    {
+      "id": 4,
+      "name": "Increased sales",
+      "type": "Brand",
+      "mem_image1": "img/profiles/avatar-12.jpg",
+      "mem_image2": "img/profiles/avatar-15.jpg",
+      "mem_image3": "img/profiles/avatar-13.jpg",
+      "start_date": "07 Nov 2023",
+      "end_date": "14 Nov 2023",
+      "created_date": "07 Nov 2023",
+      "open": "32.5%",
+      "close": "57.0%",
+      "unscubscribe": "26.3%",
+      "delivered": "65.8%",
+      "converstion": "17.4%",
+      "status": "Success"
+    }
+  ],
+  "totalData": 4
+}

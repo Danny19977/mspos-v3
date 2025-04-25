@@ -1,0 +1,16 @@
+@if (isLoading) {
+    <div class=" text-center d-flex justify-content-center align-items-center ">
+       <div class="spinner-border bs-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    } @else {
+      <div id="deals-chart">
+        <apx-chart [series]="chartOptions3.series" [chart]="chartOptions3.chart"
+          [dataLabels]="chartOptions3.dataLabels" [plotOptions]="chartOptions3.plotOptions"
+          [yaxis]="chartOptions3.yaxis" [xaxis]="chartOptions3.xaxis" [stroke]="chartOptions3.stroke"
+          [grid]="chartOptions3.grid" [fill]="chartOptions3.fill" [annotations]="chartOptions3.annotations"
+          [colors]="chartOptions3.colors"></apx-chart>
+      </div>
+    }
+  
