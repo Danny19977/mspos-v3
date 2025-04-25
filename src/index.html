@@ -1,16 +1,87 @@
 <!doctype html>
-<html lang="en">
+<html lang="fr">
+
 <head>
-  <meta charset="utf-8">
-  <title>MsposV3</title>
-  <base href="/">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
-  <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#1976d2">
+    <meta charset="utf-8">
+    <title>MSPOS-V3</title>
+    <base href="/">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" type="image/x-icon" href="favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+    <link rel="shortcut icon" href="img/favicon.png" type="image/x-icon">
+    <!-- <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" /> -->
+
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+
+    <style class="site-preloader-style">
+        @keyframes site-preloader-animation {
+            from {
+                transform: rotateZ(0deg);
+            }
+
+            to {
+                transform: rotateZ(360deg);
+            }
+        }
+
+        body {
+            overflow: hidden !important;
+            overflow-y: scroll !important;
+            height: 100% !important;
+        }
+
+        .site-preloader {
+            position: fixed;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #fafafa;
+            z-index: 99999;
+            opacity: 1;
+        }
+
+        .site-preloader::before {
+            box-sizing: border-box;
+            content: '';
+            display: block;
+            position: absolute;
+            left: calc(50% - 50px);
+            top: calc(50% - 50px);
+            width: 100px;
+            height: 100px;
+            border-radius: 50px;
+            border: 3px solid rgba(0, 0, 0, .2);
+            border-top-color: rgba(0, 0, 0, .6);
+
+            animation-name: site-preloader-animation;
+            animation-duration: .5s;
+            animation-timing-function: linear;
+            animation-iteration-count: infinite;
+        }
+
+        .site-preloader__fade {
+            transition: opacity .3s;
+            opacity: 0;
+        }
+    </style>
 </head>
+
 <body>
-  <app-root></app-root>
-  <noscript>Please enable JavaScript to continue using this application.</noscript>
+    <div class="site-preloader"></div>
+
+    <app-root></app-root>
+
+
+    <script>
+        (g => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => h = n(Error(p + " could not load.")); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a) })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)) })({
+            v: "weekly",
+            key: "AIzaSyChAGA30i7uZ3Z2Dq1MURL5gtngFfCbbr8"
+        });
+    </script>
 </body>
+
 </html>

@@ -1,4 +1,4 @@
 export const environment = {
     production: true, 
-    apiUrl: 'https://mspos-api-dvp8.onrender.com/api'
+    apiUrl: 'https://mspos-api-v3.onrender.com/api'
 };
