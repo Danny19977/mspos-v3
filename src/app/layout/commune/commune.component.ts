@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
@@ -73,6 +73,7 @@ export class CommuneComponent implements OnInit {
     private subAreaService: SubareaService,
     private communeService: CommuneService,
     private logActivity: LogsService,
+    private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
     private toastr: ToastrService
   ) {
   }
@@ -84,6 +85,7 @@ export class CommuneComponent implements OnInit {
         this.currentUser = user;
         this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
         this.dataSource.sort = this.sort; // Bind sort to dataSource
+        this.cdr.detectChanges(); // Trigger change detection
 
         this.communeService.refreshDataList$.subscribe(() => {
           this.fetchProducts(this.currentUser);
@@ -141,7 +143,7 @@ export class CommuneComponent implements OnInit {
         this.isLoadingData = false;
       });
     }  else if (currentUser.role == 'ASM') {
-      this.provinceService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.communeService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         console.log("data", res.data);
         this.total_pages = res.pagination.total_pages;

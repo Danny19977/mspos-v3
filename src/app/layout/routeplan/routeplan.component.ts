@@ -101,7 +101,7 @@ export class RouteplanComponent implements OnInit {
     private posVenteService: PosVenteService,
     private logActivity: LogsService,
     private toastr: ToastrService,
-    private cdr: ChangeDetectorRef // Inject ChangeDetectorRef
+    private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef 
   ) {
   }
 

@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { MatSort, Sort } from '@angular/material/sort';
@@ -92,9 +92,9 @@ export class SupListComponent implements OnInit {
     private countryService: CountryService,
     private provinceService: ProvinceService,
     private areaService: AreaService,
-    private userService: UserService,
-    private asmService: AsmService,
+    private userService: UserService, 
     private logActivity: LogsService,
+    private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
     private toastr: ToastrService
   ) {
   }
@@ -106,6 +106,8 @@ export class SupListComponent implements OnInit {
         this.currentUser = user;
         this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
         this.dataSource.sort = this.sort; // Bind sort to dataSource
+        this.cdr.detectChanges();
+        
         this.supService.refreshDataList$.subscribe(() => {
           this.fetchProducts(this.currentUser);
         });

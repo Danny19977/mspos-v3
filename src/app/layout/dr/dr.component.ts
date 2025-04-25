@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
@@ -109,6 +109,7 @@ export class DrComponent implements OnInit {
     private asmService: AsmService,
     private drService: DrService,
     private logActivity: LogsService,
+    private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
     private toastr: ToastrService
   ) {
   }
@@ -119,7 +120,9 @@ export class DrComponent implements OnInit {
       next: (user) => {
         this.currentUser = user;
         this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
-        this.dataSource.sort = this.sort; // Bind sort to dataSource
+        this.dataSource.sort = this.sort; // Bind sort to dataSource 
+        this.cdr.detectChanges(); // Trigger change detection
+        
         this.drService.refreshDataList$.subscribe(() => {
           this.fetchProducts(this.currentUser);
         });

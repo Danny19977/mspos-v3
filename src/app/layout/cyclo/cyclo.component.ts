@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
@@ -112,18 +112,13 @@ export class CycloComponent implements OnInit {
   constructor(
     private router: Router,
     private _formBuilder: FormBuilder,
-    private authService: AuthService,
-    private supService: SupService,
-    private countryService: CountryService,
-    private provinceService: ProvinceService,
-    private areaService: AreaService,
-    private subareaService: SubareaService,
+    private authService: AuthService, 
     private communeService: CommuneService,
-    private userService: UserService,
-    private asmService: AsmService,
+    private userService: UserService, 
     private drService: DrService,
     private cycloService: CycloService,
     private logActivity: LogsService,
+    private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
     private toastr: ToastrService
   ) {
   }
@@ -135,6 +130,8 @@ export class CycloComponent implements OnInit {
         this.currentUser = user;
         this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
         this.dataSource.sort = this.sort; // Bind sort to dataSource
+        this.cdr.detectChanges(); // Trigger change detection
+
         this.cycloService.refreshDataList$.subscribe(() => {
           this.fetchProducts(this.currentUser);
         });

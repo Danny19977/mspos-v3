@@ -16,8 +16,10 @@ export class UserGetComponent {
     constructor(private userService: UserService) {}
    
      ngOnInit(): void {
-       this.userService.get(this.uuid).subscribe(res => {
-         this.user = res.data;
-       })
+      if (this.uuid) {
+        this.userService.get(this.uuid).subscribe(res => {
+          this.user = res.data;
+        })
+      } 
      }
 }

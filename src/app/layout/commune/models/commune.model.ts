@@ -1,7 +1,11 @@
 import { IArea } from "../../areas/models/area.model";
 import { ICountry } from "../../country/models/country.model";
+import { ICyclo } from "../../cyclo/models/cyclo.model";
+import { IPos } from "../../pos-vente/models/pos.model";
+import { IPosForm } from "../../posform/models/posform.model";
 import { IProvince } from "../../province/models/province.model";
 import { ISubArea } from "../../subarea/models/subarea.model";
+import { IUser } from "../../user/models/user.model";
 
 export interface ICommune {
     ID?: number;
@@ -21,4 +25,9 @@ export interface ICommune {
     Province: IProvince;
     Area: IArea;
     SubArea: ISubArea
+
+    Cyclos: ICyclo[];
+    Pos: IPos[];
+    PosForms: IPosForm[];
+    Users: IUser[];
 }

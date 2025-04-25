@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
@@ -65,6 +65,7 @@ export class CountryComponent implements OnInit {
     private authService: AuthService,
     private countryService: CountryService,
     private logActivity: LogsService,
+    private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
     private toastr: ToastrService
   ) {
   }
@@ -75,6 +76,8 @@ export class CountryComponent implements OnInit {
         this.currentUser = user;
         this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
         this.dataSource.sort = this.sort; // Bind sort to dataSource
+        this.cdr.detectChanges(); // Trigger change detection
+        
         this.countryService.refreshDataList$.subscribe(() => {
           this.fetchProducts();
         });

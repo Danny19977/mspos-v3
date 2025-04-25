@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { MatSort, Sort } from '@angular/material/sort';
@@ -68,6 +68,7 @@ export class ManagerListComponent implements OnInit {
     private countryService: CountryService,
     private userService: UserService,
     private logActivity: LogsService,
+    private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
     private toastr: ToastrService
   ) {
   }
@@ -76,6 +77,10 @@ export class ManagerListComponent implements OnInit {
     this.authService.user().subscribe({
       next: (user) => {
         this.currentUser = user;
+        this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
+        this.dataSource.sort = this.sort; // Bind sort to dataSource 
+        
+        
         this.managerService.refreshDataList$.subscribe(() => {
           this.fetchProducts();
         });
@@ -85,6 +90,8 @@ export class ManagerListComponent implements OnInit {
         this.countryService.getAll().subscribe(res => {
           this.countryList = res.data;
         });
+
+        this.cdr.detectChanges(); // Trigger change detection
       },
       error: (error) => {
         this.isLoadingData = false;

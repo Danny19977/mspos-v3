@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
@@ -97,6 +97,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
     private areaService: AreaService,
     private subAreaService: SubareaService,
     private communeService: CommuneService,
+    private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
 
     private toastr: ToastrService
   ) { }
@@ -107,6 +108,8 @@ export class UserListComponent implements OnInit, AfterViewInit {
         this.currentUser = user;
         this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
         this.dataSource.sort = this.sort; // Bind sort to dataSource
+        this.cdr.detectChanges();
+        
         this.usersService.refreshDataList$.subscribe(() => {
           this.fetchProducts();
         });
