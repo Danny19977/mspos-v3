@@ -39,7 +39,7 @@ export class CommuneComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'province', 'area', 'subarea', 'name', 'pos', 'cyclo', 'user', 'id'];
+  displayedColumns: string[] = ['country', 'province', 'area', 'subarea', 'name', 'pos', 'cyclo', 'posforms', 'user', 'id'];
   dataSource = new MatTableDataSource<ICommune>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -168,8 +168,9 @@ export class CommuneComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'Cyclo') {
-      this.communeService.getPaginatedByUserId(currentUser.uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.communeService.getPaginatedByUserId(currentUser.Commune.uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
+        console.log("data", res.data);
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
         this.dataSource.data = this.dataList; // Update dataSource data

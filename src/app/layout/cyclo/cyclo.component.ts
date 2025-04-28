@@ -8,22 +8,16 @@ import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../auth/auth.service';
 import { routes } from '../../shared/routes/routes';
-import { AreaService } from '../areas/area.service';
 import { IArea } from '../areas/models/area.model';
-import { AsmService } from '../asm/asm.service';
 import { IAsm } from '../asm/models/asm.model';
-import { CountryService } from '../country/country.service';
 import { ICountry } from '../country/models/country.model';
 import { DrService } from '../dr/dr.service';
 import { IDr } from '../dr/models/dr.model';
 import { IPos } from '../pos-vente/models/pos.model';
 import { IPosForm } from '../posform/models/posform.model';
 import { IProvince } from '../province/models/province.model';
-import { ProvinceService } from '../province/province.service';
 import { ISubArea } from '../subarea/models/subarea.model';
-import { SubareaService } from '../subarea/subarea.service';
 import { ISup } from '../sups/models/sup.model';
-import { SupService } from '../sups/sup.service';
 import { LogsService } from '../user-logs/logs.service';
 import { IUser } from '../user/models/user.model';
 import { UserService } from '../user/user.service';
@@ -151,7 +145,7 @@ export class CycloComponent implements OnInit {
         // });
         this.communeService.getAllById(this.currentUser.subarea_uuid).subscribe(res => {
           this.communeList = res.data;
-        });
+        }); 
       },
       error: (error) => {
         this.isLoadingData = false;
@@ -286,7 +280,7 @@ export class CycloComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'Cyclo') {
-      this.cycloService.getPaginatedByCommuneId(currentUser.commune_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.cycloService.getPaginatedByCommuneId(currentUser.uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;

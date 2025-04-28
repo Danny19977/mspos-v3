@@ -1,30 +1,25 @@
 import { CanActivateFn, Router } from '@angular/router';
 import { inject } from '@angular/core'; 
-import { AuthService } from '../auth.service';
+import { map } from 'rxjs';
 
 export const onlineGuard: CanActivateFn = (route, state) => {
   const router = inject(Router);
-  const authService = inject(AuthService);
+  const storedUser = localStorage.getItem("auth_user");
 
-  let isActive: boolean = false;
-
-  const currentUser = authService.user().subscribe((user) => {
-    if (user.uuid !== '') {
-      isActive = false;
-      router.navigate(['/auth/lock-screen']); 
-      return user
+  if (storedUser) {
+    const parsedUser = JSON.parse(storedUser);
+    if (new Date(parsedUser.expiration) > new Date()) {
+      if (parsedUser.user.uuid !== '') {
+        // Redirect to /dashboard if uuid is not empty
+        router.navigate(["/auth/lock-screen"]);
+        return false;
+      }
     } else {
-      isActive = true;
-      router.navigate(['/auth/login']);
-      return null;
+      // Redirect to /auth/login if the expiration date is invalid
+      router.navigate(["/auth/login"]);
+      return true;
     }
-  });
-  // if (!currentUser || currentUser.uuid === '') {
-  //   router.navigate(['/auth/login']);
-  //   return false;
-  // } else {
-  //   router.navigate(['/auth/lock-screen']);
-  //   return false;
-  // }
-  return isActive;
+  }
+
+  return true;
 };

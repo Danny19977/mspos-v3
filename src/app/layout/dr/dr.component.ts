@@ -8,19 +8,14 @@ import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../auth/auth.service';
 import { routes } from '../../shared/routes/routes';
-import { AreaService } from '../areas/area.service';
 import { IArea } from '../areas/models/area.model';
-import { AsmService } from '../asm/asm.service';
 import { IAsm } from '../asm/models/asm.model';
-import { CountryService } from '../country/country.service';
 import { ICountry } from '../country/models/country.model';
 import { ICyclo } from '../cyclo/models/cyclo.model';
 import { IPos } from '../pos-vente/models/pos.model';
 import { IPosForm } from '../posform/models/posform.model';
 import { IProvince } from '../province/models/province.model';
-import { ProvinceService } from '../province/province.service';
 import { ISup } from '../sups/models/sup.model';
-import { SupService } from '../sups/sup.service';
 import { LogsService } from '../user-logs/logs.service';
 import { IUser } from '../user/models/user.model';
 import { UserService } from '../user/user.service';
@@ -100,13 +95,8 @@ export class DrComponent implements OnInit {
     private router: Router,
     private _formBuilder: FormBuilder,
     private authService: AuthService,
-    private supService: SupService,
-    private countryService: CountryService,
-    private provinceService: ProvinceService,
-    private areaService: AreaService,
     private subareaService: SubareaService,
     private userService: UserService,
-    private asmService: AsmService,
     private drService: DrService,
     private logActivity: LogsService,
     private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
@@ -137,8 +127,9 @@ export class DrComponent implements OnInit {
         // this.areaService.getAll().subscribe(res => {
         //   this.areaList = res.data;
         // });
-        this.subareaService.getAllById(this.currentUser.subarea_uuid).subscribe(res => {
+        this.subareaService.getAllById(this.currentUser.area_uuid).subscribe(res => {
           this.subareaList = res.data;
+          console.log('subareaList:', this.subareaList);
         });
       },
       error: (error) => {
@@ -255,6 +246,7 @@ export class DrComponent implements OnInit {
     } else if (currentUser.role == 'Supervisor') {
       this.drService.getPaginatedByAreaId(currentUser.area_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
+        console.log('dataList DR:', this.dataList);
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
         this.dataSource.data = this.dataList; // Update dataSource data

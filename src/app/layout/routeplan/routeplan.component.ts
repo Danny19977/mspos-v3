@@ -208,7 +208,6 @@ export class RouteplanComponent implements OnInit {
         .filter((item) => item.status === true)
         .toArray()
         .then((posLocalList) => {
-          console.log('List of POS with status = true:', posLocalList);
           this.posVenteService.getAllByASM(this.currentUser.province_uuid).subscribe(res => {
             const posList: IPos[] = res.data;
 
@@ -389,7 +388,7 @@ export class RouteplanComponent implements OnInit {
         .toArray()
         .then((posLocalList) => {
           console.log('List of POS with status = true:', posLocalList);
-          this.posVenteService.getAllByCyclo(this.currentUser.uuid).subscribe(res => {
+          this.posVenteService.getAllByCyclo(this.currentUser.cyclo_uuid).subscribe(res => {
             const posList: IPos[] = res.data;
 
             // Compare posLocalList and posList

@@ -8,7 +8,7 @@
                     <div class="row align-items-center">
                         <div class="col-md-4">
                             <h4 class="page-title">
-                                DRS <span class="count-title">{{total_records}}</span>
+                                Regional Delegates <span class="count-title">{{total_records}}</span>
                             </h4>
                         </div>
                         <div class="col-md-8 text-end">
@@ -107,14 +107,14 @@
                                 <ng-container matColumnDef="asm">
                                     <th mat-header-cell *matHeaderCellDef> ASM </th>
                                     <td mat-cell *matCellDef="let element">
-                                        <app-user-get *ngIf="element.Asm" [uuid]="element.Asm.user_uuid"></app-user-get> 
+                                        <app-user-get *ngIf="element.Asm" [uuid]="element.Asm.user_uuid"></app-user-get>
                                     </td>
                                 </ng-container>
 
                                 <!-- sup Column -->
                                 <ng-container matColumnDef="sup">
                                     <th mat-header-cell *matHeaderCellDef> Supervisor </th>
-                                    <td mat-cell *matCellDef="let element"> 
+                                    <td mat-cell *matCellDef="let element">
                                         <app-user-get *ngIf="element.Sup" [uuid]="element.Sup.user_uuid"></app-user-get>
                                     </td>
                                 </ng-container>
@@ -122,8 +122,9 @@
                                 <!-- user Column -->
                                 <ng-container matColumnDef="user">
                                     <th mat-header-cell *matHeaderCellDef> DR </th>
-                                    <td mat-cell *matCellDef="let element"> 
-                                        <app-user-get *ngIf="element.user_uuid" [uuid]="element.user_uuid"></app-user-get>
+                                    <td mat-cell *matCellDef="let element">
+                                        <app-user-get *ngIf="element.user_uuid"
+                                            [uuid]="element.user_uuid"></app-user-get>
                                     </td>
                                 </ng-container>
 

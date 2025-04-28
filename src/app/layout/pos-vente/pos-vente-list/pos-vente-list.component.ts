@@ -201,7 +201,9 @@ export class PosVenteListComponent implements OnInit {
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'ASM') {
-      this.posVenteService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.posVenteService.getPaginatedRangeDateByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search,
+        this.start_date, this.end_date
+      ).subscribe(res => {
         this.dataList = res.data;
         console.log("dataList", this.dataList);
         this.total_pages = res.pagination.total_pages;
@@ -210,7 +212,9 @@ export class PosVenteListComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'Supervisor') {
-      this.posVenteService.getPaginatedByAreaId(currentUser.area_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.posVenteService.getPaginatedRangeDateByAreaId(currentUser.area_uuid, this.current_page, this.page_size, this.search,
+        this.start_date, this.end_date
+      ).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
@@ -218,7 +222,9 @@ export class PosVenteListComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'DR') {
-      this.posVenteService.getPaginatedBySubAreaId(currentUser.subarea_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.posVenteService.getPaginatedRangeDateBySubAreaId(currentUser.subarea_uuid, this.current_page, this.page_size, this.search,
+        this.start_date, this.end_date
+      ).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
@@ -226,7 +232,9 @@ export class PosVenteListComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'Cyclo') {
-      this.posVenteService.getPaginatedByUserId(currentUser.uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.posVenteService.getPaginatedRangeDateByCommuneId(currentUser.cyclo_uuid, this.current_page, this.page_size, this.search,
+        this.start_date, this.end_date
+      ).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
@@ -343,26 +351,6 @@ export class PosVenteListComponent implements OnInit {
     try {
       if (this.formGroup.valid) {
         this.isLoading = true;
-
-        console.log("User currente", this.currentUser);
-
-        // const asm = localStorage.getItem('auth_asm');
-        // if (asm) {
-        //   this.asmValue = JSON.parse(asm);
-        //   console.log("asmValue", this.asmValue);
-        // }
-        // const sup = localStorage.getItem('auth_sup');
-        // if (sup) {
-        //   this.supValue = JSON.parse(sup);
-        // }
-        // const dr = localStorage.getItem('auth_dr');
-        // if (dr) {
-        //   this.drValue = JSON.parse(dr);
-        // }
-        // const cyclo = localStorage.getItem('auth_cyclo');
-        // if (cyclo) {
-        //   this.cycloValue = JSON.parse(cyclo);
-        // }
 
         var body: IPos = {
           name: this.formGroup.value.name,

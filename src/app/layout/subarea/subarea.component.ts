@@ -39,7 +39,7 @@ export class SubareaComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'province', 'area', 'name', 'commune', 'pos', 'dr', 'cyclo', 'user', 'id'];
+  displayedColumns: string[] = ['country', 'province', 'area', 'name', 'commune', 'pos', 'dr', 'cyclo', 'posforms', 'user', 'id'];
   dataSource = new MatTableDataSource<ISubArea>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;

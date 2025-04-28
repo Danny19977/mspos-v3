@@ -64,7 +64,7 @@ export abstract class ApiService {
       .set("page", page.toString())
       .set("page_size", pageSize.toString())
       .set("search", search)
-    return this.http.get<any>(`${this.endpoint}/all/paginate/${province_uuid}`, { params });
+    return this.http.get<any>(`${this.endpoint}/all/paginate/province/${province_uuid}`, { params });
   }
 
   getPaginatedRangeDateByProvinceId(province_uuid: string, page: number, pageSize: number, search: string,
@@ -75,7 +75,7 @@ export abstract class ApiService {
       .set("search", search)
       .set("start_date", startDateStr)
       .set("end_date", endDateStr)
-    return this.http.get<any>(`${this.endpoint}/all/paginate/${province_uuid}`, { params });
+    return this.http.get<any>(`${this.endpoint}/all/paginate/province/${province_uuid}`, { params });
   }
 
   getPaginatedByAreaId(area_uuid: string, page: number, pageSize: number, search: string): Observable<any> {
@@ -83,7 +83,7 @@ export abstract class ApiService {
       .set("page", page.toString())
       .set("page_size", pageSize.toString())
       .set("search", search)
-    return this.http.get<any>(`${this.endpoint}/all/paginate/${area_uuid}`, { params });
+    return this.http.get<any>(`${this.endpoint}/all/paginate/area/${area_uuid}`, { params });
   }
 
   getPaginatedRangeDateByAreaId(area_uuid: string, page: number, pageSize: number, search: string,
@@ -94,7 +94,7 @@ export abstract class ApiService {
       .set("search", search)
       .set("start_date", startDateStr)
       .set("end_date", endDateStr)
-    return this.http.get<any>(`${this.endpoint}/all/paginate/${area_uuid}`, { params });
+    return this.http.get<any>(`${this.endpoint}/all/paginate/area/${area_uuid}`, { params });
   }
 
   getPaginatedBySubAreaId(subarea_uuid: string, page: number, pageSize: number, search: string): Observable<any> {
@@ -102,7 +102,7 @@ export abstract class ApiService {
       .set("page", page.toString())
       .set("page_size", pageSize.toString())
       .set("search", search)
-    return this.http.get<any>(`${this.endpoint}/all/paginate/${subarea_uuid}`, { params });
+    return this.http.get<any>(`${this.endpoint}/all/paginate/subarea/${subarea_uuid}`, { params });
   }
 
   getPaginatedRangeDateBySubAreaId(subarea_uuid: string, page: number, pageSize: number, search: string,
@@ -113,7 +113,7 @@ export abstract class ApiService {
       .set("search", search)
       .set("start_date", startDateStr)
       .set("end_date", endDateStr)
-    return this.http.get<any>(`${this.endpoint}/all/paginate/${subarea_uuid}`, { params });
+    return this.http.get<any>(`${this.endpoint}/all/paginate/subarea/${subarea_uuid}`, { params });
   }
 
   getPaginatedByCommuneId(commune_uuid: string, page: number, pageSize: number, search: string): Observable<any> {
@@ -121,7 +121,7 @@ export abstract class ApiService {
       .set("page", page.toString())
       .set("page_size", pageSize.toString())
       .set("search", search)
-    return this.http.get<any>(`${this.endpoint}/all/paginate/${commune_uuid}`, { params });
+    return this.http.get<any>(`${this.endpoint}/all/paginate/commune/${commune_uuid}`, { params });
   }
 
   getPaginatedRangeDateByCommuneId(commune_uuid: string, page: number, pageSize: number, search: string,
@@ -132,7 +132,7 @@ export abstract class ApiService {
       .set("search", search)
       .set("start_date", startDateStr)
       .set("end_date", endDateStr)
-    return this.http.get<any>(`${this.endpoint}/all/paginate/${commune_uuid}`, { params });
+    return this.http.get<any>(`${this.endpoint}/all/paginate/commune/${commune_uuid}`, { params });
   }
 
   getPaginatedByUserId(user_uuid: string, page: number, pageSize: number, search: string): Observable<any> {
@@ -189,8 +189,8 @@ export abstract class ApiService {
     return this.http.get(`${this.endpoint}/all/subareas/${subarea_uuid}`);
   }
 
-  getAllByCyclo(user_uuid: string): Observable<any> {
-    return this.http.get(`${this.endpoint}/all/users/${user_uuid}`);
+  getAllByCyclo(cyclo_uuid: string): Observable<any> {
+    return this.http.get(`${this.endpoint}/all/cyclo/${cyclo_uuid}`);
   }
 
 
