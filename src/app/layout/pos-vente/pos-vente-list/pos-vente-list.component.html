@@ -89,176 +89,82 @@
                         <!-- /Search -->
                     </div>
                     <div class="card-body">
-                        <!-- <div class="table-responsive custom-table">
-                            <table class="table" id="campaign-list" matSort (matSortChange)="sortData($event)">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th mat-sort-header="status">Status</th>
-                                        <th mat-sort-header="postype">Postype</th>
-                                        <th mat-sort-header="country">Pays</th>
-                                        <th mat-sort-header="province">Province</th>
-                                        <th mat-sort-header="area">Area</th>
-                                        <th mat-sort-header="subarea">Subarea</th>
-                                        <th mat-sort-header="commune">Commune</th>
-                                        <th mat-sort-header="visited">Visite</th>
-                                        <th mat-sort-header="name">Nom</th>
-                                        <th mat-sort-header="shop">Shop</th>
-                                        <th mat-sort-header="gerant">Gérant</th>
-                                        <th mat-sort-header="quartier">Quartier</th>
-                                        <th mat-sort-header="avenue">Avenue</th>
-                                        <th mat-sort-header="reference">Reference</th>
-                                        <th mat-sort-header="telephone">Téléphone</th>
-                                        <th mat-sort-header="asm">ASM</th>
-                                        <th mat-sort-header="sup">Supervisor</th>
-                                        <th mat-sort-header="dr">DR</th>
-                                        <th mat-sort-header="cyclo">Cyclo</th>
-                                        @if (isOnline()) {
-                                        <th class="text-end">Action</th>
-                                        }
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-                                    @if (!isOnline()) {
-                                    @for (data of dataListLocal; track data) {
-                                    <tr class="odd">
-                                        <td>
-                                            <span class="badge badge-pill badge-status" [ngClass]="{
-                                                    'bg-success': (data.status) ? 'Active' : '',
-                                                    'bg-danger': (data.status) ? '' : 'Inactive'
-                                                  }">
-                                                @if (data.status) {
-                                                Active
-                                                } @else {
-                                                Inactive
-                                                }
-                                            </span>
-                                        </td>
-                                        <td>{{ data.postype }}</td>
-                                        <td>{{ data.country_name }}</td>
-                                        <td>{{ data.province_name }}</td>
-                                        <td>{{ data.area_name }}</td>
-                                        <td>{{ data.subarea_name }}</td>
-                                        <td>{{ data.commune_name }}</td>
-                                        <td
-                                            style="background-color: rgba(255, 140, 0, 0.506); font-size: larger; text-align: center;">
-                                            <a [routerLink]="['/web/posforms/pos-form-list']">
-                                                {{ getPosFormCount(data.PosForms!) }}
-                                            </a>
-                                        </td>
-                                        <td> {{data.name}} </td>
-                                        <td> {{data.shop}} </td>
-                                        <td> {{data.gerant}} </td>
-                                        <td> {{data.quartier}} </td>
-                                        <td> {{data.avenue}} </td>
-                                        <td> {{data.reference}} </td>
-                                        <td> {{data.telephone}} </td>
-                                        <td> -- </td>
-                                        <td> -- </td>
-                                        <td> -- </td>
-                                        <td> </td>
-                                    </tr>
-                                    }
-                                    }@else {
-                                    @if (isLoadingData) {
-                                    <tr>
-                                        <td colspan="20" class="text-start">
-                                            <div class="spinner-border" role="status">
-                                                <span class="visually-hidden">Loading...</span>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    } @else {
-                                    @for (data of dataSource.data; track $index) {
-                                    <tr class="odd">
-                                        <td>
-                                            <span class="badge badge-pill badge-status" [ngClass]="{
-                                                        'bg-success': (data.status) ? 'Active' : '',
-                                                        'bg-danger': (data.status) ? '' : 'Inactive'
-                                                      }">
-                                                @if (data.status) {
-                                                Active
-                                                } @else {
-                                                Inactive
-                                                }
-                                            </span>
-                                        </td>
-                                        <td>{{ data.postype }}</td>
-                                        <td>{{ data.Country!.name }}</td>
-                                        <td>{{ data.Province!.name }}</td>
-                                        <td>{{ data.Area!.name }}</td>
-                                        <td>{{ data.SubArea!.name }}</td>
-                                        <td>{{ data.Commune!.name }}</td>
-                                        <td
-                                            style="background-color: rgba(255, 140, 0, 0.506); font-size: larger; text-align: center;">
-                                            <a [routerLink]="['/web/posforms/pos-form-list']">
-                                                {{ getPosFormCount(data.PosForms!) }}
-                                            </a>
-                                        </td>
-                                        <td> {{data.name}} </td>
-                                        <td> {{data.shop}} </td>
-                                        <td> {{data.gerant}} </td>
-                                        <td> {{data.quartier}} </td>
-                                        <td> {{data.avenue}} </td>
-                                        <td> {{data.reference}} </td>
-                                        <td> {{data.telephone}} </td>
-                                        <td>
-                                            @if (data.Asm!.user_uuid) {
-                                            <app-user-get [uuid]="data.Asm!.user_uuid"></app-user-get>
+                        @if (!isOnline()) {
+                            <div class="table-responsive custom-table">
+                                <table class="table" id="campaign-list" matSort (matSortChange)="sortData($event)">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th mat-sort-header="status">Status</th>
+                                            <th mat-sort-header="postype">Postype</th>
+                                            <th mat-sort-header="country">Pays</th>
+                                            <th mat-sort-header="province">Province</th>
+                                            <th mat-sort-header="area">Area</th>
+                                            <th mat-sort-header="subarea">Subarea</th>
+                                            <th mat-sort-header="commune">Commune</th>
+                                            <th mat-sort-header="visited">Visite</th>
+                                            <th mat-sort-header="name">Nom</th>
+                                            <th mat-sort-header="shop">Shop</th>
+                                            <th mat-sort-header="gerant">Gérant</th>
+                                            <th mat-sort-header="quartier">Quartier</th>
+                                            <th mat-sort-header="avenue">Avenue</th>
+                                            <th mat-sort-header="reference">Reference</th>
+                                            <th mat-sort-header="telephone">Téléphone</th>
+                                            <th mat-sort-header="asm">ASM</th>
+                                            <th mat-sort-header="sup">Supervisor</th>
+                                            <th mat-sort-header="dr">DR</th>
+                                            <th mat-sort-header="cyclo">Cyclo</th>
+                                            @if (isOnline()) {
+                                            <th class="text-end">Action</th>
                                             }
-                                        </td>
-                                        <td>
-                                            @if (data.Sup!.user_uuid) {
-                                            <app-user-get [uuid]="data.Sup!.user_uuid"></app-user-get>
-                                            }
-                                        </td>
-                                        <td>
-                                            @if (data.Dr!.user_uuid) {
-                                            <app-user-get [uuid]="data.Dr!.user_uuid"></app-user-get>
-                                            }
-                                        </td>
-                                        <td>
-                                            @if (data.Cyclo!.user_uuid!) {
-                                            <app-user-get [uuid]="data.Cyclo!.user_uuid"></app-user-get>
-                                            }
-                                        </td>
-                                        <td>
-                                            <div class="dropdown table-action">
-                                                <a href="javascript:void(0);" class="action-icon"
-                                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fa fa-ellipsis-v"></i>
-                                                </a>
-                                                <div class="dropdown-menu dropdown-menu-right">
-                                                    @if(currentUser.permission === 'ALL' ||
-                                                    currentUser.permission === 'VAE' ||
-                                                    currentUser.permission === 'VED' ||
-                                                    currentUser.permission === 'VE') {
-                                                    <a class="dropdown-item" data-bs-toggle="offcanvas"
-                                                        (click)="findValue(data.uuid!)" data-bs-target="#offcanvas_edit"
-                                                        href="javascript:void(0);"><i class="ti ti-edit text-blue"></i>
-                                                        Edit
+                                        </tr>
+                                    </thead>
+    
+                                    <tbody>
+    
+                                        @for (data of dataListLocal; track data) {
+                                            <tr class="odd">
+                                                <td>
+                                                    <span class="badge badge-pill badge-status" [ngClass]="{
+                                                            'bg-success': (data.status) ? 'Active' : '',
+                                                            'bg-danger': (data.status) ? '' : 'Inactive'
+                                                          }">
+                                                        @if (data.status) {
+                                                        Active
+                                                        } @else {
+                                                        Inactive
+                                                        }
+                                                    </span>
+                                                </td>
+                                                <td>{{ data.postype }}</td>
+                                                <td>{{ data.country_name }}</td>
+                                                <td>{{ data.province_name }}</td>
+                                                <td>{{ data.area_name }}</td>
+                                                <td>{{ data.subarea_name }}</td>
+                                                <td>{{ data.commune_name }}</td>
+                                                <td
+                                                    style="background-color: rgba(255, 140, 0, 0.506); font-size: larger; text-align: center;">
+                                                    <a [routerLink]="['/web/posforms/pos-form-list']">
+                                                        {{ getPosFormCount(data.PosForms!) }}
                                                     </a>
-                                                    }
-
-                                                    @if(currentUser.permission === 'ALL' ||
-                                                    currentUser.permission === 'VED') {
-                                                    <a class="dropdown-item" href="javascript:void(0);"
-                                                        (click)="findValue(data.uuid!)" data-bs-toggle="modal"
-                                                        data-bs-target="#delete_contact"><i
-                                                            class="ti ti-trash text-danger"></i> Delete
-                                                    </a>
-                                                    }
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    }
-                                    }
-                                    }
-                                </tbody>
-                            </table>
-                        </div> -->
-
+                                                </td>
+                                                <td> {{data.name}} </td>
+                                                <td> {{data.shop}} </td>
+                                                <td> {{data.gerant}} </td>
+                                                <td> {{data.quartier}} </td>
+                                                <td> {{data.avenue}} </td>
+                                                <td> {{data.reference}} </td>
+                                                <td> {{data.telephone}} </td>
+                                                <td> -- </td>
+                                                <td> -- </td>
+                                                <td> -- </td>
+                                                <td> </td>
+                                            </tr>
+                                            }
+                                    </tbody>
+                                </table>
+                            </div>    
+                        }
+                      
                         <div class="table-responsive custom-table"> 
                             <table mat-table [dataSource]="dataSource" matSort (matSortChange)="sortData($event)" class="mat-elevation-z8">
                           
