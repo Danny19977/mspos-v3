@@ -63,6 +63,11 @@ export class routes {
   public static get googleMapsDashboard(): string {
     return this.dashboard + '/google-maps';
   }
+  public static get kpiDashboard(): string {
+    return this.dashboard + '/key-performance-indicators';
+  }
+
+  
 
 
   // ///////////// TERRITOIRES //////////////////////////////////////////////////

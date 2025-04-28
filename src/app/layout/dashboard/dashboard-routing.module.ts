@@ -11,6 +11,7 @@ import { OosDashboardComponent } from './oos-dashboard/oos-dashboard.component';
 import { SosDashboardComponent } from './sos-dashboard/sos-dashboard.component';
 import { SeDashboardComponent } from './se-dashboard/se-dashboard.component';
 import { GoogleMapComponent } from './google-map/google-map.component';
+import { KpiDashboardComponent } from './kpi-dashboard/kpi-dashboard.component';
 
 const routes: Routes = [
   {
@@ -58,6 +59,10 @@ const routes: Routes = [
         path: 'google-maps',
         component: GoogleMapComponent,
       },
+      { 
+        path: 'key-performance-indicators',
+        component: KpiDashboardComponent,
+      }
     ],
   },
   

@@ -36,6 +36,7 @@ import { GoogleMapComponent } from './google-map/google-map.component';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { MapCardComponent } from './google-map/map-card/map-card.component';
 import { PriceSaleComponent } from './mspos-dashboard/price-sale/price-sale.component';
+import { KpiDashboardComponent } from './kpi-dashboard/kpi-dashboard.component';
 
 
 
@@ -72,7 +73,8 @@ import { PriceSaleComponent } from './mspos-dashboard/price-sale/price-sale.comp
     StatusEquipementsComponent,
     GoogleMapComponent,
     MapCardComponent,
-    PriceSaleComponent, 
+    PriceSaleComponent,
+    KpiDashboardComponent, 
   ],
   imports: [
     CommonModule,
