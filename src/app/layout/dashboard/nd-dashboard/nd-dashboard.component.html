@@ -9,39 +9,183 @@
             </div>
             <div class="col-md-8 float-end ms-auto">
               @if (this.currentUser) {
-                <form [formGroup]="dateRange">
-                  <div class="d-flex title-head">
-                    <div class="daterange-picker d-flex align-items-center justify-content-center">
-                      <div class="card mb-0">
-                        @if (this.currentUser.role != 'ASM') {
-                        <mat-select class="select custom-mat-select" placeholder="Select province"
-                          formControlName="province">
-                          @for (item of provinceDropdownList; track item) {
-                          <mat-option [value]="item">{{item.name}}</mat-option>
-                          }
-                        </mat-select>
-                        }
-                      </div>
-                      <div class="card m-2">
-                        <mat-select class="select custom-mat-select" placeholder="Select area" formControlName="area">
-                          @for (item of areaListFilter; track item) {
-                          <mat-option [value]="item">{{item.name}}</mat-option>
-                          }
-                        </mat-select>
-                      </div>
-                      <div class="form-sort me-2">
-                        <i class="ti ti-calendar"></i>
-                        <input type="text" class="form-control date-range bookingrange" bsDaterangepicker
-                          [bsConfig]="{ adaptivePosition: true }" formControlName="rangeValue" />
-                      </div>
-                      <div class="head-icons mb-0">
-                        <app-reload></app-reload>
-                        <app-collapse-header></app-collapse-header>
+              <div class="d-flex title-head">
+                <div class="daterange-picker d-flex align-items-center justify-content-center">
+                  <form [formGroup]="dateRange">
+                    <div class="form-sorts dropdown">
+                      <a href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside"><i
+                          class="ti ti-filter-share"></i>Filter</a>
+                      <div class="filter-dropdown-menu dropdown-menu dropdown-menu-md-end p-3">
+                        <div class="filter-set-view">
+                          <div class="filter-set-head">
+                            <h4><i class="ti ti-filter-share"></i>Filter</h4>
+                          </div>
+                          <div class="filter-set-head">
+                            <div class="form-sort me-2">
+                              <i class="ti ti-calendar"></i>
+                              <input type="text" class="form-control date-range bookingrange" bsDaterangepicker
+                                [bsConfig]="{ adaptivePosition: true }" formControlName="rangeValue" />
+                            </div>
+                          </div>
+                         
+                          <div class="accordion" id="accordionExample"> 
+                            <div class="filter-set-content">
+                              <div class="filter-set-content-head">
+                                <a href="javascript:void(0);" data-bs-toggle="collapse"
+                                  data-bs-target="#collapseCountry" aria-expanded="true"
+                                  aria-controls="collapseCountry">Pays</a>
+                              </div>
+                              <div class="filter-set-contents accordion-collapse collapse show" id="collapseCountry"
+                                data-bs-parent="#accordionExample">
+                                <div class="mb-2 icon-form">
+                                  <span class="form-icon"><i class="ti ti-search"></i></span>
+                                  <input type="text" class="form-control" placeholder="Search Name"
+                                    [value]="countrySearch()" (input)="updateSearch($event)" />
+                                </div>
+                                <ul>
+                                  <li *ngFor="let item of filteredCountryList()">
+                                    <div class="filter-checks">
+                                      <label class="checkboxs">
+                                        <input type="checkbox" [value]="item" (change)="onCheckboxCountryChange($event, item)" />
+                                        <span class="checkmarks"></span>
+                                        {{ item.name }}
+                                      </label>
+                                    </div>
+                                  </li>
+                                </ul>
+                              </div>
+                            </div>
+                            <div class="filter-set-content">
+                              <div class="filter-set-content-head">
+                                <a href="javascript:void(0);" data-bs-toggle="collapse"
+                                  data-bs-target="#collapseProvince" aria-expanded="false"
+                                  aria-controls="collapseProvince"> Province </a>
+                              </div>
+                              <div class="filter-set-contents accordion-collapse collapse show" id="collapseProvince"
+                                data-bs-parent="#accordionExample">
+                                <div class="mb-2 icon-form">
+                                  <span class="form-icon"><i class="ti ti-search"></i></span>
+                                  <input type="text" class="form-control" placeholder="Search province"
+                                    [value]="provinceSearch()" (input)="updateProvinceSearch($event)" />
+                                </div>
+                                <ul>
+                                  <li *ngFor="let item of filteredProvinceList()">
+                                    <div class="filter-checks">
+                                      <label class="checkboxs">
+                                        <input type="checkbox" [value]="item" />
+                                        <span class="checkmarks"></span>
+                                        {{ item.name }}
+                                      </label>
+                                    </div>
+                                  </li>
+                                </ul>
+                              </div>
+                            </div>
+                            <div class="filter-set-content">
+                              <div class="filter-set-content-head">
+                                <a href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#collapseArea"
+                                  aria-expanded="false" aria-controls="collapseArea"> Area </a>
+                              </div>
+                              <div class="filter-set-contents accordion-collapse collapse show" id="collapseArea"
+                                data-bs-parent="#accordionExample">
+                                <div class="mb-2 icon-form">
+                                  <span class="form-icon"><i class="ti ti-search"></i></span>
+                                  <input type="text" class="form-control" placeholder="Search area"
+                                    [value]="areaSearch()" (input)="updateAreaSearch($event)" />
+                                </div>
+                                <ul>
+                                  <li *ngFor="let item of filteredAreaList()">
+                                    <div class="filter-checks">
+                                      <label class="checkboxs">
+                                        <input type="checkbox" [value]="item" />
+                                        <span class="checkmarks"></span>
+                                        {{ item.name }}
+                                      </label>
+                                    </div>
+                                  </li>
+                                </ul>
+                              </div>
+                            </div>
+                            <div class="filter-set-content">
+                              <div class="filter-set-content-head">
+                                <a href="javascript:void(0);" data-bs-toggle="collapse"
+                                  data-bs-target="#collapseSubArea" aria-expanded="false"
+                                  aria-controls="collapseSubArea"> SubArea </a>
+                              </div>
+                              <div class="filter-set-contents accordion-collapse collapse show" id="collapseSubArea"
+                                data-bs-parent="#accordionExample">
+                                <div class="mb-2 icon-form">
+                                  <span class="form-icon"><i class="ti ti-search"></i></span>
+                                  <input type="text" class="form-control" placeholder="Search Sub Area"
+                                    [value]="subAreaSearch()" (input)="updateSubAreaSearch($event)" />
+                                </div>
+                                <ul>
+                                  <li *ngFor="let item of filteredSubAreaList()">
+                                    <div class="filter-checks">
+                                      <label class="checkboxs">
+                                        <input type="checkbox" [value]="item" />
+                                        <span class="checkmarks"></span>
+                                        {{ item.name }}
+                                      </label>
+                                    </div>
+                                  </li>
+                                </ul>
+                              </div>
+                            </div>
+                            <div class="filter-set-content">
+                              <div class="filter-set-content-head">
+                                <a href="javascript:void(0);" class="collapsed" data-bs-toggle="collapse"
+                                  data-bs-target="#collapseCommune" aria-expanded="false"
+                                  aria-controls="collapseCommune"> Commune </a>
+                              </div>
+                              <div class="filter-set-contents accordion-collapse collapse show" id="collapseCommune"
+                                data-bs-parent="#accordionExample">
+                                <div class="mb-2 icon-form">
+                                  <span class="form-icon"><i class="ti ti-search"></i></span>
+                                  <input type="text" class="form-control" placeholder="Search Commune"
+                                    [value]="communeSearch()" (input)="updateCommuneSearch($event)" />
+                                </div>
+                                <ul>
+                                  <li *ngFor="let item of filteredCommuneList()">
+                                    <div class="filter-checks">
+                                      <label class="checkboxs">
+                                        <input type="checkbox" [value]="item" />
+                                        <span class="checkmarks"></span>
+                                        {{ item.name }}
+                                      </label>
+                                    </div>
+                                  </li>
+                                </ul>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="filter-reset-btns">
+                          <div class="row">
+                            <div class="col-6">
+                              <a href="javascript:void(0);" class="btn btn-light">Reset</a>
+                            </div>
+                            <div class="col-6">
+                              <a [routerLink]="routes.compaignList" class="btn btn-primary">Filter</a>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </form>
-              } 
+                  </form>
+                </div>
+                <div class="head-icons mb-0">
+                  <app-reload></app-reload>
+                  <app-collapse-header></app-collapse-header>
+                </div>
+              </div>
+
+
+
+              <form [formGroup]="dateRange">
+
+              </form>
+              }
             </div>
           </div>
         </div>
