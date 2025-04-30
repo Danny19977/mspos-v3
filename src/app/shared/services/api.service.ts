@@ -35,6 +35,18 @@ export abstract class ApiService {
     return this.http.get<ApiResponse2>(`${this.endpoint}/all/paginate`, { params });
   }
 
+  getPaginatedRangeDateByUUID(uuid: string, page: number, pageSize: number, search: string,
+    startDateStr: string, endDateStr: string
+  ): Observable<ApiResponse2> {
+    let params = new HttpParams()
+      .set("page", page.toString())
+      .set("limit", pageSize.toString())
+      .set("search", search)
+      .set("start_date", startDateStr)
+      .set("end_date", endDateStr)
+    return this.http.get<ApiResponse2>(`${this.endpoint}/all/paginate/${uuid}`, { params });
+  }
+
   getPaginated2(page: number, pageSize: number, search: string): Observable<ApiResponse2> {
     let params = new HttpParams()
       .set("page", page.toString())
@@ -205,6 +217,10 @@ export abstract class ApiService {
 
   get(uuid: any): Observable<any> {
     return this.http.get(`${this.endpoint}/get/${uuid}`);
+  }
+
+  getBy(name: any): Observable<any> {
+    return this.http.get(`${this.endpoint}/get-by/${name}`);
   }
 
 

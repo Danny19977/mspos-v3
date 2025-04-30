@@ -66,151 +66,151 @@ export class OosAverageAreaComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void { 
     this.calculAverage();
-    this.getByAverage(); 
+    // this.getByAverage(); 
   }
 
   calculAverage() {
-    for (let index = 0; index < this.averageAreaList.length; index++) {
-      this.Eq = this.averageAreaList.reduce(function (sum, value) {
-        return sum + value.Eq;
-      }, 0); 
-      if (this.Eq > 0) {
-        this.Eq1 = this.Eq / this.areaCount;
-      } 
-      this.Dhl = this.averageAreaList.reduce(function (sum, value) {
-        return sum + value.Dhl;
-      }, 0); 
-      if (this.Dhl > 0) {
-        this.Dhl1 = this.Dhl / this.areaCount;
-      }  
-      this.Ar = this.averageAreaList.reduce(function (sum, value) {
-        return sum + value.Ar;
+    // for (let index = 0; index < this.averageAreaList.length; index++) {
+    //   this.Eq = this.averageAreaList.reduce(function (sum, value) {
+    //     return sum + value.Eq;
+    //   }, 0); 
+    //   if (this.Eq > 0) {
+    //     this.Eq1 = this.Eq / this.areaCount;
+    //   } 
+    //   this.Dhl = this.averageAreaList.reduce(function (sum, value) {
+    //     return sum + value.Dhl;
+    //   }, 0); 
+    //   if (this.Dhl > 0) {
+    //     this.Dhl1 = this.Dhl / this.areaCount;
+    //   }  
+    //   this.Ar = this.averageAreaList.reduce(function (sum, value) {
+    //     return sum + value.Ar;
 
-      }, 0); 
-      if (this.Ar > 0) {
-        this.Ar1 = this.Ar / this.areaCount;
-      }
-      this.Sbl = this.averageAreaList.reduce(function (sum, value) {
-        return sum + value.Sbl;
-      }, 0); 
-      if (this.Sbl > 0) {
-        this.Sbl1 = this.Sbl / this.areaCount;
-      } 
-      this.Pmf = this.averageAreaList.reduce(function (sum, value) {
-        return sum + value.Pmf;
-      }, 0); 
-      if (this.Pmf > 0) {
-        this.Pmf1 = this.Pmf / this.areaCount;
-      } 
-      this.Pmm = this.averageAreaList.reduce(function (sum, value) {
-        return sum + value.Pmm;
-      }, 0);
-      if (this.Pmm > 0) {
-        this.Pmm1 = this.Pmm / this.areaCount;
-      } 
-      this.Ticket = this.averageAreaList.reduce(function (sum, value) {
-        return sum + value.Ticket;
-      }, 0); 
-      if (this.Ticket > 0) {
-        this.Ticket1 = this.Ticket / this.areaCount;
-      } 
-      this.Mtc = this.averageAreaList.reduce(function (sum, value) {
-        return sum + value.Mtc;
-      }, 0); 
-      if (this.Mtc > 0) {
-        this.Mtc1 = this.Mtc / this.areaCount;
-      } 
-      this.Ws = this.averageAreaList.reduce(function (sum, value) {
-        return sum + value.Ws;
-      }, 0); 
-      if (this.Ws > 0) {
-        this.Ws1 = this.Ws / this.areaCount;
-      } 
-      this.Mast = this.averageAreaList.reduce(function (sum, value) {
-        return sum + value.Mast;
-      }, 0); 
-      if (this.Mast > 0) {
-        this.Mast1 = this.Mast / this.areaCount;
-      } 
-      this.Oris = this.averageAreaList.reduce(function (sum, value) {
-        return sum + value.Oris;
-      }, 0); 
-      if (this.Oris > 0) {
-        this.Oris1 = this.Oris / this.areaCount;
-      } 
-      this.Elite = this.averageAreaList.reduce(function (sum, value) {
-        return sum + value.Elite;
-      }, 0); 
-      if (this.Elite > 0) {
-        this.Elite1 = this.Elite / this.areaCount;
-      } 
-      this.Yes = this.averageAreaList.reduce(function (sum, value) {
-        return sum + value.Yes;
-      }, 0); 
-      if (this.Yes > 0) {
-        this.Yes1 = this.Yes / this.areaCount;
-      } 
-      this.Time = this.averageAreaList.reduce(function (sum, value) {
-        return sum + value.Time;
-      }, 0); 
-      if (this.Time > 0) {
-        this.Time1 = this.Time / this.areaCount;
-      } 
+    //   }, 0); 
+    //   if (this.Ar > 0) {
+    //     this.Ar1 = this.Ar / this.areaCount;
+    //   }
+    //   this.Sbl = this.averageAreaList.reduce(function (sum, value) {
+    //     return sum + value.Sbl;
+    //   }, 0); 
+    //   if (this.Sbl > 0) {
+    //     this.Sbl1 = this.Sbl / this.areaCount;
+    //   } 
+    //   this.Pmf = this.averageAreaList.reduce(function (sum, value) {
+    //     return sum + value.Pmf;
+    //   }, 0); 
+    //   if (this.Pmf > 0) {
+    //     this.Pmf1 = this.Pmf / this.areaCount;
+    //   } 
+    //   this.Pmm = this.averageAreaList.reduce(function (sum, value) {
+    //     return sum + value.Pmm;
+    //   }, 0);
+    //   if (this.Pmm > 0) {
+    //     this.Pmm1 = this.Pmm / this.areaCount;
+    //   } 
+    //   this.Ticket = this.averageAreaList.reduce(function (sum, value) {
+    //     return sum + value.Ticket;
+    //   }, 0); 
+    //   if (this.Ticket > 0) {
+    //     this.Ticket1 = this.Ticket / this.areaCount;
+    //   } 
+    //   this.Mtc = this.averageAreaList.reduce(function (sum, value) {
+    //     return sum + value.Mtc;
+    //   }, 0); 
+    //   if (this.Mtc > 0) {
+    //     this.Mtc1 = this.Mtc / this.areaCount;
+    //   } 
+    //   this.Ws = this.averageAreaList.reduce(function (sum, value) {
+    //     return sum + value.Ws;
+    //   }, 0); 
+    //   if (this.Ws > 0) {
+    //     this.Ws1 = this.Ws / this.areaCount;
+    //   } 
+    //   this.Mast = this.averageAreaList.reduce(function (sum, value) {
+    //     return sum + value.Mast;
+    //   }, 0); 
+    //   if (this.Mast > 0) {
+    //     this.Mast1 = this.Mast / this.areaCount;
+    //   } 
+    //   this.Oris = this.averageAreaList.reduce(function (sum, value) {
+    //     return sum + value.Oris;
+    //   }, 0); 
+    //   if (this.Oris > 0) {
+    //     this.Oris1 = this.Oris / this.areaCount;
+    //   } 
+    //   this.Elite = this.averageAreaList.reduce(function (sum, value) {
+    //     return sum + value.Elite;
+    //   }, 0); 
+    //   if (this.Elite > 0) {
+    //     this.Elite1 = this.Elite / this.areaCount;
+    //   } 
+    //   this.Yes = this.averageAreaList.reduce(function (sum, value) {
+    //     return sum + value.Yes;
+    //   }, 0); 
+    //   if (this.Yes > 0) {
+    //     this.Yes1 = this.Yes / this.areaCount;
+    //   } 
+    //   this.Time = this.averageAreaList.reduce(function (sum, value) {
+    //     return sum + value.Time;
+    //   }, 0); 
+    //   if (this.Time > 0) {
+    //     this.Time1 = this.Time / this.areaCount;
+    //   } 
     }
 
-    this.averages = [];
-    this.averages.push({ x: 'Eq', y: 100 - this.Eq1 });
-    this.averages.push({ x: 'Dhl', y: 100 - this.Dhl1 });
-    this.averages.push({ x: 'Ar', y: 100 - this.Ar1 });
-    this.averages.push({ x: 'Sbl', y: 100 - this.Sbl1 });
-    this.averages.push({ x: 'Pmf', y: 100 - this.Pmf1 });
-    this.averages.push({ x: 'Pmm', y: 100 - this.Pmm1 });
-    this.averages.push({ x: 'Ticket', y: 100 - this.Ticket1 });
-    this.averages.push({ x: 'Mtc', y: 100 - this.Mtc1 });
-    this.averages.push({ x: 'Ws', y: 100 - this.Ws1 });
-    this.averages.push({ x: 'Mast', y: 100 - this.Mast1 });
-    this.averages.push({ x: 'Oris', y: 100 - this.Oris1 });
-    this.averages.push({ x: 'Elite', y: 100 - this.Elite1 });
-    this.averages.push({ x: 'Yes', y: 100 - this.Yes1 });
-    this.averages.push({ x: 'Time', y: 100 - this.Time1 });
+    // this.averages = [];
+    // this.averages.push({ x: 'Eq', y: 100 - this.Eq1 });
+    // this.averages.push({ x: 'Dhl', y: 100 - this.Dhl1 });
+    // this.averages.push({ x: 'Ar', y: 100 - this.Ar1 });
+    // this.averages.push({ x: 'Sbl', y: 100 - this.Sbl1 });
+    // this.averages.push({ x: 'Pmf', y: 100 - this.Pmf1 });
+    // this.averages.push({ x: 'Pmm', y: 100 - this.Pmm1 });
+    // this.averages.push({ x: 'Ticket', y: 100 - this.Ticket1 });
+    // this.averages.push({ x: 'Mtc', y: 100 - this.Mtc1 });
+    // this.averages.push({ x: 'Ws', y: 100 - this.Ws1 });
+    // this.averages.push({ x: 'Mast', y: 100 - this.Mast1 });
+    // this.averages.push({ x: 'Oris', y: 100 - this.Oris1 });
+    // this.averages.push({ x: 'Elite', y: 100 - this.Elite1 });
+    // this.averages.push({ x: 'Yes', y: 100 - this.Yes1 });
+    // this.averages.push({ x: 'Time', y: 100 - this.Time1 });
  
   }
 
 
-  getByAverage() {
-    this.chartOptions3 = {
-      series: [
-        {
-          name: 'Brand',
-          colors: ['#FFC38F'],
-          data: this.averages,
-        },
-      ],
-      colors: ['#008FFB'], 
-      chart: {
-        type: 'bar',
-        height: 275,
-      },
-      plotOptions: {
-        bar: {
-          borderRadiusApplication: 'around',
-          columnWidth: '40%',
-        },
-      },
-      xaxis: {
-        type: 'category',
-        group: {
-          style: {
-            fontSize: '7px',
-            fontWeight: 700,
-          },
-        },
-      },
-      yaxis: {
-        min: 0,
-        max: 100,
-        tickAmount: 5,
-      }
-    };
-  }
-}
+  // getByAverage() {
+  //   this.chartOptions3 = {
+  //     series: [
+  //       {
+  //         name: 'Brand',
+  //         colors: ['#FFC38F'],
+  //         data: this.averages,
+  //       },
+  //     ],
+  //     colors: ['#008FFB'], 
+  //     chart: {
+  //       type: 'bar',
+  //       height: 275,
+  //     },
+  //     plotOptions: {
+  //       bar: {
+  //         borderRadiusApplication: 'around',
+  //         columnWidth: '40%',
+  //       },
+  //     },
+  //     xaxis: {
+  //       type: 'category',
+  //       group: {
+  //         style: {
+  //           fontSize: '7px',
+  //           fontWeight: 700,
+  //         },
+  //       },
+  //     },
+  //     yaxis: {
+  //       min: 0,
+  //       max: 100,
+  //       tickAmount: 5,
+  //     }
+  //   };
+  // }
+

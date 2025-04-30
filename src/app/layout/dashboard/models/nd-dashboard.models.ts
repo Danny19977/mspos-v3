@@ -1,21 +1,10 @@
 
 export interface TableViewModel {
-    Area: string,
-    Eq: number,
-    // Sold   : number,
-    Dhl: number,
-    Ar: number,
-    Sbl: number,
-    Pmf: number,
-    Pmm: number,
-    Ticket: number,
-    Mtc: number,
-    Ws: number,
-    Mast: number,
-    Oris: number,
-    Elite: number, 
-    Yes: number,
-    Time: number,
+    name: string;
+    brand_name: string;
+    total_count: number;
+    percentage: number;
+    total_pos: number;
 }
 
 export interface NDAverageModel {
@@ -47,7 +36,10 @@ export interface NDPerformanceModel {
 }
 
 export interface NDYearModel {
-    Month: string;
-    Eq: number;  
+    month: string;
+    brand_name: string;
+    total_count: number;
+    percentage: number;
+    total_pos: number;
 }
 

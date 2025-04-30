@@ -66,6 +66,8 @@ export class ProfileComponent implements OnInit {
 
   public password: boolean[] = [false];
 
+  onLine = navigator.onLine;
+
   constructor(
     private router: Router,
     private _formBuilder: FormBuilder,

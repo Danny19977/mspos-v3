@@ -1,0 +1,87 @@
+<div class="row">
+    <div class="col-md-12 d-flex">
+  
+      <div class="card w-100">
+        <div class="card-header border-0 pb-0">
+          <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
+            @if(subarea) {
+            <!-- <nav aria-label="breadcrumb">
+              <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a [routerLink]="['/web/dashboard']">{{ area.Country.name }}</a></li>
+                <li class="breadcrumb-item">
+                  <a [routerLink]="['/web/dashboard/numeric-distribution']">
+                    {{ area.Province.name }} </a>
+                </li>
+                <li class="breadcrumb-item active" aria-current="page">{{ area.name }}</li>
+              </ol>
+            </nav> -->
+            <h4>
+              <i class="ti ti-grip-vertical me-1"></i>
+              Table ND Commune by <span style="color: red; font-weight: bold;">{{ subarea.name }}</span>
+            </h4>
+            }
+            <div class="d-flex align-items-center flex-wrap row-gap-2">
+              <form [formGroup]="dateRange">
+                <div class="form-sort me-2">
+                  <i class="ti ti-calendar"></i>
+                  <input type="text" class="form-control date-range bookingrange" bsDaterangepicker
+                    [bsConfig]="{ adaptivePosition: true }" formControlName="rangeValue" />
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          @if (isLoading) {
+          <div class=" text-center d-flex justify-content-center align-items-center ">
+            <div class="spinner-border bs-primary" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </div>
+          } @else {
+          <div class="table-responsive custom-table">
+            <table class="table dataTable" id="deals-project">
+              <thead class="thead-light">
+                <tr>
+                  <th>Commune</th>
+                  <th>Brand</th>
+                  <th>Pourcentage</th>
+                  <th>Presence</th>
+                  <th>Total Pos</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of tableViewList; track $index) {
+                <tr class="odd">
+                  <td>{{ item.name }}</td>
+                  <td>{{ item.brand_name }}</td>
+                  @if (item.brand_name === 'Equateur') {
+                  <td>
+                    @if (item.percentage >= 95) {
+                    <span class="badge badge-pill bg-success" style="font-size: 16px;">{{item.percentage}} %</span>
+                    }
+                    @else if (item.percentage < 95 && item.percentage>= 80) {
+                      <span class="badge badge-pill bg-warning" style="font-size: 16px;">{{item.percentage}} %</span>
+                      }
+                      @else if (item.percentage < 80) { <span class="badge badge-pill bg-danger" style="font-size: 16px;">
+                        {{item.percentage}} %</span>
+                        }
+                  </td>
+                  }@else {
+                  <td>{{item.percentage}} %</td>
+                  }
+                  <td>{{item.total_count }}</td>
+                  <td>{{ item.total_pos }}</td>
+                </tr>
+                }
+  
+              </tbody>
+            </table>
+          </div>
+          }
+  
+        </div>
+      </div>
+  
+    </div>
+  </div>

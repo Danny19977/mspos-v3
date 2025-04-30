@@ -1,37 +1,23 @@
-import { ChangeDetectionStrategy, Component, computed, effect, OnInit, Renderer2, signal } from '@angular/core';
-import { routes } from '../../../shared/routes/routes';
-import { ProvinceService } from '../../province/province.service';
-import { AreaService } from '../../areas/area.service';
-import { CommonService } from '../../../shared/common/common.service';
-import { IProvince, IProvinceDropdown } from '../../province/models/province.model';
-import { IArea, IAreaDropdown } from '../../areas/models/area.model';
-import { NdService } from '../services/nd.service';
 import { formatDate } from '@angular/common';
+import { Component, computed, Renderer2, signal } from '@angular/core';
+import { ICountry } from '../../../country/models/country.model';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { NDYearModel, TableViewModel } from '../models/nd-dashboard.models';
-import { AuthService } from '../../../auth/auth.service';
-import { IUser } from '../../user/models/user.model';
-import { CountryService } from '../../country/country.service';
-import { ISubArea } from '../../subarea/models/subarea.model';
-import { ICommune } from '../../commune/models/commune.model';
-import { ICountry } from '../../country/models/country.model';
-import { SubareaService } from '../../subarea/subarea.service';
-import { CommuneService } from '../../commune/commune.service';
-import { ApiResponseNdDashboard, ApiResponseNdDashboardTotalByMonth } from '../../../shared/model/api-response.model';
-
+import { AuthService } from '../../../../auth/auth.service';
+import { ProvinceService } from '../../../province/province.service';
+import { CountryService } from '../../../country/country.service';
+import { NdService } from '../../services/nd.service';
+import { CommonService } from '../../../../shared/common/common.service';
+import { TableViewModel } from '../../models/nd-dashboard.models';
+import { IProvince } from '../../../province/models/province.model';
+import { IUser } from '../../../user/models/user.model';
 
 @Component({
-  selector: 'app-nd-dashboard',
+  selector: 'app-nd-table-view-province',
   standalone: false,
-  templateUrl: './nd-dashboard.component.html',
-  styleUrl: './nd-dashboard.component.scss',
+  templateUrl: './nd-table-view-province.component.html',
+  styleUrl: './nd-table-view-province.component.scss'
 })
-export class NdDashboardComponent implements OnInit {
-  public routes = routes;
-  base = '';
-  page = '';
-  last = '';
-
+export class NdTableViewProvinceComponent {
   isLoading = false;
   currentUser!: IUser;
 
@@ -59,29 +45,13 @@ export class NdDashboardComponent implements OnInit {
     )
   );
 
-
-  constructor(
-    private common: CommonService,
-    private _formBuilder: FormBuilder,
-    private renderer: Renderer2,
+  constructor( 
+    private _formBuilder: FormBuilder, 
     private ndService: NdService,
     private countryService: CountryService,
     private provinceService: ProvinceService,
     private authService: AuthService,
-  ) {
-
-    this.common.base.subscribe((base: string) => {
-      this.base = base;
-    });
-    this.common.page.subscribe((page: string) => {
-      this.page = page;
-    });
-    this.common.last.subscribe((last: string) => {
-      this.last = last;
-    });
-    if (this.last == 'nd-dashboard') {
-      this.renderer.addClass(document.body, 'date-picker-dashboard');
-    }
+  ) { 
   }
 
 
@@ -111,10 +81,10 @@ export class NdDashboardComponent implements OnInit {
             this.provinceList = pr.data; 
             if (this.currentUser.role != 'Managers' && this.currentUser.role != 'Support') {
               this.getTableView(this.countryList()[0].uuid, this.provinceList[0].uuid, this.start_date, this.end_date);
-              this.getNDYear(this.countryList()[0].uuid);
+              
             } else {
               this.getTableView(this.currentUser.country_uuid, this.currentUser.province_uuid, this.start_date, this.end_date);
-              this.getNDYear(this.currentUser.country_uuid);
+              
             }
           });
         }); 
@@ -151,19 +121,8 @@ export class NdDashboardComponent implements OnInit {
         this.getTableView(this.countryList()[0].uuid, this.provinceList[0].uuid, this.start_date, this.end_date);
       } else {
         this.getTableView(this.currentUser.country_uuid, this.currentUser.province_uuid, this.start_date, this.end_date);
-      }
-     
-
-    });
-    this.common.page.subscribe((page: string) => {
-      this.page = page;
-    });
-    this.common.last.subscribe((last: string) => {
-      this.last = last;
-    });
-    if (this.last == 'nd-dashboard') {
-      this.renderer.addClass(document.body, 'date-picker-dashboard');
-    }
+      } 
+    }); 
   }
 
 
@@ -181,14 +140,4 @@ export class NdDashboardComponent implements OnInit {
       this.isLoading = false;
     });
   } 
-
-
-  getNDYear(country_uuid: string) {
-    const year = new Date().getFullYear();
-    this.ndService.NdTotalByBrandByMonth(country_uuid, year.toString()).subscribe((res) => {
-      console.log('getNDYear res:', res);
-      this.ndYearList = res.data;
-      this.isLoading = false;
-    });
-  }
 }

@@ -12,6 +12,10 @@ import { SosDashboardComponent } from './sos-dashboard/sos-dashboard.component';
 import { SeDashboardComponent } from './se-dashboard/se-dashboard.component';
 import { GoogleMapComponent } from './google-map/google-map.component';
 import { KpiDashboardComponent } from './kpi-dashboard/kpi-dashboard.component';
+import { NdTableViewAreaComponent } from './nd-dashboard/nd-table-view-area/nd-table-view-area.component';
+import { NdTableViewSubareaComponent } from './nd-dashboard/nd-table-view-subarea/nd-table-view-subarea.component';
+import { NdTableViewCommuneComponent } from './nd-dashboard/nd-table-view-commune/nd-table-view-commune.component';
+import { NdTableViewProvinceComponent } from './nd-dashboard/nd-table-view-province/nd-table-view-province.component';
 
 const routes: Routes = [
   {
@@ -34,7 +38,31 @@ const routes: Routes = [
       {
         path: 'numeric-distribution',
         component: NdDashboardComponent,
-      }, 
+        children: [
+          {
+            path: 'province/:country',
+            component: NdTableViewProvinceComponent,
+          },
+          {
+            path: 'area/:province_name',
+            component: NdTableViewAreaComponent,
+          },
+          {
+            path: 'subarea/:area_name',
+            component: NdTableViewSubareaComponent,
+          },
+          {
+            path: 'commune/:subarea_name',
+            component: NdTableViewCommuneComponent,
+          },
+          {
+            path: '',
+            component: NdTableViewProvinceComponent
+          }
+        ]
+      },
+      
+
       {
         path: 'weighted-distribution',
         component: WdDashboardComponent,

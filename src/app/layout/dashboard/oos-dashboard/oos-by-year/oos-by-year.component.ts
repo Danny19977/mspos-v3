@@ -43,12 +43,12 @@ export class OosByYearComponent implements OnChanges {
   getChartByYear() {
     this.chartOptions4 = {
       series: [
-        {
-          name: 'Equateur',
-          data: this.oosYearList.map((val) => {
-            return 100 - val.Eq;
-          }),
-        },
+        // {
+        //   name: 'Equateur',
+        //   data: this.oosYearList.map((val) => {
+        //     return 100 - val.Eq;
+        //   }),
+        // },
       ],
       colors: ['#E41F07'],
       chart: {
@@ -66,33 +66,33 @@ export class OosByYearComponent implements OnChanges {
       },
       xaxis: {
         categories: this.oosYearList.map((val) => {
-          if (val.Month == '1') {
-            return 'Jan';
-          } else if (val.Month == '2') {
-            return 'Feb';
-          } else if (val.Month == '3') {
-            return 'Mar';
-          } else if (val.Month == '4') {
-            return 'Apr';
-          } else if (val.Month == '5') {
-            return 'Mai';
-          } else if (val.Month == '6') {
-            return 'Juin';
-          } else if (val.Month == '7') {
-            return 'Juil';
-          } else if (val.Month == '8') {
-            return 'Aout';
-          } else if (val.Month == '9') {
-            return 'Sep';
-          } else if (val.Month == '10') {
-            return 'Oct';
-          } else if (val.Month == '11') {
-            return 'Nov';
-          } else if (val.Month == '12') {
-            return 'Dec';
-          } else {
-            return "";
-          }
+          // if (val.Month == '1') {
+          //   return 'Jan';
+          // } else if (val.Month == '2') {
+          //   return 'Feb';
+          // } else if (val.Month == '3') {
+          //   return 'Mar';
+          // } else if (val.Month == '4') {
+          //   return 'Apr';
+          // } else if (val.Month == '5') {
+          //   return 'Mai';
+          // } else if (val.Month == '6') {
+          //   return 'Juin';
+          // } else if (val.Month == '7') {
+          //   return 'Juil';
+          // } else if (val.Month == '8') {
+          //   return 'Aout';
+          // } else if (val.Month == '9') {
+          //   return 'Sep';
+          // } else if (val.Month == '10') {
+          //   return 'Oct';
+          // } else if (val.Month == '11') {
+          //   return 'Nov';
+          // } else if (val.Month == '12') {
+          //   return 'Dec';
+          // } else {
+          //   return "";
+          // }
         }),
       },
     };

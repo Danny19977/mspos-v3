@@ -165,7 +165,6 @@ export class SubareaComponent implements OnInit {
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
         this.dataSource.data = this.dataList; // Update dataSource data
-        console.log("data", res.data);
         this.isLoadingData = false;
       });
     }

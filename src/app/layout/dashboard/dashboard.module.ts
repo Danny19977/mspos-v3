@@ -12,9 +12,7 @@ import { SishDashboardComponent } from './sish-dashboard/sish-dashboard.componen
 import { OosDashboardComponent } from './oos-dashboard/oos-dashboard.component';
 import { SosDashboardComponent } from './sos-dashboard/sos-dashboard.component';
 import { SeDashboardComponent } from './se-dashboard/se-dashboard.component';
-import { NdAverageAreaComponent } from './nd-dashboard/nd-average-area/nd-average-area.component';
-import { NdPerformanceAreaComponent } from './nd-dashboard/nd-performance-area/nd-performance-area.component';
-import { NdTableViewComponent } from './nd-dashboard/nd-table-view/nd-table-view.component';
+import { NdTableViewComponent } from './nd-dashboard/nd-table-view-province/nd-table-view/nd-table-view.component';
 import { NdByYearComponent } from './nd-dashboard/nd-by-year/nd-by-year.component';
 import { TrackingDrComponent } from './mspos-dashboard/tracking-dr/tracking-dr.component';
 import { SumaryChartBarComponent } from './mspos-dashboard/sumary-chart-bar/sumary-chart-bar.component';
@@ -37,6 +35,10 @@ import { GoogleMapsModule } from '@angular/google-maps';
 import { MapCardComponent } from './google-map/map-card/map-card.component';
 import { PriceSaleComponent } from './mspos-dashboard/price-sale/price-sale.component';
 import { KpiDashboardComponent } from './kpi-dashboard/kpi-dashboard.component';
+import { NdTableViewAreaComponent } from './nd-dashboard/nd-table-view-area/nd-table-view-area.component';
+import { NdTableViewSubareaComponent } from './nd-dashboard/nd-table-view-subarea/nd-table-view-subarea.component';
+import { NdTableViewCommuneComponent } from './nd-dashboard/nd-table-view-commune/nd-table-view-commune.component';
+import { NdTableViewProvinceComponent } from './nd-dashboard/nd-table-view-province/nd-table-view-province.component';
 
 
 
@@ -51,8 +53,6 @@ import { KpiDashboardComponent } from './kpi-dashboard/kpi-dashboard.component';
     OosDashboardComponent,
     SosDashboardComponent,
     SeDashboardComponent,
-    NdAverageAreaComponent,
-    NdPerformanceAreaComponent,
     NdTableViewComponent,
     NdByYearComponent,
     TrackingDrComponent,
@@ -74,7 +74,11 @@ import { KpiDashboardComponent } from './kpi-dashboard/kpi-dashboard.component';
     GoogleMapComponent,
     MapCardComponent,
     PriceSaleComponent,
-    KpiDashboardComponent, 
+    KpiDashboardComponent,
+    NdTableViewAreaComponent,
+    NdTableViewSubareaComponent,
+    NdTableViewCommuneComponent,
+    NdTableViewProvinceComponent, 
   ],
   imports: [
     CommonModule,

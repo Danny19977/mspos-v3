@@ -37,16 +37,16 @@ export class OosPerformanceAreaComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     this.performanceArea = [];
-    this.areaList = this.performanceAreaList.map((v) => v.Area);
+    // this.areaList = this.performanceAreaList.map((v) => v.Area);
 
-    for (let index = 0; index < this.performanceAreaList.length; index++) {
-      const element = this.performanceAreaList[index];
-      this.areaList.forEach(area => {
-        if (element.Area == area) {
-          this.performanceArea.push({ area: element.Area, data: element.Eq });
-        }
-      }); 
-    }
+    // for (let index = 0; index < this.performanceAreaList.length; index++) {
+    //   const element = this.performanceAreaList[index];
+    //   this.areaList.forEach(area => {
+    //     if (element.Area == area) {
+    //       this.performanceArea.push({ area: element.Area, data: element.Eq });
+    //     }
+    //   }); 
+    // }
     this.getPerformanceEQArea(); 
   }
 

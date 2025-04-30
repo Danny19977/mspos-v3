@@ -53,6 +53,18 @@
                     <i class="ti ti-arrow-bar-to-left"></i>
                 </a>
 
+            }  @else if(currentUser.role == 'Cyclo') {
+                <a [routerLink]="routes.posFormList" class="logo logo-normal">
+                    <img src="img/logo.png" alt="Logo">
+                    <img src="img/white-logo.svg" class="white-logo" alt="Logo">
+                </a>
+                <a [routerLink]="routes.posFormList" class="logo-small">
+                    <img src="img/logo-small.svg" alt="Logo">
+                </a>
+                <a id="toggle_btn" href="javascript:void(0);" (click)="toggleSidebar()">
+                    <i class="ti ti-arrow-bar-to-left"></i>
+                </a>
+
             } @else if(currentUser.role == 'Support') {
                 <a [routerLink]="routes.msposDashboard" class="logo logo-normal">
                     <img src="img/logo.png" alt="Logo">
@@ -78,10 +90,18 @@
             <span></span>
         </span>
     </a>
+    <a id="mobile_btn" class="mobile_btn btn btn-icon btn-outline-primary rounded-pill d-md-none" href="javascript:void(0);" (click)="goBack()" 
+        style="margin-left: 55px; margin-top: 15px; width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center; padding: 0; vertical-align: middle;">
+        <i class="fa-solid fa-arrow-left" style="font-size: 14px;"></i>
+    </a>
 
     <div class="header-user">
         <ul class="nav user-menu">
-
+            <li>
+                <button class="btn btn-icon btn-outline-primary rounded-pill" (click)="goBack()" >
+                    <i class="fa-solid fa-arrow-left"></i>
+                </button>
+            </li>
             <!-- Search -->
             <li class="nav-item nav-search-inputs me-auto">
                 <div class="top-nav-search">
@@ -98,7 +118,7 @@
                     </form>
                 </div>
             </li>
-            <!-- /Search -->
+            <!-- /Search --> 
 
             <!-- Nav List -->
             <li class="nav-item nav-list">
@@ -207,7 +227,12 @@
                             <img src="img/profiles/avatar-20.jpg" alt="Profile">
                             }
                         </span>
-                        <span class="badge badge-success rounded-pill"></span>
+                        @if (onLine) {
+                          <span class="badge badge-success rounded-pill"></span>  
+                        }@else {
+                            <span class="badge badge-danger rounded-pill"></span>  
+                        }
+                        
                     </span>
                     }
                 </a>

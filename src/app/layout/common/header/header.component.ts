@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
+import { Location } from '@angular/common';
 import { SidebarService } from '../../../shared/sidebar/sidebar.service';
 import { CommonService } from '../../../shared/common/common.service';
 import { routes } from '../../../shared/routes/routes';
-import { SettingsService } from '../../../shared/settings/settings.service';
-import { Auth } from '../../../auth/classes/auth'; 
+import { SettingsService } from '../../../shared/settings/settings.service'; 
 import { AuthService } from '../../../auth/auth.service';
 import { Router } from '@angular/router';
 import { LogsService } from '../../user-logs/logs.service';
@@ -26,6 +26,7 @@ export class HeaderComponent implements OnInit {
   currentUser!: IUser;
   isLoading = false;
 
+  onLine = navigator.onLine;
 
   constructor(
     private common: CommonService,
@@ -34,6 +35,7 @@ export class HeaderComponent implements OnInit {
     private settings: SettingsService,
     private authService: AuthService,
     private logActivity: LogsService,
+    private location: Location,
   ) {
     this.common.base.subscribe((base: string) => {
       this.base = base;
@@ -109,6 +111,10 @@ export class HeaderComponent implements OnInit {
   public changeThemeMode(theme: string): void {
     this.settings.themeMode.next(theme);
     localStorage.setItem('themeMode', theme);
+  }
+
+  goBack() {
+    this.location.back();
   }
 
 }

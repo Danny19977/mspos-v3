@@ -50,8 +50,12 @@
                         <div class="d-flex align-items-center justify-content-between flex-wrap">
                             <div class="d-flex align-items-center mb-2">
                                 <div class="avatar avatar-xxl online online-sm me-3 flex-shrink-0">
-                                    <img src="img/profiles/avatar-14.jpg" alt="img">
-                                    <span class="status online"></span>
+                                    <img src="img/profiles/avatar-14.jpg" alt="img"> 
+                                    @if (onLine) {
+                                        <span class="status online"></span>
+                                      }@else {
+                                          <span class="badge badge-danger rounded-pill"></span>  
+                                      }
                                 </div>
                                 <div>
                                     <h5 class="mb-1">{{ currentUser.fullname }}</h5>

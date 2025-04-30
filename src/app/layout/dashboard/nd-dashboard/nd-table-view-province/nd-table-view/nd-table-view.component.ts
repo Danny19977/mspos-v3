@@ -1,5 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { TableViewModel } from '../../models/nd-dashboard.models';
+import { TableViewModel } from '../../../models/nd-dashboard.models';
+import { IProvince } from '../../../../province/models/province.model';
 
 @Component({
   selector: 'app-nd-table-view',
@@ -13,6 +14,8 @@ export class NdTableViewComponent implements OnChanges {
   @Input() isLoading!: boolean;
 
   tableViewList: TableViewModel[] = [];
+
+  provinceList: IProvince[] = [];
 
   ngOnChanges(changes: SimpleChanges): void {
     this.tableViewList = this.tableView;

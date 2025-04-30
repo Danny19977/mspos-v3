@@ -49,8 +49,7 @@ import { PosViewComponent } from './pos-vente/pos-view/pos-view.component';
     CommuneComponent,
     RouteplanComponent,
     PosEquipmentComponent, 
-    PosViewComponent,
-    
+    PosViewComponent,     
   ],
   imports: [
     CommonModule,
