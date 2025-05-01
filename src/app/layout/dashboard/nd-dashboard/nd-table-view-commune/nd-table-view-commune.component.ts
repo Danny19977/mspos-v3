@@ -76,8 +76,6 @@ export class NdTableViewCommuneComponent implements OnInit {
     });
   }
 
-
-
   getTableViewCommune(country_uuid: string, province_uuid: string, area_uuid: string, sub_area_uuid: string, start_date: string, end_date: string) {
     this.ndService.NdTableViewCommune(country_uuid, province_uuid, area_uuid, sub_area_uuid, start_date, end_date).subscribe((res) => {
       this.tableViewList = res.data;

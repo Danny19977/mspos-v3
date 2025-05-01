@@ -22,11 +22,7 @@ import { SosPieComponent } from './mspos-dashboard/sos-pie/sos-pie.component';
 import { OosAverageAreaComponent } from './oos-dashboard/oos-average-area/oos-average-area.component';
 import { OosByYearComponent } from './oos-dashboard/oos-by-year/oos-by-year.component';
 import { OosPerformanceAreaComponent } from './oos-dashboard/oos-performance-area/oos-performance-area.component';
-import { OosTableViewComponent } from './oos-dashboard/oos-table-view/oos-table-view.component';
-import { SosPieChartComponent } from './sos-dashboard/sos-pie-chart/sos-pie-chart.component';
-import { SosTableViewComponent } from './sos-dashboard/sos-table-view/sos-table-view.component';
-import { SosByYearComponent } from './sos-dashboard/sos-by-year/sos-by-year.component';
-import { SosChartBarComponent } from './sos-dashboard/sos-chart-bar/sos-chart-bar.component';
+import { OosTableViewComponent } from './oos-dashboard/oos-table-view/oos-table-view.component'; 
 import { BetterDrComponent } from './mspos-dashboard/better-dr/better-dr.component';
 import { BetterSupComponent } from './mspos-dashboard/better-sup/better-sup.component';
 import { StatusEquipementsComponent } from './mspos-dashboard/status-equipements/status-equipements.component';
@@ -39,6 +35,11 @@ import { NdTableViewAreaComponent } from './nd-dashboard/nd-table-view-area/nd-t
 import { NdTableViewSubareaComponent } from './nd-dashboard/nd-table-view-subarea/nd-table-view-subarea.component';
 import { NdTableViewCommuneComponent } from './nd-dashboard/nd-table-view-commune/nd-table-view-commune.component';
 import { NdTableViewProvinceComponent } from './nd-dashboard/nd-table-view-province/nd-table-view-province.component';
+import { SosTableViewProvinceComponent } from './sos-dashboard/sos-table-view-province/sos-table-view-province.component';
+import { SosTableViewAreaComponent } from './sos-dashboard/sos-table-view-area/sos-table-view-area.component';
+import { SosTableViewSubareaComponent } from './sos-dashboard/sos-table-view-subarea/sos-table-view-subarea.component';
+import { SosTableViewCommuneComponent } from './sos-dashboard/sos-table-view-commune/sos-table-view-commune.component';
+import { SosChartLineComponent } from './sos-dashboard/sos-chart-line/sos-chart-line.component';
 
 
 
@@ -63,11 +64,7 @@ import { NdTableViewProvinceComponent } from './nd-dashboard/nd-table-view-provi
     OosAverageAreaComponent,
     OosByYearComponent,
     OosPerformanceAreaComponent,
-    OosTableViewComponent,
-    SosPieChartComponent,
-    SosTableViewComponent,
-    SosByYearComponent,
-    SosChartBarComponent,
+    OosTableViewComponent, 
     BetterDrComponent,
     BetterSupComponent,
     StatusEquipementsComponent,
@@ -78,7 +75,12 @@ import { NdTableViewProvinceComponent } from './nd-dashboard/nd-table-view-provi
     NdTableViewAreaComponent,
     NdTableViewSubareaComponent,
     NdTableViewCommuneComponent,
-    NdTableViewProvinceComponent, 
+    NdTableViewProvinceComponent,
+    SosTableViewProvinceComponent,
+    SosTableViewAreaComponent,
+    SosTableViewSubareaComponent,
+    SosTableViewCommuneComponent,
+    SosChartLineComponent, 
   ],
   imports: [
     CommonModule,

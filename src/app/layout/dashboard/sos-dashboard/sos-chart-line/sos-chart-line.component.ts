@@ -7,7 +7,7 @@ import {
   ApexXAxis,
   ApexPlotOptions,
 } from 'ng-apexcharts';
-import { NDYearModel } from '../../models/nd-dashboard.models';
+import { SOSYearModel } from '../../models/nd-dashboard.models';
 
 export interface ChartOptions {
   series: ApexAxisChartSeries | any;
@@ -17,17 +17,18 @@ export interface ChartOptions {
   xaxis: ApexXAxis | any;
 }
 
-@Component({
-  selector: 'app-nd-by-year',
-  standalone: false,
-  templateUrl: './nd-by-year.component.html',
-  styleUrl: './nd-by-year.component.scss'
-})
-export class NdByYearComponent implements OnChanges {
-  @Input() isLoading!: boolean; 
-  @Input() ndYear: NDYearModel[] = [];
 
-  ndYearList: NDYearModel[] = [];
+@Component({
+  selector: 'app-sos-chart-line',
+  standalone: false,
+  templateUrl: './sos-chart-line.component.html',
+  styleUrl: './sos-chart-line.component.scss'
+})
+export class SosChartLineComponent implements OnChanges {
+  @Input() isLoading!: boolean; 
+  @Input() ndYear: SOSYearModel[] = [];
+
+  ndYearList: SOSYearModel[] = [];
 
   @ViewChild('chart') chart!: ChartComponent;
   public chartOptions4: Partial<ChartOptions> | any;
@@ -96,3 +97,4 @@ export class NdByYearComponent implements OnChanges {
     };
   }
 }
+

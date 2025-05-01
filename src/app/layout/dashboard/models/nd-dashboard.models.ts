@@ -6,15 +6,44 @@ export interface TableViewModel {
     percentage: number;
     total_pos: number;
 }
+export interface NDYearModel {
+    month: string;
+    brand_name: string;
+    total_count: number;
+    percentage: number;
+    total_pos: number;
+}
+
+
+export interface SOSTableViewModel {
+    name: string;
+    brand_name: string;
+    percentage: number;
+    total_farde: number;
+    total_global_farde: number;
+    total_pos: number;
+}
+export interface SOSYearModel {
+    brand_name: string;
+    month: string;
+    total_farde: number;
+    total_global_farde: number;
+    percentage: number;
+    total_pos: number;
+}
+
+
+
+
 
 export interface NDAverageModel {
     x: string;
     y: number;
 }
- 
+
 
 export interface NDByAreaModel {
-    Eq: number, 
+    Eq: number,
     Dhl: number,
     Ar: number,
     Sbl: number,
@@ -25,21 +54,15 @@ export interface NDByAreaModel {
     Ws: number,
     Mast: number,
     Oris: number,
-    Elite: number, 
+    Elite: number,
     Yes: number,
     Time: number,
 }
 
 export interface NDPerformanceModel {
     area: string;
-    data: number;  
+    data: number;
 }
 
-export interface NDYearModel {
-    month: string;
-    brand_name: string;
-    total_count: number;
-    percentage: number;
-    total_pos: number;
-}
+
 

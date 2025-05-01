@@ -1,18 +1,13 @@
-import { Component, OnInit, Renderer2 } from '@angular/core';
-import { routes } from '../../../shared/routes/routes';
-import { ProvinceService } from '../../province/province.service';
-import { AreaService } from '../../areas/area.service';
-import { CommonService } from '../../../shared/common/common.service';
-import { IProvinceDropdown } from '../../province/models/province.model';
-import { IAreaDropdown } from '../../areas/models/area.model';
-import { formatDate } from '@angular/common';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { NDYearModel, TableViewModel } from '../models/nd-dashboard.models';
-import { SosService } from '../services/sos.service';
-import { SOSPieChartModel } from '../models/sos-dashboard.models';
-import { AuthService } from '../../../auth/auth.service';
-import { Router } from '@angular/router';
+import { Component, computed, OnInit, Renderer2, signal } from '@angular/core';
+import { routes } from '../../../shared/routes/routes'; 
+import { CommonService } from '../../../shared/common/common.service'; 
+import { AuthService } from '../../../auth/auth.service'; 
 import { IUser } from '../../user/models/user.model';
+import { ICountry } from '../../country/models/country.model';
+import { CountryService } from '../../country/country.service';
+import { NdService } from '../services/nd.service';
+import { SosService } from '../services/sos.service';
+import { SOSYearModel } from '../models/nd-dashboard.models';
 
 @Component({
   selector: 'app-sos-dashboard',
@@ -21,42 +16,31 @@ import { IUser } from '../../user/models/user.model';
   styleUrl: './sos-dashboard.component.scss'
 })
 export class SosDashboardComponent implements OnInit {
-
-  public routes = routes;
+ public routes = routes;
   base = '';
   page = '';
   last = '';
 
   isLoading = false;
   currentUser!: IUser;
-
-  dateRange!: FormGroup;
-  start_date!: string;
-  end_date!: string;
-
-  // Filtre 
-  rangeDate: any[] = [];
-  provinceDropdownList: IProvinceDropdown[] = [];
-  provinceDropdown!: IProvinceDropdown;
-  areaList: IAreaDropdown[] = [];
-  areaListFilter: IAreaDropdown[] = [];
-  area!: IAreaDropdown;
-  areaCount = 1;
+ 
+  ndYearList: SOSYearModel[] = [];
 
 
-  sosPieLIst: SOSPieChartModel[] = [];
-  tableViewList: TableViewModel[] = [];
-  sosYearList: NDYearModel[] = [];
-
+  countrySearch = signal<string>('');
+  countryList = signal<ICountry[]>([]);
+  filteredCountryList = computed(() =>
+    this.countryList().filter((country) =>
+      country.name.toLowerCase().includes(this.countrySearch().toLowerCase())
+    )
+  );
+ 
   constructor(
-    private common: CommonService,
-    private _formBuilder: FormBuilder,
+    private common: CommonService, 
     private renderer: Renderer2,
-    private router: Router,
-    private authService: AuthService,
     private sosService: SosService,
-    private provinceService: ProvinceService,
-    private areaService: AreaService
+    private countryService: CountryService, 
+    private authService: AuthService,
   ) {
 
     this.common.base.subscribe((base: string) => {
@@ -68,129 +52,43 @@ export class SosDashboardComponent implements OnInit {
     this.common.last.subscribe((last: string) => {
       this.last = last;
     });
-    if (this.last == 'share-of-stock') {
+    if (this.last == 'nd-dashboard') {
       this.renderer.addClass(document.body, 'date-picker-dashboard');
     }
   }
 
 
   ngOnInit(): void {
-    this.isLoading = true;
+    this.isLoading = true; 
+ 
     this.authService.user().subscribe({
       next: (user) => {
         this.currentUser = user;
-        if (this.currentUser.role != 'ASM') {
-          this.provinceService.getProvinceDropdown().subscribe((res) => {
-            this.provinceDropdownList = res.data;
-            this.areaService.getAreaDropdown().subscribe((r) => {
-              this.areaList = r.data;
-              if (!this.provinceDropdown) {
-                const dataList = this.provinceDropdownList.filter((v) => v.name == 'Kinshasa');
-                const areaArray = this.areaList.filter((v) => v.province_uuid == dataList[0].uuid);
-                this.areaListFilter = areaArray.filter((obj, index, self) =>
-                  index === self.findIndex((t) => t.name === obj.name)
-                );
-                this.areaCount = this.areaListFilter.length; // Total Area par province selectionner 
-              }
-            });
-          });
-        } else if (this.currentUser.role == 'ASM') {
-          this.provinceService.get(this.currentUser.province_uuid).subscribe((res) => {
-            this.provinceDropdown = res.data;
-          });
-        }
 
-        const date = new Date();
-        const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-        const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-        this.rangeDate = [firstDay, lastDay];
-
-        this.dateRange = this._formBuilder.group({
-          province: new FormControl(this.provinceDropdown),
-          rangeValue: new FormControl(this.rangeDate),
-          area: new FormControl(''),
-        });
-        this.start_date = formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US');
-        this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
-
-        if (this.currentUser.role == 'ASM') {
-          this.provinceService.get(this.currentUser.province_uuid).subscribe((res) => {
-            this.provinceDropdown = res.data;
-            if (this.start_date && this.end_date) {
-              this.getTableView(this.provinceDropdown.name, this.start_date, this.end_date);
-              this.getPieChart(this.provinceDropdown.name, this.start_date, this.end_date);
-              this.getNDYear(this.provinceDropdown.name);
-            }
-          }); 
-        } else {
-          if (!this.provinceDropdown && this.start_date && this.end_date) {
-            this.getTableView(this.dateRange.value.province, this.start_date, this.end_date);
-            this.getPieChart(this.dateRange.value.province, this.start_date, this.end_date);
-            this.getNDYear(this.dateRange.value.province);
+        this.countryService.getAll().subscribe((res) => {
+          this.countryList.set(res.data); 
+          if (this.currentUser.role != 'Managers' && this.currentUser.role != 'Support') { 
+            this.getChartLineYear(this.countryList()[0].uuid);
+          } else { 
+            this.getChartLineYear(this.currentUser.country_uuid);
           }
-        }
-
-        this.onChanges();
+        }); 
 
       },
       error: (error) => {
-        this.router.navigate(['/auth/login']);
         console.log(error);
       }
     });
+ 
   }
-
-
-  onChanges(): void {
-    this.dateRange.valueChanges.subscribe(val => {
-      if (this.currentUser.role != 'ASM') {
-        this.provinceDropdown = val.province;
-      }
-      
-      this.start_date = formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US');
-      this.end_date = formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US');
-      this.area = val.area;
-
-      const areaArray = this.areaList.filter((v) => v.province_uuid == this.provinceDropdown.uuid);
-      this.areaListFilter = areaArray.filter((obj, index, self) =>
-        index === self.findIndex((t) => t.name === obj.name)
-      );
-      this.areaCount = this.areaListFilter.length;
-
-      this.getTableView(this.provinceDropdown.name, this.start_date, this.end_date);
-      this.getPieChart(this.provinceDropdown.name, this.start_date, this.end_date);
-      this.getNDYear(this.provinceDropdown.name);
-    });
-  }
-
-
-  getPieChart(province: string, start_date: string, end_date: string) {
-    this.sosService.SOSPieChart(province, start_date, end_date).subscribe((res) => {
-      const dataList = res.data;
-      if (dataList) {
-        this.sosPieLIst = dataList;
-      }
+ 
+  getChartLineYear(country_uuid: string) {
+    const year = new Date().getFullYear();
+    this.sosService.SOSTotalByBrandByMonth(country_uuid, year.toString()).subscribe((res) => {
+      console.log('getChartLineYear res:', res);
+      this.ndYearList = res.data;
       this.isLoading = false;
     });
   }
 
-  getTableView(province: string, start_date: string, end_date: string) {
-    this.sosService.SOSTableView(province, start_date, end_date).subscribe((res) => {
-      const dataList = res.data;
-      if (dataList) {
-        this.tableViewList = dataList;
-      }
-      this.isLoading = false;
-    });
-  }
-
-  getNDYear(province: string) {
-    this.sosService.SOSByYear(province).subscribe((res) => {
-      const dataList = res.data;
-      if (dataList) {
-        this.sosYearList = dataList;
-      }
-      this.isLoading = false;
-    });
-  }
 }

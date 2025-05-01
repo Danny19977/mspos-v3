@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { ApiService } from '../../../shared/services/api.service';
 import { environment } from '../../../../environments/environment';
 import { Observable } from 'rxjs/internal/Observable';
+import { HttpParams } from '@angular/common/http';
 
 @Injectable({
   providedIn: 'root'
@@ -9,18 +10,56 @@ import { Observable } from 'rxjs/internal/Observable';
 export class SosService extends ApiService {
   endpoint: string = `${environment.apiUrl}/dashboard/share-of-stock`;
 
-
-  SOSPieChart(province: string, start_date: string, end_date: string): Observable<any> {
-    return this.http.get(`${this.endpoint}/sos-pie/${province}/${start_date}/${end_date}`);
+  SosTableViewProvince(country_uuid: string, province_uuid: string, start_date: string, end_date: string): Observable<any> {
+    let params = new HttpParams()
+      .set("country_uuid", country_uuid)
+      .set("province_uuid", province_uuid)
+      .set("start_date", start_date)
+      .set("end_date", end_date)
+    return this.http.get<any>(`${this.endpoint}/table-view-province`, { params });
   }
 
-  SOSTableView(province: string, start_date: string, end_date: string): Observable<any> {
-    return this.http.get(`${this.endpoint}/table-view/${province}/${start_date}/${end_date}`);
+  SOSTableViewArea(country_uuid: string, province_uuid: string,
+    start_date: string, end_date: string): Observable<any> {
+    let params = new HttpParams()
+      .set("country_uuid", country_uuid)
+      .set("province_uuid", province_uuid)
+      .set("start_date", start_date)
+      .set("end_date", end_date)
+    return this.http.get<any>(`${this.endpoint}/table-view-area`, { params });
   }
 
-  SOSByYear(province: string): Observable<any> {
-    return this.http.get(`${this.endpoint}/sos-year/${province}`);
+  SOSTableViewSubArea(country_uuid: string, province_uuid: string, area_uuid: string,
+    start_date: string, end_date: string): Observable<any> {
+    let params = new HttpParams()
+      .set("country_uuid", country_uuid)
+      .set("province_uuid", province_uuid)
+      .set("area_uuid", area_uuid)
+      .set("start_date", start_date)
+      .set("end_date", end_date)
+    return this.http.get<any>(`${this.endpoint}/table-view-subarea`, { params });
   }
- 
+
+  SOSTableViewCommune(country_uuid: string, province_uuid: string, area_uuid: string, sub_area_uuid: string,
+    start_date: string, end_date: string): Observable<any> {
+    let params = new HttpParams()
+      .set("country_uuid", country_uuid)
+      .set("province_uuid", province_uuid)
+      .set("area_uuid", area_uuid)
+      .set("sub_area_uuid", sub_area_uuid)
+      .set("start_date", start_date)
+      .set("end_date", end_date)
+    return this.http.get<any>(`${this.endpoint}/table-view-commune`, { params });
+  }
+
+
+  SOSTotalByBrandByMonth(country_uuid: string, year: string): Observable<any> {
+    let params = new HttpParams()
+      .set("country_uuid", country_uuid)
+      .set("year", year)
+    return this.http.get<any>(`${this.endpoint}/line-chart-by-month`, { params });
+  }
+
+
 }
- 
+

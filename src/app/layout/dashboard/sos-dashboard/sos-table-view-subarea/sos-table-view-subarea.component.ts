@@ -1,19 +1,19 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms'; 
-import { TableViewModel } from '../../models/nd-dashboard.models';
-import { ActivatedRoute } from '@angular/router';
-import { NdService } from '../../services/nd.service';
-import { formatDate } from '@angular/common';
-import { AreaService } from '../../../areas/area.service';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { IArea } from '../../../areas/models/area.model';
+import { SOSTableViewModel } from '../../models/nd-dashboard.models';
+import { ActivatedRoute } from '@angular/router';
+import { AreaService } from '../../../areas/area.service';
+import { SosService } from '../../services/sos.service';
+import { formatDate } from '@angular/common';
 
 @Component({
-  selector: 'app-nd-table-view-subarea',
+  selector: 'app-sos-table-view-subarea',
   standalone: false,
-  templateUrl: './nd-table-view-subarea.component.html',
-  styleUrl: './nd-table-view-subarea.component.scss'
+  templateUrl: './sos-table-view-subarea.component.html',
+  styleUrl: './sos-table-view-subarea.component.scss'
 })
-export class NdTableViewSubareaComponent implements OnInit {
+export class SosTableViewSubareaComponent implements OnInit {
   isLoading = false;
 
   dateRange!: FormGroup;
@@ -25,12 +25,12 @@ export class NdTableViewSubareaComponent implements OnInit {
 
   area!: IArea;
 
-  tableViewList: TableViewModel[] = [];
+  tableViewList: SOSTableViewModel[] = [];
 
   constructor(
     private route: ActivatedRoute, 
     private _formBuilder: FormBuilder,
-    private ndService: NdService,
+    private sosService: SosService,
     private areaService: AreaService,
   ) { }
 
@@ -43,8 +43,7 @@ export class NdTableViewSubareaComponent implements OnInit {
     this.rangeDate = [firstDay, lastDay];
 
     this.dateRange = this._formBuilder.group({ 
-      rangeValue: new FormControl(this.rangeDate),
-      area: new FormControl(''),
+      rangeValue: new FormControl(this.rangeDate), 
     });
     this.start_date = formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US');
     this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
@@ -79,7 +78,7 @@ export class NdTableViewSubareaComponent implements OnInit {
 
 
   getTableViewSubArea(country_uuid: string, province_uuid: string, area_uuid: string, start_date: string, end_date: string) {
-    this.ndService.NdTableViewSubArea(country_uuid, province_uuid, area_uuid, start_date, end_date).subscribe((res) => {
+    this.sosService.SOSTableViewSubArea(country_uuid, province_uuid, area_uuid, start_date, end_date).subscribe((res) => {
       this.tableViewList = res.data;
       this.isLoading = false;
     });

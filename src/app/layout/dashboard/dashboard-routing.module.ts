@@ -16,6 +16,10 @@ import { NdTableViewAreaComponent } from './nd-dashboard/nd-table-view-area/nd-t
 import { NdTableViewSubareaComponent } from './nd-dashboard/nd-table-view-subarea/nd-table-view-subarea.component';
 import { NdTableViewCommuneComponent } from './nd-dashboard/nd-table-view-commune/nd-table-view-commune.component';
 import { NdTableViewProvinceComponent } from './nd-dashboard/nd-table-view-province/nd-table-view-province.component';
+import { SosTableViewProvinceComponent } from './sos-dashboard/sos-table-view-province/sos-table-view-province.component';
+import { SosTableViewAreaComponent } from './sos-dashboard/sos-table-view-area/sos-table-view-area.component';
+import { SosTableViewCommuneComponent } from './sos-dashboard/sos-table-view-commune/sos-table-view-commune.component';
+import { SosTableViewSubareaComponent } from './sos-dashboard/sos-table-view-subarea/sos-table-view-subarea.component';
 
 const routes: Routes = [
   {
@@ -61,24 +65,46 @@ const routes: Routes = [
           }
         ]
       },
-      
+      {
+        path: 'share-of-stock',
+        component: SosDashboardComponent,
+        children: [
+          {
+            path: 'province/:country',
+            component: SosTableViewProvinceComponent,
+          },
+          {
+            path: 'area/:province_name',
+            component: SosTableViewAreaComponent,
+          },
+          {
+            path: 'subarea/:area_name',
+            component: SosTableViewSubareaComponent,
+          },
+          {
+            path: 'commune/:subarea_name',
+            component: SosTableViewCommuneComponent,
+          },
+          {
+            path: '',
+            component: SosTableViewProvinceComponent
+          }
+        ]
+      },
+      {
+        path: 'share-in-shop-handling',
+        component: SishDashboardComponent,
+        children: []
+      }, 
 
       {
         path: 'weighted-distribution',
         component: WdDashboardComponent,
-      }, 
-      {
-        path: 'share-in-shop-handling',
-        component: SishDashboardComponent,
-      }, 
+      },  
       {
         path: 'out-of-stock',
         component: OosDashboardComponent,
-      }, 
-      {
-        path: 'share-of-stock',
-        component: SosDashboardComponent,
-      }, 
+      },  
       {
         path: 'sales-evolution',
         component: SeDashboardComponent,

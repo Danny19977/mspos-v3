@@ -1,22 +1,22 @@
-import { formatDate } from '@angular/common';
-import { Component, computed, OnInit, Renderer2, signal } from '@angular/core';
-import { ICountry } from '../../../country/models/country.model';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { AuthService } from '../../../../auth/auth.service';
-import { ProvinceService } from '../../../province/province.service';
+import { Component, computed, OnInit, signal } from '@angular/core';
+import { SosService } from '../../services/sos.service';
 import { CountryService } from '../../../country/country.service';
-import { NdService } from '../../services/nd.service';
-import { TableViewModel } from '../../models/nd-dashboard.models';
+import { ProvinceService } from '../../../province/province.service';
+import { AuthService } from '../../../../auth/auth.service';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { ICountry } from '../../../country/models/country.model';
 import { IProvince } from '../../../province/models/province.model';
 import { IUser } from '../../../user/models/user.model';
+import { formatDate } from '@angular/common';
+import { SOSTableViewModel } from '../../models/nd-dashboard.models';
 
 @Component({
-  selector: 'app-nd-table-view-province',
+  selector: 'app-sos-table-view-province',
   standalone: false,
-  templateUrl: './nd-table-view-province.component.html',
-  styleUrl: './nd-table-view-province.component.scss'
+  templateUrl: './sos-table-view-province.component.html',
+  styleUrl: './sos-table-view-province.component.scss'
 })
-export class NdTableViewProvinceComponent implements OnInit {
+export class SosTableViewProvinceComponent implements OnInit {
   isLoading = false;
   currentUser!: IUser;
 
@@ -32,8 +32,7 @@ export class NdTableViewProvinceComponent implements OnInit {
   provinceList: IProvince[] = [];
   province!: IProvince;
 
-  tableViewList: TableViewModel[] = [];
-  ndYearList: any[] = [];
+  tableViewList: SOSTableViewModel[] = []; 
 
 
   countrySearch = signal<string>('');
@@ -46,7 +45,7 @@ export class NdTableViewProvinceComponent implements OnInit {
 
   constructor( 
     private _formBuilder: FormBuilder, 
-    private ndService: NdService,
+    private sosService: SosService,
     private countryService: CountryService,
     private provinceService: ProvinceService,
     private authService: AuthService,
@@ -72,21 +71,17 @@ export class NdTableViewProvinceComponent implements OnInit {
     this.authService.user().subscribe({
       next: (user) => {
         this.currentUser = user;
-
         this.countryService.getAll().subscribe((res) => {
           this.countryList.set(res.data); 
           this.provinceService.getAll().subscribe((pr) => {
             this.provinceList = pr.data; 
             if (this.currentUser.role != 'Managers' && this.currentUser.role != 'Support') {
               this.getTableView(this.countryList()[0].uuid, this.provinceList[0].uuid, this.start_date, this.end_date);
-              
             } else {
               this.getTableView(this.currentUser.country_uuid, this.currentUser.province_uuid, this.start_date, this.end_date);
-              
             }
           });
-        }); 
-
+        });
       },
       error: (error) => {
         console.log(error);
@@ -135,7 +130,7 @@ export class NdTableViewProvinceComponent implements OnInit {
 
 
   getTableView(country_uuid: string, province_uuid: string, start_date: string, end_date: string) {
-    this.ndService.NdTableViewProvince(country_uuid, province_uuid, start_date, end_date).subscribe((res) => {
+    this.sosService.SosTableViewProvince(country_uuid, province_uuid, start_date, end_date).subscribe((res) => {
       this.tableViewList = res.data;
       this.isLoading = false;
     });
