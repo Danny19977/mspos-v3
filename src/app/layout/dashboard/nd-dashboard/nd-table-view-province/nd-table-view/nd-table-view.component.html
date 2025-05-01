@@ -30,12 +30,14 @@
               }
               @else if (item.percentage < 95 && item.percentage >= 80) {
                 <span class="badge badge-pill bg-warning" style="font-size: 16px;">{{item.percentage}} %</span>
-                } 
+                }
               @else if (item.percentage < 80) {
                  <span class="badge badge-pill bg-danger" style="font-size: 16px;">{{item.percentage}} %</span>
               }
             </td>
-          }@else {
+          } @else if(item.brand_name === 'MTC') {
+            <td style="background-color: rgba(245, 245, 220, 0.947);">{{item.percentage}} %</td> 
+          } @else {
             <td>{{item.percentage}} %</td> 
           }
           <td>{{item.total_count }}</td> 

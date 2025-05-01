@@ -92,10 +92,9 @@ export class NdDashboardComponent implements OnInit {
     const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
     this.rangeDate = [firstDay, lastDay];
 
-    this.dateRange = this._formBuilder.group({
-      country: new FormControl(''),
+    this.dateRange = this._formBuilder.group({ 
       rangeValue: new FormControl(this.rangeDate),
-      area: new FormControl(''),
+      country_uuid: new FormControl(''),
     });
     this.start_date = formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US');
     this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
@@ -124,6 +123,8 @@ export class NdDashboardComponent implements OnInit {
         console.log(error);
       }
     });
+
+    this.onChanges();
   }
 
 
@@ -142,19 +143,22 @@ export class NdDashboardComponent implements OnInit {
 
   onChanges(): void {
     this.dateRange.valueChanges.subscribe((val) => {
+      console.log('val:', val);
+
+
       this.start_date = formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US');
 
       val.rangeValue[1].setDate(val.rangeValue[1].getDate() + 1);
       this.end_date = formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US');
+ 
 
       if (this.currentUser.role != 'Managers' && this.currentUser.role != 'Support') {
         this.getTableView(this.countryList()[0].uuid, this.provinceList[0].uuid, this.start_date, this.end_date);
       } else {
-        this.getTableView(this.currentUser.country_uuid, this.currentUser.province_uuid, this.start_date, this.end_date);
+        this.getTableView(val.country_uuid, this.currentUser.province_uuid, this.start_date, this.end_date);
       }
-     
-
     });
+    
     this.common.page.subscribe((page: string) => {
       this.page = page;
     });

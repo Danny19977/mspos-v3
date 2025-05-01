@@ -59,6 +59,8 @@ export class NdTableViewCommuneComponent implements OnInit {
         this.isLoading = false;
       });
     });
+
+    this.onChanges();
   }
 
 

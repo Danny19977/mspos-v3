@@ -5,7 +5,8 @@
             <div class="card-header border-0 pb-0">
                 <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
                     <h4><i class="ti ti-grip-vertical me-1"></i>Table ND Provinces</h4>
-                    <div class="d-flex align-items-center flex-wrap row-gap-2">
+                    <div class="d-flex align-items-center justify-content-center flex-wrap row-gap-2">
+                        
                         <mat-form-field appearance="fill" class="me-2">
                             <mat-label>Select province</mat-label>
                             <mat-select (selectionChange)="onProvinceChange($event)">
@@ -14,6 +15,63 @@
                                 </mat-option>
                             </mat-select>
                         </mat-form-field>
+                        
+                        <div class="daterange-picker mb-3">
+                            
+                            <form [formGroup]="dateRange">
+                              <div class="form-sorts dropdown">
+                                <a href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside"><i
+                                    class="ti ti-filter-share"></i>Filter</a>
+                                <div class="filter-dropdown-menu dropdown-menu dropdown-menu-md-end p-3">
+                                  <div class="filter-set-view">
+                                    <div class="filter-set-head">
+                                      <h4><i class="ti ti-filter-share"></i>Filter</h4>
+                                    </div>
+          
+                                    <div class="accordion" id="accordionExample">
+                                      <div class="filter-set-content">
+                                        <div class="filter-set-content-head">
+                                          <a href="javascript:void(0);" data-bs-toggle="collapse"
+                                            data-bs-target="#collapseCountry" aria-expanded="true"
+                                            aria-controls="collapseCountry">Pays</a>
+                                        </div>
+                                        <div class="filter-set-contents accordion-collapse collapse show" id="collapseCountry"
+                                          data-bs-parent="#accordionExample">
+                                          <div class="mb-2 icon-form">
+                                            <span class="form-icon"><i class="ti ti-search"></i></span>
+                                            <input type="text" class="form-control" placeholder="Search Name"
+                                              [value]="countrySearch()" (input)="updateSearch($event)" />
+                                          </div>
+                                          <ul>
+                                            <li *ngFor="let item of filteredCountryList()">
+                                              <div class="filter-checks">
+                                                <label class="checkboxs">
+                                                  <input type="checkbox" [value]="item.uuid" formControlName-="country_uuid"
+                                                    (change)="onCheckboxCountryChange($event, item)" />
+                                                  <span class="checkmarks"></span>
+                                                  {{ item.name }}
+                                                </label>
+                                              </div>
+                                            </li>
+                                          </ul>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    
+                                    <div class="filter-set-head">
+                                      <div class="form-sort me-2">
+                                        <i class="ti ti-calendar"></i>
+                                        <input type="text" class="form-control date-range bookingrange" bsDaterangepicker
+                                          [bsConfig]="{ adaptivePosition: true }" formControlName="rangeValue" />
+                                      </div>
+                                    </div> 
+
+                                  </div> 
+                                </div>
+                              </div>
+                            </form>
+                            
+                          </div>
                     </div>
                 </div>
             </div>

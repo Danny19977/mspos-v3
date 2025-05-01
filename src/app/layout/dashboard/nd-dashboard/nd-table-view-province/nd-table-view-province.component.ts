@@ -94,6 +94,8 @@ export class NdTableViewProvinceComponent {
         console.log(error);
       }
     });
+
+    this.onChanges();
   }
 
 

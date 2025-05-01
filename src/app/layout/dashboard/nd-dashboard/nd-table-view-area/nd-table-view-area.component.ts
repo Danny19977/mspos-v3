@@ -43,8 +43,7 @@ export class NdTableViewAreaComponent implements OnInit {
     this.rangeDate = [firstDay, lastDay];
 
     this.dateRange = this._formBuilder.group({ 
-      rangeValue: new FormControl(this.rangeDate),
-      area: new FormControl(''),
+      rangeValue: new FormControl(this.rangeDate), 
     });
     this.start_date = formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US');
     this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
@@ -59,6 +58,8 @@ export class NdTableViewAreaComponent implements OnInit {
         this.isLoading = false;
       });
     });
+
+    this.onChanges();
   }
 
 

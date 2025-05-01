@@ -59,6 +59,8 @@ export class NdTableViewSubareaComponent implements OnInit {
         this.isLoading = false;
       });
     });
+
+    this.onChanges();
   }
 
 

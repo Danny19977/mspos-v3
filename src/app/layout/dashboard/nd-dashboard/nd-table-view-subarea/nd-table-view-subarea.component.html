@@ -20,14 +20,40 @@
             Table ND SubArea by <span style="color: red; font-weight: bold;">{{ area.name }}</span>
           </h4>
           }
-          <div class="d-flex align-items-center flex-wrap row-gap-2">
-            <form [formGroup]="dateRange">
-              <div class="form-sort me-2">
-                <i class="ti ti-calendar"></i>
-                <input type="text" class="form-control date-range bookingrange" bsDaterangepicker
-                  [bsConfig]="{ adaptivePosition: true }" formControlName="rangeValue" />
-              </div>
-            </form>
+          <div class="d-flex d-flex align-items-center justify-content-center flex-wrap row-gap-2">
+            <div class="daterange-picker mb-3">
+              <form [formGroup]="dateRange">
+                <div class="form-sorts dropdown">
+                  <a href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside"><i
+                      class="ti ti-filter-share"></i>Filter</a>
+                  <div class="filter-dropdown-menu dropdown-menu dropdown-menu-md-end p-3">
+                    <div class="filter-set-view">
+                      <div class="filter-set-head">
+                        <h4><i class="ti ti-filter-share"></i>Filter</h4>
+                      </div>
+
+                      <div class="accordion" id="accordionExample">
+                        <div class="filter-set-content">
+                          <div class="filter-set-content-head">
+                            <a href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#collapseArea"
+                              aria-expanded="true" aria-controls="collapseArea">Filtre par tranche de dates</a>
+                          </div>
+                          <div class="filter-set-contents accordion-collapse collapse show" id="collapseArea"
+                            data-bs-parent="#accordionExample">
+                            <div class="form-sort me-2">
+                              <i class="ti ti-calendar"></i>
+                              <input type="text" class="form-control date-range bookingrange" bsDaterangepicker
+                                [bsConfig]="{ adaptivePosition: true }" formControlName="rangeValue" />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </div>
