@@ -49,7 +49,6 @@ export class PosVenteListComponent implements OnInit {
     'area',
     'subarea',
     'commune',
-    'visited',
     'name',
     'shop',
     'gerant',
@@ -61,6 +60,7 @@ export class PosVenteListComponent implements OnInit {
     'sup',
     'dr',
     'cyclo',
+    'posforms',
     'action'
   ];
   dataSource = new MatTableDataSource<IPos>(this.dataList);

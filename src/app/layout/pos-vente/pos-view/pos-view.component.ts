@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
+import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
@@ -60,7 +60,7 @@ export class PosViewComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private router: Router,
+    private router: Router, 
     private _formBuilder: FormBuilder,
     private authService: AuthService,
     private posService: PosVenteService,
@@ -103,7 +103,34 @@ export class PosViewComponent implements OnInit {
   ngOnInit() {
     this.isLoadingData = true;
 
+    const date = new Date();
+    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1); // First day of the current month
+    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 1); // First day of the next month
+    lastDay.setDate(lastDay.getDate() + 1); // Add 1 day to the last day
+    this.rangeDate = [firstDay, lastDay];
+
+    this.dateRange = this._formBuilder.group({
+      rangeValue: new FormControl(this.rangeDate),
+    });
+    this.start_date = formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US');
+    this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
+ 
   }
+
+
+  // Méthode onChanges
+  onChanges(): void {
+    this.dateRange.valueChanges.subscribe((val) => {
+      this.start_date = formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US');
+
+      val.rangeValue[1].setDate(val.rangeValue[1].getDate() + 1);
+      this.end_date = formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US');
+
+      this.fetchProducts(this.posUUID);
+
+    });
+  }
+
 
 
   onPageChange(event: PageEvent): void {
@@ -126,18 +153,6 @@ export class PosViewComponent implements OnInit {
   }
 
 
-  // Méthode onChanges
-  onChanges(): void {
-    this.dateRange.valueChanges.subscribe((val) => {
-      this.start_date = formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US');
-
-      val.rangeValue[1].setDate(val.rangeValue[1].getDate() + 1);
-      this.end_date = formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US');
-
-      this.fetchProducts(this.posUUID);
-
-    });
-  }
 
 
 

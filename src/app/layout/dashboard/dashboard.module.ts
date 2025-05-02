@@ -19,10 +19,6 @@ import { SumaryChartBarComponent } from './mspos-dashboard/sumary-chart-bar/suma
 import { MapAreaComponent } from './mspos-dashboard/map-area/map-area.component';
 import { StatsTotalComponent } from './mspos-dashboard/stats-total/stats-total.component';
 import { SosPieComponent } from './mspos-dashboard/sos-pie/sos-pie.component';
-import { OosAverageAreaComponent } from './oos-dashboard/oos-average-area/oos-average-area.component';
-import { OosByYearComponent } from './oos-dashboard/oos-by-year/oos-by-year.component';
-import { OosPerformanceAreaComponent } from './oos-dashboard/oos-performance-area/oos-performance-area.component';
-import { OosTableViewComponent } from './oos-dashboard/oos-table-view/oos-table-view.component'; 
 import { BetterDrComponent } from './mspos-dashboard/better-dr/better-dr.component';
 import { BetterSupComponent } from './mspos-dashboard/better-sup/better-sup.component';
 import { StatusEquipementsComponent } from './mspos-dashboard/status-equipements/status-equipements.component';
@@ -40,6 +36,11 @@ import { SosTableViewAreaComponent } from './sos-dashboard/sos-table-view-area/s
 import { SosTableViewSubareaComponent } from './sos-dashboard/sos-table-view-subarea/sos-table-view-subarea.component';
 import { SosTableViewCommuneComponent } from './sos-dashboard/sos-table-view-commune/sos-table-view-commune.component';
 import { SosChartLineComponent } from './sos-dashboard/sos-chart-line/sos-chart-line.component';
+import { OosByYearComponent } from './oos-dashboard/oos-by-year/oos-by-year.component';
+import { OosTableViewCommuneComponent } from './oos-dashboard/oos-table-view-commune/oos-table-view-commune.component';
+import { OosTableViewSubareaComponent } from './oos-dashboard/oos-table-view-subarea/oos-table-view-subarea.component';
+import { OosTableViewAreaComponent } from './oos-dashboard/oos-table-view-area/oos-table-view-area.component';
+import { OosTableViewProvinceComponent } from './oos-dashboard/oos-table-view-province/oos-table-view-province.component'; 
 
 
 
@@ -61,10 +62,6 @@ import { SosChartLineComponent } from './sos-dashboard/sos-chart-line/sos-chart-
     MapAreaComponent,
     StatsTotalComponent,
     SosPieComponent,
-    OosAverageAreaComponent,
-    OosByYearComponent,
-    OosPerformanceAreaComponent,
-    OosTableViewComponent, 
     BetterDrComponent,
     BetterSupComponent,
     StatusEquipementsComponent,
@@ -80,7 +77,12 @@ import { SosChartLineComponent } from './sos-dashboard/sos-chart-line/sos-chart-
     SosTableViewAreaComponent,
     SosTableViewSubareaComponent,
     SosTableViewCommuneComponent,
-    SosChartLineComponent, 
+    SosChartLineComponent,
+    OosByYearComponent,
+    OosTableViewCommuneComponent,
+    OosTableViewSubareaComponent,
+    OosTableViewAreaComponent,
+    OosTableViewProvinceComponent,
   ],
   imports: [
     CommonModule,

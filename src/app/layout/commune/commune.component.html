@@ -56,7 +56,7 @@
                                     </div>
                                     @if(currentUser.role == 'Manager' ||
                                     currentUser.role == 'ASM' ||
-                                    currentUser.role == 'Support' && 
+                                    currentUser.role == 'Support' &&
                                     currentUser.permission === 'ALL' ||
                                     currentUser.permission === 'VAE' ||
                                     currentUser.permission === 'VA') {
@@ -85,7 +85,7 @@
                                 <!-- province Column -->
                                 <ng-container matColumnDef="province">
                                     <th mat-header-cell *matHeaderCellDef> Province </th>
-                                    <td mat-cell *matCellDef="let element"> {{element.Province.name }} </td>  
+                                    <td mat-cell *matCellDef="let element"> {{element.Province.name }} </td>
                                 </ng-container>
 
                                 <!-- area Column -->
@@ -105,10 +105,10 @@
                                 <ng-container matColumnDef="name">
                                     <th mat-header-cell *matHeaderCellDef> Commune </th>
                                     <td mat-cell *matCellDef="let element"> {{element.name}} </td>
-                                </ng-container> 
+                                </ng-container>
 
-                                 <!-- pos Column -->
-                                 <ng-container matColumnDef="pos">
+                                <!-- pos Column -->
+                                <ng-container matColumnDef="pos">
                                     <th mat-header-cell *matHeaderCellDef> Total POS </th>
                                     <td mat-cell *matCellDef="let element"
                                         style="background-color: rgba(255, 0, 0, 0.173); font-size: larger; text-align: center;">
@@ -128,14 +128,17 @@
                                     </td>
                                 </ng-container>
 
-                                 <!-- posforms Column -->
-                                 <ng-container matColumnDef="posforms">
+                                <!-- posforms Column -->
+                                <ng-container matColumnDef="posforms">
                                     <th mat-header-cell *matHeaderCellDef> Total Visites </th>
                                     <td mat-cell *matCellDef="let element"
                                         style="background-color: rgba(0, 255, 166, 0.31); font-size: larger; text-align: center;">
-                                        {{ getPosCount(element.PosForms) }}
+                                        <a [routerLink]="['/web/posforms/pos-form-list']">
+                                            {{ getPosFormCount(element.PosForms) }}
+                                        </a>
                                     </td>
                                 </ng-container>
+
 
                                 <!-- user Column -->
                                 <ng-container matColumnDef="user">
@@ -258,8 +261,8 @@
                 <div class="col-md-12">
                     <div class="mb-3">
                         <label class="col-form-label" for="area_uuid">Area <span class="text-danger">*</span></label>
-                        <mat-select class="select custom-mat-select" formControlName="area_uuid" placeholder="Choose area"
-                            (selectionChange)="onAreaChange($event)">
+                        <mat-select class="select custom-mat-select" formControlName="area_uuid"
+                            placeholder="Choose area" (selectionChange)="onAreaChange($event)">
                             @for (item of areaFilterList; track item) {
                             <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
                             }
@@ -361,8 +364,8 @@
                 <div class="col-md-12">
                     <div class="mb-3">
                         <label class="col-form-label" for="area_uuid">Area <span class="text-danger">*</span></label>
-                        <mat-select class="select custom-mat-select" formControlName="area_uuid" placeholder="Choose area"
-                            (selectionChange)="onAreaChange($event)">
+                        <mat-select class="select custom-mat-select" formControlName="area_uuid"
+                            placeholder="Choose area" (selectionChange)="onAreaChange($event)">
                             @for (item of areaFilterList; track item) {
                             <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
                             }

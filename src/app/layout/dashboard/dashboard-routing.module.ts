@@ -20,6 +20,10 @@ import { SosTableViewProvinceComponent } from './sos-dashboard/sos-table-view-pr
 import { SosTableViewAreaComponent } from './sos-dashboard/sos-table-view-area/sos-table-view-area.component';
 import { SosTableViewCommuneComponent } from './sos-dashboard/sos-table-view-commune/sos-table-view-commune.component';
 import { SosTableViewSubareaComponent } from './sos-dashboard/sos-table-view-subarea/sos-table-view-subarea.component';
+import { OosTableViewProvinceComponent } from './oos-dashboard/oos-table-view-province/oos-table-view-province.component';
+import { OosTableViewAreaComponent } from './oos-dashboard/oos-table-view-area/oos-table-view-area.component';
+import { OosTableViewSubareaComponent } from './oos-dashboard/oos-table-view-subarea/oos-table-view-subarea.component';
+import { OosTableViewCommuneComponent } from './oos-dashboard/oos-table-view-commune/oos-table-view-commune.component';
 
 const routes: Routes = [
   {
@@ -92,6 +96,32 @@ const routes: Routes = [
         ]
       },
       {
+        path: 'out-of-stock',
+        component: OosDashboardComponent,
+        children: [
+          {
+            path: 'province/:country',
+            component: OosTableViewProvinceComponent,
+          },
+          {
+            path: 'area/:province_name',
+            component: OosTableViewAreaComponent,
+          },
+          {
+            path: 'subarea/:area_name',
+            component: OosTableViewSubareaComponent,
+          },
+          {
+            path: 'commune/:subarea_name',
+            component: OosTableViewCommuneComponent,
+          },
+          {
+            path: '',
+            component: OosTableViewProvinceComponent
+          }
+        ]
+      },  
+      {
         path: 'share-in-shop-handling',
         component: SishDashboardComponent,
         children: []
@@ -100,11 +130,7 @@ const routes: Routes = [
       {
         path: 'weighted-distribution',
         component: WdDashboardComponent,
-      },  
-      {
-        path: 'out-of-stock',
-        component: OosDashboardComponent,
-      },  
+      },   
       {
         path: 'sales-evolution',
         component: SeDashboardComponent,

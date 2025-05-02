@@ -184,45 +184,59 @@
                                 <!-- Postype Column -->
                                 <ng-container matColumnDef="postype">
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Postype</th>
-                                    <td mat-cell *matCellDef="let data">{{ data.postype }}</td>
+                                    <td mat-cell *matCellDef="let data">
+                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                            {{ data.postype }}
+                                        </a>
+                                    </td>
                                 </ng-container>
 
                                 <!-- Country Column -->
                                 <ng-container matColumnDef="country">
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Pays</th>
-                                    <td mat-cell *matCellDef="let data">{{ data.Country?.name }}</td>
+                                    <td mat-cell *matCellDef="let data">
+                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                            {{ data.Country?.name }}
+                                        </a>
+                                    </td>
                                 </ng-container>
 
                                 <!-- Province Column -->
                                 <ng-container matColumnDef="province">
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Province</th>
-                                    <td mat-cell *matCellDef="let data">{{ data.Province?.name }}</td>
+                                    <td mat-cell *matCellDef="let data">
+                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                            {{ data.Province?.name }}
+                                        </a>
+                                    </td>
                                 </ng-container>
 
                                 <!-- Area Column -->
                                 <ng-container matColumnDef="area">
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Area</th>
-                                    <td mat-cell *matCellDef="let data">{{ data.Area?.name }}</td>
+                                    <td mat-cell *matCellDef="let data">
+                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                            {{ data.Area?.name }}
+                                        </a>
+                                    </td>
                                 </ng-container>
 
                                 <!-- Subarea Column -->
                                 <ng-container matColumnDef="subarea">
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Subarea</th>
-                                    <td mat-cell *matCellDef="let data">{{ data.SubArea?.name }}</td>
+                                    <td mat-cell *matCellDef="let data">
+                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                            {{ data.SubArea?.name }}
+                                        </a>
+                                    </td>
                                 </ng-container>
 
                                 <!-- Commune Column -->
                                 <ng-container matColumnDef="commune">
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Commune</th>
-                                    <td mat-cell *matCellDef="let data">{{ data.Commune?.name }}</td>
-                                </ng-container>
-
-                                <!-- Visite Column -->
-                                <ng-container matColumnDef="visited">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Visite</th>
                                     <td mat-cell *matCellDef="let data">
-                                        <a [routerLink]="['/web/posforms/pos-form-list']">
-                                            {{ getPosFormCount(data.PosForms) }}
+                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                            {{ data.Commune?.name }}
                                         </a>
                                     </td>
                                 </ng-container>
@@ -230,31 +244,51 @@
                                 <!-- Name Column -->
                                 <ng-container matColumnDef="name">
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Nom</th>
-                                    <td mat-cell *matCellDef="let data">{{ data.name }}</td>
+                                    <td mat-cell *matCellDef="let data">
+                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                            {{ data.name }}
+                                        </a>
+                                    </td>
                                 </ng-container>
 
                                 <!-- Shop Column -->
                                 <ng-container matColumnDef="shop">
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Shop</th>
-                                    <td mat-cell *matCellDef="let data">{{ data.shop }}</td>
+                                    <td mat-cell *matCellDef="let data">
+                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                            {{ data.shop }}
+                                        </a>
+                                    </td>
                                 </ng-container>
 
                                 <!-- Gérant Column -->
                                 <ng-container matColumnDef="gerant">
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Gérant</th>
-                                    <td mat-cell *matCellDef="let data">{{ data.gerant }}</td>
+                                    <td mat-cell *matCellDef="let data">
+                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                            {{ data.gerant }}
+                                        </a>
+                                    </td>
                                 </ng-container>
 
                                 <!-- Quartier Column -->
                                 <ng-container matColumnDef="quartier">
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Quartier</th>
-                                    <td mat-cell *matCellDef="let data">{{ data.quartier }}</td>
+                                    <td mat-cell *matCellDef="let data">
+                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                            {{ data.quartier }}
+                                        </a>
+                                    </td>
                                 </ng-container>
 
                                 <!-- Avenue Column -->
                                 <ng-container matColumnDef="avenue">
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Avenue</th>
-                                    <td mat-cell *matCellDef="let data">{{ data.avenue }}</td>
+                                    <td mat-cell *matCellDef="let data">
+                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                            {{ data.avenue }}
+                                        </a>
+                                    </td>
                                 </ng-container>
 
                                 <!-- Reference Column -->
@@ -298,6 +332,15 @@
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Cyclo</th>
                                     <td mat-cell *matCellDef="let data">
                                         <app-user-get *ngIf="data.cyclo_uuid" [uuid]="data.cyclo_uuid"></app-user-get>
+                                    </td>
+                                </ng-container>
+
+                                <!-- posforms Column -->
+                                <ng-container matColumnDef="posforms">
+                                    <th mat-header-cell *matHeaderCellDef> Total Visites </th>
+                                    <td mat-cell *matCellDef="let element"
+                                        style="background-color: rgba(0, 255, 166, 0.31); font-size: larger; text-align: center;">
+                                        {{ getPosFormCount(element.PosForms) }}
                                     </td>
                                 </ng-container>
 

@@ -21,6 +21,7 @@ import { LogsService } from '../user-logs/logs.service';
 import { IUser } from '../user/models/user.model';
 import { ICommune } from './models/commune.model';
 import { CommuneService } from './commune.service';
+import { IPosForm } from '../posform/models/posform.model';
 
 @Component({
   selector: 'app-commune',
@@ -220,7 +221,9 @@ export class CommuneComponent implements OnInit {
   getUserCount(user: IUser[]): string {
     return user ? user.length > 0 ? user.length.toString() : '0' : '0';
   }
-
+  getPosFormCount(posForm: IPosForm[]): string {
+    return posForm ? posForm.length > 0 ? posForm.length.toString() : '0' : '0';
+  }
 
   onCountryChange(event: any) {
     const listData = this.provinceList.filter((v) => v.country_uuid == event.value);

@@ -16,8 +16,6 @@ export interface ChartOptions {
   plotOptions: ApexPlotOptions | any;
   xaxis: ApexXAxis | any;
 }
-
-
 @Component({
   selector: 'app-oos-by-year',
   standalone: false,
@@ -25,32 +23,55 @@ export interface ChartOptions {
   styleUrl: './oos-by-year.component.scss'
 })
 export class OosByYearComponent implements OnChanges {
-  @Input() isLoading!: boolean;
-  @Input() oosYear: NDYearModel[] = [];
+  @Input() isLoading!: boolean; 
+  @Input() ndYear: NDYearModel[] = [];
 
-  oosYearList: NDYearModel[] = [];
+  ndYearList: NDYearModel[] = [];
 
   @ViewChild('chart') chart!: ChartComponent;
   public chartOptions4: Partial<ChartOptions> | any;
 
 
   ngOnChanges(changes: SimpleChanges): void {
-    this.oosYearList = this.oosYear;
+    if (changes['ndYear'] && changes['ndYear'].currentValue) {
+      this.ndYearList = changes['ndYear'].currentValue;
+      console.log('ndYearList', this.ndYearList);
+    }
+    // this.ndYearList = this.ndYear;
     this.getChartByYear();
   }
 
 
-  getChartByYear() {
+  getChartByYear(): void {
+    // Regrouper les données par mois
+    const groupedData = this.ndYearList.reduce((acc, val) => {
+      const monthIndex = parseInt(val.month, 10) - 1; // Convertir le mois en index (0-11)
+      if (!acc[monthIndex]) {
+        acc[monthIndex] = {}; // Initialiser un objet pour chaque mois
+      }
+      acc[monthIndex][val.brand_name] = (100 - val.percentage); // Associer le pourcentage à la marque pour le mois
+
+    console.log('series', 100 - val.percentage);
+      return acc;
+    }, {} as { [month: number]: { [brand: string]: number } });
+
+    // Construire les séries pour le graphique
+    const brands = Array.from(new Set(this.ndYearList.map((val) => val.brand_name))); // Obtenir toutes les marques
+    const series = brands.map((brand) => ({
+      name: brand,
+      data: Array(12).fill(0).map((_, monthIndex) => groupedData[monthIndex]?.[brand] || 0), // Remplir les données pour chaque mois
+    }));
+
+
     this.chartOptions4 = {
-      series: [
-        // {
-        //   name: 'Equateur',
-        //   data: this.oosYearList.map((val) => {
-        //     return 100 - val.Eq;
-        //   }),
-        // },
-      ],
-      colors: ['#E41F07'],
+      series: series,
+      colors: this.ndYearList.map((item) => {
+        if (item.brand_name === 'Equateur') {
+          return '#FF0000'; // Rouge pour la marque "Equateur"
+        }
+        const randomColor = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
+        return randomColor;
+      }),
       chart: {
         height: 273,
         type: 'area',
@@ -59,42 +80,22 @@ export class OosByYearComponent implements OnChanges {
         },
       },
       dataLabels: {
-        enabled: false,
+        enabled: true,
       },
+      labels: [
+        'Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Juin',
+        'Juil', 'Aout', 'Sep', 'Oct', 'Nov', 'Dec'
+      ],
       stroke: {
         curve: 'straight',
       },
       xaxis: {
-        categories: this.oosYearList.map((val) => {
-          // if (val.Month == '1') {
-          //   return 'Jan';
-          // } else if (val.Month == '2') {
-          //   return 'Feb';
-          // } else if (val.Month == '3') {
-          //   return 'Mar';
-          // } else if (val.Month == '4') {
-          //   return 'Apr';
-          // } else if (val.Month == '5') {
-          //   return 'Mai';
-          // } else if (val.Month == '6') {
-          //   return 'Juin';
-          // } else if (val.Month == '7') {
-          //   return 'Juil';
-          // } else if (val.Month == '8') {
-          //   return 'Aout';
-          // } else if (val.Month == '9') {
-          //   return 'Sep';
-          // } else if (val.Month == '10') {
-          //   return 'Oct';
-          // } else if (val.Month == '11') {
-          //   return 'Nov';
-          // } else if (val.Month == '12') {
-          //   return 'Dec';
-          // } else {
-          //   return "";
-          // }
-        }),
+        categories: [
+          'Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Juin',
+          'Juil', 'Aout', 'Sep', 'Oct', 'Nov', 'Dec'
+        ],
       },
     };
   }
 }
+

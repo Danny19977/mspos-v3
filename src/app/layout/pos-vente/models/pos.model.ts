@@ -65,8 +65,7 @@ export interface IPos {
     Sup?: ISup;
     Dr?: IDr;
     Cyclo?: ICyclo;
-
-    PosFormItems?: IPosFormItem[];
+ 
     PosEquipements?: IPosEquipment[];
     PosForms?: IPosForm[];
 }   

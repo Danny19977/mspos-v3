@@ -1,0 +1,122 @@
+<div class="row">
+    <div class="col-md-12 d-flex">
+
+        <div class="card w-100">
+            <div class="card-header border-0 pb-0">
+                <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
+                    @if(province) {
+                    <h4><i class="ti ti-grip-vertical me-1"></i>Table OOS Area by
+                        <span style="color: red; font-weight: bold;">{{ province.name }}</span>
+                    </h4>
+                    }
+                    <div class="d-flex d-flex align-items-center justify-content-center flex-wrap row-gap-2">
+                        <div class="daterange-picker mb-3">
+                            <form [formGroup]="dateRange">
+                                <div class="form-sorts dropdown">
+                                    <a href="javascript:void(0);" data-bs-toggle="dropdown"
+                                        data-bs-auto-close="outside"><i class="ti ti-filter-share"></i>Filter</a>
+                                    <div class="filter-dropdown-menu dropdown-menu dropdown-menu-md-end p-3">
+                                        <div class="filter-set-view">
+                                            <div class="filter-set-head">
+                                                <h4><i class="ti ti-filter-share"></i>Filter</h4>
+                                            </div>
+
+                                            <div class="accordion" id="accordionExample">
+                                                <div class="filter-set-content">
+                                                    <div class="filter-set-content-head">
+                                                        <a href="javascript:void(0);" data-bs-toggle="collapse"
+                                                            data-bs-target="#collapseArea" aria-expanded="true"
+                                                            aria-controls="collapseArea">Filtre par tranche de dates</a>
+                                                    </div>
+                                                    <div class="filter-set-contents accordion-collapse collapse show"
+                                                        id="collapseArea" data-bs-parent="#accordionExample">
+                                                        <div class="form-sort me-2">
+                                                            <i class="ti ti-calendar"></i>
+                                                            <input type="text"
+                                                                class="form-control date-range bookingrange"
+                                                                bsDaterangepicker
+                                                                [bsConfig]="{ adaptivePosition: true }"
+                                                                formControlName="rangeValue" />
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                @if (isLoading) {
+                <div class=" text-center d-flex justify-content-center align-items-center ">
+                    <div class="spinner-border bs-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                } @else {
+                <div class="table-responsive custom-table">
+                    <table class="table dataTable" id="deals-project">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Province</th>
+                                <th>Brand</th>
+                                <th>Rupture stock en Pourcentage</th>
+                                <th>Rupture stock en Chiffre</th>
+                                <th>Total Pos</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (item of tableViewList; track $index) {
+                            <tr class="odd">
+                                <td>
+                                    <a [routerLink]="['/web/dashboard/out-of-stock/subarea', item.name]">
+                                        {{ item.name}}
+                                    </a>
+                                </td>
+                                <td>{{ item.brand_name }}</td>
+                                @if (item.brand_name === 'Equateur') {
+                                <td>
+                                    @if (((item.total_pos - item.total_count) * 100 / item.total_pos) >= 20) {
+                                    <span class="badge badge-pill bg-danger" style="font-size: 16px;">
+                                        {{ ((item.total_pos - item.total_count) * 100 / item.total_pos).toFixed(2) }} %
+                                    </span>
+                                    }
+                                    @else if (((item.total_pos - item.total_count) * 100 / item.total_pos) >= 10 &&
+                                    ((item.total_pos - item.total_count) * 100 / item.total_pos) <= 19) { <span
+                                        class="badge badge-pill bg-warning" style="font-size: 16px;">
+                                        {{ ((item.total_pos - item.total_count) * 100 / item.total_pos).toFixed(2) }} %
+                                        </span>
+                                        }
+                                        @else if (((item.total_pos - item.total_count) * 100 / item.total_pos) < 10) {
+                                            <span class="badge badge-pill bg-success" style="font-size: 16px;">
+                                            {{ ((item.total_pos - item.total_count) * 100 / item.total_pos).toFixed(2)
+                                            }} %
+                                            </span>
+                                            }
+                                </td>
+                                } @else if(item.brand_name === 'MTC') {
+                                <td style="background-color: rgba(245, 245, 220, 0.947);">
+                                    {{ ((item.total_pos - item.total_count) * 100 / item.total_pos).toFixed(2) }} %
+                                </td>
+                                } @else {
+                                <td>{{ ((item.total_pos - item.total_count) * 100 / item.total_pos).toFixed(2) }} %</td>
+                                }
+                                <td>{{ (item.total_pos - item.total_count) }}</td>
+                                <td>{{ item.total_pos }}</td>
+                            </tr>
+                            }
+
+                        </tbody>
+                    </table>
+                </div>
+                }
+
+            </div>
+        </div>
+
+    </div>
+</div>

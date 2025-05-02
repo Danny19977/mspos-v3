@@ -1,19 +1,19 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { ProvinceService } from '../../../province/province.service';
-import { NdService } from '../../services/nd.service';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { formatDate } from '@angular/common';
-import { IProvince } from '../../../province/models/province.model';
+import { ISubArea } from '../../../subarea/models/subarea.model';
 import { TableViewModel } from '../../models/nd-dashboard.models';
+import { ActivatedRoute } from '@angular/router';
+import { NdService } from '../../services/nd.service';
+import { SubareaService } from '../../../subarea/subarea.service';
+import { formatDate } from '@angular/common';
 
 @Component({
-  selector: 'app-nd-table-view-area',
+  selector: 'app-oos-table-view-commune',
   standalone: false,
-  templateUrl: './nd-table-view-area.component.html',
-  styleUrl: './nd-table-view-area.component.scss'
+  templateUrl: './oos-table-view-commune.component.html',
+  styleUrl: './oos-table-view-commune.component.scss'
 })
-export class NdTableViewAreaComponent implements OnInit {
+export class OosTableViewCommuneComponent implements OnInit {
   isLoading = false;
 
   dateRange!: FormGroup;
@@ -23,7 +23,7 @@ export class NdTableViewAreaComponent implements OnInit {
   // Filtre 
   rangeDate: any[] = [];
 
-  province!: IProvince
+  subarea!: ISubArea;
 
   tableViewList: TableViewModel[] = [];
 
@@ -31,7 +31,7 @@ export class NdTableViewAreaComponent implements OnInit {
     private route: ActivatedRoute, 
     private _formBuilder: FormBuilder,
     private ndService: NdService,
-    private provinceService: ProvinceService,
+    private subareaService: SubareaService,
   ) { }
 
 
@@ -43,18 +43,19 @@ export class NdTableViewAreaComponent implements OnInit {
     this.rangeDate = [firstDay, lastDay];
 
     this.dateRange = this._formBuilder.group({ 
-      rangeValue: new FormControl(this.rangeDate), 
+      rangeValue: new FormControl(this.rangeDate),
+      subarea: new FormControl(''),
     });
     this.start_date = formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US');
     this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
     
     this.route.params.subscribe(params => {
-      const provinceName = params['province_name'];
-      console.log('Province Name:', provinceName);
-      this.provinceService.getBy(provinceName).subscribe((res) => {
-        this.province = res.data;
-        console.log('Province:', this.province);
-        this.getTableArea(this.province.country_uuid, this.province.uuid, this.start_date, this.end_date);
+      const areaName = params['area_name'];
+      console.log('areaName Name:', areaName);
+      this.subareaService.getBy(areaName).subscribe((res) => {
+        this.subarea = res.data;
+        console.log('subarea:', this.subarea);
+        this.getTableViewCommune(this.subarea.country_uuid, this.subarea.province_uuid, this.subarea.area_uuid, this.subarea.uuid, this.start_date, this.end_date);
         this.isLoading = false;
       });
     });
@@ -70,17 +71,16 @@ export class NdTableViewAreaComponent implements OnInit {
       val.rangeValue[1].setDate(val.rangeValue[1].getDate() + 1);
       this.end_date = formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US');
 
-      this.getTableArea(this.province.country_uuid, this.province.uuid, this.start_date, this.end_date);
+      this.getTableViewCommune(this.subarea.country_uuid, this.subarea.province_uuid, this.subarea.area_uuid, this.subarea.uuid, this.start_date, this.end_date);
      
-    }); 
+    });
   }
 
-
-  getTableArea(country_uuid: string, province_uuid: string, start_date: string, end_date: string) {
-    this.ndService.NdTableViewArea(country_uuid, province_uuid, start_date, end_date).subscribe((res) => {
+  getTableViewCommune(country_uuid: string, province_uuid: string, area_uuid: string, sub_area_uuid: string, start_date: string, end_date: string) {
+    this.ndService.NdTableViewCommune(country_uuid, province_uuid, area_uuid, sub_area_uuid, start_date, end_date).subscribe((res) => {
       this.tableViewList = res.data;
       this.isLoading = false;
     });
   }
-
+ 
 }

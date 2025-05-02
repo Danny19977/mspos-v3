@@ -1,13 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, effect, OnInit, Renderer2, signal } from '@angular/core';
-import { routes } from '../../../shared/routes/routes';
-import { ProvinceService } from '../../province/province.service';
-import { AreaService } from '../../areas/area.service';
-import { CommonService } from '../../../shared/common/common.service';
-import { IProvince } from '../../province/models/province.model'; 
-import { NdService } from '../services/nd.service';
-import { formatDate } from '@angular/common';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { TableViewModel } from '../models/nd-dashboard.models';
+import { ChangeDetectionStrategy, Component, computed, OnInit, Renderer2, signal } from '@angular/core';
+import { routes } from '../../../shared/routes/routes'; 
+import { CommonService } from '../../../shared/common/common.service'; 
+import { NdService } from '../services/nd.service'; 
 import { AuthService } from '../../../auth/auth.service';
 import { IUser } from '../../user/models/user.model';
 import { CountryService } from '../../country/country.service'; 

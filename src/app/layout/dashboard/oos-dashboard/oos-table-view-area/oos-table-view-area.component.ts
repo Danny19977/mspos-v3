@@ -8,12 +8,12 @@ import { IProvince } from '../../../province/models/province.model';
 import { TableViewModel } from '../../models/nd-dashboard.models';
 
 @Component({
-  selector: 'app-nd-table-view-area',
+  selector: 'app-oos-table-view-area',
   standalone: false,
-  templateUrl: './nd-table-view-area.component.html',
-  styleUrl: './nd-table-view-area.component.scss'
+  templateUrl: './oos-table-view-area.component.html',
+  styleUrl: './oos-table-view-area.component.scss'
 })
-export class NdTableViewAreaComponent implements OnInit {
+export class OosTableViewAreaComponent implements OnInit {
   isLoading = false;
 
   dateRange!: FormGroup;
@@ -84,3 +84,4 @@ export class NdTableViewAreaComponent implements OnInit {
   }
 
 }
+

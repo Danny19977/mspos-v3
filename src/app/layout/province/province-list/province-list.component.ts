@@ -23,6 +23,7 @@ import { ISubArea } from '../../subarea/models/subarea.model';
 import { ISup } from '../../sups/models/sup.model';
 import { IUser } from '../../user/models/user.model';
 import { ICommune } from '../../commune/models/commune.model';
+import { IPosForm } from '../../posform/models/posform.model';
 
 
 @Component({
@@ -80,7 +81,7 @@ export class ProvinceListComponent implements OnInit {
         this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
         this.dataSource.sort = this.sort; // Bind sort to dataSource
         this.cdr.detectChanges();
-        
+
         this.countryService.getAll().subscribe(res => {
           this.countryList = res.data;
         });
@@ -131,6 +132,9 @@ export class ProvinceListComponent implements OnInit {
   }
   getPosCount(pos: IPos[]): string {
     return pos ? pos.length > 0 ? pos.length.toString() : '0' : '0';
+  }
+  getPosFormCount(posForm: IPosForm[]): string {
+    return posForm ? posForm.length > 0 ? posForm.length.toString() : '0' : '0';
   }
   getUserCount(user: IUser[]): string {
     return user ? user.length > 0 ? user.length.toString() : '0' : '0';

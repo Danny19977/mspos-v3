@@ -2,7 +2,7 @@ import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table'; 
+import { MatTableDataSource } from '@angular/material/table';
 import { routes } from '../../shared/routes/routes';
 import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
@@ -22,6 +22,7 @@ import { IBrand } from '../brand/models/brand.model';
 import { countryList } from '../../utils/country';
 import { IUser } from '../user/models/user.model';
 import { ICommune } from '../commune/models/commune.model';
+import { IPosForm } from '../posform/models/posform.model';
 
 @Component({
   selector: 'app-country',
@@ -77,7 +78,7 @@ export class CountryComponent implements OnInit {
         this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
         this.dataSource.sort = this.sort; // Bind sort to dataSource
         this.cdr.detectChanges(); // Trigger change detection
-        
+
         this.countryService.refreshDataList$.subscribe(() => {
           this.fetchProducts();
         });
@@ -128,6 +129,9 @@ export class CountryComponent implements OnInit {
   }
   getPosCount(pos: IPos[]): string {
     return pos ? pos.length > 0 ? pos.length.toString() : '0' : '0';
+  }
+  getPosFormCount(posForm: IPosForm[]): string {
+    return posForm ? posForm.length > 0 ? posForm.length.toString() : '0' : '0';
   }
   getUserCount(user: IUser[]): string {
     return user ? user.length > 0 ? user.length.toString() : '0' : '0';

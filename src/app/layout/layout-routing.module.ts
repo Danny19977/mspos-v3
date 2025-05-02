@@ -93,7 +93,7 @@ const routes: Routes = [
       // /////////////////// Market ////////////////////////////////////////////////
       {
         path: 'pos/pos-list',
-        component: PosVenteListComponent,
+        component: PosVenteListComponent, 
       },
       {
         path: 'pos/pos-view/:uuid/posforms',

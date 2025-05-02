@@ -128,8 +128,8 @@ export class AreaListComponent implements OnInit {
         this.total_records = res.pagination.total_records;
         this.dataSource.data = this.dataList; // Update dataSource data
         this.isLoadingData = false;
-      }); 
-    }  else if (currentUser.role == 'ASM') {
+      });
+    } else if (currentUser.role == 'ASM') {
       this.areaService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
@@ -202,6 +202,9 @@ export class AreaListComponent implements OnInit {
   getPosCount(pos: IPos[]): string {
     return pos ? pos.length > 0 ? pos.length.toString() : '0' : '0';
   }
+  getPosFormCount(posForm: IPos[]): string {
+    return posForm ? posForm.length > 0 ? posForm.length.toString() : '0' : '0';
+  }
   getUserCount(user: IUser[]): string {
     return user ? user.length > 0 ? user.length.toString() : '0' : '0';
   }
@@ -212,7 +215,7 @@ export class AreaListComponent implements OnInit {
     const provinceArray = this.provinceList.filter((v) => v.country_uuid == event.value);
     this.provinceFilterList = provinceArray;
   }
- 
+
 
   onSubmit() {
     try {

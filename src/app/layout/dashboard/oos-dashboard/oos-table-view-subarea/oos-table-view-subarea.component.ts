@@ -1,19 +1,19 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { ProvinceService } from '../../../province/province.service';
-import { NdService } from '../../services/nd.service';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { formatDate } from '@angular/common';
-import { IProvince } from '../../../province/models/province.model';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms'; 
 import { TableViewModel } from '../../models/nd-dashboard.models';
+import { ActivatedRoute } from '@angular/router';
+import { NdService } from '../../services/nd.service';
+import { formatDate } from '@angular/common';
+import { AreaService } from '../../../areas/area.service';
+import { IArea } from '../../../areas/models/area.model';
 
 @Component({
-  selector: 'app-nd-table-view-area',
+  selector: 'app-oos-table-view-subarea',
   standalone: false,
-  templateUrl: './nd-table-view-area.component.html',
-  styleUrl: './nd-table-view-area.component.scss'
+  templateUrl: './oos-table-view-subarea.component.html',
+  styleUrl: './oos-table-view-subarea.component.scss'
 })
-export class NdTableViewAreaComponent implements OnInit {
+export class OosTableViewSubareaComponent implements OnInit {
   isLoading = false;
 
   dateRange!: FormGroup;
@@ -23,7 +23,7 @@ export class NdTableViewAreaComponent implements OnInit {
   // Filtre 
   rangeDate: any[] = [];
 
-  province!: IProvince
+  area!: IArea;
 
   tableViewList: TableViewModel[] = [];
 
@@ -31,7 +31,7 @@ export class NdTableViewAreaComponent implements OnInit {
     private route: ActivatedRoute, 
     private _formBuilder: FormBuilder,
     private ndService: NdService,
-    private provinceService: ProvinceService,
+    private areaService: AreaService,
   ) { }
 
 
@@ -43,18 +43,19 @@ export class NdTableViewAreaComponent implements OnInit {
     this.rangeDate = [firstDay, lastDay];
 
     this.dateRange = this._formBuilder.group({ 
-      rangeValue: new FormControl(this.rangeDate), 
+      rangeValue: new FormControl(this.rangeDate),
+      area: new FormControl(''),
     });
     this.start_date = formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US');
     this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
     
     this.route.params.subscribe(params => {
-      const provinceName = params['province_name'];
-      console.log('Province Name:', provinceName);
-      this.provinceService.getBy(provinceName).subscribe((res) => {
-        this.province = res.data;
-        console.log('Province:', this.province);
-        this.getTableArea(this.province.country_uuid, this.province.uuid, this.start_date, this.end_date);
+      const areaName = params['area_name'];
+      console.log('areaName Name:', areaName);
+      this.areaService.getBy(areaName).subscribe((res) => {
+        this.area = res.data;
+        console.log('area:', this.area);
+        this.getTableViewSubArea(this.area.country_uuid, this.area.province_uuid, this.area.uuid, this.start_date, this.end_date);
         this.isLoading = false;
       });
     });
@@ -70,17 +71,20 @@ export class NdTableViewAreaComponent implements OnInit {
       val.rangeValue[1].setDate(val.rangeValue[1].getDate() + 1);
       this.end_date = formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US');
 
-      this.getTableArea(this.province.country_uuid, this.province.uuid, this.start_date, this.end_date);
+      this.getTableViewSubArea(this.area.country_uuid, this.area.province_uuid, this.area.uuid, this.start_date, this.end_date);
      
-    }); 
+    });
   }
 
 
-  getTableArea(country_uuid: string, province_uuid: string, start_date: string, end_date: string) {
-    this.ndService.NdTableViewArea(country_uuid, province_uuid, start_date, end_date).subscribe((res) => {
+
+  getTableViewSubArea(country_uuid: string, province_uuid: string, area_uuid: string, start_date: string, end_date: string) {
+    this.ndService.NdTableViewSubArea(country_uuid, province_uuid, area_uuid, start_date, end_date).subscribe((res) => {
       this.tableViewList = res.data;
       this.isLoading = false;
     });
   }
 
 }
+
+

@@ -155,7 +155,7 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <a [routerLink]="['/pos/pos-view', data.pos_uuid, '/posforms']">
+                                            <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
                                                 {{ data.Pos!.name }}
                                             </a>
                                         </td>
@@ -178,7 +178,8 @@
                                             <app-user-get *ngIf="data.cyclo_uuid"
                                                 [uuid]="data.cyclo_uuid"></app-user-get>
                                         </td>
-                                        <td>{{ data.PosFormItems?.length }} </td>
+                                        <td style="background-color: rgba(0, 195, 255, 0.31); font-size: larger; text-align: center;">
+                                            {{ data.PosFormItems?.length }} </td>
                                         <td>{{ data.comment }}</td>
                                         <td>
                                             <div class="dropdown table-action">

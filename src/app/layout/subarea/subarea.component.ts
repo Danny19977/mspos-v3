@@ -21,6 +21,7 @@ import { IArea } from '../areas/models/area.model';
 import { SubareaService } from './subarea.service';
 import { AreaService } from '../areas/area.service';
 import { ICommune } from '../commune/models/commune.model';
+import { IPosForm } from '../posform/models/posform.model';
 
 @Component({
   selector: 'app-subarea',
@@ -206,6 +207,9 @@ export class SubareaComponent implements OnInit {
   }
   getPosCount(pos: IPos[]): string {
     return pos ? pos.length > 0 ? pos.length.toString() : '0' : '0';
+  }
+  getPosFormCount(posForm: IPosForm[]): string {
+    return posForm ? posForm.length > 0 ? posForm.length.toString() : '0' : '0';
   }
   getUserCount(user: IUser[]): string {
     return user ? user.length > 0 ? user.length.toString() : '0' : '0';
