@@ -1,10 +1,10 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { GoogleMapModel } from '../../models/summary-dashboard.model';
+import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core'; 
 import { _isNumberValue } from '@angular/cdk/coercion';
+import { GoogleMapModel } from '../../models/google-map.model';
+import { MapInfoWindow } from '@angular/google-maps';
 
 interface Marker {
-  lat: number;
-  lng: number;
+  position: google.maps.LatLngLiteral;
   name: string;
 }
 
@@ -21,15 +21,18 @@ export class MapCardComponent implements OnChanges {
   center: google.maps.LatLngLiteral = { lat: -4.350900786588518, lng: 15.32577513250754 };
   zoom = 12;
   markers: Marker[] = [];
-  Lat = 0;
-  Lng = 0;
+  selectedMarker: Marker | null = null;
 
-  ngOnChanges(changes: SimpleChanges): void {
-    this.googleMapList.forEach(element => {
-      this.markers.push({ lat: parseFloat(element.Latitude), lng: parseFloat(element.Longitude), name: element.Name });
-    });
+  ngOnChanges(_changes: SimpleChanges): void {
+    this.markers = this.googleMapList.map(element => ({
+      position: { lat: element.latitude, lng: element.longitude },
+      name: element.signature
+    }));
+  }
 
-    console.log("markers", this.markers);
+  openInfoWindow(marker: Marker): void {
+    this.selectedMarker = marker;
+    console.log(`Selected Marker: ${marker.name}`);
   }
 
 }

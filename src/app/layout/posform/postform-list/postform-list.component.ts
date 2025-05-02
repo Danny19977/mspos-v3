@@ -461,8 +461,8 @@ export class PostformListComponent implements OnInit {
             uuid: item.uuid,
             price: parseInt(item.price.toString()),
             comment: item.comment,
-            latitude: this.latitude.toString(), // item.latitude,
-            longitude: this.longitude.toString(), // item.longitude,
+            latitude: this.latitude, // item.latitude,
+            longitude: this.longitude, // item.longitude,
             pos_uuid: item.pos_uuid,
             country_uuid: item.country_uuid,
             province_uuid: item.province_uuid,
@@ -646,8 +646,8 @@ export class PostformListComponent implements OnInit {
       uuid: uuidv4(),
       price: 50,
       comment: 'Rien á signaler',
-      latitude: '0', // this.latitude.toString(),
-      longitude: '0', // this.longitude.toString(),
+      latitude: 0, // this.latitude.toString(),
+      longitude: 0, // this.longitude.toString(),
       pos_uuid: this.posUUID,
       pos_name: this.posName,
       country_uuid: this.currentUser.country_uuid,
@@ -664,6 +664,7 @@ export class PostformListComponent implements OnInit {
       sup_uuid: this.currentUser.sup.user_uuid!,
       dr_uuid: this.currentUser.dr.user_uuid!,
       cyclo_uuid: this.currentUser.cyclo.user_uuid!,
+      
       signature: this.currentUser.fullname, // Added signature property
       sync: false, // Default value for 'sync', adjust as needed
       CreatedAt: new Date(),
@@ -691,8 +692,8 @@ export class PostformListComponent implements OnInit {
         var body: IPosForm = {
           price: parseInt(this.formGroup.value.price),
           comment: this.formGroup.value.comment,
-          latitude: '0', // this.latitude.toString(),
-          longitude: '0', // this.longitude.toString(),
+          latitude: 0, // this.latitude.toString(),
+          longitude: 0, // this.longitude.toString(),
           pos_uuid: this.posUUID,
           pos_name: this.posName,
           country_uuid: this.currentUser.country_uuid,
@@ -746,8 +747,8 @@ export class PostformListComponent implements OnInit {
       var body: IPosForm = {
         price: parseInt(this.formGroup.value.price),
         comment: this.formGroup.value.comment,
-        latitude: '-', // this.latitude.toString(),
-        longitude: '-', // this.longitude.toString(),
+        latitude: this.latitude,
+        longitude: this.longitude,
         pos_uuid: this.posUUID,
         pos_name: this.posName,
         country_uuid: this.currentUser.country_uuid,

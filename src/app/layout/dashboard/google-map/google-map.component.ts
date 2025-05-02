@@ -5,8 +5,9 @@ import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { CommonService } from '../../../shared/common/common.service';
 import { PosformService } from '../../posform/posform.service';
 import { formatDate } from '@angular/common';
-import { SummaryService } from '../services/summary.service';
-import { GoogleMapModel } from '../models/summary-dashboard.model';
+import { SummaryService } from '../services/summary.service'; 
+import { GoogleMapModel } from '../models/google-map.model';
+import { GoogleMapService } from '../services/google-map.service';
 
 @Component({
   selector: 'app-google-map',
@@ -35,7 +36,7 @@ export class GoogleMapComponent implements OnInit {
     private common: CommonService,
     private _formBuilder: FormBuilder,
     private renderer: Renderer2,
-    private summaryService: SummaryService, 
+    private googleMapService: GoogleMapService, 
   ) {
 
     this.common.base.subscribe((base: string) => {
@@ -60,15 +61,12 @@ export class GoogleMapComponent implements OnInit {
     this.rangeDate = [firstDay, lastDay];
 
     this.dateRange = this._formBuilder.group({ 
-      rangeValue: new FormControl(this.rangeDate), 
+      rangeValue: new FormControl(this.rangeDate),
     });
     this.start_date = formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US');
     this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
 
-
-    if (this.start_date && this.end_date) {
-      this.getPosFormList(this.start_date, this.end_date); 
-    }
+    this.getPosFormList(this.start_date, this.end_date); 
 
     this.onChanges();
   }
@@ -85,15 +83,13 @@ export class GoogleMapComponent implements OnInit {
  
 
   getPosFormList(start_date: string, end_date: string) {  
-    this.summaryService.GoogleMap(start_date, end_date).subscribe((res) => {
-      const dataList = res.data; 
-      if (dataList) {
-        this.googleMapList = dataList;
-      }
+    this.googleMapService.getGoogleMap(start_date, end_date).subscribe((res) => {
+      const dataList = res.data;  
+      const dataListFilter = dataList.filter((item: any) => item.latitude !== 0 && item.longitude !== 0);
+      this.googleMapList = dataListFilter;
       console.log("googleMapList", this.googleMapList)
       this.isLoading = false;
     }); 
   }
-
 
 }

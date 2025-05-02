@@ -1,12 +1,15 @@
 @if (isLoading) {
-<div class=" text-center d-flex justify-content-center align-items-center ">
-  <div class="spinner-border bs-primary" role="status">
-    <span class="visually-hidden">Loading...</span>
+  <div class="text-center d-flex justify-content-center align-items-center">
+    <div class="spinner-border bs-primary" role="status">
+      <span class="visually-hidden">Loading...</span>
+    </div>
   </div>
-</div>
 } @else {
-<google-map height="600px" width="1280px" [center]="center" [zoom]="zoom">
-  <map-marker *ngFor="let marker of markers" [position]="marker">
-  </map-marker>
-</google-map>
+  <google-map height="600px" width="1280px" [center]="center" [zoom]="zoom">
+    <map-marker *ngFor="let marker of markers" [position]="marker.position" [title]="marker.name">
+      <!-- <div class="custom-marker">
+        {{ marker.name }}
+      </div> -->
+    </map-marker>
+  </google-map>
 }

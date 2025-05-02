@@ -19,8 +19,8 @@ export interface IPosForm {
    
     comment: string;
 
-    latitude: string;
-    longitude: string;
+    latitude: number;
+    longitude: number;
 
     pos_uuid: string;
     pos_name?: string;
