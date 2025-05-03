@@ -1,13 +1,10 @@
 import { Component, OnInit, Renderer2 } from '@angular/core';
-import { GoogleMapsService } from '../../../shared/services/google-maps.service';
 import { routes } from '../../../shared/routes/routes';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { CommonService } from '../../../shared/common/common.service';
-import { PosformService } from '../../posform/posform.service';
 import { formatDate } from '@angular/common';
-import { SummaryService } from '../services/summary.service'; 
-import { GoogleMapModel } from '../models/google-map.model';
 import { GoogleMapService } from '../services/google-map.service';
+import { GoogleMapModel } from '../models/dashboard.models';
 
 @Component({
   selector: 'app-google-map',

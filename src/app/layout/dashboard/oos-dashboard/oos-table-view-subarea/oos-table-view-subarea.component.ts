@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms'; 
-import { TableViewModel } from '../../models/nd-dashboard.models';
+import { TableViewModel } from '../../models/dashboard.models';
 import { ActivatedRoute } from '@angular/router';
 import { NdService } from '../../services/nd.service';
 import { formatDate } from '@angular/common';

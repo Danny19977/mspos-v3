@@ -7,7 +7,7 @@ import { ICountry } from '../../country/models/country.model';
 import { CountryService } from '../../country/country.service';
 import { NdService } from '../services/nd.service';
 import { SosService } from '../services/sos.service';
-import { SOSYearModel } from '../models/nd-dashboard.models';
+import { SOSYearModel } from '../models/dashboard.models';
 
 @Component({
   selector: 'app-sos-dashboard',

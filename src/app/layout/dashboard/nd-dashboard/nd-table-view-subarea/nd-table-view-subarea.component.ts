@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms'; 
-import { TableViewModel } from '../../models/nd-dashboard.models';
+import { TableViewModel } from '../../models/dashboard.models';
 import { ActivatedRoute } from '@angular/router';
 import { NdService } from '../../services/nd.service';
 import { formatDate } from '@angular/common';
@@ -43,8 +43,7 @@ export class NdTableViewSubareaComponent implements OnInit {
     this.rangeDate = [firstDay, lastDay];
 
     this.dateRange = this._formBuilder.group({ 
-      rangeValue: new FormControl(this.rangeDate),
-      area: new FormControl(''),
+      rangeValue: new FormControl(this.rangeDate), 
     });
     this.start_date = formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US');
     this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');

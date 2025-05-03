@@ -1,5 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
-import { TableViewModel } from '../../../models/nd-dashboard.models';
+import { TableViewModel } from '../../../models/dashboard.models';
 import { IProvince } from '../../../../province/models/province.model';
 
 @Component({

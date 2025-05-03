@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { IProvince } from '../../../province/models/province.model';
-import { SOSTableViewModel } from '../../models/nd-dashboard.models';
+import { SOSTableViewModel } from '../../models/dashboard.models';
 import { ActivatedRoute } from '@angular/router';
 import { SosService } from '../../services/sos.service';
 import { ProvinceService } from '../../../province/province.service';

@@ -6,7 +6,7 @@ import { AuthService } from '../../../../auth/auth.service';
 import { ProvinceService } from '../../../province/province.service';
 import { CountryService } from '../../../country/country.service';
 import { NdService } from '../../services/nd.service';
-import { TableViewModel } from '../../models/nd-dashboard.models';
+import { TableViewModel } from '../../models/dashboard.models';
 import { IProvince } from '../../../province/models/province.model';
 import { IUser } from '../../../user/models/user.model';
 

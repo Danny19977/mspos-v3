@@ -1,19 +1,19 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { ISubArea } from '../../../subarea/models/subarea.model';
-import { TableViewModel } from '../../models/dashboard.models';
+import { KPITableViewPriceModel } from '../../models/dashboard.models';
 import { ActivatedRoute } from '@angular/router';
-import { NdService } from '../../services/nd.service';
 import { SubareaService } from '../../../subarea/subarea.service';
 import { formatDate } from '@angular/common';
+import { KpiService } from '../../services/kpi.service';
 
 @Component({
-  selector: 'app-oos-table-view-commune',
+  selector: 'app-kpi-table-view-commune',
   standalone: false,
-  templateUrl: './oos-table-view-commune.component.html',
-  styleUrl: './oos-table-view-commune.component.scss'
+  templateUrl: './kpi-table-view-commune.component.html',
+  styleUrl: './kpi-table-view-commune.component.scss'
 })
-export class OosTableViewCommuneComponent implements OnInit {
+export class KpiTableViewCommuneComponent implements OnInit {
   isLoading = false;
 
   dateRange!: FormGroup;
@@ -25,13 +25,13 @@ export class OosTableViewCommuneComponent implements OnInit {
 
   subarea!: ISubArea;
 
-  tableViewList: TableViewModel[] = [];
+  tableViewList: KPITableViewPriceModel[] = [];
 
   constructor(
     private route: ActivatedRoute, 
-    private _formBuilder: FormBuilder,
-    private ndService: NdService,
+    private _formBuilder: FormBuilder, 
     private subareaService: SubareaService,
+    private kpiService: KpiService,
   ) { }
 
 
@@ -76,10 +76,9 @@ export class OosTableViewCommuneComponent implements OnInit {
   }
 
   getTableViewCommune(country_uuid: string, province_uuid: string, area_uuid: string, sub_area_uuid: string, start_date: string, end_date: string) {
-    this.ndService.NdTableViewCommune(country_uuid, province_uuid, area_uuid, sub_area_uuid, start_date, end_date).subscribe((res) => {
+    this.kpiService.TableViewCommune(country_uuid, province_uuid, area_uuid, sub_area_uuid, start_date, end_date).subscribe((res) => {
       this.tableViewList = res.data;
       this.isLoading = false;
     });
   }
- 
 }

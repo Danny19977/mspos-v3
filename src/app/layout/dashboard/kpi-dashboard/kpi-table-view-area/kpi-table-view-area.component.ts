@@ -1,19 +1,19 @@
 import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { IProvince } from '../../../province/models/province.model';
+import { KPITableViewPriceModel } from '../../models/dashboard.models';
 import { ActivatedRoute } from '@angular/router';
 import { ProvinceService } from '../../../province/province.service';
-import { NdService } from '../../services/nd.service';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { KpiService } from '../../services/kpi.service';
 import { formatDate } from '@angular/common';
-import { IProvince } from '../../../province/models/province.model';
-import { TableViewModel } from '../../models/dashboard.models';
 
 @Component({
-  selector: 'app-nd-table-view-area',
+  selector: 'app-kpi-table-view-area',
   standalone: false,
-  templateUrl: './nd-table-view-area.component.html',
-  styleUrl: './nd-table-view-area.component.scss'
+  templateUrl: './kpi-table-view-area.component.html',
+  styleUrl: './kpi-table-view-area.component.scss'
 })
-export class NdTableViewAreaComponent implements OnInit {
+export class KpiTableViewAreaComponent implements OnInit {
   isLoading = false;
 
   dateRange!: FormGroup;
@@ -25,13 +25,13 @@ export class NdTableViewAreaComponent implements OnInit {
 
   province!: IProvince
 
-  tableViewList: TableViewModel[] = [];
+  tableViewList: KPITableViewPriceModel[] = [];
 
   constructor(
     private route: ActivatedRoute, 
-    private _formBuilder: FormBuilder,
-    private ndService: NdService,
+    private _formBuilder: FormBuilder, 
     private provinceService: ProvinceService,
+    private kpiService: KpiService,
   ) { }
 
 
@@ -77,10 +77,9 @@ export class NdTableViewAreaComponent implements OnInit {
 
 
   getTableArea(country_uuid: string, province_uuid: string, start_date: string, end_date: string) {
-    this.ndService.NdTableViewArea(country_uuid, province_uuid, start_date, end_date).subscribe((res) => {
+    this.kpiService.TableViewArea(country_uuid, province_uuid, start_date, end_date).subscribe((res) => {
       this.tableViewList = res.data;
       this.isLoading = false;
     });
   }
-
 }

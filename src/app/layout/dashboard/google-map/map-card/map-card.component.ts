@@ -1,7 +1,6 @@
-import { Component, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core'; 
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core'; 
 import { _isNumberValue } from '@angular/cdk/coercion';
-import { GoogleMapModel } from '../../models/google-map.model';
-import { MapInfoWindow } from '@angular/google-maps';
+import { GoogleMapModel } from '../../models/dashboard.models';
 
 interface Marker {
   position: google.maps.LatLngLiteral;

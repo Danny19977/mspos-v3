@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { IArea } from '../../../areas/models/area.model';
-import { SOSTableViewModel } from '../../models/nd-dashboard.models';
+import { SOSTableViewModel } from '../../models/dashboard.models';
 import { ActivatedRoute } from '@angular/router';
 import { AreaService } from '../../../areas/area.service';
 import { SosService } from '../../services/sos.service';

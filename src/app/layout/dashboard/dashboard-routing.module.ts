@@ -24,6 +24,14 @@ import { OosTableViewProvinceComponent } from './oos-dashboard/oos-table-view-pr
 import { OosTableViewAreaComponent } from './oos-dashboard/oos-table-view-area/oos-table-view-area.component';
 import { OosTableViewSubareaComponent } from './oos-dashboard/oos-table-view-subarea/oos-table-view-subarea.component';
 import { OosTableViewCommuneComponent } from './oos-dashboard/oos-table-view-commune/oos-table-view-commune.component';
+import { SeTableViewProvinceComponent } from './se-dashboard/se-table-view-province/se-table-view-province.component';
+import { SeTableViewAreaComponent } from './se-dashboard/se-table-view-area/se-table-view-area.component';
+import { SeTableViewSubareaComponent } from './se-dashboard/se-table-view-subarea/se-table-view-subarea.component';
+import { SeTableViewCommuneComponent } from './se-dashboard/se-table-view-commune/se-table-view-commune.component';
+import { KpiTableViewProvinceComponent } from './kpi-dashboard/kpi-table-view-province/kpi-table-view-province.component';
+import { KpiTableViewAreaComponent } from './kpi-dashboard/kpi-table-view-area/kpi-table-view-area.component';
+import { KpiTableViewCommuneComponent } from './kpi-dashboard/kpi-table-view-commune/kpi-table-view-commune.component';
+import { KpiTableViewSubareaComponent } from './kpi-dashboard/kpi-table-view-subarea/kpi-table-view-subarea.component';
 
 const routes: Routes = [
   {
@@ -122,6 +130,58 @@ const routes: Routes = [
         ]
       },  
       {
+        path: 'sales-evolution',
+        component: SeDashboardComponent,
+        children: [
+          {
+            path: 'province/:country',
+            component: SeTableViewProvinceComponent,
+          },
+          {
+            path: 'area/:province_name',
+            component: SeTableViewAreaComponent,
+          },
+          {
+            path: 'subarea/:area_name',
+            component: SeTableViewSubareaComponent,
+          },
+          {
+            path: 'commune/:subarea_name',
+            component: SeTableViewCommuneComponent,
+          },
+          {
+            path: '',
+            component: SeTableViewProvinceComponent
+          }
+        ]
+      },
+      { 
+        path: 'key-performance-indicators',
+        component: KpiDashboardComponent,
+        children: [
+          {
+            path: 'province/:country',
+            component: KpiTableViewProvinceComponent,
+          },
+          {
+            path: 'area/:province_name',
+            component: KpiTableViewAreaComponent,
+          },
+          {
+            path: 'subarea/:area_name',
+            component: KpiTableViewSubareaComponent,
+          },
+          {
+            path: 'commune/:subarea_name',
+            component: KpiTableViewCommuneComponent,
+          },
+          {
+            path: '',
+            component: KpiTableViewProvinceComponent
+          }
+        ]
+      },
+      {
         path: 'share-in-shop-handling',
         component: SishDashboardComponent,
         children: []
@@ -132,17 +192,10 @@ const routes: Routes = [
         component: WdDashboardComponent,
       },   
       {
-        path: 'sales-evolution',
-        component: SeDashboardComponent,
-      },
-      {
         path: 'google-maps',
         component: GoogleMapComponent,
       },
-      { 
-        path: 'key-performance-indicators',
-        component: KpiDashboardComponent,
-      }
+      
     ],
   },
   

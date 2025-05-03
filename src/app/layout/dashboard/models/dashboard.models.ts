@@ -33,36 +33,31 @@ export interface SOSYearModel {
 }
 
 
+export interface GoogleMapModel {
+	latitude: number;
+	longitude: number; 
+	signature: string;
+}  
 
 
-
-export interface NDAverageModel {
-    x: string;
-    y: number;
+export interface SETableViewModel {
+    name: string;
+    type_pos: string;
+    total_pos: number;
 }
 
-
-export interface NDByAreaModel {
-    Eq: number,
-    Dhl: number,
-    Ar: number,
-    Sbl: number,
-    Pmf: number,
-    Pmm: number,
-    Ticket: number,
-    Mtc: number,
-    Ws: number,
-    Mast: number,
-    Oris: number,
-    Elite: number,
-    Yes: number,
-    Time: number,
+export interface SETableViewPriceModel {
+    name: string;
+    price: string;
+    count_price: number;
+    sold: number;
 }
 
-export interface NDPerformanceModel {
-    area: string;
-    data: number;
+export interface KPITableViewPriceModel {
+    name: string;
+    signature: string;
+    title: string;
+    total_visits: number;
+    objectif: number; 
+    target: number;   
 }
-
-
-

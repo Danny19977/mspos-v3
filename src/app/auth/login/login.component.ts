@@ -63,11 +63,11 @@ export class LoginComponent implements OnInit {
               ).subscribe({
                 next: () => {
                   if (user.role == 'Manager') {
-                    this.router.navigate([routes.msposDashboard]);
+                    this.router.navigate([routes.ndDashboard]);
                   } else if (user.role == 'ASM') {
-                    this.router.navigate([routes.msposDashboard]);
+                    this.router.navigate([routes.ndDashboard]);
                   } else if (user.role == 'Supervisor') {
-                    this.router.navigate([routes.msposDashboard]);
+                    this.router.navigate([routes.ndDashboard]);
                   } else if (user.role == 'DR') {
                     this.router.navigate([routes.posFormList]);
                   }  else if (user.role == 'Cyclo') {

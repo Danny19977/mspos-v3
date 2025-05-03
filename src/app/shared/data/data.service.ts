@@ -29,18 +29,18 @@ export class DataService {
           icon: 'layout-2',
           base: 'dashboard',
           subMenus: [
-            {
-              menuValue: 'Summary',
-              route: routes.msposDashboard,
-            },
+            // {
+            //   menuValue: 'Summary',
+            //   route: routes.msposDashboard,
+            // },
             {
               menuValue: 'Numeric distribution',
               route: routes.ndDashboard,
             },
-            {
-              menuValue: 'Weighted distribution',
-              route: routes.wdDashboard,
-            },
+            // {
+            //   menuValue: 'Weighted distribution',
+            //   route: routes.wdDashboard,
+            // },
             // {
             //   menuValue: 'Share in shop handling',
             //   route: routes.sishDashboard,
@@ -247,18 +247,18 @@ export class DataService {
           icon: 'layout-2',
           base: 'dashboard',
           subMenus: [
-            {
-              menuValue: 'Summary',
-              route: routes.msposDashboard,
-            },
+            // {
+            //   menuValue: 'Summary',
+            //   route: routes.msposDashboard,
+            // },
             {
               menuValue: 'Numeric distribution',
               route: routes.ndDashboard,
             },
-            {
-              menuValue: 'Weighted distribution',
-              route: routes.wdDashboard,
-            },
+            // {
+            //   menuValue: 'Weighted distribution',
+            //   route: routes.wdDashboard,
+            // },
             // {
             //   menuValue: 'Share in shop handling',
             //   route: routes.sishDashboard,
@@ -425,18 +425,18 @@ export class DataService {
           icon: 'layout-2',
           base: 'dashboard',
           subMenus: [
-            {
-              menuValue: 'Summary',
-              route: routes.msposDashboard,
-            },
+            // {
+            //   menuValue: 'Summary',
+            //   route: routes.msposDashboard,
+            // },
             {
               menuValue: 'Numeric distribution',
               route: routes.ndDashboard,
             },
-            {
-              menuValue: 'Weighted distribution',
-              route: routes.wdDashboard,
-            },
+            // {
+            //   menuValue: 'Weighted distribution',
+            //   route: routes.wdDashboard,
+            // },
             // {
             //   menuValue: 'Share in shop handling',
             //   route: routes.sishDashboard,

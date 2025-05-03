@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { ISubArea } from '../../../subarea/models/subarea.model';
-import { SOSTableViewModel } from '../../models/nd-dashboard.models';
+import { SOSTableViewModel } from '../../models/dashboard.models';
 import { SosService } from '../../services/sos.service';
 import { CountryService } from '../../../country/country.service';
 import { AuthService } from '../../../../auth/auth.service';
@@ -54,9 +54,8 @@ export class SosTableViewCommuneComponent implements OnInit {
       this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
       
       this.route.params.subscribe(params => {
-        const areaName = params['area_name'];
-        console.log('areaName Name:', areaName);
-        this.subareaService.getBy(areaName).subscribe((res) => {
+        const subarea_name = params['subarea_name']; 
+        this.subareaService.getBy(subarea_name).subscribe((res) => {
           this.subarea = res.data;
           console.log('subarea:', this.subarea);
           this.getTableViewCommune(this.subarea.country_uuid, this.subarea.province_uuid, this.subarea.area_uuid, this.subarea.uuid, this.start_date, this.end_date);

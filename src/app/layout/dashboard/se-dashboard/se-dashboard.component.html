@@ -1,1 +1,31 @@
-<p>se-dashboard works!</p>
+<div class="page-wrapper">
+    <div class="content">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="page-header">
+            <div class="row align-items-center">
+              <div class="col-md-4">
+                <h3 class="page-title">SALES EVOLUTION</h3> 
+              </div>
+              <div class="col-md-8 float-end ms-auto">
+                @if (this.currentUser) {
+                <div class="d-flex title-head">
+                  <div class="head-icons mb-0">
+                    <app-reload></app-reload>
+                    <app-collapse-header></app-collapse-header>
+                  </div>
+                </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+  
+      <router-outlet />
+   
+  
+    </div>
+  
+  </div>

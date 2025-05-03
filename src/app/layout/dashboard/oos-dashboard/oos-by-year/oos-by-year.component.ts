@@ -7,7 +7,7 @@ import {
   ApexXAxis,
   ApexPlotOptions,
 } from 'ng-apexcharts';
-import { NDYearModel } from '../../models/nd-dashboard.models';
+import { NDYearModel } from '../../models/dashboard.models';
 
 export interface ChartOptions {
   series: ApexAxisChartSeries | any;

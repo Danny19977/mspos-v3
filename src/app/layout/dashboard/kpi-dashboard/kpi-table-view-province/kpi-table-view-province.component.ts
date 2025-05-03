@@ -1,22 +1,22 @@
 import { Component, computed, OnInit, signal } from '@angular/core';
-import { SosService } from '../../services/sos.service';
+import { IUser } from '../../../user/models/user.model';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { IProvince } from '../../../province/models/province.model';
+import { KPITableViewPriceModel } from '../../models/dashboard.models';
+import { ICountry } from '../../../country/models/country.model';
 import { CountryService } from '../../../country/country.service';
 import { ProvinceService } from '../../../province/province.service';
 import { AuthService } from '../../../../auth/auth.service';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { ICountry } from '../../../country/models/country.model';
-import { IProvince } from '../../../province/models/province.model';
-import { IUser } from '../../../user/models/user.model';
+import { KpiService } from '../../services/kpi.service';
 import { formatDate } from '@angular/common';
-import { SOSTableViewModel } from '../../models/dashboard.models';
 
 @Component({
-  selector: 'app-sos-table-view-province',
+  selector: 'app-kpi-table-view-province',
   standalone: false,
-  templateUrl: './sos-table-view-province.component.html',
-  styleUrl: './sos-table-view-province.component.scss'
+  templateUrl: './kpi-table-view-province.component.html',
+  styleUrl: './kpi-table-view-province.component.scss'
 })
-export class SosTableViewProvinceComponent implements OnInit {
+export class KpiTableViewProvinceComponent implements OnInit {
   isLoading = false;
   currentUser!: IUser;
 
@@ -32,7 +32,7 @@ export class SosTableViewProvinceComponent implements OnInit {
   provinceList: IProvince[] = [];
   province!: IProvince;
 
-  tableViewList: SOSTableViewModel[] = []; 
+  tableViewList: KPITableViewPriceModel[] = []; 
 
 
   countrySearch = signal<string>('');
@@ -44,11 +44,11 @@ export class SosTableViewProvinceComponent implements OnInit {
   );
 
   constructor( 
-    private _formBuilder: FormBuilder, 
-    private sosService: SosService,
+    private _formBuilder: FormBuilder,  
     private countryService: CountryService,
     private provinceService: ProvinceService,
     private authService: AuthService,
+    private kpiService: KpiService,
   ) { 
   }
 
@@ -71,17 +71,21 @@ export class SosTableViewProvinceComponent implements OnInit {
     this.authService.user().subscribe({
       next: (user) => {
         this.currentUser = user;
+
         this.countryService.getAll().subscribe((res) => {
           this.countryList.set(res.data); 
           this.provinceService.getAll().subscribe((pr) => {
             this.provinceList = pr.data; 
             if (this.currentUser.role != 'Managers' && this.currentUser.role != 'Support') {
               this.getTableView(this.countryList()[0].uuid, this.provinceList[0].uuid, this.start_date, this.end_date);
+              
             } else {
               this.getTableView(this.currentUser.country_uuid, this.currentUser.province_uuid, this.start_date, this.end_date);
+              
             }
           });
-        });
+        }); 
+
       },
       error: (error) => {
         console.log(error);
@@ -130,9 +134,11 @@ export class SosTableViewProvinceComponent implements OnInit {
 
 
   getTableView(country_uuid: string, province_uuid: string, start_date: string, end_date: string) {
-    this.sosService.SosTableViewProvince(country_uuid, province_uuid, start_date, end_date).subscribe((res) => {
+    this.kpiService.TableViewProvince(country_uuid, province_uuid, start_date, end_date).subscribe((res) => {
       this.tableViewList = res.data;
+      console.log("tableViewList", this.tableViewList);
       this.isLoading = false;
     });
   } 
 }
+ 

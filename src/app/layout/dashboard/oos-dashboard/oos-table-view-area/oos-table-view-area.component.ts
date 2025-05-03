@@ -5,7 +5,7 @@ import { NdService } from '../../services/nd.service';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { formatDate } from '@angular/common';
 import { IProvince } from '../../../province/models/province.model';
-import { TableViewModel } from '../../models/nd-dashboard.models';
+import { TableViewModel } from '../../models/dashboard.models';
 
 @Component({
   selector: 'app-oos-table-view-area',

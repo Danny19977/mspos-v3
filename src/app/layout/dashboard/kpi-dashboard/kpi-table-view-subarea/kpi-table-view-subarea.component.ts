@@ -1,19 +1,19 @@
 import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
-import { ProvinceService } from '../../../province/province.service';
-import { NdService } from '../../services/nd.service';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { IArea } from '../../../areas/models/area.model';
+import { KPITableViewPriceModel } from '../../models/dashboard.models';
+import { ActivatedRoute } from '@angular/router';
+import { AreaService } from '../../../areas/area.service';
+import { KpiService } from '../../services/kpi.service';
 import { formatDate } from '@angular/common';
-import { IProvince } from '../../../province/models/province.model';
-import { TableViewModel } from '../../models/dashboard.models';
 
 @Component({
-  selector: 'app-nd-table-view-area',
+  selector: 'app-kpi-table-view-subarea',
   standalone: false,
-  templateUrl: './nd-table-view-area.component.html',
-  styleUrl: './nd-table-view-area.component.scss'
+  templateUrl: './kpi-table-view-subarea.component.html',
+  styleUrl: './kpi-table-view-subarea.component.scss'
 })
-export class NdTableViewAreaComponent implements OnInit {
+export class KpiTableViewSubareaComponent implements OnInit {
   isLoading = false;
 
   dateRange!: FormGroup;
@@ -23,15 +23,15 @@ export class NdTableViewAreaComponent implements OnInit {
   // Filtre 
   rangeDate: any[] = [];
 
-  province!: IProvince
+  area!: IArea;
 
-  tableViewList: TableViewModel[] = [];
+  tableViewList: KPITableViewPriceModel[] = [];
 
   constructor(
     private route: ActivatedRoute, 
-    private _formBuilder: FormBuilder,
-    private ndService: NdService,
-    private provinceService: ProvinceService,
+    private _formBuilder: FormBuilder, 
+    private areaService: AreaService,
+    private kpiService: KpiService,
   ) { }
 
 
@@ -49,12 +49,11 @@ export class NdTableViewAreaComponent implements OnInit {
     this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
     
     this.route.params.subscribe(params => {
-      const provinceName = params['province_name'];
-      console.log('Province Name:', provinceName);
-      this.provinceService.getBy(provinceName).subscribe((res) => {
-        this.province = res.data;
-        console.log('Province:', this.province);
-        this.getTableArea(this.province.country_uuid, this.province.uuid, this.start_date, this.end_date);
+      const areaName = params['area_name']; 
+      this.areaService.getBy(areaName).subscribe((res) => {
+        this.area = res.data;
+        console.log('area:', this.area);
+        this.getTableViewSubArea(this.area.country_uuid, this.area.province_uuid, this.area.uuid, this.start_date, this.end_date);
         this.isLoading = false;
       });
     });
@@ -70,17 +69,17 @@ export class NdTableViewAreaComponent implements OnInit {
       val.rangeValue[1].setDate(val.rangeValue[1].getDate() + 1);
       this.end_date = formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US');
 
-      this.getTableArea(this.province.country_uuid, this.province.uuid, this.start_date, this.end_date);
+      this.getTableViewSubArea(this.area.country_uuid, this.area.province_uuid, this.area.uuid, this.start_date, this.end_date);
      
-    }); 
+    });
   }
 
 
-  getTableArea(country_uuid: string, province_uuid: string, start_date: string, end_date: string) {
-    this.ndService.NdTableViewArea(country_uuid, province_uuid, start_date, end_date).subscribe((res) => {
+
+  getTableViewSubArea(country_uuid: string, province_uuid: string, area_uuid: string, start_date: string, end_date: string) {
+    this.kpiService.TableViewSubArea(country_uuid, province_uuid, area_uuid, start_date, end_date).subscribe((res) => {
       this.tableViewList = res.data;
       this.isLoading = false;
     });
   }
-
 }

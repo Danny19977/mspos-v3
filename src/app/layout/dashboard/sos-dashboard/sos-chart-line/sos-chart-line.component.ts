@@ -7,7 +7,7 @@ import {
   ApexXAxis,
   ApexPlotOptions,
 } from 'ng-apexcharts';
-import { SOSYearModel } from '../../models/nd-dashboard.models';
+import { SOSYearModel } from '../../models/dashboard.models';
 
 export interface ChartOptions {
   series: ApexAxisChartSeries | any;
