@@ -725,10 +725,10 @@ export class DataService {
           icon: 'layout-2',
           base: 'dashboard',
           subMenus: [
-            {
-              menuValue: 'Summary',
-              route: routes.msposDashboard,
-            },
+            // {
+            //   menuValue: 'Summary',
+            //   route: routes.msposDashboard,
+            // },
             {
               menuValue: 'Numeric distribution',
               route: routes.ndDashboard,
