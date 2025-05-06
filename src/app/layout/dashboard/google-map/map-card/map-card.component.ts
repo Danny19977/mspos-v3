@@ -34,4 +34,9 @@ export class MapCardComponent implements OnChanges {
     console.log(`Selected Marker: ${marker.name}`);
   }
 
+
+  onMarkerClick(event: any) {
+    
+  }
+
 }

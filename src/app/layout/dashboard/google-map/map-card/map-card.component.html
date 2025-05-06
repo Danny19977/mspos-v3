@@ -6,7 +6,8 @@
   </div>
 } @else {
   <google-map height="600px" width="1280px" [center]="center" [zoom]="zoom">
-    <map-marker *ngFor="let marker of markers" [position]="marker.position" [title]="marker.name">
+    <map-marker *ngFor="let marker of markers" [position]="marker.position" [title]="marker.name"
+    (mapClick)="onMarkerClick($event)">
       <!-- <div class="custom-marker">
         {{ marker.name }}
       </div> -->
