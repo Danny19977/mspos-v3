@@ -81,6 +81,7 @@ export class OosByYearComponent implements OnChanges {
       },
       dataLabels: {
         enabled: true,
+        formatter: (val: number) => `${val} %`, // Ajouter le symbole % après le pourcentage
       },
       labels: [
         'Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Juin',

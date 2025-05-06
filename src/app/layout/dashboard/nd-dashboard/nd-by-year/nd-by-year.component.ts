@@ -24,7 +24,7 @@ export interface ChartOptions {
   styleUrl: './nd-by-year.component.scss'
 })
 export class NdByYearComponent implements OnChanges {
-  @Input() isLoading!: boolean; 
+  @Input() isLoading!: boolean;
   @Input() ndYear: NDYearModel[] = [];
 
   ndYearList: NDYearModel[] = [];
@@ -67,7 +67,36 @@ export class NdByYearComponent implements OnChanges {
         if (item.brand_name === 'Equateur') {
           return '#FF0000'; // Rouge pour la marque "Equateur"
         }
-        const randomColor = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
+        // const randomColor = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;
+        const attractiveColors = [
+          '#1E90FF', // Dodger Blue
+          '#32CD32', // Lime Green
+          '#FFD700', // Gold
+          '#FF69B4', // Hot Pink
+          '#8A2BE2', // Blue Violet
+          '#00CED1', // Dark Turquoise
+          '#FF4500', // Orange Red
+          '#7FFF00', // Chartreuse
+          '#DC143C', // Crimson
+          '#00FA9A', // Medium Spring Green
+          '#FF6347', // Tomato
+          '#4682B4', // Steel Blue
+          '#DA70D6', // Orchid
+          '#40E0D0', // Turquoise
+          '#FF8C00', // Dark Orange
+          '#ADFF2F', // Green Yellow
+          '#C71585', // Medium Violet Red
+          '#20B2AA', // Light Sea Green
+          '#FF1493', // Deep Pink
+          '#7B68EE', // Medium Slate Blue
+          '#00FF7F', // Spring Green
+          '#B22222', // Fire Brick
+          '#5F9EA0', // Cadet Blue
+          '#FFB6C1', // Light Pink
+          '#6A5ACD', // Slate Blue
+        ];
+
+        const randomColor = attractiveColors[Math.floor(Math.random() * attractiveColors.length)];
         return randomColor;
       }),
       chart: {
@@ -79,6 +108,12 @@ export class NdByYearComponent implements OnChanges {
       },
       dataLabels: {
         enabled: true,
+        formatter: (val: number) => `${val} %`, // Ajouter le symbole % après le pourcentage
+      },
+      tooltip: {
+        y: {
+          formatter: (val: number) => `${val} %`, // Ajouter le symbole % dans le hover
+        },
       },
       labels: [
         'Jan', 'Feb', 'Mar', 'Apr', 'Mai', 'Juin',

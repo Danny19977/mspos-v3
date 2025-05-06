@@ -109,7 +109,6 @@ export class CycloComponent implements OnInit {
     private authService: AuthService, 
     private communeService: CommuneService,
     private userService: UserService, 
-    private drService: DrService,
     private cycloService: CycloService,
     private logActivity: LogsService,
     private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
@@ -425,7 +424,7 @@ export class CycloComponent implements OnInit {
 
   findValue(value: string) {
     this.idItem = value;
-    this.drService.get(this.idItem).subscribe(item => {
+    this.cycloService.get(this.idItem).subscribe(item => {
       this.dataItem = item.data;
       this.formGroup.patchValue({
         country_uuid: this.dataItem.Country.ID,
@@ -440,7 +439,7 @@ export class CycloComponent implements OnInit {
 
 
   delete(): void {
-    this.drService
+    this.cycloService
       .delete(this.idItem)
       .subscribe({
         next: () => {
