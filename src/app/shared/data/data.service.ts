@@ -733,10 +733,10 @@ export class DataService {
               menuValue: 'Numeric distribution',
               route: routes.ndDashboard,
             },
-            {
-              menuValue: 'Weighted distribution',
-              route: routes.wdDashboard,
-            },
+            // {
+            //   menuValue: 'Weighted distribution',
+            //   route: routes.wdDashboard,
+            // },
             // {
             //   menuValue: 'Share in shop handling',
             //   route: routes.sishDashboard,
