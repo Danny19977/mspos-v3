@@ -757,6 +757,10 @@ export class DataService {
               menuValue: 'Maps DR',
               route: routes.googleMapsDashboard,
             },
+            {
+              menuValue: 'KPI',
+              route: routes.kpiDashboard,
+            },
           ]
         },
       ],
