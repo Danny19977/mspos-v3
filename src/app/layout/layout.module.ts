@@ -26,7 +26,6 @@ import { RouteplanComponent } from './routeplan/routeplan.component';
 import { PosEquipmentComponent } from './pos-vente/pos-equipment/pos-equipment.component'; 
 import { PosViewComponent } from './pos-vente/pos-view/pos-view.component';
 
-
 @NgModule({
   declarations: [
     LayoutComponent,
@@ -49,7 +48,7 @@ import { PosViewComponent } from './pos-vente/pos-view/pos-view.component';
     CommuneComponent,
     RouteplanComponent,
     PosEquipmentComponent, 
-    PosViewComponent,     
+    PosViewComponent,
   ],
   imports: [
     CommonModule,
