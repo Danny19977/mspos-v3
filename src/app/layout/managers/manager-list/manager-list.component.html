@@ -179,7 +179,7 @@
                     <div class="mb-3">
                         <label class="col-form-label" for="country">Pays <span class="text-danger">*</span></label>
                         <mat-select class="select custom-mat-select" formControlName="country_uuid"
-                            placeholder="Choose pays">
+                            placeholder="Choose pays" [compareWith]="compareFn">
                             @for (item of countryList; track item) {
                             <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
                             }

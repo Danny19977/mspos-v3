@@ -291,6 +291,8 @@ export class ManagerListComponent implements OnInit {
       this.dataItem = item.data;
       this.formGroup.patchValue({
         title: this.dataItem.title,
+        country_uuid: this.dataItem.country_uuid,
+        user_uuid: this.dataItem.user_uuid,
       });
     });
   }

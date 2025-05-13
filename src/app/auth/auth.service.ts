@@ -76,10 +76,10 @@ export class AuthService {
           // Save user and related foreign keys to localStorage
           localStorage.setItem("auth_user", JSON.stringify(userWithExpiration));
 
-          localStorage.setItem("auth_asm", JSON.stringify(user.asm));
-          localStorage.setItem("auth_sup", JSON.stringify(user.sup));
-          localStorage.setItem("auth_dr", JSON.stringify(user.dr));
-          localStorage.setItem("auth_cyclo", JSON.stringify(user.cyclo));
+          localStorage.setItem("auth_asm", JSON.stringify(user.Asm));
+          localStorage.setItem("auth_sup", JSON.stringify(user.Sup));
+          localStorage.setItem("auth_dr", JSON.stringify(user.Dr));
+          localStorage.setItem("auth_cyclo", JSON.stringify(user.Cyclo));
 
 
           observer.next(user);

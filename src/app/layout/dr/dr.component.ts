@@ -112,7 +112,7 @@ export class DrComponent implements OnInit {
         this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
         this.dataSource.sort = this.sort; // Bind sort to dataSource 
         this.cdr.detectChanges(); // Trigger change detection
-        
+
         this.drService.refreshDataList$.subscribe(() => {
           this.fetchProducts(this.currentUser);
         });
@@ -305,11 +305,12 @@ export class DrComponent implements OnInit {
           province_uuid: this.currentUser.province_uuid,
           area_uuid: this.currentUser.area_uuid,
           subarea_uuid: this.formGroup.value.subarea_uuid,
-          asm_uuid: this.currentUser.asm.uuid,
-          sup_uuid: this.currentUser.sup.uuid,
+          asm_uuid: this.currentUser.Asm.uuid,
+          sup_uuid: this.currentUser.Sup.uuid,
           user_uuid: this.userId,
           signature: this.currentUser.fullname,
         };
+        console.log('body:', body);
         this.drService.create(body).subscribe({
           next: (res) => {
             this.logActivity.activity(
@@ -352,8 +353,8 @@ export class DrComponent implements OnInit {
         province_uuid: this.currentUser.province_uuid,
         area_uuid: this.currentUser.area_uuid,
         subarea_uuid: this.formGroup.value.subarea_uuid,
-        asm_uuid: this.currentUser.asm.uuid,
-        sup_uuid: this.currentUser.sup.uuid,
+        asm_uuid: this.currentUser.Asm.uuid,
+        sup_uuid: this.currentUser.Sup.uuid,
         user_uuid: this.userId,
         signature: this.currentUser.fullname,
       };
@@ -396,13 +397,13 @@ export class DrComponent implements OnInit {
     this.drService.get(this.idItem).subscribe(item => {
       this.dataItem = item.data;
       this.formGroup.patchValue({
-        country_uuid: this.dataItem.Country.ID,
-        province_uuid: this.dataItem.Province.ID,
-        area_uuid: this.dataItem.Area.ID,
-        subarea_uuid: this.dataItem.SubArea.ID,
-        asm_uuid: this.dataItem.Asm.ID,
-        sup_uuid: this.dataItem.Sup.ID,
-        user_uuid: this.dataItem.User.ID,
+        country_uuid: this.dataItem.Country.uuid,
+        province_uuid: this.dataItem.Province.uuid,
+        area_uuid: this.dataItem.Area.uuid,
+        subarea_uuid: this.dataItem.SubArea.uuid,
+        asm_uuid: this.dataItem.Asm.uuid,
+        sup_uuid: this.dataItem.Sup.uuid,
+        user_uuid: this.dataItem.User.uuid,
       });
     });
   }

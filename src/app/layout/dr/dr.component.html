@@ -107,7 +107,8 @@
                                 <ng-container matColumnDef="asm">
                                     <th mat-header-cell *matHeaderCellDef> ASM </th>
                                     <td mat-cell *matCellDef="let element">
-                                        <app-user-get *ngIf="element.Asm" [uuid]="element.Asm.user_uuid"></app-user-get>
+                                        <!-- <app-user-get *ngIf="element.Asm" [uuid]="element.Asm.user_uuid"></app-user-get> -->
+                                       {{ element.Asm.user_uuid}}
                                     </td>
                                 </ng-container>
 

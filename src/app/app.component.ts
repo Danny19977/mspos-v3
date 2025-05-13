@@ -37,6 +37,9 @@ export class AppComponent {
 
   ngOnInit(): void {
     if (isPlatformBrowser(this.platformId)) {
+      // Effacer le cache au démarrage
+      this.clearCache();
+
       this.zone.runOutsideAngular(() => {
         this.router.events
           .pipe(
@@ -80,6 +83,17 @@ export class AppComponent {
           }
         });
       }
+    }
+  }
+
+  private clearCache(): void {
+    if ('caches' in window) {
+      caches.keys().then((cacheNames) => {
+        cacheNames.forEach((cacheName) => {
+          caches.delete(cacheName);
+        });
+      });
+      console.log('Cache cleared at application startup.');
     }
   }
 }

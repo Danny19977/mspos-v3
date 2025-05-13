@@ -42,10 +42,10 @@ export interface IUser {
     SubArea: ISubArea;
     Commune: ICommune;
  
-    asm: IAsm;
-    sup: ISup;
-    dr: IDr;
-    cyclo: ICyclo;
+    Asm: IAsm;
+    Sup: ISup;
+    Dr: IDr;
+    Cyclo: ICyclo;
 
     Manager: IManager[];
     UserLogs: UserLogsModel[];
