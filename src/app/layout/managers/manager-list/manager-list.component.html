@@ -202,7 +202,7 @@
                     <div class="mb-3">
                         <label class="col-form-label" for="text">Utilisateur <span class="text-danger">*</span></label>
                         <input #user_uuid type="text" matInput formControlName="user_uuid" [matAutocomplete]="auto"
-                            placeholder="Selectionner le POS" class="form-control" (input)="fetchUsers(currentUser)"
+                            placeholder="Selectionner le user" class="form-control" (input)="fetchUsers(currentUser)"
                             (focus)="fetchUsers(currentUser)">
                         @if (isload) {
                         <div class="d-flex align-items-center">
