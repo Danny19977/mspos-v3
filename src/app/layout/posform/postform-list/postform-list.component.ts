@@ -324,7 +324,7 @@ export class PostformListComponent implements OnInit {
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'DR') {
-      this.posformService.getPaginatedRangeDateBySubAreaId(currentUser.subarea_uuid, this.current_page, this.page_size, this.search,
+      this.posformService.getPaginatedRangeDateBySubAreaId(currentUser.Dr.uuid, this.current_page, this.page_size, this.search,
         this.start_date, this.end_date).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
@@ -334,7 +334,7 @@ export class PostformListComponent implements OnInit {
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'Cyclo') {
-      this.posformService.getPaginatedRangeDateByUserId(currentUser.uuid, this.current_page, this.page_size, this.search,
+      this.posformService.getPaginatedRangeDateByUserId(currentUser.Cyclo.uuid, this.current_page, this.page_size, this.search,
         this.start_date, this.end_date).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
