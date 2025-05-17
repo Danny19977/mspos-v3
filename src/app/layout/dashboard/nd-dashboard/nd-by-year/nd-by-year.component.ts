@@ -50,12 +50,12 @@ export class NdByYearComponent implements OnChanges {
       if (!acc[monthIndex]) {
         acc[monthIndex] = {}; // Initialiser un objet pour chaque mois
       }
-      acc[monthIndex][val.brand_name] = val.percentage; // Associer le pourcentage à la marque pour le mois
+      acc[monthIndex][val.brand] = val.pourcent; // Associer le pourcentage à la marque pour le mois
       return acc;
     }, {} as { [month: number]: { [brand: string]: number } });
 
     // Construire les séries pour le graphique
-    const brands = Array.from(new Set(this.ndYearList.map((val) => val.brand_name))); // Obtenir toutes les marques
+    const brands = Array.from(new Set(this.ndYearList.map((val) => val.brand))); // Obtenir toutes les marques
     const series = brands.map((brand) => ({
       name: brand,
       data: Array(12).fill(0).map((_, monthIndex) => groupedData[monthIndex]?.[brand] || 0), // Remplir les données pour chaque mois
@@ -64,7 +64,7 @@ export class NdByYearComponent implements OnChanges {
     this.chartOptions4 = {
       series: series,
       colors: this.ndYearList.map((item) => {
-        if (item.brand_name === 'Equateur') {
+        if (item.brand === 'Equateur') {
           return '#FF0000'; // Rouge pour la marque "Equateur"
         }
         // const randomColor = `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`;

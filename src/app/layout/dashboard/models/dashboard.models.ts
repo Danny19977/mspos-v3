@@ -1,17 +1,17 @@
 
 export interface TableViewModel {
     name: string;
-    brand_name: string;
-    total_count: number;
-    percentage: number;
-    total_pos: number;
+    brand: string;
+    pourcent: number;
+    presence: number;
+    visits: number;
 }
 export interface NDYearModel {
     month: string;
-    brand_name: string;
-    total_count: number;
-    percentage: number;
-    total_pos: number;
+   brand: string;
+    pourcent: number;
+    presence: number;
+    visits: number;
 }
 
 
@@ -34,10 +34,10 @@ export interface SOSYearModel {
 
 
 export interface GoogleMapModel {
-	latitude: number;
-	longitude: number; 
-	signature: string;
-}  
+    latitude: number;
+    longitude: number;
+    signature: string;
+}
 
 
 export interface SETableViewModel {
@@ -58,6 +58,6 @@ export interface KPITableViewPriceModel {
     signature: string;
     title: string;
     total_visits: number;
-    objectif: number; 
-    target: number;   
+    objectif: number;
+    target: number;
 }

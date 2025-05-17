@@ -61,9 +61,9 @@
                     <th>Province</th>
                     <th>Brand</th>
                     <th>Pourcentage</th>
-                    <th>Total Farde</th>
+                    <th>Presence</th>
                     <th>Total Goblal Farde</th>
-                    <th>Total Pos</th>
+                    <th>Visits</th>
                 </tr>
               </thead>
               <tbody>
@@ -88,7 +88,7 @@
                       } @else if(item.brand_name === 'MTC') {
                       <td style="background-color: rgba(245, 245, 220, 0.947);">{{item.percentage}} %</td>
                       } @else {
-                      <td>{{item.percentage}} %</td>
+                      <td>{{ item.percentage }} %</td>
                       }
                       <td>{{item.total_farde }}</td>
                       <td>{{item.total_global_farde }}</td>

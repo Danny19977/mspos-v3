@@ -168,7 +168,7 @@ export class CommuneComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'Cyclo') {
-      this.communeService.getPaginatedByUserId(currentUser.commune_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.communeService.getPaginatedByCommuneId(currentUser.commune_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         console.log("data", res.data);
         this.total_pages = res.pagination.total_pages;

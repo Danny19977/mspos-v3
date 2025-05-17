@@ -15,6 +15,7 @@ import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { PosformService } from '../posform/posform.service';
 import { IPosForm } from '../posform/models/posform.model';
 import { IUser } from '../user/models/user.model';
+import { IAsm } from '../asm/models/asm.model';
 
 @Component({
   selector: 'app-profile',
@@ -68,6 +69,8 @@ export class ProfileComponent implements OnInit {
 
   onLine = navigator.onLine;
 
+  asmInfo!: IAsm;
+
   constructor(
     private router: Router,
     private _formBuilder: FormBuilder,
@@ -100,6 +103,14 @@ export class ProfileComponent implements OnInit {
     this.authService.user().subscribe({
       next: (user) => {
         this.currentUser = user;
+        // const asm = localStorage.getItem('asm');
+        // if (asm) {
+        //   const parsedAsm = JSON.parse(asm);
+        //   if (parsedAsm.uuid !== '') {
+        //     this.this = parsedAsm;
+        //   }
+        // }
+
         if (this.currentUser.province_uuid) {
           this.provinceService.get(this.currentUser.province_uuid).subscribe((res) => {
             this.province = res.data;
