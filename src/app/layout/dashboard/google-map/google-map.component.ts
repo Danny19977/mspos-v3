@@ -82,9 +82,12 @@ export class GoogleMapComponent implements OnInit {
   getPosFormList(start_date: string, end_date: string) {  
     this.googleMapService.getGoogleMap(start_date, end_date).subscribe((res) => {
       const dataList = res.data;  
-      const dataListFilter = dataList.filter((item: any) => item.latitude !== 0 && item.longitude !== 0);
-      this.googleMapList = dataListFilter;
-      console.log("googleMapList", this.googleMapList)
+      // const dataListFilter = dataList.filter((item: any) => item.latitude !== 0 && item.longitude !== 0);
+      if(dataList) {
+        this.googleMapList = dataList;
+        console.log("googleMapList", this.googleMapList)
+      }
+      
       this.isLoading = false;
     }); 
   }

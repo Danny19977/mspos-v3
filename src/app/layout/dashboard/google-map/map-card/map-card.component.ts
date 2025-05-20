@@ -6,7 +6,7 @@ interface Marker {
   position: google.maps.LatLngLiteral;
   name: string;
 }
-
+ 
 @Component({
   selector: 'app-map-card',
   standalone: false,

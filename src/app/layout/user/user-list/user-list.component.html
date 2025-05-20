@@ -53,8 +53,7 @@
                       </ul>
                     </div>
                   </div>
-                  @if(currentUser.role == 'Manager' || 
-                  currentUser.role == 'Support' && currentUser.permission === 'ALL' ||
+                  @if(currentUser.permission === 'ALL' ||
                   currentUser.permission === 'VAE' ||
                   currentUser.permission === 'VA') {
                   <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="offcanvas"

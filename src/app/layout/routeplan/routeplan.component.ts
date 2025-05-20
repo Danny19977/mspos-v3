@@ -143,6 +143,66 @@ export class RouteplanComponent implements OnInit {
 
 
   synchronisationPos(currentUser: IUser) {
+    db.pos
+        .filter((item) => item.status === true)
+        .toArray()
+        .then((posLocalList) => {
+          this.posVenteService.getAll().subscribe(res => {
+            const posList: IPos[] = res.data;
+
+            // Compare posLocalList and posList
+            const localUuids = posLocalList.map(localItem => localItem.uuid);
+            const newItems = posList.filter(item => !localUuids.includes(item.uuid));
+
+            // Insert new items into local database
+            newItems.forEach((item: IPos) => {
+              var body: IPos = {
+                uuid: item.uuid,
+                name: item.name,
+                shop: item.shop,
+                postype: item.postype,
+                gerant: item.gerant,
+                avenue: item.avenue,
+                quartier: item.quartier,
+                reference: item.reference,
+                telephone: item.telephone,
+                country_uuid: item.country_uuid,
+                country_name: item.country_name,
+                province_uuid: item.province_uuid,
+                province_name: item.province_name,
+                area_uuid: item.area_uuid,
+                area_name: item.area_name,
+                subarea_uuid: item.subarea_uuid,
+                subarea_name: item.subarea_name,
+                commune_uuid: item.commune_uuid,
+                commune_name: item.commune_name,
+                user_uuid: item.user_uuid,
+                asm_uuid: item.asm_uuid,
+                asm_fullname: item.asm_fullname,
+                sup_uuid: item.sup_uuid,
+                sup_fullname: item.sup_fullname,
+                dr_uuid: item.dr_uuid,
+                dr_fullname: item.dr_fullname,
+                cyclo_uuid: item.cyclo_uuid,
+                cyclo_fullname: item.cyclo_fullname,
+                status: item.status, // le status change une fois que le pos est synchronisé
+                signature: item.signature,
+                CreatedAt: item.CreatedAt,
+                UpdatedAt: item.UpdatedAt,
+              };
+              db.pos.add(body).then(() => {
+                console.log('New POS added to Dexie DB');
+              }).catch((error) => {
+                console.error('Error adding item to Dexie DB:', error);
+              });
+            });
+          });
+        })
+        .catch((error) => {
+          console.error('Error retrieving POS with status = true from Dexie DB:', error);
+        });
+
+    
     if (currentUser.role == 'Manager') {
       db.pos
         .filter((item) => item.status === true)
@@ -517,17 +577,20 @@ export class RouteplanComponent implements OnInit {
         const localUuids = routePlanItems.map(localItem => localItem.pos_uuid);
         this.posList = posListTrue.filter(item => !localUuids.includes(item.uuid!));
 
-        if (currentUser.role == 'Manager') {
-          this.posListFilter = this.posList.filter((v: IPos) => v.country_uuid === this.currentUser.country_uuid);
-        } else if (currentUser.role == 'ASM') {
-          this.posListFilter = this.posList.filter((v: IPos) => v.province_uuid === this.currentUser.province_uuid);
-        } else if (currentUser.role == 'Supervisor') {
-          this.posListFilter = this.posList.filter((v: IPos) => v.area_uuid === this.currentUser.area_uuid);
-        } else if (currentUser.role == 'DR') {
-          this.posListFilter = this.posList.filter((v: IPos) => v.subarea_uuid === this.currentUser.subarea_uuid);
-        } else if (currentUser.role == 'Cyclo') {
-          this.posListFilter = this.posList.filter((v: IPos) => v.user_uuid === this.currentUser.uuid);
-        }
+        this.posListFilter = this.posList;
+
+        // if (currentUser.role == 'Manager') {
+        //   this.posListFilter = this.posList.filter((v: IPos) => v.country_uuid === this.currentUser.country_uuid);
+        // } else if (currentUser.role == 'ASM') {
+        //   this.posListFilter = this.posList.filter((v: IPos) => v.province_uuid === this.currentUser.province_uuid);
+        // } else if (currentUser.role == 'Supervisor') {
+        //   this.posListFilter = this.posList.filter((v: IPos) => v.area_uuid === this.currentUser.area_uuid);
+        // } else if (currentUser.role == 'DR') {
+        //   this.posListFilter = this.posList.filter((v: IPos) => v.subarea_uuid === this.currentUser.subarea_uuid);
+        // } else if (currentUser.role == 'Cyclo') {
+        //   this.posListFilter = this.posList.filter((v: IPos) => v.user_uuid === this.currentUser.uuid);
+        // }
+
         this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
         this.isload = false;
       }).catch((error) => {
@@ -663,7 +726,6 @@ export class RouteplanComponent implements OnInit {
   fecthlocalData() {
     db.routePlans.toArray().then((data) => {
       this.dataListLocal = data;
-      console.log('RoutePlan local:', this.dataListLocal);
 
       if (this.dataListLocal.length > 0 && navigator.onLine) {
         this.isLoading = true;

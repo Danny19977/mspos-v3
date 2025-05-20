@@ -18,6 +18,7 @@ import { filter, first } from 'rxjs/operators';
 })
 export class AppComponent {
   title = 'mspos-v3';
+  
   public page = '';
   constructor( @Inject(PLATFORM_ID) private platformId: any, 
   private zone: NgZone,
