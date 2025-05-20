@@ -815,6 +815,7 @@ export class RouteplanComponent implements OnInit {
         CreatedAt: new Date(),
         UpdatedAt: new Date(),
       };
+      console.log('RoutePlan:', body);
       db.routePlans.add(body).then(() => {
         this.fecthlocalData();
         this.isLoading = false;

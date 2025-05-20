@@ -9,7 +9,7 @@ export const onlineGuard: CanActivateFn = (route, state) => {
   if (storedUser) {
     const parsedUser = JSON.parse(storedUser);
     if (new Date(parsedUser.expiration) > new Date()) {
-      if (parsedUser.user.uuid !== '') {
+      if (parsedUser.user.uuid !== '00000000-0000-0000-0000-000000000000') {
         // Redirect to /dashboard if uuid is not empty
         router.navigate(["/auth/lock-screen"]);
         return false;

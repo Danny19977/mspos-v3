@@ -143,7 +143,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
     this.isLoadingData = true;
     this.formGroup = this._formBuilder.group({
       fullname: ['', Validators.required],
-      email: ['', Validators.required],
+      email: [''],
       title: ['', Validators.required],
       phone: ['', Validators.required],
       password: ['', Validators.required],

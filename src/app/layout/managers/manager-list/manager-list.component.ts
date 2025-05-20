@@ -57,7 +57,7 @@ export class ManagerListComponent implements OnInit {
 
   @ViewChild('user_uuid') user_uuid!: ElementRef<HTMLInputElement>;
   isload = false;
-  userId: number = 0;
+  userId = '';
 
 
   constructor(
@@ -205,7 +205,7 @@ export class ManagerListComponent implements OnInit {
         var body = {
           title: this.formGroup.value.title,
           country_uuid: this.formGroup.value.country_uuid,
-          user_uuid: this.userId,
+          user_uuid: this.userId.toString(),
           signature: this.currentUser.fullname,
         };
         this.managerService.create(body).subscribe({
@@ -248,7 +248,7 @@ export class ManagerListComponent implements OnInit {
       var body = {
         title: this.formGroup.value.title,
         country_uuid: this.formGroup.value.country_uuid,
-        user_uuid: this.userId,
+        user_uuid: this.userId.toString(),
         signature: this.currentUser.fullname,
       };
       this.managerService.update(this.idItem, body)
@@ -291,6 +291,8 @@ export class ManagerListComponent implements OnInit {
       this.dataItem = item.data;
       this.formGroup.patchValue({
         title: this.dataItem.title,
+        country_uuid: this.dataItem.country_uuid,
+        user_uuid: this.dataItem.user_uuid,
       });
     });
   }

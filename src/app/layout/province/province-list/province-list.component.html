@@ -206,7 +206,8 @@
                                         <th mat-header-cell *matHeaderCellDef> Action </th>
                                         <td mat-cell *matCellDef="let element">
                                             @if(currentUser.role == 'Manager' ||
-                                            currentUser.role == 'Support' && currentUser.permission === 'ALL' ||
+                                            currentUser.role == 'Support' && 
+                                            currentUser.permission === 'ALL' ||
                                             currentUser.permission === 'VAE' ||
                                             currentUser.permission === 'VED' ||
                                             currentUser.permission === 'VE') {
@@ -216,7 +217,8 @@
                                             </button>
                                             }
                                             @if(currentUser.role == 'Manager' ||
-                                            currentUser.role == 'Support' && currentUser.permission === 'ALL' ||
+                                            currentUser.role == 'Support' && 
+                                            currentUser.permission === 'ALL' ||
                                             currentUser.permission === 'VED') {
                                             <button mat-icon-button (click)="findValue(element.uuid)"
                                                 data-bs-toggle="modal" data-bs-target="#delete_contact">

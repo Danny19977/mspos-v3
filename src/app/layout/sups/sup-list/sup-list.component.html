@@ -56,8 +56,7 @@
                                             </ul>
                                         </div>
                                     </div>
-                                    @if(currentUser.role == 'Manager' ||
-                                    currentUser.role == 'Support' ||
+                                    @if(
                                     currentUser.role == 'ASM' && currentUser.permission === 'ALL' ||
                                     currentUser.permission === 'VAE' ||
                                     currentUser.permission === 'VA') {
@@ -159,8 +158,7 @@
                                 <ng-container matColumnDef="id">
                                     <th mat-header-cell *matHeaderCellDef> Action </th>
                                     <td mat-cell *matCellDef="let element">
-                                        @if(currentUser.role == 'Manager' ||
-                                        currentUser.role == 'Support' ||
+                                        @if(
                                         currentUser.role == 'ASM' && currentUser.permission === 'ALL' ||
                                         currentUser.permission === 'VAE' ||
                                         currentUser.permission === 'VED' ||

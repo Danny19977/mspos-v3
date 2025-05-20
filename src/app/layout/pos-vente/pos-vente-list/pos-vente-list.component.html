@@ -344,28 +344,26 @@
                                     </td>
                                 </ng-container>
 
-                                <!-- Action Column -->
+                                <!-- Action Column --> 
                                 <ng-container matColumnDef="action">
-                                    <th mat-header-cell *matHeaderCellDef class="text-end">Action</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        <div class="dropdown table-action">
-                                            <a href="javascript:void(0);" class="action-icon" data-bs-toggle="dropdown"
-                                                aria-expanded="false">
-                                                <i class="fa fa-ellipsis-v"></i>
-                                            </a>
-                                            <div class="dropdown-menu dropdown-menu-right">
-                                                <a *ngIf="currentUser.permission === 'ALL' || currentUser.permission === 'VAE' || currentUser.permission === 'VED' || currentUser.permission === 'VE'"
-                                                    class="dropdown-item" data-bs-toggle="offcanvas"
-                                                    (click)="findValue(data.uuid)" data-bs-target="#offcanvas_edit">
-                                                    <i class="ti ti-edit text-blue"></i> Edit
-                                                </a>
-                                                <a *ngIf="currentUser.permission === 'ALL' || currentUser.permission === 'VED'"
-                                                    class="dropdown-item" (click)="findValue(data.uuid)"
-                                                    data-bs-toggle="modal" data-bs-target="#delete_contact">
-                                                    <i class="ti ti-trash text-danger"></i> Delete
-                                                </a>
-                                            </div>
-                                        </div>
+                                    <th mat-header-cell *matHeaderCellDef> Action </th>
+                                    <td mat-cell *matCellDef="let element">
+                                        @if(currentUser.permission === 'ALL' ||
+                                        currentUser.permission === 'VAE' ||
+                                        currentUser.permission === 'VED' ||
+                                        currentUser.permission === 'VE') {
+                                        <button mat-icon-button (click)="findValue(element.uuid)"
+                                            data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit">
+                                            <mat-icon class="text-blue">edit</mat-icon>
+                                        </button>
+                                        }
+                                        @if(currentUser.permission === 'ALL' ||
+                                        currentUser.permission === 'VED') {
+                                        <button mat-icon-button (click)="findValue(element.uuid)"
+                                            data-bs-toggle="modal" data-bs-target="#delete_contact">
+                                            <mat-icon class="text-danger">delete</mat-icon>
+                                        </button>
+                                        }
                                     </td>
                                 </ng-container>
 

@@ -324,7 +324,7 @@ export class PostformListComponent implements OnInit {
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'DR') {
-      this.posformService.getPaginatedRangeDateBySubAreaId(currentUser.subarea_uuid, this.current_page, this.page_size, this.search,
+      this.posformService.getPaginatedRangeDateBySubAreaId(currentUser.Dr.uuid, this.current_page, this.page_size, this.search,
         this.start_date, this.end_date).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
@@ -334,7 +334,7 @@ export class PostformListComponent implements OnInit {
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'Cyclo') {
-      this.posformService.getPaginatedRangeDateByUserId(currentUser.uuid, this.current_page, this.page_size, this.search,
+      this.posformService.getPaginatedRangeDateByUserId(currentUser.Cyclo.uuid, this.current_page, this.page_size, this.search,
         this.start_date, this.end_date).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
@@ -660,10 +660,10 @@ export class PostformListComponent implements OnInit {
       subarea_name: this.currentUser.subarea_name,
       commune_uuid: this.currentUser.commune_uuid,
       commune_name: this.currentUser.commune_name,
-      asm_uuid: this.currentUser.asm.user_uuid!,
-      sup_uuid: this.currentUser.sup.user_uuid!,
-      dr_uuid: this.currentUser.dr.user_uuid!,
-      cyclo_uuid: this.currentUser.cyclo.user_uuid!,
+      asm_uuid: this.currentUser.Asm.user_uuid!,
+      sup_uuid: this.currentUser.Sup.user_uuid!,
+      dr_uuid: this.currentUser.Dr.user_uuid!,
+      cyclo_uuid: this.currentUser.Cyclo.user_uuid!,
       
       signature: this.currentUser.fullname, // Added signature property
       sync: false, // Default value for 'sync', adjust as needed
@@ -706,10 +706,10 @@ export class PostformListComponent implements OnInit {
           subarea_name: this.currentUser.subarea_name,
           commune_uuid: this.currentUser.commune_uuid,
           commune_name: this.currentUser.commune_name,
-          asm_uuid: this.currentUser.asm.user_uuid!,
-          sup_uuid: this.currentUser.sup.user_uuid!,
-          dr_uuid: this.currentUser.dr.user_uuid!,
-          cyclo_uuid: this.currentUser.cyclo.user_uuid!,
+          asm_uuid: this.currentUser.Asm.user_uuid!,
+          sup_uuid: this.currentUser.Sup.user_uuid!,
+          dr_uuid: this.currentUser.Dr.user_uuid!,
+          cyclo_uuid: this.currentUser.Cyclo.user_uuid!,
           signature: this.currentUser.fullname,
           sync: true, // Default value for 'sync', adjust as needed
           // CreatedAt: new Date(),
@@ -761,10 +761,10 @@ export class PostformListComponent implements OnInit {
         subarea_name: this.currentUser.subarea_name,
         commune_uuid: this.currentUser.commune_uuid,
         commune_name: this.currentUser.commune_name,
-        asm_uuid: this.currentUser.asm.uuid,
-        sup_uuid: this.currentUser.sup.uuid,
-        dr_uuid: this.currentUser.dr.uuid,
-        cyclo_uuid: this.currentUser.cyclo.uuid,
+        asm_uuid: this.currentUser.Asm.uuid,
+        sup_uuid: this.currentUser.Sup.uuid,
+        dr_uuid: this.currentUser.Dr.uuid,
+        cyclo_uuid: this.currentUser.Cyclo.uuid,
         signature: this.currentUser.fullname,
         sync: true, // Default value for 'sync', adjust as needed
         // CreatedAt: new Date(),

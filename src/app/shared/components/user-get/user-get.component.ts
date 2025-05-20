@@ -10,16 +10,22 @@ import { UserService } from '../../../layout/user/user.service';
 })
 export class UserGetComponent {
   @Input() uuid!: string;
-   
-    user!: IUser;
-   
-    constructor(private userService: UserService) {}
-   
-     ngOnInit(): void {
-      if (this.uuid) {
-        this.userService.get(this.uuid).subscribe(res => {
-          this.user = res.data;
-        })
-      } 
-     }
+
+  isload = false;
+
+  user!: IUser;
+
+  constructor(private userService: UserService) { }
+
+  ngOnInit(): void {
+    this.isload = true;
+    if (this.uuid) {
+      this.userService.get(this.uuid).subscribe(res => {
+        this.user = res.data;
+        this.isload = false;
+      });
+    } else {
+      this.isload = false;
+    }
+  }
 }

@@ -14,8 +14,6 @@ import { PosVenteListComponent } from './pos-vente/pos-vente-list/pos-vente-list
 import { SupListComponent } from './sups/sup-list/sup-list.component'; 
 import { AsmListComponent } from './asm/asm-list/asm-list.component';
 import { ManagerListComponent } from './managers/manager-list/manager-list.component';
-import { ChangePasswordComponent } from './profile/change-password/change-password.component';
-import { EditProfileComponent } from './profile/edit-profile/edit-profile.component';
 import { CycloComponent } from './cyclo/cyclo.component';
 import { CountryComponent } from './country/country.component';
 import { SubareaComponent } from './subarea/subarea.component';
@@ -25,7 +23,6 @@ import { CommuneComponent } from './commune/commune.component';
 import { RouteplanComponent } from './routeplan/routeplan.component';
 import { PosEquipmentComponent } from './pos-vente/pos-equipment/pos-equipment.component'; 
 import { PosViewComponent } from './pos-vente/pos-view/pos-view.component';
-
 
 @NgModule({
   declarations: [
@@ -39,8 +36,6 @@ import { PosViewComponent } from './pos-vente/pos-view/pos-view.component';
     SupListComponent, 
     AsmListComponent,
     ManagerListComponent,
-    ChangePasswordComponent,
-    EditProfileComponent,
     CycloComponent,
     CountryComponent,
     SubareaComponent,
@@ -49,7 +44,7 @@ import { PosViewComponent } from './pos-vente/pos-view/pos-view.component';
     CommuneComponent,
     RouteplanComponent,
     PosEquipmentComponent, 
-    PosViewComponent,     
+    PosViewComponent,
   ],
   imports: [
     CommonModule,

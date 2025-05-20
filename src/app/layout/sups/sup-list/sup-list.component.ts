@@ -274,7 +274,7 @@ export class SupListComponent implements OnInit {
           country_uuid: this.currentUser.country_uuid,
           province_uuid: this.currentUser.province_uuid,
           area_uuid: this.formGroup.value.area_uuid,
-          asm_uuid: this.currentUser.asm.uuid,
+          asm_uuid: this.currentUser.Asm.uuid,
           user_uuid: this.userId,
           signature: this.currentUser.fullname,
         };
@@ -319,7 +319,7 @@ export class SupListComponent implements OnInit {
         country_uuid: this.currentUser.country_uuid,
         province_uuid: this.currentUser.province_uuid,
         area_uuid: this.formGroup.value.area_uuid,
-        asm_uuid: this.currentUser.asm.uuid,
+        asm_uuid: this.currentUser.Asm.uuid,
         user_uuid: this.userId,
         signature: this.currentUser.fullname,
       };
@@ -362,11 +362,11 @@ export class SupListComponent implements OnInit {
     this.supService.get(this.idItem).subscribe(item => {
       this.dataItem = item.data;
       this.formGroup.patchValue({
-        country_uuid: this.dataItem.Country.ID,
-        province_uuid: this.dataItem.Province.ID,
-        area_uuid: this.dataItem.Area.ID,
-        asm_uuid: this.dataItem.Asm.ID,
-        user_uuid: this.dataItem.User.ID,
+        country_uuid: this.dataItem.Country.uuid,
+        province_uuid: this.dataItem.Province.uuid,
+        area_uuid: this.dataItem.Area.uuid,
+        asm_uuid: this.dataItem.Asm.uuid,
+        user_uuid: this.dataItem.User.uuid,
       });
     });
   }

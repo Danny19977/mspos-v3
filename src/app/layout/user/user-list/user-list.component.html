@@ -276,9 +276,6 @@
               <label class="col-form-label" for="email">Email <span class="text-danger">*</span></label>
             </div>
             <input type="text" class="form-control" formControlName="email" required />
-            <mat-error *ngIf="formGroup.controls['email'].hasError('required')">
-              Ce champs est obligatoire
-            </mat-error>
           </div>
         </div>
         <div class="col-md-6">
@@ -470,9 +467,6 @@
               <label class="col-form-label" for="email">Email <span class="text-danger">*</span></label>
             </div>
             <input type="text" class="form-control" formControlName="email" required />
-            <mat-error *ngIf="formGroup.controls['email'].hasError('required')">
-              Ce champs est obligatoire
-            </mat-error>
           </div>
         </div>
         <div class="col-md-6">
@@ -484,34 +478,6 @@
             <mat-error *ngIf="formGroup.controls['phone'].hasError('required')">
               Ce champs est obligatoire
             </mat-error>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="col-form-label" for="Password">Password <span class="text-danger">*</span></label>
-            <div class="icon-form-end">
-              <span class="form-icon" (click)="togglePassword(1)" tabindex="0"><i class="ti"
-                  [ngClass]="password[1] ? 'ti-eye' : 'ti-eye-off'"></i></span>
-              <input [type]="password[1] ? 'text' : 'password'" class="form-control" formControlName="password"
-                required />
-              <mat-error *ngIf="formGroup.controls['password'].hasError('required')">
-                Ce champs est obligatoire
-              </mat-error>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="col-form-label" for="text">Repeat Password <span class="text-danger">*</span></label>
-            <div class="icon-form-end">
-              <span class="form-icon" (click)="togglePassword(2)" (keydown.enter)="togglePassword(2)" tabindex="0"><i
-                  class="ti" [ngClass]="password[2] ? 'ti-eye' : 'ti-eye-off'"></i></span>
-              <input [type]="password[2] ? 'text' : 'password'" class="form-control"
-                formControlName="password_confirm" required />
-              <mat-error *ngIf="formGroup.controls['password_confirm'].hasError('required')">
-                Ce champs est obligatoire
-              </mat-error>
-            </div>
           </div>
         </div>
         <div class="col-md-6">

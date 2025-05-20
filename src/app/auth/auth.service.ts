@@ -56,18 +56,72 @@ export class AuthService {
 
       // Fetch the user from the server if no valid user is in localStorage
       this.http.get<IUser>(`${environment.apiUrl}/auth/user`, { params }).subscribe({
-        next: (user) => {
-          if (user.uuid === '') {
+        next: (u) => {
+          if (u.uuid === '') {
             // Redirect to /auth/login if uuid is empty
             this.router.navigate(["/auth/login"]);
             observer.complete();
             return;
           }
 
-          console.log("User from auth service", user);
+          console.log("User from auth service", u);
 
           const expiration = new Date();
           expiration.setDate(expiration.getDate() + 3); // Set expiration to 3 days from now
+          
+            const user: IUser = {
+            ID: u.ID,
+            uuid: u.uuid,
+            fullname: u.fullname,
+            email: u.email,
+            title: u.title,
+            phone: u.phone,
+            password: u.password,
+            password_confirm: u.password_confirm,
+
+            country_uuid: u.country_uuid,
+            province_uuid: u.province_uuid,
+            area_uuid: u.area_uuid,
+            subarea_uuid: u.subarea_uuid,
+            commune_uuid: u.commune_uuid,
+
+            role: u.role, // Idem with title
+            permission: u.permission,
+            image: u.image,
+            status: u.status,
+
+            signature: u.signature,
+            CreatedAt: new Date(u.CreatedAt),
+            UpdatedAt: new Date(u.UpdatedAt),
+
+
+            Country: u.Country,
+            Province: u.Province,
+            Area: u.Area,
+            SubArea: u.SubArea,
+            Commune: u.Commune,
+
+            Asm: u.Asm,
+            Sup: u.Sup,
+            Dr: u.Dr,
+            Cyclo: u.Cyclo,
+
+
+            country_name: u.Country?.name || '',
+            province_name: u.Province?.name || '',
+            area_name: u.Area?.name || '',
+            subarea_name: u.SubArea?.name || '',
+            commune_name: u.Commune?.name || '', 
+            asm_uuid: u.Asm?.uuid || '',
+            asm_fullname: '',
+            sup_uuid: u.Sup?.uuid || '',
+            sup_fullname: '',
+            dr_uuid: u.Dr?.uuid || '',
+            dr_fullname: '',
+            cyclo_uuid: u.Cyclo?.uuid || '',
+            cyclo_fullname: ''
+            }
+          
           const userWithExpiration = {
             user,
             expiration: expiration.toISOString()
@@ -76,10 +130,10 @@ export class AuthService {
           // Save user and related foreign keys to localStorage
           localStorage.setItem("auth_user", JSON.stringify(userWithExpiration));
 
-          localStorage.setItem("auth_asm", JSON.stringify(user.asm));
-          localStorage.setItem("auth_sup", JSON.stringify(user.sup));
-          localStorage.setItem("auth_dr", JSON.stringify(user.dr));
-          localStorage.setItem("auth_cyclo", JSON.stringify(user.cyclo));
+          // localStorage.setItem("auth_asm", JSON.stringify(user.Asm));
+          // localStorage.setItem("auth_sup", JSON.stringify(user.Sup));
+          // localStorage.setItem("auth_dr", JSON.stringify(user.Dr));
+          // localStorage.setItem("auth_cyclo", JSON.stringify(user.Cyclo));
 
 
           observer.next(user);

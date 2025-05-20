@@ -1,5 +1,11 @@
-
-@if (user) {
-    {{ user.fullname }} 
-}
-
+@if(isload) {
+    <div class="spinner-border" role="status" style="font-size: smaller;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+}@else {
+    @if (user) {
+        {{ user.fullname }}
+    }@else {
+        --
+    }
+} 

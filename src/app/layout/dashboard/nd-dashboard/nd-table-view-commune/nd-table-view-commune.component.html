@@ -72,32 +72,32 @@
                 <th>Commune</th>
                 <th>Brand</th>
                 <th>Pourcentage</th>
-                <th>Total farde</th>
-                <th>Total Pos</th>
+                <th>Presence</th>
+                <th>Visits</th>
               </tr>
             </thead>
             <tbody>
               @for (item of tableViewList; track $index) {
               <tr class="odd">
                 <td>{{ item.name }}</td>
-                <td>{{ item.brand_name }}</td>
-                @if (item.brand_name === 'Equateur') {
+                <td>{{ item.brand }}</td>
+                @if (item.brand === 'Equateur') {
                 <td>
-                  @if (item.percentage >= 95) {
-                  <span class="badge badge-pill bg-success" style="font-size: 16px;">{{item.percentage}} %</span>
+                  @if (item.pourcent >= 95) {
+                  <span class="badge badge-pill bg-success" style="font-size: 16px;">{{item.pourcent}} %</span>
                   }
-                  @else if (item.percentage < 95 && item.percentage>= 80) {
-                    <span class="badge badge-pill bg-warning" style="font-size: 16px;">{{item.percentage}} %</span>
+                  @else if (item.pourcent < 95 && item.pourcent>= 80) {
+                    <span class="badge badge-pill bg-warning" style="font-size: 16px;">{{item.pourcent}} %</span>
                     }
-                    @else if (item.percentage < 80) { <span class="badge badge-pill bg-danger" style="font-size: 16px;">
-                      {{item.percentage}} %</span>
+                    @else if (item.pourcent < 80) { <span class="badge badge-pill bg-danger" style="font-size: 16px;">
+                      {{item.pourcent}} %</span>
                       }
                 </td>
                 }@else {
-                <td>{{item.percentage}} %</td>
+                <td>{{item.pourcent}} %</td>
                 }
-                <td>{{item.total_count }}</td>
-                <td>{{ item.total_pos }}</td>
+                <td>{{ item.presence }}</td>
+                <td>{{ item.visits }}</td>
               </tr>
               }
 

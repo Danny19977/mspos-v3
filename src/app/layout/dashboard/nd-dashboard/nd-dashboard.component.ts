@@ -71,7 +71,7 @@ export class NdDashboardComponent implements OnInit {
           } else { 
             this.getNDYear(this.currentUser.country_uuid);
           }
-        }); 
+        });
 
       },
       error: (error) => {

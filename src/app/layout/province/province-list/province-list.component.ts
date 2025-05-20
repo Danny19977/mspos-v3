@@ -152,6 +152,7 @@ export class ProvinceListComponent implements OnInit {
     if (currentUser.role == 'Manager') {
       this.provinceService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
+        console.log("res", res);
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
         this.dataSource.data = this.dataList; // Update dataSource data

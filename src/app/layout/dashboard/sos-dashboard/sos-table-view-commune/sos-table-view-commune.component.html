@@ -76,9 +76,9 @@
                                 <th>Province</th>
                                 <th>Brand</th>
                                 <th>Pourcentage</th>
-                                <th>Total Farde</th>
+                                <th>Presence</th>
                                 <th>Total Goblal Farde</th>
-                                <th>Total Pos</th>
+                                <th>Visits</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -95,7 +95,7 @@
                                     <span class="badge badge-pill bg-success"
                                         style="font-size: 16px;">{{item.percentage}} %</span>
                                     }
-                                    @else if (item.percentage < 95 && item.percentage>= 80) {
+                                    @else if (item.percentage < 95 && item.percentage >= 80) {
                                         <span class="badge badge-pill bg-warning"
                                             style="font-size: 16px;">{{item.percentage}} %</span>
                                         }

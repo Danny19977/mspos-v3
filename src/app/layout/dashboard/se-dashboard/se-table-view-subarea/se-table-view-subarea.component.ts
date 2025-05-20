@@ -116,9 +116,9 @@ export class SeTableViewSubareaComponent implements OnInit {
   }
 
 
-  getPieChartData() {
-    const series = this.tableViewList.map((item) => item.total_pos);
-    const labels = this.tableViewList.map((item) => item.type_pos);
+  getPieChartData() { 
+    const series = (this.tableViewList || []).map((item) => item.total_pos);
+    const labels = (this.tableViewList || []).map((item) => item.type_pos);
 
     console.log('series:', series);
     console.log('labels:', labels);
@@ -153,8 +153,8 @@ export class SeTableViewSubareaComponent implements OnInit {
   }
 
   getPieChartDataPrix() {
-    const series = this.tableViewPriceList.map((item) => item.count_price);
-    const labels = this.tableViewPriceList.map((item) => item.price);
+    const series = (this.tableViewPriceList || []).map((item) => item.count_price);
+    const labels = (this.tableViewPriceList || []).map((item) => item.price);
 
     this.chartOptions4 = {
       series: series,

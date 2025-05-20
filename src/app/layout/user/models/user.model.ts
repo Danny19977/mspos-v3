@@ -41,20 +41,20 @@ export interface IUser {
     Area: IArea;
     SubArea: ISubArea;
     Commune: ICommune;
- 
-    asm: IAsm;
-    sup: ISup;
-    dr: IDr;
-    cyclo: ICyclo;
 
-    Manager: IManager[];
-    UserLogs: UserLogsModel[];
+    Asm: IAsm;
+    Sup: ISup;
+    Dr: IDr;
+    Cyclo: ICyclo;
 
-    
-    country_name: string; 
-    province_name: string; 
-    area_name: string; 
-    subarea_name: string; 
+    Manager?: IManager[];
+    UserLogs?: UserLogsModel[];
+
+
+    country_name: string;
+    province_name: string;
+    area_name: string;
+    subarea_name: string;
     commune_name: string;
 
     asm_uuid: string;
@@ -65,6 +65,6 @@ export interface IUser {
     dr_fullname: string;
     cyclo_uuid: string;
     cyclo_fullname: string;
-    
+
 
 }
