@@ -34,14 +34,14 @@ const routes: Routes = [
           import('./dashboard/dashboard.module').then(
             (m) => m.DashboardModule
           ),
-          canActivate: [AuthGuard]
+          // canActivate: [AuthGuard]
       },
 
 // ///////////// TERRITOIRES //////////////////////////////////////////////////
       {
         path: 'countries/country-list',
         component: CountryComponent,
-        canActivate: [AuthGuard]
+        // canActivate: [AuthGuard]
       },
       {
         path: 'provinces',
@@ -49,44 +49,44 @@ const routes: Routes = [
           import('./province/province.module').then(
             (m) => m.ProvinceModule,
           ),
-          canActivate: [AuthGuard]
+          // canActivate: [AuthGuard]
       },
       {
         path: 'areas/area-list',
         component: AreaListComponent,
-        canActivate: [AuthGuard]
+        // canActivate: [AuthGuard]
       },
       {
         path: 'subareas/subarea-list',
         component: SubareaComponent,
-        canActivate: [AuthGuard]
+        // canActivate: [AuthGuard]
       },
       {
         path: 'communes/commune-list',
         component: CommuneComponent,
-        canActivate: [AuthGuard]
+        // canActivate: [AuthGuard]
       },
 
       //  ///////////// TEAMS ///////////////////////////////////////////////
       {
         path: 'asm/asm-list',
         component: AsmListComponent,
-        canActivate: [AuthGuard]
+        // canActivate: [AuthGuard]
       },
       {
         path: 'supervisors/sup-list',
         component: SupListComponent,
-        canActivate: [AuthGuard]
+        // canActivate: [AuthGuard]
       },
       {
         path: 'drs/dr-list',
         component: DrComponent,
-        canActivate: [AuthGuard]
+        // canActivate: [AuthGuard]
       },
       {
         path: 'cyclos/cyclo-list',
         component: CycloComponent,
-        canActivate: [AuthGuard]
+        // canActivate: [AuthGuard]
       },
 
       // /////////////////// Market ////////////////////////////////////////////////
@@ -116,14 +116,14 @@ const routes: Routes = [
       { 
         path: 'brands/list',
         component: BrandComponent,
-        canActivate: [AuthGuard]
+        // canActivate: [AuthGuard]
       },
 
       // ////////////// MANAGEMENT //////////////////////////////////////////////////////////
       {
         path: 'managers/manager-list',
         component: ManagerListComponent,
-        canActivate: [AuthGuard]
+        // canActivate: [AuthGuard]
       },
       {
         path: 'users',
@@ -131,7 +131,7 @@ const routes: Routes = [
           import('./user/user.module').then(
             (m) => m.UserModule
           ),
-          canActivate: [AuthGuard]
+          // canActivate: [AuthGuard]
       },
       {
         path: 'profile',
@@ -143,7 +143,7 @@ const routes: Routes = [
           import('./user-logs/user-logs.module').then(
             (m) => m.UserLogsModule
           ),
-          canActivate: [AuthGuard]
+          // canActivate: [AuthGuard]
       },
       {
         path: 'pages',

@@ -1,10 +1,10 @@
-import { CanActivateFn } from '@angular/router'; 
-import { UserModel } from './models/user.model';
+import { CanActivateFn } from '@angular/router';  
 import { Auth } from './classes/auth';
+import { IUser } from '../layout/user/models/user.model';
 
 
 export const authGuard: CanActivateFn = (route, state) => {
-  let currentUser: UserModel | any;
+  let currentUser: IUser | any;
   let access = false;
   Auth.userEmitter.subscribe(
     user => {
@@ -21,7 +21,7 @@ export const authGuard: CanActivateFn = (route, state) => {
 
 
 export const createGuard: CanActivateFn = (route, state) => { 
-  let currentUser: UserModel | any;
+  let currentUser: IUser | any;
   let access = false;
   Auth.userEmitter.subscribe(
     user => {
@@ -40,8 +40,8 @@ export const createGuard: CanActivateFn = (route, state) => {
   return access;
 };
 
-export const readGuard: CanActivateFn = (route, state) => { 
-  let currentUser: UserModel | any;
+export const readGuard: CanActivateFn = (route, state) => {
+  let currentUser: IUser | any;
   let access = false;
   Auth.userEmitter.subscribe(
     user => {
@@ -68,7 +68,7 @@ export const readGuard: CanActivateFn = (route, state) => {
 
 
 export const updateGuard: CanActivateFn = (route, state) => { 
-  let currentUser: UserModel | any;
+  let currentUser: IUser | any;
   let access = false;
   Auth.userEmitter.subscribe(
     user => {
@@ -90,7 +90,7 @@ export const updateGuard: CanActivateFn = (route, state) => {
 };
 
 export const deleteGuard: CanActivateFn = (route, state) => { 
-  let currentUser: UserModel | any;
+  let currentUser: IUser | any;
   let access = false;
   Auth.userEmitter.subscribe(
     user => {
