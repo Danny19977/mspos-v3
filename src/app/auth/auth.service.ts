@@ -24,7 +24,12 @@ export class AuthService {
   }
 
   user(): Observable<IUser> {
-    return this.http.get<IUser>(`${environment.apiUrl}/auth/user`);
+     const token = localStorage.getItem("auth_id");
+    let params = new HttpParams();
+    if (token) {
+      params = params.set("token", token);
+    }
+    return this.http.get<IUser>(`${environment.apiUrl}/auth/user`, { params });
   }
 
   

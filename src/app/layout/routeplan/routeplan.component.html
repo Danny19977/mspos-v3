@@ -90,53 +90,6 @@
                                 </thead>
 
                                 <tbody>
-                                    @if (dataListLocal.length > 0) {
-                                    @for (data of dataListLocal; track data) {
-                                    <tr class="odd" style="background-color: gainsboro;">
-                                        <td>
-                                            <span class="badge bg-warning text-dark">
-                                                <i class="ti ti-clock"></i>
-                                            </span>
-                                        </td>
-                                        <td>{{ data.CreatedAt | date: 'dd/MM/YYYY HH:mm' }}</td>
-                                        <td>{{ data.country_name }}</td>
-                                        <td>{{ data.province_name }}</td>
-                                        <td>{{ data.area_name }}</td>
-                                        <td>{{ data.subarea_name }}</td>
-                                        <td>{{ data.commune_name }}</td>
-                                        <td>{{ data.user_fullname }}</td>
-                                        <td>
-                                            --
-                                        </td>
-                                        <td>
-                                            --
-                                        </td>
-                                        <td>
-                                            <div class="dropdown table-action">
-                                                <a href="javascript:void(0);" class="action-icon"
-                                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fa fa-ellipsis-v"></i>
-                                                </a>
-                                                <div class="dropdown-menu dropdown-menu-right">
-                                                    <a class="dropdown-item" data-bs-toggle="offcanvas"
-                                                        (click)="findValueLocal(data.id!)"
-                                                        data-bs-target="#offcanvas_pos" href="javascript:void(0);">
-                                                        <i class="ti ti-eye text-blue"></i>
-                                                        Visibility
-                                                    </a>
-                                                    <a class="dropdown-item" href="javascript:void(0);"
-                                                        data-bs-toggle="modal" (click)="findValueLocal(data.id!)"
-                                                        data-bs-target="#delete_route_plan">
-                                                        <i class="ti ti-trash text-danger"></i>
-                                                        Delete
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    }
-                                    }
-
                                     @for (data of dataSource.data; track $index) {
                                     <tr class="odd">
                                         <td>
@@ -333,7 +286,7 @@
                                         </a>
                                         <div class="dropdown-menu dropdown-menu-right">
                                             <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal"
-                                                (click)="findValueRoutePlanItemLocal(item.id!)"
+                                                (click)="findValueRoutePlanItemLocal(item.uuid!)"
                                                 data-bs-target="#delete_route_plan_item"><i
                                                     class="ti ti-trash text-danger"></i>
                                                 Delete

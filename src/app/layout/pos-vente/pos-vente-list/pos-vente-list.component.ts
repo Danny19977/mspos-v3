@@ -12,8 +12,8 @@ import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { LogsService } from '../../user-logs/logs.service';
 import { IUser } from '../../user/models/user.model';
 import { db } from '../../../shared/services/db';
-import { IPosForm } from '../../posform/models/posform.model'; 
-import { formatDate } from '@angular/common'; 
+import { IPosForm } from '../../posform/models/posform.model';
+import { formatDate } from '@angular/common';
 
 @Component({
   selector: 'app-pos-vente-list',
@@ -71,7 +71,7 @@ export class PosVenteListComponent implements OnInit {
   public search = '';
 
   // Forms  
-  idItem!: string;
+  uuidItem!: string;
   dataItem!: IPos; // Single data 
 
   formGroup!: FormGroup;
@@ -83,10 +83,6 @@ export class PosVenteListComponent implements OnInit {
     'Détail',
     'Mixte'
   ];
-
-  onLine = signal<boolean>(false);
-  isOnline = computed(() => navigator.onLine);
-  // isOnlineStatus = computed(() => this.isOnline() ? 'En ligne' : 'Hors ligne'); 
 
 
   constructor(
@@ -101,7 +97,6 @@ export class PosVenteListComponent implements OnInit {
   }
 
 
-
   ngOnInit() {
     this.isLoadingData = true;
     this.formGroup = this._formBuilder.group({
@@ -113,7 +108,7 @@ export class PosVenteListComponent implements OnInit {
       quartier: ['', Validators.required],
       reference: ['', Validators.required],
       telephone: ['', Validators.required],
-      // status: ['', Validators.required],
+      status: ['', Validators.required],
     });
 
 
@@ -137,14 +132,10 @@ export class PosVenteListComponent implements OnInit {
         this.dataSource.sort = this.sort; // Bind sort to dataSource
         this.cdr.detectChanges(); // Trigger change detection
 
-        if (this.isOnline()) {
-          this.posVenteService.refreshDataList$.subscribe(() => {
-            this.fetchProducts(this.currentUser);
-          });
+        this.posVenteService.refreshDataList$.subscribe(() => {
           this.fetchProducts(this.currentUser);
-        }
-
-        this.fecthlocalData();
+        });
+        this.fetchProducts(this.currentUser); 
       },
       error: (error) => {
         this.isLoadingData = false;
@@ -154,9 +145,7 @@ export class PosVenteListComponent implements OnInit {
     });
 
     // Appel de la méthode onChanges
-    this.onChanges();
-
-    // this.onLine = navigator.onLine;
+    this.onChanges(); 
 
   }
 
@@ -181,10 +170,7 @@ export class PosVenteListComponent implements OnInit {
       val.rangeValue[1].setDate(val.rangeValue[1].getDate() + 1);
       this.end_date = formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US');
 
-      if (this.onLine()) {
-        this.fetchProducts(this.currentUser);
-      }
-      this.fecthlocalData();
+      this.fetchProducts(this.currentUser);
     });
   }
 
@@ -254,75 +240,6 @@ export class PosVenteListComponent implements OnInit {
   }
 
 
-  fecthlocalData() {
-    db.pos.toArray().then((data) => {
-      const dataLocallist = data;
-
-      this.dataListLocal = dataLocallist.filter((item: IPos) => item.status == false);
-
-      if (this.dataListLocal.length > 0 && navigator.onLine) {
-        this.dataListLocal.forEach((item: IPos) => {
-          var body: IPos = {
-            name: item.name,
-            shop: item.shop,
-            postype: item.postype,
-            gerant: item.gerant,
-            avenue: item.avenue,
-            quartier: item.quartier,
-            reference: item.reference,
-            telephone: item.telephone,
-            country_uuid: item.country_uuid,
-            province_uuid: item.province_uuid,
-            area_uuid: item.area_uuid,
-            subarea_uuid: item.subarea_uuid,
-            commune_uuid: item.commune_uuid,
-            user_uuid: item.user_uuid,
-            asm_uuid: item.asm_uuid,
-            sup_uuid: item.sup_uuid,
-            dr_uuid: item.dr_uuid,
-            cyclo_uuid: item.cyclo_uuid,
-            status: true, // le status change une fois que le pos est synchronisé
-            signature: item.signature,
-            CreatedAt: item.CreatedAt,
-            UpdatedAt: item.UpdatedAt,
-          };
-          this.posVenteService.create(body).subscribe({
-            next: (res) => {
-              db.pos.delete(item.id!).then(() => {
-                // this.toastr.info('Supprimé avec succès!', 'Success!');
-                this.logActivity.activity(
-                  'POS',
-                  this.currentUser.uuid,
-                  'created',
-                  `Created new pos uuid: ${res.data.uuid}`,
-                  this.currentUser.fullname
-                ).subscribe({
-                  next: () => {
-                    this.fetchProducts(this.currentUser);
-                    // this.toastr.success(`Synchronisation effectuée avec succès! ${item.id!}`, 'Success!'); 
-                  },
-                  error: (err) => {
-                    this.toastr.error(`${err.error.message}`, 'Oupss!');
-                    console.log(err);
-                  }
-                });
-              }).catch((error) => {
-                console.error('Error deleting item from Dexie DB:', error);
-              });
-            },
-            error: (err) => {
-              this.isLoading = false;
-              this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-              console.log(err);
-            }
-          });
-        });
-      }
-    }); 
-  }
-
-
-
   onSearchChange(search: string) {
     this.search = search;
     this.fetchProducts(this.currentUser);
@@ -379,19 +296,35 @@ export class PosVenteListComponent implements OnInit {
           cyclo_uuid: this.currentUser.Cyclo.user_uuid!,
           status: false, // le status change une fois que le pos est synchronisé
           signature: this.currentUser.fullname,
-          CreatedAt: new Date(),
-          UpdatedAt: new Date(),
         };
-        db.pos.add(body).then(() => {
-          this.fecthlocalData();
-          this.isLoading = false;
-          this.formGroup.reset();
-          this.toastr.success('Ajouter avec succès!', 'Success!');
-        }).catch((error) => {
-          console.error('Error adding item to Dexie DB:', error);
-          this.isLoading = false;
-          this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-        });
+        this.posVenteService.create(body)
+          .subscribe({
+            next: (res) => {
+              this.logActivity.activity(
+                'POS',
+                this.currentUser.uuid,
+                'created',
+                `Created Pos uuid: ${res.data.uuid}`,
+                this.currentUser.fullname
+              ).subscribe({
+                next: () => {
+                  this.formGroup.reset();
+                  this.toastr.success('Ajouter avec succès!', 'Success!');
+                  this.isLoading = false;
+                },
+                error: (err) => {
+                  this.isLoading = false;
+                  this.toastr.error(`${err.error.message}`, 'Oupss!');
+                  console.log(err);
+                }
+              });
+            },
+            error: err => {
+              console.log(err);
+              this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+              this.isLoading = false;
+            }
+          });
       }
     } catch (error) {
       this.isLoading = false;
@@ -431,7 +364,7 @@ export class PosVenteListComponent implements OnInit {
         signature: this.currentUser.fullname,
         UpdatedAt: new Date(),
       };
-      this.posVenteService.update(this.idItem, body)
+      this.posVenteService.update(this.uuidItem, body)
         .subscribe({
           next: (res) => {
             this.logActivity.activity(
@@ -466,8 +399,8 @@ export class PosVenteListComponent implements OnInit {
   }
 
   findValue(value: string) {
-    this.idItem = value;
-    this.posVenteService.get(this.idItem).subscribe(item => {
+    this.uuidItem = value;
+    this.posVenteService.get(this.uuidItem).subscribe(item => {
       this.dataItem = item.data;
       this.formGroup.patchValue({
         name: this.dataItem.name,
@@ -495,14 +428,14 @@ export class PosVenteListComponent implements OnInit {
 
   delete(): void {
     this.posVenteService
-      .delete(this.idItem)
+      .delete(this.uuidItem)
       .subscribe({
         next: () => {
           this.logActivity.activity(
             'POS',
             this.currentUser.uuid,
             'deleted',
-            `Delete pos id: ${this.idItem}`,
+            `Delete pos uuid: ${this.uuidItem}`,
             this.currentUser.fullname
           ).subscribe({
             next: () => {

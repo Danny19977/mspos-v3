@@ -89,81 +89,6 @@
                         <!-- /Search -->
                     </div>
                     <div class="card-body">
-                        @if (!isOnline()) {
-                        <div class="table-responsive custom-table">
-                            <table class="table" id="campaign-list" matSort (matSortChange)="sortData($event)">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th mat-sort-header="status">Status</th>
-                                        <th mat-sort-header="postype">Postype</th>
-                                        <th mat-sort-header="country">Pays</th>
-                                        <th mat-sort-header="province">Province</th>
-                                        <th mat-sort-header="area">Area</th>
-                                        <th mat-sort-header="subarea">Subarea</th>
-                                        <th mat-sort-header="commune">Commune</th>
-                                        <th mat-sort-header="visited">Visite</th>
-                                        <th mat-sort-header="name">Nom</th>
-                                        <th mat-sort-header="shop">Shop</th>
-                                        <th mat-sort-header="gerant">Gérant</th>
-                                        <th mat-sort-header="quartier">Quartier</th>
-                                        <th mat-sort-header="avenue">Avenue</th>
-                                        <th mat-sort-header="reference">Reference</th>
-                                        <th mat-sort-header="telephone">Téléphone</th>
-                                        <th mat-sort-header="asm">ASM</th>
-                                        <th mat-sort-header="sup">Supervisor</th>
-                                        <th mat-sort-header="dr">DR</th>
-                                        <th mat-sort-header="cyclo">Cyclo</th>
-                                        @if (isOnline()) {
-                                        <th class="text-end">Action</th>
-                                        }
-                                    </tr>
-                                </thead>
-
-                                <tbody>
-
-                                    @for (data of dataListLocal; track data) {
-                                    <tr class="odd">
-                                        <td>
-                                            <span class="badge badge-pill badge-status" [ngClass]="{
-                                                            'bg-success': (data.status) ? 'Active' : '',
-                                                            'bg-danger': (data.status) ? '' : 'Inactive'
-                                                          }">
-                                                @if (data.status) {
-                                                Active
-                                                } @else {
-                                                Inactive
-                                                }
-                                            </span>
-                                        </td>
-                                        <td>{{ data.postype }}</td>
-                                        <td>{{ data.country_name }}</td>
-                                        <td>{{ data.province_name }}</td>
-                                        <td>{{ data.area_name }}</td>
-                                        <td>{{ data.subarea_name }}</td>
-                                        <td>{{ data.commune_name }}</td>
-                                        <td
-                                            style="background-color: rgba(255, 140, 0, 0.506); font-size: larger; text-align: center;">
-                                            <a [routerLink]="['/web/posforms/pos-form-list']">
-                                                {{ getPosFormCount(data.PosForms!) }}
-                                            </a>
-                                        </td>
-                                        <td> {{data.name}} </td>
-                                        <td> {{data.shop}} </td>
-                                        <td> {{data.gerant}} </td>
-                                        <td> {{data.quartier}} </td>
-                                        <td> {{data.avenue}} </td>
-                                        <td> {{data.reference}} </td>
-                                        <td> {{data.telephone}} </td>
-                                        <td> -- </td>
-                                        <td> -- </td>
-                                        <td> -- </td>
-                                        <td> </td>
-                                    </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                        }@else {
                         <div class="table-responsive custom-table">
                             <table mat-table [dataSource]="dataSource" matSort (matSortChange)="sortData($event)"
                                 class="mat-elevation-z8">
@@ -385,7 +310,6 @@
                                 <div class="datatable-paginate"></div>
                             </div>
                         </div>
-                        }
                         <!-- /Projects List -->
                     </div>
                 </div>

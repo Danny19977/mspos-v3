@@ -16,7 +16,6 @@ import { IRoutePlanItem } from './models/routeplanItem.model';
 import { IPos } from '../pos-vente/models/pos.model';
 import { PosVenteService } from '../pos-vente/pos-vente.service';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { db } from '../../shared/services/db'; 
 import { v4 as uuidv4 } from 'uuid';
 
 @Component({
@@ -36,7 +35,6 @@ export class RouteplanComponent implements OnInit {
   current_page: number = 1;
   total_records: number = 0;
 
-  dataListLocal: IRoutePlan[] = []; // Local data for routePlan
   dataListLocalItem: IRoutePlanItem[] = []; // Local data for routePlanItem
 
   // Table 
@@ -62,9 +60,6 @@ export class RouteplanComponent implements OnInit {
   // Api
   uuidRoutePlanItem!: string;
   dataRoutePlanItem!: IRoutePlanItem; // Single data
-  // Local
-  idRoutePlanItemLocal!: number;
-  dataRoutePlanItemLocal!: IRoutePlanItem; // Single data
 
 
   formGroup!: FormGroup;
@@ -119,17 +114,11 @@ export class RouteplanComponent implements OnInit {
         this.dataSource.sort = this.sort; // Bind sort to dataSource 
         this.cdr.detectChanges(); // Trigger change detection
 
-        if (this.isOnline()) {
-          this.routeplanService.refreshDataList$.subscribe(() => {
-            this.fetchProducts(this.currentUser);
-            this.cdr.detectChanges(); // Add this to fix ExpressionChangedAfterItHasBeenCheckedError
-          });
+        this.routeplanService.refreshDataList$.subscribe(() => {
           this.fetchProducts(this.currentUser);
-          this.synchronisationPos(this.currentUser);
-        }
-
-        this.fecthlocalData();
-        this.getLastDataRoutePlan();
+          this.cdr.detectChanges(); // Add this to fix ExpressionChangedAfterItHasBeenCheckedError
+        });
+        this.fetchProducts(this.currentUser);
 
         this.getAllPos(this.currentUser);
       },
@@ -142,462 +131,66 @@ export class RouteplanComponent implements OnInit {
   }
 
 
-  synchronisationPos(currentUser: IUser) {
-    db.pos
-        .filter((item) => item.status === true)
-        .toArray()
-        .then((posLocalList) => {
-          this.posVenteService.getAll().subscribe(res => {
-            const posList: IPos[] = res.data;
-
-            // Compare posLocalList and posList
-            const localUuids = posLocalList.map(localItem => localItem.uuid);
-            const newItems = posList.filter(item => !localUuids.includes(item.uuid));
-
-            // Insert new items into local database
-            newItems.forEach((item: IPos) => {
-              var body: IPos = {
-                uuid: item.uuid,
-                name: item.name,
-                shop: item.shop,
-                postype: item.postype,
-                gerant: item.gerant,
-                avenue: item.avenue,
-                quartier: item.quartier,
-                reference: item.reference,
-                telephone: item.telephone,
-                country_uuid: item.country_uuid,
-                country_name: item.country_name,
-                province_uuid: item.province_uuid,
-                province_name: item.province_name,
-                area_uuid: item.area_uuid,
-                area_name: item.area_name,
-                subarea_uuid: item.subarea_uuid,
-                subarea_name: item.subarea_name,
-                commune_uuid: item.commune_uuid,
-                commune_name: item.commune_name,
-                user_uuid: item.user_uuid,
-                asm_uuid: item.asm_uuid,
-                asm_fullname: item.asm_fullname,
-                sup_uuid: item.sup_uuid,
-                sup_fullname: item.sup_fullname,
-                dr_uuid: item.dr_uuid,
-                dr_fullname: item.dr_fullname,
-                cyclo_uuid: item.cyclo_uuid,
-                cyclo_fullname: item.cyclo_fullname,
-                status: item.status, // le status change une fois que le pos est synchronisé
-                signature: item.signature,
-                CreatedAt: item.CreatedAt,
-                UpdatedAt: item.UpdatedAt,
-              };
-              db.pos.add(body).then(() => {
-                console.log('New POS added to Dexie DB');
-              }).catch((error) => {
-                console.error('Error adding item to Dexie DB:', error);
-              });
-            });
-          });
-        })
-        .catch((error) => {
-          console.error('Error retrieving POS with status = true from Dexie DB:', error);
-        });
-
-    
-    if (currentUser.role == 'Manager') {
-      db.pos
-        .filter((item) => item.status === true)
-        .toArray()
-        .then((posLocalList) => {
-          console.log('List of POS with status = true:', posLocalList);
-          this.posVenteService.getAllByManager(this.currentUser.country_uuid).subscribe(res => {
-            const posList: IPos[] = res.data;
-
-            // Compare posLocalList and posList
-            const localUuids = posLocalList.map(localItem => localItem.uuid);
-            const newItems = posList.filter(item => !localUuids.includes(item.uuid));
-
-            // Insert new items into local database
-            newItems.forEach((item: IPos) => {
-              var body: IPos = {
-                uuid: item.uuid,
-                name: item.name,
-                shop: item.shop,
-                postype: item.postype,
-                gerant: item.gerant,
-                avenue: item.avenue,
-                quartier: item.quartier,
-                reference: item.reference,
-                telephone: item.telephone,
-                country_uuid: item.country_uuid,
-                country_name: item.country_name,
-                province_uuid: item.province_uuid,
-                province_name: item.province_name,
-                area_uuid: item.area_uuid,
-                area_name: item.area_name,
-                subarea_uuid: item.subarea_uuid,
-                subarea_name: item.subarea_name,
-                commune_uuid: item.commune_uuid,
-                commune_name: item.commune_name,
-                user_uuid: item.user_uuid,
-                asm_uuid: item.asm_uuid,
-                asm_fullname: item.asm_fullname,
-                sup_uuid: item.sup_uuid,
-                sup_fullname: item.sup_fullname,
-                dr_uuid: item.dr_uuid,
-                dr_fullname: item.dr_fullname,
-                cyclo_uuid: item.cyclo_uuid,
-                cyclo_fullname: item.cyclo_fullname,
-                status: item.status, // le status change une fois que le pos est synchronisé
-                signature: item.signature,
-                CreatedAt: item.CreatedAt,
-                UpdatedAt: item.UpdatedAt,
-              };
-              db.pos.add(body).then(() => {
-                console.log('New POS added to Dexie DB');
-              }).catch((error) => {
-                console.error('Error adding item to Dexie DB:', error);
-              });
-            });
-          });
-        })
-        .catch((error) => {
-          console.error('Error retrieving POS with status = true from Dexie DB:', error);
-        });
-    } else if (currentUser.role == 'ASM') {
-      db.pos
-        .filter((item) => item.status === true)
-        .toArray()
-        .then((posLocalList) => {
-          this.posVenteService.getAllByASM(this.currentUser.province_uuid).subscribe(res => {
-            const posList: IPos[] = res.data;
-
-            // Compare posLocalList and posList
-            const localUuids = posLocalList.map(localItem => localItem.uuid);
-            const newItems = posList.filter(item => !localUuids.includes(item.uuid));
-
-            // Insert new items into local database
-            newItems.forEach((item: IPos) => {
-              var body: IPos = {
-                uuid: item.uuid,
-                name: item.name,
-                shop: item.shop,
-                postype: item.postype,
-                gerant: item.gerant,
-                avenue: item.avenue,
-                quartier: item.quartier,
-                reference: item.reference,
-                telephone: item.telephone,
-                country_uuid: item.country_uuid,
-                country_name: item.country_name,
-                province_uuid: item.province_uuid,
-                province_name: item.province_name,
-                area_uuid: item.area_uuid,
-                area_name: item.area_name,
-                subarea_uuid: item.subarea_uuid,
-                subarea_name: item.subarea_name,
-                commune_uuid: item.commune_uuid,
-                commune_name: item.commune_name,
-                user_uuid: item.user_uuid,
-                asm_uuid: item.asm_uuid,
-                asm_fullname: item.asm_fullname,
-                sup_uuid: item.sup_uuid,
-                sup_fullname: item.sup_fullname,
-                dr_uuid: item.dr_uuid,
-                dr_fullname: item.dr_fullname,
-                cyclo_uuid: item.cyclo_uuid,
-                cyclo_fullname: item.cyclo_fullname,
-                status: item.status, // le status change une fois que le pos est synchronisé
-                signature: item.signature,
-                CreatedAt: item.CreatedAt,
-                UpdatedAt: item.UpdatedAt,
-              };
-              db.pos.add(body).then(() => {
-                console.log('New POS added to Dexie DB');
-              }).catch((error) => {
-                console.error('Error adding item to Dexie DB:', error);
-              });
-            });
-          });
-        })
-        .catch((error) => {
-          console.error('Error retrieving POS with status = true from Dexie DB:', error);
-        });
-    } else if (currentUser.role == 'Supervisor') {
-      db.pos
-        .filter((item) => item.status === true)
-        .toArray()
-        .then((posLocalList) => {
-          console.log('List of POS with status = true:', posLocalList);
-          this.posVenteService.getAllBySup(this.currentUser.area_uuid).subscribe(res => {
-            const posList: IPos[] = res.data;
-
-            // Compare posLocalList and posList
-            const localUuids = posLocalList.map(localItem => localItem.uuid);
-            const newItems = posList.filter(item => !localUuids.includes(item.uuid));
-
-            // Insert new items into local database
-            newItems.forEach((item: IPos) => {
-              var body: IPos = {
-                uuid: item.uuid,
-                name: item.name,
-                shop: item.shop,
-                postype: item.postype,
-                gerant: item.gerant,
-                avenue: item.avenue,
-                quartier: item.quartier,
-                reference: item.reference,
-                telephone: item.telephone,
-                country_uuid: item.country_uuid,
-                country_name: item.country_name,
-                province_uuid: item.province_uuid,
-                province_name: item.province_name,
-                area_uuid: item.area_uuid,
-                area_name: item.area_name,
-                subarea_uuid: item.subarea_uuid,
-                subarea_name: item.subarea_name,
-                commune_uuid: item.commune_uuid,
-                commune_name: item.commune_name,
-                user_uuid: item.user_uuid,
-                asm_uuid: item.asm_uuid,
-                asm_fullname: item.asm_fullname,
-                sup_uuid: item.sup_uuid,
-                sup_fullname: item.sup_fullname,
-                dr_uuid: item.dr_uuid,
-                dr_fullname: item.dr_fullname,
-                cyclo_uuid: item.cyclo_uuid,
-                cyclo_fullname: item.cyclo_fullname,
-                status: item.status, // le status change une fois que le pos est synchronisé
-                signature: item.signature,
-                CreatedAt: item.CreatedAt,
-                UpdatedAt: item.UpdatedAt,
-              };
-              db.pos.add(body).then(() => {
-                console.log('New POS added to Dexie DB');
-              }).catch((error) => {
-                console.error('Error adding item to Dexie DB:', error);
-              });
-            });
-          });
-        })
-        .catch((error) => {
-          console.error('Error retrieving POS with status = true from Dexie DB:', error);
-        });
-    } else if (currentUser.role == 'DR') {
-      db.pos
-        .filter((item) => item.status === true)
-        .toArray()
-        .then((posLocalList) => {
-          console.log('List of POS with status = true:', posLocalList);
-          this.posVenteService.getAllByDR(this.currentUser.subarea_uuid).subscribe(res => {
-            const posList: IPos[] = res.data;
-
-            // Compare posLocalList and posList
-            const localUuids = posLocalList.map(localItem => localItem.uuid);
-            const newItems = posList.filter(item => !localUuids.includes(item.uuid));
-
-            // Insert new items into local database
-            newItems.forEach((item: IPos) => {
-              var body: IPos = {
-                uuid: item.uuid,
-                name: item.name,
-                shop: item.shop,
-                postype: item.postype,
-                gerant: item.gerant,
-                avenue: item.avenue,
-                quartier: item.quartier,
-                reference: item.reference,
-                telephone: item.telephone,
-                country_uuid: item.country_uuid,
-                country_name: item.country_name,
-                province_uuid: item.province_uuid,
-                province_name: item.province_name,
-                area_uuid: item.area_uuid,
-                area_name: item.area_name,
-                subarea_uuid: item.subarea_uuid,
-                subarea_name: item.subarea_name,
-                commune_uuid: item.commune_uuid,
-                commune_name: item.commune_name,
-                user_uuid: item.user_uuid,
-                asm_uuid: item.asm_uuid,
-                asm_fullname: item.asm_fullname,
-                sup_uuid: item.sup_uuid,
-                sup_fullname: item.sup_fullname,
-                dr_uuid: item.dr_uuid,
-                dr_fullname: item.dr_fullname,
-                cyclo_uuid: item.cyclo_uuid,
-                cyclo_fullname: item.cyclo_fullname,
-                status: item.status, // le status change une fois que le pos est synchronisé
-                signature: item.signature,
-                CreatedAt: item.CreatedAt,
-                UpdatedAt: item.UpdatedAt,
-              };
-              db.pos.add(body).then(() => {
-                console.log('New POS added to Dexie DB');
-              }).catch((error) => {
-                console.error('Error adding item to Dexie DB:', error);
-              });
-            });
-          });
-        })
-        .catch((error) => {
-          console.error('Error retrieving POS with status = true from Dexie DB:', error);
-        });
-    } else if (currentUser.role == 'Cyclo') {
-      db.pos
-        .filter((item) => item.status === true)
-        .toArray()
-        .then((posLocalList) => {
-          console.log('List of POS with status = true:', posLocalList);
-          this.posVenteService.getAllByCyclo(this.currentUser.cyclo_uuid).subscribe(res => {
-            const posList: IPos[] = res.data;
-
-            // Compare posLocalList and posList
-            const localUuids = posLocalList.map(localItem => localItem.uuid);
-            const newItems = posList.filter(item => !localUuids.includes(item.uuid));
-
-            // Insert new items into local database
-            newItems.forEach((item: IPos) => {
-              var body: IPos = {
-                uuid: item.uuid,
-                name: item.name,
-                shop: item.shop,
-                postype: item.postype,
-                gerant: item.gerant,
-                avenue: item.avenue,
-                quartier: item.quartier,
-                reference: item.reference,
-                telephone: item.telephone,
-                country_uuid: item.country_uuid,
-                country_name: item.country_name,
-                province_uuid: item.province_uuid,
-                province_name: item.province_name,
-                area_uuid: item.area_uuid,
-                area_name: item.area_name,
-                subarea_uuid: item.subarea_uuid,
-                subarea_name: item.subarea_name,
-                commune_uuid: item.commune_uuid,
-                commune_name: item.commune_name,
-                user_uuid: item.user_uuid,
-                asm_uuid: item.asm_uuid,
-                asm_fullname: item.asm_fullname,
-                sup_uuid: item.sup_uuid,
-                sup_fullname: item.sup_fullname,
-                dr_uuid: item.dr_uuid,
-                dr_fullname: item.dr_fullname,
-                cyclo_uuid: item.cyclo_uuid,
-                cyclo_fullname: item.cyclo_fullname,
-                status: item.status, // le status change une fois que le pos est synchronisé
-                signature: item.signature,
-                CreatedAt: item.CreatedAt,
-                UpdatedAt: item.UpdatedAt,
-              };
-              db.pos.add(body).then(() => {
-                console.log('New POS added to Dexie DB');
-              }).catch((error) => {
-                console.error('Error adding item to Dexie DB:', error);
-              });
-            });
-          });
-        })
-        .catch((error) => {
-          console.error('Error retrieving POS with status = true from Dexie DB:', error);
-        });
-    } else {
-      db.pos
-        .filter((item) => item.status === true)
-        .toArray()
-        .then((posLocalList) => {
-          console.log('List of POS with status = true:', posLocalList);
-          this.posVenteService.getAllByManager(this.currentUser.country_uuid).subscribe(res => {
-            const posList: IPos[] = res.data;
-
-            // Compare posLocalList and posList
-            const localUuids = posLocalList.map(localItem => localItem.uuid);
-            const newItems = posList.filter(item => !localUuids.includes(item.uuid));
-
-            // Insert new items into local database
-            newItems.forEach((item: IPos) => {
-              var body: IPos = {
-                uuid: item.uuid,
-                name: item.name,
-                shop: item.shop,
-                postype: item.postype,
-                gerant: item.gerant,
-                avenue: item.avenue,
-                quartier: item.quartier,
-                reference: item.reference,
-                telephone: item.telephone,
-                country_uuid: item.country_uuid,
-                country_name: item.country_name,
-                province_uuid: item.province_uuid,
-                province_name: item.province_name,
-                area_uuid: item.area_uuid,
-                area_name: item.area_name,
-                subarea_uuid: item.subarea_uuid,
-                subarea_name: item.subarea_name,
-                commune_uuid: item.commune_uuid,
-                commune_name: item.commune_name,
-                user_uuid: item.user_uuid,
-                asm_uuid: item.asm_uuid,
-                asm_fullname: item.asm_fullname,
-                sup_uuid: item.sup_uuid,
-                sup_fullname: item.sup_fullname,
-                dr_uuid: item.dr_uuid,
-                dr_fullname: item.dr_fullname,
-                cyclo_uuid: item.cyclo_uuid,
-                cyclo_fullname: item.cyclo_fullname,
-                status: item.status, // le status change une fois que le pos est synchronisé
-                signature: item.signature,
-                CreatedAt: item.CreatedAt,
-                UpdatedAt: item.UpdatedAt,
-              };
-              db.pos.add(body).then(() => {
-                console.log('New POS added to Dexie DB');
-              }).catch((error) => {
-                console.error('Error adding item to Dexie DB:', error);
-              });
-            });
-          });
-        })
-        .catch((error) => {
-          console.error('Error retrieving POS with status = true from Dexie DB:', error);
-        });
-    }
-  }
-
 
   getAllPos(currentUser: IUser): void {
     const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
 
     this.isload = true;
-    db.routePlanItems.toArray().then((routePlanItems) => {
-      db.pos.toArray().then((data) => {
-        const posListTrue = data.filter((item: IPos) => item.status === true);
 
-        const localUuids = routePlanItems.map(localItem => localItem.pos_uuid);
-        this.posList = posListTrue.filter(item => !localUuids.includes(item.uuid!));
+    this.posVenteService.getAll().subscribe({
+      next: (res) => {
+        this.posList = res.data;
+        // this.posListFilter = this.posList;
 
-        this.posListFilter = this.posList;
-
-        // if (currentUser.role == 'Manager') {
-        //   this.posListFilter = this.posList.filter((v: IPos) => v.country_uuid === this.currentUser.country_uuid);
-        // } else if (currentUser.role == 'ASM') {
-        //   this.posListFilter = this.posList.filter((v: IPos) => v.province_uuid === this.currentUser.province_uuid);
-        // } else if (currentUser.role == 'Supervisor') {
-        //   this.posListFilter = this.posList.filter((v: IPos) => v.area_uuid === this.currentUser.area_uuid);
-        // } else if (currentUser.role == 'DR') {
-        //   this.posListFilter = this.posList.filter((v: IPos) => v.subarea_uuid === this.currentUser.subarea_uuid);
-        // } else if (currentUser.role == 'Cyclo') {
-        //   this.posListFilter = this.posList.filter((v: IPos) => v.user_uuid === this.currentUser.uuid);
-        // }
+        if (currentUser.role == 'Manager') {
+          this.posListFilter = this.posList.filter((v: IPos) => v.country_uuid === this.currentUser.country_uuid);
+        } else if (currentUser.role == 'ASM') {
+          this.posListFilter = this.posList.filter((v: IPos) => v.province_uuid === this.currentUser.province_uuid);
+        } else if (currentUser.role == 'Supervisor') {
+          this.posListFilter = this.posList.filter((v: IPos) => v.area_uuid === this.currentUser.area_uuid);
+        } else if (currentUser.role == 'DR') {
+          this.posListFilter = this.posList.filter((v: IPos) => v.subarea_uuid === this.currentUser.subarea_uuid);
+        } else if (currentUser.role == 'Cyclo') {
+          this.posListFilter = this.posList.filter((v: IPos) => v.user_uuid === this.currentUser.uuid);
+        }
 
         this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
         this.isload = false;
-      }).catch((error) => {
-        this.isload = false;
-        console.error('Error getting data from Dexie DB:', error);
-      });
+      },
+      error: (error) => {
+        console.error('Error getting data from API:', error);
+      }
     });
+
+
+    // db.routePlanItems.toArray().then((routePlanItems) => {
+    //   db.pos.toArray().then((data) => {
+    //     const posListTrue = data.filter((item: IPos) => item.status === true);
+
+    //     const localUuids = routePlanItems.map(localItem => localItem.pos_uuid);
+    //     this.posList = posListTrue.filter(item => !localUuids.includes(item.uuid!));
+
+    //     this.posListFilter = this.posList;
+
+    //     if (currentUser.role == 'Manager') {
+    //       this.posListFilter = this.posList.filter((v: IPos) => v.country_uuid === this.currentUser.country_uuid);
+    //     } else if (currentUser.role == 'ASM') {
+    //       this.posListFilter = this.posList.filter((v: IPos) => v.province_uuid === this.currentUser.province_uuid);
+    //     } else if (currentUser.role == 'Supervisor') {
+    //       this.posListFilter = this.posList.filter((v: IPos) => v.area_uuid === this.currentUser.area_uuid);
+    //     } else if (currentUser.role == 'DR') {
+    //       this.posListFilter = this.posList.filter((v: IPos) => v.subarea_uuid === this.currentUser.subarea_uuid);
+    //     } else if (currentUser.role == 'Cyclo') {
+    //       this.posListFilter = this.posList.filter((v: IPos) => v.user_uuid === this.currentUser.uuid);
+    //     }
+
+    //     this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
+    //     this.isload = false;
+    //   }).catch((error) => {
+    //     this.isload = false;
+    //     console.error('Error getting data from Dexie DB:', error);
+    //   });
+    // });
   }
 
   displayFn(pos: any): any {
@@ -624,11 +217,7 @@ export class RouteplanComponent implements OnInit {
     this.current_page = event.pageIndex + 1; // Adjust for 1-based page index
     this.page_size = event.pageSize;
 
-    if (this.onLine()) {
-      this.fetchProducts(this.currentUser);
-    } else {
-      this.fecthlocalData();
-    }
+    this.fetchProducts(this.currentUser);
 
   }
 
@@ -722,77 +311,6 @@ export class RouteplanComponent implements OnInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-  // Fetch local data and synchronise with server
-  fecthlocalData() {
-    db.routePlans.toArray().then((data) => {
-      this.dataListLocal = data;
-
-      if (this.dataListLocal.length > 0 && navigator.onLine) {
-        this.isLoading = true;
-        this.dataListLocal.forEach((item: IRoutePlan) => {
-
-          const createdAt = new Date(item.CreatedAt);
-          const currentTime = new Date();
-          const timeDifference = currentTime.getTime() - createdAt.getTime();
-          const hoursDifference = timeDifference / (1000 * 60 * 60);
-
-          if (hoursDifference >= 24) {
-            this.routeplanService.create(item).subscribe({
-              next: () => {
-                // synchronisation RoutePlantItems 
-                db.routePlanItems.toArray().then((routePlanItems) => {
-                  const routePlanItemList = routePlanItems;
-
-                  routePlanItemList.forEach((item: IRoutePlanItem) => {
-                    var body: IRoutePlanItem = {
-                      routplan_uuid: item.routplan_uuid,
-                      pos_uuid: item.pos_uuid,
-                      status: item.status,
-                      CreatedAt: item.CreatedAt,
-                      UpdatedAt: item.UpdatedAt,
-                    };
-                    this.routePlanItemService.create(body).subscribe({
-                      next: () => {
-                        db.routePlanItems.delete(item.id!).then(() => {
-                          console.log('RoutePlanItem deleted from Dexie DB');
-                          this.toastr.success('Synchronisation effectuée avec succès!', 'Success!');
-                        }).catch((error) => {
-                          console.error('Error deleting RoutePlanItem from Dexie DB:', error);
-                          this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-                        });
-                      },
-                      error: (err) => {
-                        this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-                        console.log(err);
-                      }
-                    });
-                  });
-                }).catch((error) => {
-                  console.error('Error retrieving RoutePlanItems from Dexie DB:', error);
-                  this.isLoadingData = false;
-                  this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-                });
-                // Delete item from local database
-                db.routePlans.delete(item.id!).then(() => {
-                  this.isLoadingData = false;
-                  this.toastr.info('Supprimé avec succès!', 'Success!');
-                }).catch((error) => {
-                  console.error('Error deleting item from Dexie DB:', error);
-                });
-              },
-              error: (err) => {
-                this.isLoadingData = false;
-                this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-                console.log(err);
-              }
-            });
-          }
-        });
-      }
-    });
-  }
-
-
   // Create new RoutePlan
   onSubmit() {
     try {
@@ -815,15 +333,30 @@ export class RouteplanComponent implements OnInit {
         CreatedAt: new Date(),
         UpdatedAt: new Date(),
       };
-      console.log('RoutePlan:', body);
-      db.routePlans.add(body).then(() => {
-        this.fecthlocalData();
-        this.isLoading = false;
-        this.formGroup.reset();
-        this.toastr.success('Ajouter avec succès!', 'Success!');
-      }).catch((error) => {
-        this.isLoading = false;
-        console.error('Error adding item to Dexie DB:', error);
+      this.routeplanService.create(body).subscribe({
+        next: (res) => {
+          this.logActivity.activity(
+            'RoutePlan',
+            this.currentUser.uuid,
+            'created',
+            `Create RoutePlan uuid: ${body.uuid}`,
+            this.currentUser.fullname
+          ).subscribe({
+            next: () => {
+              this.toastr.success('Ajouter avec succès!', 'Success!');
+              this.isLoading = false;
+            }, error: (err) => {
+              this.isLoading = false;
+              this.toastr.error(`${err.error.message}`, 'Oupss!');
+              console.log(err);
+            }
+          });
+        },
+        error: (err) => {
+          this.isLoading = false;
+          this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+          console.log(err);
+        }
       });
     } catch (error) {
       this.isLoading = false;
@@ -849,15 +382,30 @@ export class RouteplanComponent implements OnInit {
           CreatedAt: new Date(),
           UpdatedAt: new Date(),
         };
-        console.log('RoutePlanItem:', body);
-        db.routePlanItems.add(body).then(() => {
-          this.getAllRoutePlanItemLocal(this.dataItemLocal.uuid!);
-          this.isLoadingItem = false;
-          this.formGroup.reset();
-          this.toastr.success('POS Ajouter avec succès!', 'Success!');
-        }).catch((error) => {
-          this.isLoadingItem = false;
-          console.error('Error adding item to Dexie DB:', error);
+        this.routePlanItemService.create(body).subscribe({
+          next: (res) => {
+            this.logActivity.activity(
+              'RoutePlanItem',
+              this.currentUser.uuid,
+              'created',
+              `Create RoutePlanItem uuid: ${body.uuid}`,
+              this.currentUser.fullname
+            ).subscribe({
+              next: () => {
+                this.toastr.success('POS Ajouter avec succès!', 'Success!');
+                this.isLoadingItem = false;
+              }, error: (err) => {
+                this.isLoadingItem = false;
+                this.toastr.error(`${err.error.message}`, 'Oupss!');
+                console.log(err);
+              }
+            });
+          },
+          error: (err) => {
+            this.isLoadingItem = false;
+            this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+            console.log(err);
+          }
         });
       }
     } catch (error) {
@@ -888,49 +436,50 @@ export class RouteplanComponent implements OnInit {
   // Get value RoutePlan local
   findValueLocal(value: number) {
     this.idItemLocal = value;
-    db.routePlans.get(this.idItemLocal).then(item => {
-      this.dataItemLocal = item!;
-      console.log('RoutePlan local:', this.dataItemLocal);
-      this.getAllRoutePlanItemLocal(this.dataItemLocal.uuid!);
+    this.routeplanService.get(this.idItemLocal).subscribe(item => {
+      this.dataItem = item.data;
+      console.log('RoutePlan:', this.dataItem);
+      this.getAllRoutePlanItemApi(this.dataItem.uuid!);
       this.formGroup.patchValue({
-        user_uuid: this.dataItemLocal.user_uuid,
-        country_uuid: this.dataItemLocal.country_uuid,
-        province_uuid: this.dataItemLocal.province_uuid,
-        area_uuid: this.dataItemLocal.area_uuid,
-        subarea_uuid: this.dataItemLocal.subarea_uuid,
-        commune_uuid: this.dataItemLocal.commune_uuid,
+        user_uuid: this.dataItem.user_uuid,
+        country_uuid: this.dataItem.country_uuid,
+        province_uuid: this.dataItem.province_uuid,
+        area_uuid: this.dataItem.area_uuid,
+        subarea_uuid: this.dataItem.subarea_uuid,
+        commune_uuid: this.dataItem.commune_uuid,
       });
-    });
+    }
+    );
   }
 
   // Get last data RoutePlan
-  getLastDataRoutePlan() {
-    db.routePlans
-      .orderBy('CreatedAt')
-      .last()
-      .then((item) => {
-        if (item) {
+  // getLastDataRoutePlan() {
+  //   db.routePlans
+  //     .orderBy('CreatedAt')
+  //     .last()
+  //     .then((item) => {
+  //       if (item) {
 
-          const createdAt = new Date(item.CreatedAt);
-          const currentTime = new Date();
-          const timeDifference = currentTime.getTime() - createdAt.getTime();
-          const hoursDifference = timeDifference / (1000 * 60 * 60);
+  //         const createdAt = new Date(item.CreatedAt);
+  //         const currentTime = new Date();
+  //         const timeDifference = currentTime.getTime() - createdAt.getTime();
+  //         const hoursDifference = timeDifference / (1000 * 60 * 60);
 
-          if (hoursDifference >= 24) {
-            this.isCreatedRoutePlan = true;
-          } else {
-            this.isCreatedRoutePlan = false;
-          }
+  //         if (hoursDifference >= 24) {
+  //           this.isCreatedRoutePlan = true;
+  //         } else {
+  //           this.isCreatedRoutePlan = false;
+  //         }
 
-          console.log('isCreatedRoutePlan:', this.isCreatedRoutePlan);
-        } else {
-          console.log('No RoutePlan found');
-        }
-      })
-      .catch((error) => {
-        console.error('Error retrieving last RoutePlan from Dexie DB:', error);
-      });
-  }
+  //         console.log('isCreatedRoutePlan:', this.isCreatedRoutePlan);
+  //       } else {
+  //         console.log('No RoutePlan found');
+  //       }
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error retrieving last RoutePlan from Dexie DB:', error);
+  //     });
+  // }
 
 
   // RoutePlanItem APi
@@ -941,29 +490,29 @@ export class RouteplanComponent implements OnInit {
     });
   }
 
-  // RoutePlanItem Local
-  getAllRoutePlanItemLocal(uuid: string) {
-    db.routePlanItems
-      .filter((item: IRoutePlanItem) => item.routplan_uuid === uuid)
-      .toArray()
-      .then((items) => {
-        this.dataListLocalItem = items;
-        console.log('RoutePlanItems for UUID:', uuid, items);
-      })
-      .catch((error) => {
-        console.error('Error retrieving RoutePlanItems from Dexie DB:', error);
-      });
-  }
+  // // RoutePlanItem Local
+  // getAllRoutePlanItemLocal(uuid: string) {
+  //   db.routePlanItems
+  //     .filter((item: IRoutePlanItem) => item.routplan_uuid === uuid)
+  //     .toArray()
+  //     .then((items) => {
+  //       this.dataListLocalItem = items;
+  //       console.log('RoutePlanItems for UUID:', uuid, items);
+  //     })
+  //     .catch((error) => {
+  //       console.error('Error retrieving RoutePlanItems from Dexie DB:', error);
+  //     });
+  // }
 
-  // RoutePlanItem pour le tableau
-  getAllRoutePlanItemArray(uuid: string): Promise<number> {
-    console.log('UUID:', uuid);
-    return db.routePlanItems
-      .filter((item: IRoutePlanItem) => item.routplan_uuid === uuid)
-      .count()
-      .then(count => count || 0) // Return count or 0 if null
-      .catch(() => 0); // Return 0 in case of an error
-  }
+  // // RoutePlanItem pour le tableau
+  // getAllRoutePlanItemArray(uuid: string): Promise<number> {
+  //   console.log('UUID:', uuid);
+  //   return db.routePlanItems
+  //     .filter((item: IRoutePlanItem) => item.routplan_uuid === uuid)
+  //     .count()
+  //     .then(count => count || 0) // Return count or 0 if null
+  //     .catch(() => 0); // Return 0 in case of an error
+  // }
 
 
   // Get value RoutePlanItem api
@@ -975,19 +524,6 @@ export class RouteplanComponent implements OnInit {
         routplan_uuid: this.dataRoutePlanItem.routplan_uuid,
         pos_uuid: this.dataRoutePlanItem.pos_uuid,
         status: this.dataRoutePlanItem.status,
-      });
-    });
-  }
-
-  // Get value RoutePlanItem local
-  findValueRoutePlanItemLocal(value: number) {
-    this.idRoutePlanItemLocal = value;
-    db.routePlanItems.get(this.idRoutePlanItemLocal).then(item => {
-      this.dataRoutePlanItemLocal = item!;
-      this.formGroup.patchValue({
-        routplan_uuid: this.dataRoutePlanItemLocal.routplan_uuid,
-        pos_uuid: this.dataRoutePlanItemLocal.pos_uuid,
-        status: this.dataRoutePlanItemLocal.status,
       });
     });
   }
@@ -1023,29 +559,6 @@ export class RouteplanComponent implements OnInit {
         }
       }
       );
-  }
-
-
-  deletRouteplan(): void {
-    db.routePlans.delete(this.dataItemLocal.id!).then(() => {
-      this.fecthlocalData();
-      this.isLoading = false;
-      this.toastr.success('Supprimé avec succès!', 'Success!');
-    }).catch((error) => {
-      this.isLoading = false;
-      console.error('Error deleting item from Dexie DB:', error);
-    });
-  }
-
-  deletRouteplanItem(): void {
-    db.routePlanItems.delete(this.idRoutePlanItemLocal).then(() => {
-      this.getAllRoutePlanItemLocal(this.dataRoutePlanItemLocal.routplan_uuid!);
-      this.isLoading = false;
-      this.toastr.success('Supprimé avec succès!', 'Success!');
-    }).catch((error) => {
-      this.isLoading = false;
-      console.error('Error deleting item from Dexie DB:', error);
-    });
   }
 
 }

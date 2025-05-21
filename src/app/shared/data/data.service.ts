@@ -75,7 +75,7 @@ export class DataService {
       separateRoute: false,
       menu: [
         {
-          menuValue: 'Posforms',
+          menuValue: 'Fiche de visite',
           icon: 'list-check',
           hasSubRoute: false,
           showSubRoute: false,
@@ -84,7 +84,7 @@ export class DataService {
           subRoutes: [],
         },
         {
-          menuValue: 'RoutePlan',
+          menuValue: 'Plan de route',
           base: 'route-plans',
           icon: 'list-check',
           hasSubRoute: false,
@@ -92,7 +92,7 @@ export class DataService {
           route: routes.routeplan,
         },
         {
-          menuValue: 'Pos',
+          menuValue: 'Point de vente',
           base: 'pos',
           icon: 'home',
           hasSubRoute: false,
@@ -100,7 +100,7 @@ export class DataService {
           route: routes.posVente,
         }, 
         {
-          menuValue: 'Brands',
+          menuValue: 'Marques',
           base: 'brands',
           icon: 'list-check',
           hasSubRoute: false,
@@ -293,7 +293,7 @@ export class DataService {
       separateRoute: false,
       menu: [
         {
-          menuValue: 'Posforms',
+          menuValue: 'Fiche de visite',
           icon: 'list-check',
           hasSubRoute: false,
           showSubRoute: false,
@@ -302,7 +302,7 @@ export class DataService {
           subRoutes: [],
         },
         {
-          menuValue: 'RoutePlan',
+          menuValue: 'Plan de route',
           base: 'route-plans',
           icon: 'list-check',
           hasSubRoute: false,
@@ -310,7 +310,7 @@ export class DataService {
           route: routes.routeplan,
         },
         {
-          menuValue: 'Pos',
+          menuValue: 'Pos de vente',
           base: 'pos',
           icon: 'home',
           hasSubRoute: false,
@@ -471,7 +471,7 @@ export class DataService {
       separateRoute: false,
       menu: [
         {
-          menuValue: 'Posforms',
+          menuValue: 'Fiche de visite',
           icon: 'list-check',
           hasSubRoute: false,
           showSubRoute: false,
@@ -480,7 +480,7 @@ export class DataService {
           subRoutes: [],
         },
         {
-          menuValue: 'RoutePlan',
+          menuValue: 'Plan de route',
           base: 'route-plans',
           icon: 'list-check',
           hasSubRoute: false,
@@ -488,7 +488,7 @@ export class DataService {
           route: routes.routeplan,
         },
         {
-          menuValue: 'Pos',
+          menuValue: 'Point de vente',
           base: 'pos',
           icon: 'home',
           hasSubRoute: false,
@@ -503,7 +503,7 @@ export class DataService {
       separateRoute: false,
       menu: [ 
         {
-          menuValue: 'Areas',
+          menuValue: 'Districts (Areas)',
           base: 'areas',
           icon: 'page-break',
           hasSubRoute: false,
@@ -511,7 +511,7 @@ export class DataService {
           route: routes.areaList,
         },
         {
-          menuValue: 'SubAreas',
+          menuValue: 'Secteurs (SubAreas)',
           base: 'subareas',
           icon: 'page-break',
           hasSubRoute: false,
@@ -519,7 +519,7 @@ export class DataService {
           route: routes.subareaList,
         },
         {
-          menuValue: 'Communes/Secteurs',
+          menuValue: 'Sous-secteurs (Communes)',
           base: 'communes',
           icon: 'page-break',
           hasSubRoute: false,
@@ -570,7 +570,7 @@ export class DataService {
       separateRoute: false,
       menu: [
         {
-          menuValue: 'Posforms',
+          menuValue: 'Fiche de visite',
           icon: 'list-check',
           hasSubRoute: false,
           showSubRoute: false,
@@ -579,7 +579,7 @@ export class DataService {
           subRoutes: [],
         },
         {
-          menuValue: 'RoutePlan',
+          menuValue: 'Plan de route',
           base: 'route-plans',
           icon: 'list-check',
           hasSubRoute: false,
@@ -587,7 +587,7 @@ export class DataService {
           route: routes.routeplan,
         },
         {
-          menuValue: 'Pos',
+          menuValue: 'Point de vente',
           base: 'pos',
           icon: 'home',
           hasSubRoute: false,
@@ -602,7 +602,7 @@ export class DataService {
       separateRoute: false,
       menu: [
         {
-          menuValue: 'SubAreas',
+          menuValue: 'Secteurs (SubAreas)',
           base: 'subareas',
           icon: 'page-break',
           hasSubRoute: false,
@@ -610,7 +610,7 @@ export class DataService {
           route: routes.subareaList,
         },
         {
-          menuValue: 'Communes/Secteurs',
+          menuValue: 'Sous-secteurs (Communes)',
           base: 'communes',
           icon: 'page-break',
           hasSubRoute: false,
