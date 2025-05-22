@@ -24,7 +24,7 @@ export class AuthService {
   }
 
   user(): Observable<IUser> {
-     const token = localStorage.getItem("auth_id");
+    const token = localStorage.getItem("auth_uuid");
     let params = new HttpParams();
     if (token) {
       params = params.set("token", token);
@@ -32,13 +32,13 @@ export class AuthService {
     return this.http.get<IUser>(`${environment.apiUrl}/auth/user`, { params });
   }
 
-  
+
   isTokenValid(): boolean {
     localStorage.removeItem("auth_user");
-    const storedUser = localStorage.getItem("auth_user"); 
+    const storedUser = localStorage.getItem("auth_user");
     if (storedUser) {
       const parsedUser = JSON.parse(storedUser);
-      const token = localStorage.getItem("auth_id");
+      const token = localStorage.getItem("auth_uuid");
       if (parsedUser.expiration && new Date(parsedUser.expiration) > new Date() && parsedUser.user.token === token) {
         return true; // Token is still valid and matches the stored token
       }
@@ -50,11 +50,6 @@ export class AuthService {
     if (!navigator.onLine) {
       // If offline, clear local storage and redirect to login
       localStorage.removeItem('auth_id');
-      localStorage.removeItem('auth_user');
-      localStorage.removeItem('auth_asm');
-      localStorage.removeItem('auth_sup');
-      localStorage.removeItem('auth_dr');
-      localStorage.removeItem('auth_cyclo');
       console.warn("User logged out due to offline status");
       this.router.navigate(["/auth/login"]);
       return new Observable<void>((observer) => {

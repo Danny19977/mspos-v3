@@ -108,7 +108,7 @@ export class PosVenteListComponent implements OnInit {
       quartier: ['', Validators.required],
       reference: ['', Validators.required],
       telephone: ['', Validators.required],
-      status: ['', Validators.required],
+      // status: ['', Validators.required],
     });
 
 
@@ -279,22 +279,17 @@ export class PosVenteListComponent implements OnInit {
           reference: this.formGroup.value.reference,
           telephone: this.formGroup.value.telephone,
           country_uuid: this.currentUser.country_uuid,
-          country_name: this.currentUser.country_name,
           province_uuid: this.currentUser.province_uuid,
-          province_name: this.currentUser.province_name,
           area_uuid: this.currentUser.area_uuid,
-          area_name: this.currentUser.area_name,
           subarea_uuid: this.currentUser.subarea_uuid,
-          subarea_name: this.currentUser.subarea_name,
           commune_uuid: this.currentUser.commune_uuid,
-          commune_name: this.currentUser.commune_name,
           user_uuid: this.currentUser.uuid,
           user_fullname: this.currentUser.fullname,
           asm_uuid: this.currentUser.Asm.user_uuid!,
           sup_uuid: this.currentUser.Sup.user_uuid!,
           dr_uuid: this.currentUser.Dr.user_uuid!,
           cyclo_uuid: this.currentUser.Cyclo.user_uuid!,
-          status: false, // le status change une fois que le pos est synchronisé
+          status: true, // le status change une fois que le pos est synchronisé
           signature: this.currentUser.fullname,
         };
         this.posVenteService.create(body)
@@ -345,22 +340,17 @@ export class PosVenteListComponent implements OnInit {
         reference: this.formGroup.value.reference,
         telephone: this.formGroup.value.telephone,
         country_uuid: this.currentUser.country_uuid,
-        country_name: this.currentUser.country_name,
         province_uuid: this.currentUser.province_uuid,
-        province_name: this.currentUser.province_name,
         area_uuid: this.currentUser.area_uuid,
-        area_name: this.currentUser.area_name,
         subarea_uuid: this.currentUser.subarea_uuid,
-        subarea_name: this.currentUser.subarea_name,
         commune_uuid: this.currentUser.commune_uuid,
-        commune_name: this.currentUser.commune_name,
         user_uuid: this.currentUser.uuid,
         user_fullname: this.currentUser.fullname,
         asm_uuid: this.currentUser.Asm.user_uuid!,
         sup_uuid: this.currentUser.Sup.user_uuid!,
         dr_uuid: this.currentUser.Dr.user_uuid!,
         cyclo_uuid: this.currentUser.Cyclo.user_uuid!,
-        status: false, // le status change une fois que le pos est synchronisé
+        status: true, // le status change une fois que le pos est synchronisé
         signature: this.currentUser.fullname,
         UpdatedAt: new Date(),
       };

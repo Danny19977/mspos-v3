@@ -49,8 +49,8 @@ export class LoginComponent implements OnInit {
       this.authService.login(body).subscribe({
         next: (res) => {
           console.log(res);
-          // localStorage.removeItem("auth_id");
-          // localStorage.setItem("auth_id", res.data);
+          localStorage.removeItem("auth_uuid");
+          localStorage.setItem("auth_uuid", res.data);
 
           this.authService.user().subscribe({
             next: (user) => {

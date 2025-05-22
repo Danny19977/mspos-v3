@@ -148,6 +148,8 @@ export class PosViewComponent implements OnInit {
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
         this.dataSource.data = this.dataList; // Update dataSource data
+        this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
+        this.dataSource.sort = this.sort; // Bind sort to dataSource
         this.isLoadingData = false;
       });
   }

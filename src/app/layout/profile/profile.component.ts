@@ -2,8 +2,6 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { Router } from '@angular/router'; 
 import { AuthService } from '../../auth/auth.service';
 import { routes } from '../../shared/routes/routes';
-import { IProvince } from '../province/models/province.model';
-import { ProvinceService } from '../province/province.service';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { Validators } from 'ngx-editor';
@@ -59,8 +57,6 @@ export class ProfileComponent implements OnInit {
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  province!: IProvince;
-
   formGroup!: FormGroup;
 
   formGroupChangePassword!: FormGroup;
@@ -75,7 +71,6 @@ export class ProfileComponent implements OnInit {
     private router: Router,
     private _formBuilder: FormBuilder,
     private authService: AuthService,
-    private provinceService: ProvinceService,
     private logsService: LogsService,
     public posformService: PosformService,
     private toastr: ToastrService
@@ -103,20 +98,7 @@ export class ProfileComponent implements OnInit {
     this.authService.user().subscribe({
       next: (user) => {
         this.currentUser = user;
-        // const asm = localStorage.getItem('asm');
-        // if (asm) {
-        //   const parsedAsm = JSON.parse(asm);
-        //   if (parsedAsm.uuid !== '') {
-        //     this.this = parsedAsm;
-        //   }
-        // }
 
-        if (this.currentUser.province_uuid) {
-          this.provinceService.get(this.currentUser.province_uuid).subscribe((res) => {
-            this.province = res.data;
-            this.isLoading = false;
-          });
-        }
         this.formGroup.patchValue({
           fullname: this.currentUser.fullname,
           email: this.currentUser.email,
@@ -128,16 +110,6 @@ export class ProfileComponent implements OnInit {
 
         this.dataSourcePosForm.paginator = this.paginator; // Bind paginator to dataSource
         this.dataSourcePosForm.sort = this.sort; // Bind sort to dataSource
-
-        // this.logsService.refreshDataList$.subscribe(() => {
-        //   this.fetchProductsLog(this.currentUser.uuid);
-        // });
-        // this.fetchProductsLog(this.currentUser.uuid);
-
-        // this.posformService.refreshDataList$.subscribe(() => {
-        //   this.fetchProductsPosForm(this.currentUser.uuid);
-        // });
-        // this.fetchProductsPosForm(this.currentUser.uuid);
 
         this.isLoading = false;
       },

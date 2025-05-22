@@ -133,38 +133,37 @@
                             <li class="row mb-3">
                                 <span class="col-6">Pays</span>
                                 <span class="col-6">
-                                    {{ currentUser.country_name }}
+                                    {{ currentUser.Country.name }}
                                 </span> 
                             </li>
                             <li class="row mb-3">
                                 <span class="col-6">Province</span>
                                 <span class="col-6">
-                                    {{ currentUser.province_name }}
+                                    {{ currentUser.Province!.name }}
                                 </span>
                             </li>
                             <li class="row mb-3">
                                 <span class="col-6">Area</span>
                                 <span class="col-6">
-                                    {{ currentUser.area_name }}
+                                    {{ currentUser.Area!.name }}
                                 </span>
                             </li>
                             <li class="row mb-3">
                                 <span class="col-6">Sub Area</span>
                                 <span class="col-6">
-                                    {{ currentUser.subarea_name }}
+                                    {{ currentUser.SubArea!.name }}
                                 </span>
                             </li>
                             <li class="row mb-3">
                                 <span class="col-6">Commune</span>
                                 <span class="col-6">
-                                    {{ currentUser.commune_name }}
+                                    {{ currentUser.Commune!.name }}
                                 </span>
                             </li>
                             <li class="row mb-3">
                                 <span class="col-6">ASM</span>
                                 <span class="col-6"> 
                                     <app-user-get *ngIf="currentUser.Asm" [uuid]="currentUser.Asm.user_uuid"></app-user-get>
-                                    <!-- {{ asmInfo.name }} -->
                                 </span>
                             </li>
                             <li class="row mb-3">

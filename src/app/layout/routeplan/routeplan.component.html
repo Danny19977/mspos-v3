@@ -43,19 +43,20 @@
                                             <ul>
                                                 <li>
                                                     <a href="javascript:void(0);" class="dropdown-item"><i
-                                                            class="ti ti-file-type-pdf text-danger me-1"></i>Export as
+                                                            class="ti ti-file-type-pdf text-danger me-1"></i>
+                                                        Export as
                                                         PDF</a>
                                                 </li>
                                                 <li>
                                                     <a href="javascript:void(0);" class="dropdown-item"><i
-                                                            class="ti ti-file-type-xls text-green me-1"></i>Export as
+                                                            class="ti ti-file-type-xls text-green me-1"></i>
+                                                        Export as
                                                         Excel </a>
                                                 </li>
                                             </ul>
                                         </div>
                                     </div>
                                     @if(
-                                    isCreatedRoutePlan ||
                                     currentUser.permission === 'ALL' ||
                                     currentUser.permission === 'VAE' ||
                                     currentUser.permission === 'VA') {
@@ -152,7 +153,7 @@
                                                 </a>
                                                 <div class="dropdown-menu dropdown-menu-right">
                                                     <a class="dropdown-item" data-bs-toggle="offcanvas"
-                                                        (click)="findValue(data.uuid)" data-bs-target="#offcanvas_api"
+                                                        (click)="findValue(data.uuid)" data-bs-target="#offcanvas_pos"
                                                         href="javascript:void(0);"><i class="ti ti-eye text-blue"></i>
                                                         Visibility
                                                     </a>
@@ -162,7 +163,8 @@
                                                     <a class="dropdown-item" href="javascript:void(0);"
                                                         (click)="findValue(data.uuid)" data-bs-toggle="modal"
                                                         data-bs-target="#delete_contact"><i
-                                                            class="ti ti-trash text-danger"></i> Delete
+                                                            class="ti ti-trash text-danger"></i> 
+                                                            Delete
                                                     </a>
                                                     }
                                                 </div>
@@ -256,14 +258,15 @@
         <div class="task-wrapper">
             <a href="javascript:void(0);" class="task-accordion" data-bs-toggle="collapse" data-bs-target="#recent">
                 <h4>Vos POS
-                    <span>{{ dataListLocalItem.length }}</span>
+                    <span>{{ dataListItem.length }}</span>
                     <span class="bg-success">
-                        {{ dataItem ? getRoutePlanItemTrueCount(dataItem.RoutePlanItems!) : 0 }}</span>
+                        {{ getRoutePlanItemTrueCount(dataListItem) }}
+                    </span>
                 </h4>
             </a>
             <div class="tasks-activity tasks collapse show" id="recent">
                 <ul>
-                    @for (item of dataListLocalItem; track $index) {
+                    @for (item of dataListItem; track $index) {
                     <li class="task-wrap pending">
                         <div class="task-info">
                             <span class="task-icon"><i class="ti ti-grip-vertical"></i></span>
@@ -306,6 +309,7 @@
 </div>
 <!-- /Liste RoutePLAnItem local -->
 
+
 <!-- Liste RoutePlanItem API -->
 <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_api">
     <div class="offcanvas-header border-bottom">
@@ -339,7 +343,7 @@
                                     <span class="checkmarks"></span>
                                 </label>
                             </div>
-                          <p>{{ item.Pos!.shop }} | {{ item.Pos!.postype }}</p> <br>
+                            <p>{{ item.Pos!.shop }} | {{ item.Pos!.postype }}</p> <br>
                             <p>{{ item.Pos!.name }} | {{ item.Pos!.gerant }}</p>
                         </div>
                         <div class="task-actions">
@@ -372,8 +376,6 @@
     </div>
 </div>
 <!-- /Liste RoutePlanItem API -->
-
-
 
 <!-- create routeplan User -->
 <div class="modal fade" id="create_routeplan" role="dialog">

@@ -18,7 +18,7 @@ export class CredentialInterceptor implements HttpInterceptor {
       return next.handle(request);
     }
 
-    // const token = localStorage.getItem("auth_id");
+    // const token = localStorage.getItem("auth_uuid");
     // if (token && this.authService.isTokenValid()) {
     //   return next.handle(request); // Skip adding credentials if token is valid
     // }

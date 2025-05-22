@@ -26,6 +26,7 @@ import { v4 as uuidv4 } from 'uuid';
 })
 export class RouteplanComponent implements OnInit {
   isLoadingData = false;
+  isLoadingDataItem = false; // Loading state for data RoutePlanItem
   public routes = routes;
   // Table 
   dataList: IRoutePlan[] = [];
@@ -33,9 +34,7 @@ export class RouteplanComponent implements OnInit {
   total_pages: number = 0;
   page_size: number = 15;
   current_page: number = 1;
-  total_records: number = 0;
-
-  dataListLocalItem: IRoutePlanItem[] = []; // Local data for routePlanItem
+  total_records: number = 0; 
 
   // Table 
   displayedColumns: string[] = ['created', 'country', 'province', 'area', 'subarea', 'commune', 'agent', 'total_pos', 'pourcent', 'id'];
@@ -131,11 +130,7 @@ export class RouteplanComponent implements OnInit {
 
   getAllPos(currentUser: IUser): void {
     const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
-    this.isload = true;
-
-    const current_page = 1;
-    const page_size = 10;
-    const search = '';
+    this.isload = true; 
 
     if (currentUser.role == 'Manager') {
       this.posVenteService.getAll().subscribe(res => {
@@ -163,6 +158,7 @@ export class RouteplanComponent implements OnInit {
         this.posListFilter = this.posList;
       });
     }
+    
 
     this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
     this.isload = false; 
@@ -248,6 +244,14 @@ export class RouteplanComponent implements OnInit {
   }
 
 
+  getAllRoutePlanItem(uuid: string) {
+     this.routePlanItemService.getAllById(uuid).subscribe(res => {
+      this.dataListItem = res.data;
+      this.isLoadingDataItem = false;
+    });
+  }
+
+
   getRoutePlanItemCount(routeplanItem: IRoutePlanItem[]): string {
     return routeplanItem ? routeplanItem.length > 0 ? routeplanItem.length.toString() : '0' : '0';
   }
@@ -296,7 +300,7 @@ export class RouteplanComponent implements OnInit {
         subarea_uuid: this.currentUser.subarea_uuid, 
         commune_uuid: this.currentUser.commune_uuid, 
         user_uuid: this.currentUser.uuid,
-        signature: this.currentUser.fullname, 
+        signature: this.currentUser.fullname,
       };
       this.routeplanService.create(body).subscribe({
         next: (res) => {
@@ -379,6 +383,7 @@ export class RouteplanComponent implements OnInit {
     this.uuidItem = value;
     this.routeplanService.get(this.uuidItem).subscribe(item => {
       this.dataItem = item.data;
+      this.getAllRoutePlanItem(this.dataItem.uuid!);
       this.formGroup.patchValue({
         user_uuid: this.dataItem.user_uuid,
         country_uuid: this.dataItem.country_uuid,
