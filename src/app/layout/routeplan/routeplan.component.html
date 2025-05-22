@@ -273,8 +273,8 @@
                                     <span class="checkmarks"></span>
                                 </label>
                             </div>
-                            <p>{{ item.pos_shop }} | {{ item.postype }}</p> <br>
-                            <p>{{ item.pos_name }} | {{ item.pos_gerant }}</p>
+                            <p>{{ item.Pos!.shop }} | {{ item.Pos!.postype }}</p> <br>
+                            <p>{{ item.Pos!.name }} | {{ item.Pos!.gerant }}</p>
                         </div>
                         <div class="task-actions">
                             <ul>
@@ -286,7 +286,7 @@
                                         </a>
                                         <div class="dropdown-menu dropdown-menu-right">
                                             <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal"
-                                                (click)="findValueRoutePlanItemLocal(item.uuid!)"
+                                                (click)="findValueItem(item.uuid!)"
                                                 data-bs-target="#delete_route_plan_item"><i
                                                     class="ti ti-trash text-danger"></i>
                                                 Delete
@@ -339,8 +339,8 @@
                                     <span class="checkmarks"></span>
                                 </label>
                             </div>
-                            <p>{{ item.pos_shop }} | {{ item.postype }}</p> <br>
-                            <p>{{ item.pos_name }} | {{ item.pos_gerant }}</p>
+                          <p>{{ item.Pos!.shop }} | {{ item.Pos!.postype }}</p> <br>
+                            <p>{{ item.Pos!.name }} | {{ item.Pos!.gerant }}</p>
                         </div>
                         <div class="task-actions">
                             <ul>
@@ -352,7 +352,7 @@
                                         </a>
                                         <div class="dropdown-menu dropdown-menu-right">
                                             <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal"
-                                                (click)="findValueRoutePlanItemLocal(item.id!)"
+                                                (click)="findValueItem(item.uuid!)"
                                                 data-bs-target="#delete_route_plan_item"><i
                                                     class="ti ti-trash text-danger"></i>
                                                 Delete
@@ -437,7 +437,7 @@
                     <p class="mb-0">Êtes-vous sûr de vouloir le supprimer ?</p>
                     <div class="d-flex align-items-center justify-content-center mt-4">
                         <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="modal">Annuler</a>
-                        <button (click)="deletRouteplan()" class="btn btn-danger" data-bs-dismiss="modal">
+                        <button (click)="delete()" class="btn btn-danger" data-bs-dismiss="modal">
                             Oui, Supprimer le
                         </button>
                     </div>
@@ -461,7 +461,7 @@
                     <p class="mb-0">Êtes-vous sûr de vouloir le supprimer ?</p>
                     <div class="d-flex align-items-center justify-content-center mt-4">
                         <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="modal">Annuler</a>
-                        <button (click)="deletRouteplanItem()" class="btn btn-danger" data-bs-dismiss="modal">
+                        <button (click)="deleteItem()" class="btn btn-danger" data-bs-dismiss="modal">
                             Oui, Supprimer le
                         </button>
                     </div>

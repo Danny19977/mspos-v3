@@ -1,7 +1,7 @@
 import { Component, ElementRef, OnInit, ViewChild, ChangeDetectorRef, computed, signal } from '@angular/core';
 import { GeolocationService } from '@ng-web-apis/geolocation';
 import { MatTableDataSource } from '@angular/material/table';
-import { Router } from '@angular/router';
+import { Route, Router } from '@angular/router';
 import { MatSort, Sort } from '@angular/material/sort';
 import { routes } from '../../../shared/routes/routes';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
@@ -16,7 +16,7 @@ import { ISup } from '../../sups/models/sup.model';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { LogsService } from '../../user-logs/logs.service';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { formatDate } from '@angular/common'; 
+import { formatDate } from '@angular/common';
 import { db } from '../../../shared/services/db';
 import { IRoutePlanItem } from '../../routeplan/models/routeplanItem.model';
 import { v4 as uuidv4 } from 'uuid';
@@ -24,6 +24,9 @@ import { BrandService } from '../../brand/brand.service';
 import { IBrand } from '../../brand/models/brand.model';
 import { IPosFormItem } from '../models/posform_item.model';
 import { PosformItemService } from '../posformitem.service';
+import { RouteplanService } from '../../routeplan/routeplan.service';
+import { IRoutePlan } from '../../routeplan/models/routeplan.model';
+import { RouteplanItemService } from '../../routeplan/routeplanitem.service';
 
 
 @Component({
@@ -42,7 +45,6 @@ export class PostformListComponent implements OnInit {
   rangeDate: any[] = [];
 
   dataList: IPosForm[] = [];
-  dataListLocal: IPosForm[] = [];
   total_pages: number = 0;
   page_size: number = 15;
   current_page: number = 1;
@@ -58,15 +60,14 @@ export class PostformListComponent implements OnInit {
   public search = '';
 
   // Forms  
-  idItem!: string;
+  uuidItem!: string;
   dataItem!: IPosForm; // Single data 
 
-  // Local
-  idItemLocal!: number; // local item
-  dataItemlocal!: IPosForm
+  uuidPosformItem!: string;
+  dataPosformItem!: IPosFormItem; // Single data
+
 
   dataListPosFormItem: IPosFormItem[] = [];
-  dataListLocalItem: IPosFormItem[] = [];
 
 
   formGroup!: FormGroup;
@@ -83,11 +84,7 @@ export class PostformListComponent implements OnInit {
 
   priceList: string[] = ['50', '100', '150', '200'];
 
-
-  userList: IUser[] = [];
-  provinceList: IProvince[] = [];
-  areaList: IArea[] = [];
-  supList: ISup[] = [];
+  routePlan!: IRoutePlan;
 
   routePlanItemList: IRoutePlanItem[] = [];
   routePlanItemListFilter: IRoutePlanItem[] = [];
@@ -108,9 +105,6 @@ export class PostformListComponent implements OnInit {
   brandName: string = '';
 
 
-  onLine = signal<boolean>(false);
-  isOnline = computed(() => navigator.onLine);
-
   constructor(
     private readonly geolocation$: GeolocationService,
     private router: Router,
@@ -119,6 +113,8 @@ export class PostformListComponent implements OnInit {
     private posformService: PosformService,
     private posformItemService: PosformItemService,
     private brandService: BrandService,
+    private routePlanService: RouteplanService,
+    private routePlanItemService: RouteplanItemService,
     private logActivity: LogsService,
     private toastr: ToastrService,
     private cdr: ChangeDetectorRef // Inject ChangeDetectorRef
@@ -163,17 +159,13 @@ export class PostformListComponent implements OnInit {
         this.dataSource.sort = this.sort; // Bind sort to dataSource 
         this.cdr.detectChanges(); // Trigger change detection
 
-        if (this.isOnline()) {
-          this.isLoadingData = true;
-          this.posformService.refreshDataList$.subscribe(() => {
-            this.fetchProducts(this.currentUser);
-          });
+        this.isLoadingData = true;
+        this.posformService.refreshDataList$.subscribe(() => {
           this.fetchProducts(this.currentUser);
+        });
+        this.fetchProducts(this.currentUser);
 
-          this.synchronizeBrand(this.currentUser);
-
-          this.onChanges();
-        }
+        this.onChanges();
 
         this.geolocation$.subscribe((position) => {
           this.latitude = position.coords.latitude;
@@ -182,7 +174,7 @@ export class PostformListComponent implements OnInit {
           // console.log('Longitude:', position.coords.longitude);
         });
 
-        this.fecthlocalData();
+
 
         this.getAllRoutePlans();
         this.getAllBrand();
@@ -197,33 +189,35 @@ export class PostformListComponent implements OnInit {
   }
 
   getAllRoutePlans(): void {
-    const filterValue = this.pos_uuid?.nativeElement.value.toLowerCase();
-
+    const filterValue = this.pos_uuid?.nativeElement.value.toLowerCase() || '';
     this.isload = true;
-    db.posForms.toArray().then(posforms => {
-      db.routePlans.orderBy('CreatedAt').last().then(lastRoutePlan => {
-        db.routePlanItems
-          .filter((res) => res.routplan_uuid == lastRoutePlan!.uuid!)
-          .toArray()
-          .then(routePlanItems => {
-            // Retirer les doublons
-            const localUuids = posforms.map(localItem => localItem.pos_uuid);
-            this.routePlanItemList = routePlanItems.filter(item => !localUuids.includes(item.uuid!));
 
-            this.filteredOptions = this.routePlanItemList.filter(o => o.pos_name!.toLowerCase().includes(filterValue));
+    this.routePlanService.getByUserUUID(this.currentUser.uuid).subscribe({
+      next: (res) => {
+        this.routePlan = res.data;
+        this.routePlanItemService.getAllById(this.routePlan.uuid!).subscribe({
+          next: (res) => {
+            this.routePlanItemList = res.data;
+            this.routePlanItemListFilter = this.routePlanItemList.filter(o => o.Pos!.name.toLowerCase().includes(filterValue));
             this.isload = false;
-          })
-          .catch(error => {
+          },
+          error: (error) => {
             this.isload = false;
             console.error('Error fetching route plan items:', error);
-          });
-      });
+            this.toastr.error('Erreur lors de la récupération des plans de route.', 'Oupss!');
+          }
+        });
+      },
+      error: (error) => {
+        this.isload = false;
+        console.error('Error fetching route plans:', error);
+        this.toastr.error('Erreur lors de la récupération des plans de route.', 'Oupss!');
+      }
     });
-
   }
 
-  displayFn(pos: IRoutePlanItem): any {
-    return pos && pos.pos_name ? pos.pos_name : '';
+  displayFn(item: IRoutePlanItem): any {
+    return item && item.Pos!.name ? item.Pos!.name : '';
   }
 
   optionSelected(event: MatAutocompleteSelectedEvent) {
@@ -234,24 +228,19 @@ export class PostformListComponent implements OnInit {
 
   getAllBrand(): void {
     const filterValue = this.brand_uuid?.nativeElement.value.toLowerCase();
-
     this.isloadBrand = true;
 
-    db.posformItems.toArray().then(posformItems => {
-      db.brands.toArray()
-        .then(brands => {
-          // this.brandList = brands;
-
-          const localUuids = posformItems.filter(p => p.posform_uuid == this.dataItemlocal.uuid).map(localItem => localItem.brand_uuid);
-          this.brandList = brands.filter(item => !localUuids.includes(item.uuid!));
-
-          this.filteredOptionBrand = this.brandList.filter(o => o.name!.toLowerCase().includes(filterValue));
-          this.isloadBrand = false;
-        })
-        .catch(error => {
-          this.isloadBrand = false;
-          console.error('Error fetching brand items:', error);
-        });
+    this.brandService.getAllByASM(this.currentUser.province_uuid).subscribe({
+      next: (res) => {
+        this.brandList = res.data;
+        this.brandListFilter = this.brandList.filter(o => o.name!.toLowerCase().includes(filterValue));
+        this.isloadBrand = false;
+      },
+      error: (error) => {
+        this.isloadBrand = false;
+        console.error('Error fetching brand items:', error);
+        this.toastr.error('Erreur lors de la récupération des marques.', 'Oupss!');
+      }
     });
   }
 
@@ -277,7 +266,7 @@ export class PostformListComponent implements OnInit {
       val.rangeValue[1].setDate(val.rangeValue[1].getDate() + 1);
       this.end_date = formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US');
 
-      this.fecthlocalData();
+
       this.fetchProducts(this.currentUser);
 
     });
@@ -298,8 +287,8 @@ export class PostformListComponent implements OnInit {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
-           this.dataSource.data = this.dataList; // Update dataSource data
-          this.fecthlocalData();
+          this.dataSource.data = this.dataList; // Update dataSource data
+
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'ASM') {
@@ -309,8 +298,8 @@ export class PostformListComponent implements OnInit {
           console.log("dataList ASM", this.dataList);
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
-           this.dataSource.data = this.dataList; // Update dataSource data
-          this.fecthlocalData();
+          this.dataSource.data = this.dataList; // Update dataSource data
+
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'Supervisor') {
@@ -319,8 +308,8 @@ export class PostformListComponent implements OnInit {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
-           this.dataSource.data = this.dataList; // Update dataSource data
-          this.fecthlocalData();
+          this.dataSource.data = this.dataList; // Update dataSource data
+
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'DR') {
@@ -329,8 +318,8 @@ export class PostformListComponent implements OnInit {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
-           this.dataSource.data = this.dataList; // Update dataSource data
-          this.fecthlocalData();
+          this.dataSource.data = this.dataList; // Update dataSource data
+
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'Cyclo') {
@@ -339,8 +328,8 @@ export class PostformListComponent implements OnInit {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
-           this.dataSource.data = this.dataList; // Update dataSource data
-          this.fecthlocalData();
+          this.dataSource.data = this.dataList; // Update dataSource data
+
           this.isLoadingData = false;
         });
     } else {
@@ -349,8 +338,8 @@ export class PostformListComponent implements OnInit {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
-           this.dataSource.data = this.dataList; // Update dataSource data
-          this.fecthlocalData();
+          this.dataSource.data = this.dataList; // Update dataSource data
+
           this.isLoadingData = false;
         });
     }
@@ -451,182 +440,8 @@ export class PostformListComponent implements OnInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-  fecthlocalData() {
-    db.posForms.toArray().then((data) => {
-      this.dataListLocal = data;
-      const dataList = this.dataListLocal.filter((item) => item.sync === true);
-      if (dataList.length > 0 && navigator.onLine) {
-        dataList.forEach((item: IPosForm) => {
-          var body: IPosForm = {
-            uuid: item.uuid,
-            price: parseInt(item.price.toString()),
-            comment: item.comment,
-            latitude: this.latitude, // item.latitude,
-            longitude: this.longitude, // item.longitude,
-            pos_uuid: item.pos_uuid,
-            country_uuid: item.country_uuid,
-            province_uuid: item.province_uuid,
-            area_uuid: item.area_uuid,
-            subarea_uuid: item.subarea_uuid,
-            commune_uuid: item.commune_uuid,
-            asm_uuid: item.asm_uuid,
-            sup_uuid: item.sup_uuid,
-            dr_uuid: item.dr_uuid,
-            cyclo_uuid: item.cyclo_uuid,
-            signature: item.signature,
-            sync: item.sync,
-            CreatedAt: item.CreatedAt,
-            UpdatedAt: item.UpdatedAt,
-          };
-          this.posformService.create(body).subscribe((res) => {
-            console.log("res POSFORM", res);
-            this.logActivity.activity(
-              'PosForm',
-              this.currentUser.uuid,
-              'created',
-              `Created new PosForm uuid: ${res.data.uuid}`,
-              this.currentUser.fullname
-            ).subscribe({
-              next: () => {
-                this.fetchProducts(this.currentUser);
-                this.toastr.success(`Synchronisation effectuée avec succès!`, 'Success!');
-                db.posForms.delete(item.id!).then(() => {
-                  this.toastr.info('Supprimé avec succès!', 'Success!');
-                }).catch((error) => {
-                  console.error('Error deleting item from Dexie DB:', error);
-                });
-              },
-              error: (err) => {
-                this.toastr.error(`${err.error.message}`, 'Oupss!');
-                console.log(err);
-              }
-            });
-          });
-        });
-
-        // Synchroniser les posformItems
-        db.posformItems.toArray().then((posformItems) => {
-          posformItems.forEach((posFormItem: IPosFormItem) => {
-            var body: IPosFormItem = {
-              uuid: posFormItem.uuid,
-              posform_uuid: posFormItem.posform_uuid,
-              brand_uuid: posFormItem.brand_uuid,
-              number_farde: posFormItem.number_farde,
-              counter: posFormItem.counter,
-              sold: posFormItem.sold,
-              CreatedAt: posFormItem.CreatedAt,
-              UpdatedAt: posFormItem.UpdatedAt,
-            };
-            console.log("body POSFORMITEM", body);
-            this.posformItemService.create(body).subscribe({
-              next: () => {
-                db.posformItems.delete(posFormItem.id!).then(() => {
-                  console.log('Deleted POSFORMITEM successfully');
-                }).catch((error) => {
-                  console.error('Error deleting item from Dexie DB:', error);
-                });
-              },
-              error: (err) => {
-                this.toastr.error(`${err.error.message}`, 'Oupss!');
-                console.log(err);
-              }
-            });
-          });
-        })
-      }
-
-    });
-
-    // liveQuery(() => db.posForms.toArray())
-    //   .subscribe(data => {
-    //     const startIndex = (this.current_page - 1) * this.page_size;
-    //     const endIndex = startIndex + this.page_size;
-    //     this.dataListLocal = data.slice(startIndex, endIndex);
-    //     console.log("dataListLocal", this.dataListLocal);
-
-    //     this.total_records = data.length;
-    //     this.total_pages = Math.ceil(this.total_records / this.page_size);
-
-    //     if (this.dataListLocal.length > 0 && navigator.onLine) {
-    //       this.dataListLocal.forEach((item: IPosForm) => {
-    //         if (item.sync) {
-    //           var body: IPosForm = {
-    //             uuid: item.uuid,
-    //             price: parseInt(item.price.toString()),
-    //             comment: item.comment,
-    //             latitude: item.latitude,
-    //             longitude: item.longitude,
-    //             pos_uuid: item.pos_uuid,
-    //             country_uuid: item.country_uuid,
-    //             province_uuid: item.province_uuid,
-    //             area_uuid: item.area_uuid,
-    //             subarea_uuid: item.subarea_uuid,
-    //             commune_uuid: item.commune_uuid,
-    //             asm_uuid: item.asm_uuid,
-    //             sup_uuid: item.sup_uuid,
-    //             dr_uuid: item.dr_uuid,
-    //             cyclo_uuid: item.cyclo_uuid,
-    //             signature: item.signature,
-    //             sold: item.sold,
-    //             sync: item.sync,
-    //             CreatedAt: item.CreatedAt,
-    //             UpdatedAt: item.UpdatedAt,
-    //           };
-    //           this.posformService.create(body).subscribe({
-    //             next: (res) => {
-    //               this.logActivity.activity(
-    //                 'PosForm',
-    //                 this.currentUser.uuid,
-    //                 'created',
-    //                 `Created new PosForm uuid: ${res.data.uuid}`,
-    //                 this.currentUser.fullname
-    //               ).subscribe({
-    //                 next: () => {
-    //                   this.fetchProducts(this.currentUser);
-    //                   this.toastr.success(`Synchronisation effectuée avec succès! ${item.id!}`, 'Success!');
-    //                   db.posForms.delete(item.id!).then(() => {
-    //                     this.toastr.info('Supprimé avec succès!', 'Success!');
-    //                   }).catch((error) => {
-    //                     console.error('Error deleting item from Dexie DB:', error);
-    //                   });
-    //                 },
-    //                 error: (err) => {
-    //                   this.toastr.error(`${err.error.message}`, 'Oupss!');
-    //                   console.log(err);
-    //                 }
-    //               });
-    //             },
-    //             error: (err) => {
-    //               this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-    //               console.log(err);
-    //             }
-    //           });
-
-    //         }
-    //       });
-    //     }
-    //   });
-  }
-
-
   // PosFormItem Local
   getAllPosFormItem(uuid: string) {
-    this.isLoadingPosFormItem = true;
-    db.posformItems
-      .filter((item: IPosFormItem) => item.posform_uuid === uuid)
-      .toArray()
-      .then((items) => {
-        this.dataListLocalItem = items;
-        this.isLoadingPosFormItem = false;
-      })
-      .catch((error) => {
-        this.isLoadingPosFormItem = false;
-        console.error('Error retrieving posformItems from Dexie DB:', error);
-      });
-  }
-
-  // Get PosformsItem by UUId
-  getPosFormItemByUUId(uuid: string) {
     this.isLoadingPosFormItem = true;
     this.posformItemService.getAllById(uuid).subscribe({
       next: (res) => {
@@ -646,42 +461,49 @@ export class PostformListComponent implements OnInit {
       uuid: uuidv4(),
       price: 50,
       comment: 'Rien á signaler',
-      latitude: 0, // this.latitude.toString(),
-      longitude: 0, // this.longitude.toString(),
+      latitude: this.latitude,
+      longitude: this.longitude,
       pos_uuid: this.posUUID,
       pos_name: this.posName,
       country_uuid: this.currentUser.country_uuid,
-      country_name: this.currentUser.country_name,
       province_uuid: this.currentUser.province_uuid,
-      province_name: this.currentUser.province_name,
       area_uuid: this.currentUser.area_uuid,
-      area_name: this.currentUser.area_name,
       subarea_uuid: this.currentUser.subarea_uuid,
-      subarea_name: this.currentUser.subarea_name,
       commune_uuid: this.currentUser.commune_uuid,
-      commune_name: this.currentUser.commune_name,
       asm_uuid: this.currentUser.Asm.user_uuid!,
       sup_uuid: this.currentUser.Sup.user_uuid!,
       dr_uuid: this.currentUser.Dr.user_uuid!,
       cyclo_uuid: this.currentUser.Cyclo.user_uuid!,
-      
+
       signature: this.currentUser.fullname, // Added signature property
-      sync: false, // Default value for 'sync', adjust as needed
-      CreatedAt: new Date(),
-      UpdatedAt: new Date(),
+      sync: true, // Default value for 'sync', adjust as needed 
     };
-    db.posForms.add(body).then((id) => {
-      db.posForms.get(id).then((item) => {
-        this.dataItemlocal = item!;
-        this.fecthlocalData();
-      });
-      this.isLoading = false;
-      this.formGroup.reset();
-      this.toastr.success('Ajouter avec succès!', 'Success!');
-    }).catch((error) => {
-      console.error('Error adding item to Dexie DB:', error);
-      this.isLoading = false;
-      this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+    this.posformService.create(body).subscribe({
+      next: (res) => {
+        this.logActivity.activity(
+          'PosForm',
+          this.currentUser.uuid,
+          'created',
+          `Created Posform uuid: ${res.data.uuid}`,
+          this.currentUser.fullname
+        ).subscribe({
+          next: () => {
+            this.formGroup.reset();
+            this.toastr.success('Ajouter avec succès!', 'Success!');
+            this.isLoading = false;
+          },
+          error: (err) => {
+            this.isLoading = false;
+            this.toastr.error(`${err.error.message}`, 'Oupss!');
+            console.log(err);
+          }
+        });
+      },
+      error: err => {
+        console.log(err);
+        this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+        this.isLoading = false;
+      }
     });
   }
 
@@ -692,48 +514,50 @@ export class PostformListComponent implements OnInit {
         var body: IPosForm = {
           price: parseInt(this.formGroup.value.price),
           comment: this.formGroup.value.comment,
-          latitude: 0, // this.latitude.toString(),
-          longitude: 0, // this.longitude.toString(),
+          // latitude: this.latitude,
+          // longitude: this.longitude,
           pos_uuid: this.posUUID,
           pos_name: this.posName,
           country_uuid: this.currentUser.country_uuid,
-          country_name: this.currentUser.country_name,
           province_uuid: this.currentUser.province_uuid,
-          province_name: this.currentUser.province_name,
           area_uuid: this.currentUser.area_uuid,
-          area_name: this.currentUser.area_name,
           subarea_uuid: this.currentUser.subarea_uuid,
-          subarea_name: this.currentUser.subarea_name,
           commune_uuid: this.currentUser.commune_uuid,
-          commune_name: this.currentUser.commune_name,
           asm_uuid: this.currentUser.Asm.user_uuid!,
           sup_uuid: this.currentUser.Sup.user_uuid!,
           dr_uuid: this.currentUser.Dr.user_uuid!,
           cyclo_uuid: this.currentUser.Cyclo.user_uuid!,
           signature: this.currentUser.fullname,
-          sync: true, // Default value for 'sync', adjust as needed
-          // CreatedAt: new Date(),
-          UpdatedAt: new Date(),
+          sync: true, // Default value for 'sync', adjust as needed 
         };
-        db.posForms.update(this.dataItemlocal.id!, body).then((id) => {
-          db.routePlanItems
-            .where('pos_uuid')
-            .equals(this.posUUID)
-            .modify({ status: true })
-            .then(() => {
-              this.fecthlocalData();
+        this.posformService.update(this.dataItem.uuid!, body)
+          .subscribe({
+            next: (res) => {
+              this.logActivity.activity(
+                'PosForm',
+                this.currentUser.uuid,
+                'updated',
+                `Updated Posform uuid: ${res.data.uuid}`,
+                this.currentUser.fullname
+              ).subscribe({
+                next: () => {
+                  this.formGroup.reset();
+                  this.toastr.success('Modification enregistré!', 'Success!');
+                  this.isLoading = false;
+                },
+                error: (err) => {
+                  this.isLoading = false;
+                  this.toastr.error(`${err.error.message}`, 'Oupss!');
+                  console.log(err);
+                }
+              });
+            },
+            error: err => {
+              console.log(err);
+              this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
               this.isLoading = false;
-              this.formGroup.reset();
-              this.toastr.success('Ajouter avec succès!', 'Success!');
-            })
-            .catch((error) => {
-              console.error('Error updating status in Dexie DB:', error);
-            });
-        }).catch((error) => {
-          console.error('Error adding item to Dexie DB:', error);
-          this.isLoading = false;
-          this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-        });
+            }
+          });
       }
     } catch (error) {
       this.isLoading = false;
@@ -752,23 +576,16 @@ export class PostformListComponent implements OnInit {
         pos_uuid: this.posUUID,
         pos_name: this.posName,
         country_uuid: this.currentUser.country_uuid,
-        country_name: this.currentUser.country_name,
         province_uuid: this.currentUser.province_uuid,
-        province_name: this.currentUser.province_name,
         area_uuid: this.currentUser.area_uuid,
-        area_name: this.currentUser.area_name,
         subarea_uuid: this.currentUser.subarea_uuid,
-        subarea_name: this.currentUser.subarea_name,
         commune_uuid: this.currentUser.commune_uuid,
-        commune_name: this.currentUser.commune_name,
         asm_uuid: this.currentUser.Asm.uuid,
         sup_uuid: this.currentUser.Sup.uuid,
         dr_uuid: this.currentUser.Dr.uuid,
         cyclo_uuid: this.currentUser.Cyclo.uuid,
         signature: this.currentUser.fullname,
-        sync: true, // Default value for 'sync', adjust as needed
-        // CreatedAt: new Date(),
-        UpdatedAt: new Date(),
+        sync: true, // Default value for 'sync', adjust as needed 
       };
       this.posformService.update(this.dataItem.uuid!, body)
         .subscribe({
@@ -811,65 +628,46 @@ export class PostformListComponent implements OnInit {
       this.isLoadingPosFormItem = true;
       var body: IPosFormItem = {
         uuid: uuidv4(),
-        posform_uuid: this.dataItemlocal.uuid!, // Add the missing property
+        posform_uuid: this.dataItem.uuid!, // Add the missing property
         brand_uuid: this.brandUUID,
         brand_name: this.brandName,
         number_farde: this.formGroupPosFormItem.value.number_farde,
         counter: 1,
-        sold: parseInt(this.formGroupPosFormItem.value.sold),
-        CreatedAt: new Date(),
-        UpdatedAt: new Date(),
+        sold: parseInt(this.formGroupPosFormItem.value.sold), 
       };
-      db.posformItems.add(body).then(() => {
-        this.isLoadingPosFormItem = false;
-        this.formGroupPosFormItem.reset();
-        this.brand_uuid.nativeElement.value = '';
-        this.brandUUID = '';
-        this.brandName = '';
-
-
-        this.getAllPosFormItem(this.dataItemlocal.uuid!);
-      }).catch((error) => {
-        console.error('Error adding item to Dexie DB:', error);
-        this.isLoadingPosFormItem = false;
-        this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+      this.posformItemService.create(body).subscribe({
+        next: (res) => {
+          this.logActivity.activity(
+            'PosFormItem',
+            this.currentUser.uuid,
+            'created',
+            `Created PosformItem uuid: ${res.data.uuid}`,
+            this.currentUser.fullname
+          ).subscribe({
+            next: () => {
+              this.formGroupPosFormItem.reset();
+              this.toastr.success('Ajouter avec succès!', 'Success!');
+              this.isLoadingPosFormItem = false;
+            },
+            error: (err) => {
+              this.isLoadingPosFormItem = false;
+              this.toastr.error(`${err.error.message}`, 'Oupss!');
+              console.log(err);
+            }
+          });
+        }, error: err => {
+          console.log(err);
+          this.isLoadingPosFormItem = false;
+          this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+        }
       });
     }
   }
 
-  findValueLocal(value: number) {
-    this.idItemLocal = value;
-    db.posForms.get(this.idItemLocal).then((item) => {
-      this.dataItemlocal = item!;
-      console.log("dataItemlocal", this.dataItemlocal);
-      this.formGroup.patchValue({
-        price: this.dataItemlocal.price,
-        comment: this.dataItemlocal.comment,
-        latitude: this.dataItemlocal.latitude,
-        longitude: this.dataItemlocal.longitude,
-        pos_uuid: this.dataItemlocal.pos_uuid,
-        country_uuid: this.dataItemlocal.country_uuid,
-        province_uuid: this.dataItemlocal.province_uuid,
-        area_uuid: this.dataItemlocal.area_uuid,
-        subarea_uuid: this.dataItemlocal.subarea_uuid,
-        asm_uuid: this.dataItemlocal.asm_uuid,
-        sup_uuid: this.dataItemlocal.sup_uuid,
-        dr_uuid: this.dataItemlocal.dr_uuid,
-        cyclo_uuid: this.dataItemlocal.cyclo_uuid,
-      });
-      console.log("dataItemlocal", this.dataItemlocal);
-      this.getAllPosFormItem(this.dataItemlocal.uuid!);
-    }).catch((error) => {
-      console.error('Error retrieving item from Dexie DB:', error);
-    });
-  }
-
-
   findValue(value: string) {
-    this.idItem = value;
-    this.posformService.get(this.idItem).subscribe(item => {
-      this.dataItem = item.data;
-      this.getPosFormItemByUUId(this.dataItem.uuid!);
+    this.uuidItem = value;
+    this.posformService.get(this.uuidItem).subscribe(item => {
+      this.dataItem = item.data; 
       this.formGroup.patchValue({
         price: this.dataItem.price,
         comment: this.dataItem.comment,
@@ -892,14 +690,14 @@ export class PostformListComponent implements OnInit {
 
   delete(): void {
     this.posformService
-      .delete(this.idItem)
+      .delete(this.uuidItem)
       .subscribe({
         next: () => {
           this.logActivity.activity(
             'Posform',
             this.currentUser.uuid,
             'deleted',
-            `Delete posform id: ${this.idItem}`,
+            `Delete posform uuid: ${this.uuidItem}`,
             this.currentUser.fullname
           ).subscribe({
             next: () => {
@@ -922,30 +720,35 @@ export class PostformListComponent implements OnInit {
       );
   }
 
-  deletePosform(id: number): void {
-    db.posForms.delete(id).then(() => {
-      this.toastr.info('Supprimé avec succès!', 'Success!');
-      this.isLoadingPosFormItem = false;
-      this.fecthlocalData();
-      this.getAllPosFormItem(this.dataItemlocal.uuid!);
-    }).catch((error) => {
-      console.error('Error deleting item from Dexie DB:', error);
-      this.isLoadingPosFormItem = false;
-      this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-    });
-  }
-
-  deletePosFormItem(id: number): void {
+  deletePosFormItem(uuid: string): void {
     this.isLoadingPosFormItem = true;
-    db.posformItems.delete(id).then(() => {
-      this.toastr.info('Supprimé avec succès!', 'Success!');
-      this.isLoadingPosFormItem = false;
-      this.getAllPosFormItem(this.dataItemlocal.uuid!);
-    }).catch((error) => {
-      console.error('Error deleting item from Dexie DB:', error);
-      this.isLoadingPosFormItem = false;
-      this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+    this.posformItemService.delete(uuid).subscribe({
+      next: () => {
+        this.logActivity.activity(
+          'PosFormItem',
+          this.currentUser.uuid,
+          'deleted',
+          `Delete posformItem uuid: ${uuid}`,
+          this.currentUser.fullname
+        ).subscribe({
+          next: () => {
+            this.formGroupPosFormItem.reset();
+            this.toastr.info('Supprimé avec succès!', 'Success!');
+            this.isLoadingPosFormItem = false;
+            this.getAllPosFormItem(this.dataItem.uuid!);
+          },
+          error: (err) => {
+            this.isLoadingPosFormItem = false;
+            this.toastr.error(`${err.error.message}`, 'Oupss!');
+            console.log(err);
+          }
+        });
+      }, error: err => {
+        console.log(err);
+        this.isLoadingPosFormItem = false;
+        this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+      }
     });
-  }
+  } 
 
 }

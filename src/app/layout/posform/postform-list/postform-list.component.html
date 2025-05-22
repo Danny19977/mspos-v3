@@ -38,13 +38,6 @@
                             </div>
                             <div class="col-sm-8">
                                 <div class="d-flex align-items-center flex-wrap row-gap-2 justify-content-sm-end">
-                                    <div class="me-2">
-                                        <div *ngIf="dataListLocal.length > 0" class="alert alert-warning mt-2"
-                                            role="alert">
-                                            Total hors ligne : <span style="font-size: larger;">
-                                                {{ dataListLocal.length }}</span>
-                                        </div>
-                                    </div>
                                     <form [formGroup]="dateRange">
                                         <div class="daterange-picker">
                                             <div class="form-sort me-2">
@@ -86,57 +79,13 @@
                                         <th mat-sort-header="sup">Sup</th>
                                         <th mat-sort-header="dr">DR</th>
                                         <th mat-sort-header="cyclo">Cyclo</th>
-                                        @if (isOnline()) {
                                         <th mat-sort-header="brand">Brand</th>
-                                        }
                                         <th mat-sort-header="comment">Commentaire</th>
                                         <th class="text-end">Action</th>
                                     </tr>
                                 </thead>
 
                                 <tbody>
-                                    @for (data of dataListLocal; track data) {
-                                    <tr class="odd">
-                                        <td>
-                                            <span class="badge bg-warning text-dark">
-                                                <i class="ti ti-clock"></i>
-                                            </span>
-                                        </td>
-                                        <td>{{ data.pos_name }}</td>
-                                        <td>{{ data.country_name }}</td>
-                                        <td>{{ data.province_name }}</td>
-                                        <td>{{ data.area_name }}</td>
-                                        <td>{{ data.subarea_name }}</td>
-                                        <td>{{ data.commune_name }}</td>
-                                        <td>{{ data.price }} FC</td>
-                                        <td>{{ data.asm_uuid }}</td>
-                                        <td>{{ data.sup_uuid }}</td>
-                                        <td>{{ data.dr_uuid }}</td>
-                                        <td>{{ data.cyclo_uuid }}</td>
-                                        <td>--</td>
-                                        <td>{{ data.comment }}</td>
-                                        <td>
-                                            <div class="dropdown table-action">
-                                                <a href="javascript:void(0);" class="action-icon"
-                                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fa fa-ellipsis-v"></i>
-                                                </a>
-                                                <div class="dropdown-menu dropdown-menu-right">
-                                                    <a class="dropdown-item" data-bs-toggle="offcanvas"
-                                                        (click)="findValueLocal(data.id!)"
-                                                        data-bs-target="#offcanvas_add" href="javascript:void(0);"><i
-                                                            class="ti ti-eye text-blue"></i>
-                                                        Visibility
-                                                    </a>
-                                                    <a class="dropdown-item" href="javascript:void(0);"
-                                                        (click)="deletePosform(data.id!)">
-                                                        <i class="ti ti-trash text-danger"></i> Delete
-                                                    </a>
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    }
                                     @if (isLoadingData) {
                                     <tr>
                                         <td colspan="15" class="text-start">
@@ -178,7 +127,8 @@
                                             <app-user-get *ngIf="data.cyclo_uuid"
                                                 [uuid]="data.cyclo_uuid"></app-user-get>
                                         </td>
-                                        <td style="background-color: rgba(0, 195, 255, 0.31); font-size: larger; text-align: center;">
+                                        <td
+                                            style="background-color: rgba(0, 195, 255, 0.31); font-size: larger; text-align: center;">
                                             {{ data.PosFormItems?.length }} </td>
                                         <td>{{ data.comment }}</td>
                                         <td>
@@ -267,7 +217,7 @@
                         <mat-autocomplete requireSelection #autopos1="matAutocomplete"
                             (optionSelected)="optionSelected($event)" [displayWith]="displayFn">
                             @for (item of filteredOptions; track item.uuid) {
-                            <mat-option [value]="item">{{item.pos_name}} | {{item.pos_shop}}</mat-option>
+                            <mat-option [value]="item">{{item.Pos!.name}} | {{item.Pos!.shop}}</mat-option>
                             }
                         </mat-autocomplete>
                     </div>
@@ -347,22 +297,23 @@
                             <div class="spinner-border ms-2" aria-hidden="true"></div>
                         </div>
                         } @else {
-                        @for (item of dataListLocalItem; track $index) {
+                        @for (item of dataListPosFormItem; track $index) {
                         <div class="col-md-4 mb-3">
                             <div class="card task-card">
                                 <div class="card-body">
                                     <div class="task-info d-flex align-items-center justify-content-between">
                                         <div>
                                             <p class="mb-1"><strong>Brand:</strong> {{ item.brand_name }}</p>
-                                            <p class="mb-1"><strong>Nombre de Farde:</strong> {{ item.number_farde }}</p>
+                                            <p class="mb-1"><strong>Nombre de Farde:</strong> {{ item.number_farde }}
+                                            </p>
                                             <p *ngIf="item.sold > 0" class="mb-1">
-                                                <strong>{{ item.sold > 1 ? 'Ventes:' : 'Vente:' }}</strong> 
+                                                <strong>{{ item.sold > 1 ? 'Ventes:' : 'Vente:' }}</strong>
                                                 {{ item.sold }}
                                             </p>
                                         </div>
                                     </div>
                                     <div class="task-actions mt-3 text-end">
-                                        <a href="javascript:void(0);" (click)="deletePosFormItem(item.id!)"
+                                        <a href="javascript:void(0);" (click)="deletePosFormItem(item.uuid!)"
                                             class="text-danger">
                                             <i class="ti ti-trash"></i> Delete
                                         </a>
@@ -435,7 +386,7 @@
                         <mat-autocomplete requireSelection #autopos1="matAutocomplete"
                             (optionSelected)="optionSelected($event)" [displayWith]="displayFn">
                             @for (item of filteredOptions; track item.uuid) {
-                            <mat-option [value]="item">{{item.pos_name}} | {{item.pos_shop}}</mat-option>
+                            <mat-option [value]="item">{{item.Pos!.name}} | {{item.Pos!.shop}}</mat-option>
                             }
                         </mat-autocomplete>
                     </div>
@@ -523,14 +474,16 @@
                                     <div class="task-info d-flex align-items-center justify-content-between">
                                         <div>
                                             <p class="mb-1"><strong>Brand:</strong> {{ item.brand_name }}</p>
-                                            <p class="mb-1"><strong>Nombre de Farde:</strong> {{ item.number_farde }}</p>
+                                            <p class="mb-1"><strong>Nombre de Farde:</strong> {{ item.number_farde }}
+                                            </p>
                                             <p class="mb-1">
-                                                <strong>{{ item.sold > 1 ? 'Ventes:' : 'Vente:' }}</strong> {{ item.sold }}
+                                                <strong>{{ item.sold > 1 ? 'Ventes:' : 'Vente:' }}</strong> {{ item.sold
+                                                }}
                                             </p>
                                         </div>
                                     </div>
                                     <div class="task-actions mt-3 text-end">
-                                        <a href="javascript:void(0);" (click)="deletePosFormItem(item.id!)"
+                                        <a href="javascript:void(0);" (click)="deletePosFormItem(item.uuid!)"
                                             class="text-danger">
                                             <i class="ti ti-trash"></i> Delete
                                         </a>
@@ -595,6 +548,4 @@
         </div>
     </div>
 </div>
-<!-- /Delete User --> 
- 
-
+<!-- /Delete User -->

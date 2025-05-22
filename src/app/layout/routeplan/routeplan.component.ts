@@ -50,10 +50,7 @@ export class RouteplanComponent implements OnInit {
   // Forms
   // Api
   uuidItem!: string;
-  dataItem!: IRoutePlan; // Single data 
-  // Local
-  idItemLocal!: number;
-  dataItemLocal!: IRoutePlan; // Single data
+  dataItem!: IRoutePlan; // Single data  
 
 
   // RoutePlanItem
@@ -134,63 +131,41 @@ export class RouteplanComponent implements OnInit {
 
   getAllPos(currentUser: IUser): void {
     const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
-
     this.isload = true;
 
-    this.posVenteService.getAll().subscribe({
-      next: (res) => {
+    const current_page = 1;
+    const page_size = 10;
+    const search = '';
+
+    if (currentUser.role == 'Manager') {
+      this.posVenteService.getAll().subscribe(res => {
         this.posList = res.data;
-        // this.posListFilter = this.posList;
+        this.posListFilter = this.posList;
+      });
+    } else if (currentUser.role == 'ASM') {
+      this.posVenteService.getAllByASM(currentUser.province_uuid).subscribe(res => {
+        this.posList = res.data;
+        this.posListFilter = this.posList;
+      });
+    } else if (currentUser.role == 'Supervisor') {
+      this.posVenteService.getAllBySup(currentUser.area_uuid).subscribe(res => {
+        this.posList = res.data;
+        this.posListFilter = this.posList;
+      });
+    } else if (currentUser.role == 'DR') {
+      this.posVenteService.getAllByDR(currentUser.subarea_uuid).subscribe(res => {
+        this.posList = res.data;
+        this.posListFilter = this.posList;
+      });
+    } else if (currentUser.role == 'Cyclo') {
+      this.posVenteService.getAllByCyclo(currentUser.uuid).subscribe(res => {
+        this.posList = res.data;
+        this.posListFilter = this.posList;
+      });
+    }
 
-        if (currentUser.role == 'Manager') {
-          this.posListFilter = this.posList.filter((v: IPos) => v.country_uuid === this.currentUser.country_uuid);
-        } else if (currentUser.role == 'ASM') {
-          this.posListFilter = this.posList.filter((v: IPos) => v.province_uuid === this.currentUser.province_uuid);
-        } else if (currentUser.role == 'Supervisor') {
-          this.posListFilter = this.posList.filter((v: IPos) => v.area_uuid === this.currentUser.area_uuid);
-        } else if (currentUser.role == 'DR') {
-          this.posListFilter = this.posList.filter((v: IPos) => v.subarea_uuid === this.currentUser.subarea_uuid);
-        } else if (currentUser.role == 'Cyclo') {
-          this.posListFilter = this.posList.filter((v: IPos) => v.user_uuid === this.currentUser.uuid);
-        }
-
-        this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
-        this.isload = false;
-      },
-      error: (error) => {
-        console.error('Error getting data from API:', error);
-      }
-    });
-
-
-    // db.routePlanItems.toArray().then((routePlanItems) => {
-    //   db.pos.toArray().then((data) => {
-    //     const posListTrue = data.filter((item: IPos) => item.status === true);
-
-    //     const localUuids = routePlanItems.map(localItem => localItem.pos_uuid);
-    //     this.posList = posListTrue.filter(item => !localUuids.includes(item.uuid!));
-
-    //     this.posListFilter = this.posList;
-
-    //     if (currentUser.role == 'Manager') {
-    //       this.posListFilter = this.posList.filter((v: IPos) => v.country_uuid === this.currentUser.country_uuid);
-    //     } else if (currentUser.role == 'ASM') {
-    //       this.posListFilter = this.posList.filter((v: IPos) => v.province_uuid === this.currentUser.province_uuid);
-    //     } else if (currentUser.role == 'Supervisor') {
-    //       this.posListFilter = this.posList.filter((v: IPos) => v.area_uuid === this.currentUser.area_uuid);
-    //     } else if (currentUser.role == 'DR') {
-    //       this.posListFilter = this.posList.filter((v: IPos) => v.subarea_uuid === this.currentUser.subarea_uuid);
-    //     } else if (currentUser.role == 'Cyclo') {
-    //       this.posListFilter = this.posList.filter((v: IPos) => v.user_uuid === this.currentUser.uuid);
-    //     }
-
-    //     this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
-    //     this.isload = false;
-    //   }).catch((error) => {
-    //     this.isload = false;
-    //     console.error('Error getting data from Dexie DB:', error);
-    //   });
-    // });
+    this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
+    this.isload = false; 
   }
 
   displayFn(pos: any): any {
@@ -199,8 +174,6 @@ export class RouteplanComponent implements OnInit {
 
   optionSelected(event: MatAutocompleteSelectedEvent) {
     const selectedOption = event.option.value;
-    // const pos_uuid = selectedOption.uuid;
-    // const name = selectedOption.name;
     this.posuuId = selectedOption.uuid;
     this.pos_name = selectedOption.name;
     this.pos_gerant = selectedOption.gerant;
@@ -317,21 +290,13 @@ export class RouteplanComponent implements OnInit {
       this.isLoading = true;
       var body: IRoutePlan = {
         uuid: uuidv4(),
-        country_uuid: this.currentUser.country_uuid,
-        country_name: this.currentUser.country_name,
-        province_uuid: this.currentUser.province_uuid,
-        province_name: this.currentUser.province_name,
-        area_uuid: this.currentUser.area_uuid,
-        area_name: this.currentUser.area_name,
-        subarea_uuid: this.currentUser.subarea_uuid,
-        subarea_name: this.currentUser.subarea_name,
-        commune_uuid: this.currentUser.commune_uuid,
-        commune_name: this.currentUser.commune_name,
+        country_uuid: this.currentUser.country_uuid, 
+        province_uuid: this.currentUser.province_uuid, 
+        area_uuid: this.currentUser.area_uuid, 
+        subarea_uuid: this.currentUser.subarea_uuid, 
+        commune_uuid: this.currentUser.commune_uuid, 
         user_uuid: this.currentUser.uuid,
-        user_fullname: this.currentUser.fullname,
-        signature: this.currentUser.fullname,
-        CreatedAt: new Date(),
-        UpdatedAt: new Date(),
+        signature: this.currentUser.fullname, 
       };
       this.routeplanService.create(body).subscribe({
         next: (res) => {
@@ -372,15 +337,9 @@ export class RouteplanComponent implements OnInit {
         this.isLoadingItem = true;
         var body: IRoutePlanItem = {
           uuid: uuidv4(),
-          routplan_uuid: this.dataItemLocal.uuid!,
-          pos_uuid: this.posuuId,
-          pos_name: this.pos_name,
-          pos_gerant: this.pos_gerant,
-          pos_shop: this.pos_shop,
-          postype: this.postype,
-          status: false,
-          CreatedAt: new Date(),
-          UpdatedAt: new Date(),
+          routplan_uuid: this.dataItem.uuid!,
+          pos_uuid: this.posuuId,  
+          status: false, 
         };
         this.routePlanItemService.create(body).subscribe({
           next: (res) => {
@@ -420,8 +379,6 @@ export class RouteplanComponent implements OnInit {
     this.uuidItem = value;
     this.routeplanService.get(this.uuidItem).subscribe(item => {
       this.dataItem = item.data;
-      console.log('RoutePlan:', this.dataItem);
-      this.getAllRoutePlanItemApi(this.dataItem.uuid!);
       this.formGroup.patchValue({
         user_uuid: this.dataItem.user_uuid,
         country_uuid: this.dataItem.country_uuid,
@@ -431,88 +388,7 @@ export class RouteplanComponent implements OnInit {
         commune_uuid: this.dataItem.commune_uuid,
       });
     });
-  }
-
-  // Get value RoutePlan local
-  findValueLocal(value: number) {
-    this.idItemLocal = value;
-    this.routeplanService.get(this.idItemLocal).subscribe(item => {
-      this.dataItem = item.data;
-      console.log('RoutePlan:', this.dataItem);
-      this.getAllRoutePlanItemApi(this.dataItem.uuid!);
-      this.formGroup.patchValue({
-        user_uuid: this.dataItem.user_uuid,
-        country_uuid: this.dataItem.country_uuid,
-        province_uuid: this.dataItem.province_uuid,
-        area_uuid: this.dataItem.area_uuid,
-        subarea_uuid: this.dataItem.subarea_uuid,
-        commune_uuid: this.dataItem.commune_uuid,
-      });
-    }
-    );
-  }
-
-  // Get last data RoutePlan
-  // getLastDataRoutePlan() {
-  //   db.routePlans
-  //     .orderBy('CreatedAt')
-  //     .last()
-  //     .then((item) => {
-  //       if (item) {
-
-  //         const createdAt = new Date(item.CreatedAt);
-  //         const currentTime = new Date();
-  //         const timeDifference = currentTime.getTime() - createdAt.getTime();
-  //         const hoursDifference = timeDifference / (1000 * 60 * 60);
-
-  //         if (hoursDifference >= 24) {
-  //           this.isCreatedRoutePlan = true;
-  //         } else {
-  //           this.isCreatedRoutePlan = false;
-  //         }
-
-  //         console.log('isCreatedRoutePlan:', this.isCreatedRoutePlan);
-  //       } else {
-  //         console.log('No RoutePlan found');
-  //       }
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error retrieving last RoutePlan from Dexie DB:', error);
-  //     });
-  // }
-
-
-  // RoutePlanItem APi
-  getAllRoutePlanItemApi(uuid: string) {
-    this.routePlanItemService.getAllById(uuid).subscribe(res => {
-      this.dataListItem = res.data;
-      console.log('RoutePlanItems for UUID:', uuid, this.dataListItem);
-    });
-  }
-
-  // // RoutePlanItem Local
-  // getAllRoutePlanItemLocal(uuid: string) {
-  //   db.routePlanItems
-  //     .filter((item: IRoutePlanItem) => item.routplan_uuid === uuid)
-  //     .toArray()
-  //     .then((items) => {
-  //       this.dataListLocalItem = items;
-  //       console.log('RoutePlanItems for UUID:', uuid, items);
-  //     })
-  //     .catch((error) => {
-  //       console.error('Error retrieving RoutePlanItems from Dexie DB:', error);
-  //     });
-  // }
-
-  // // RoutePlanItem pour le tableau
-  // getAllRoutePlanItemArray(uuid: string): Promise<number> {
-  //   console.log('UUID:', uuid);
-  //   return db.routePlanItems
-  //     .filter((item: IRoutePlanItem) => item.routplan_uuid === uuid)
-  //     .count()
-  //     .then(count => count || 0) // Return count or 0 if null
-  //     .catch(() => 0); // Return 0 in case of an error
-  // }
+  } 
 
 
   // Get value RoutePlanItem api
@@ -529,7 +405,7 @@ export class RouteplanComponent implements OnInit {
   }
 
 
-
+ // Delete RoutePlan
   delete(): void {
     this.routeplanService
       .delete(this.uuidItem)
@@ -544,6 +420,39 @@ export class RouteplanComponent implements OnInit {
           ).subscribe({
             next: () => {
               this.toastr.info('Supprimé avec succès!', 'Success!');
+              this.isLoading = false;
+            },
+            error: (err) => {
+              this.isLoading = false;
+              this.toastr.error(`${err.error.message}`, 'Oupss!');
+              console.log(err);
+            }
+          });
+        },
+        error: err => {
+          this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+          console.log(err);
+        }
+      }
+      );
+  }
+
+
+  // Delete RoutePlanItem
+  deleteItem(): void {
+    this.routePlanItemService
+      .delete(this.uuidRoutePlanItem)
+      .subscribe({
+        next: () => {
+          this.logActivity.activity(
+            'RoutePlanItem',
+            this.currentUser.uuid,
+            'deleted',
+            `Delete RoutePlanItem uuid: ${this.uuidRoutePlanItem}`,
+            this.currentUser.fullname
+          ).subscribe({
+            next: () => {
+              this.toastr.info('POS Supprimé avec succès!', 'Success!');
               this.isLoading = false;
             },
             error: (err) => {

@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, Subject, tap } from 'rxjs'; 
-import { ApiResponse, ApiResponse2 } from '../model/api-response.model'; 
+import { Observable, Subject, tap } from 'rxjs';
+import { ApiResponse, ApiResponse2 } from '../model/api-response.model';
 
 @Injectable({
   providedIn: 'root'
@@ -221,6 +221,10 @@ export abstract class ApiService {
 
   getBy(name: any): Observable<any> {
     return this.http.get(`${this.endpoint}/get-by/${name}`);
+  }
+
+  getByUserUUID(uuid: string): Observable<any> {
+    return this.http.get(`${this.endpoint}/get-by-user/${uuid}`);
   }
 
 

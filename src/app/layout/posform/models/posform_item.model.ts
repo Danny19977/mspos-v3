@@ -14,8 +14,8 @@ export interface IPosFormItem {
     counter: number; // permet le calcul de la somme pour le ND dashboard
     sold: number;
 
-    CreatedAt: Date;
-    UpdatedAt: Date;
+    CreatedAt?: Date;
+    UpdatedAt?: Date;
  
     PosForm?: IPosForm;
     Brand?: IBrand; 

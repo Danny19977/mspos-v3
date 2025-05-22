@@ -19,31 +19,22 @@ export interface IPosForm {
    
     comment: string;
 
-    latitude: number;
-    longitude: number;
+    latitude?: number;
+    longitude?: number;
 
     pos_uuid: string;
     pos_name?: string;
 
-    country_uuid: string;
-    country_name?: string;
-    province_uuid: string;
-    province_name?: string;
-    area_uuid: string;
-    area_name?: string;
-    subarea_uuid: string;
-    subarea_name?: string;
-    commune_uuid: string;
-    commune_name?: string;
+    country_uuid: string; 
+    province_uuid: string; 
+    area_uuid: string; 
+    subarea_uuid: string; 
+    commune_uuid: string; 
 
-    asm_uuid: string;
-    asm_fullname?: string;
-    sup_uuid: string;
-    sup_fullname?: string;
-    dr_uuid: string;
-    dr_fullname?: string;
-    cyclo_uuid: string;
-    cyclo_fullname?: string;
+    asm_uuid: string; 
+    sup_uuid: string; 
+    dr_uuid: string; 
+    cyclo_uuid: string; 
     
     sync: boolean; // pour savoir si le posform est synchronisé ou non
     signature: string;

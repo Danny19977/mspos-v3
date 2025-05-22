@@ -9,29 +9,22 @@ import { IRoutePlanItem } from "./routeplanItem.model";
 
 export interface IRoutePlan {
     ID?: number;
-    id?: number;
     uuid?: string;
     
     user_uuid: string;
     User?: IUser;
-    user_fullname?: string;
 
-    country_uuid: string;
-    country_name?: string;
-    province_uuid: string;
-    province_name?: string;
-    area_uuid: string;
-    area_name?: string;
-    subarea_uuid: string;
-    subarea_name?: string;
-    commune_uuid: string;
-    commune_name?: string;
+    country_uuid: string; 
+    province_uuid: string; 
+    area_uuid: string; 
+    subarea_uuid: string; 
+    commune_uuid: string; 
 
     // total_pos: number;
 
     signature: string;
-    CreatedAt: Date;
-    UpdatedAt: Date;
+    CreatedAt?: Date;
+    UpdatedAt?: Date;
     
 
     Country?: ICountry;
