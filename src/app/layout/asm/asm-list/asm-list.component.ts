@@ -15,14 +15,11 @@ import { LogsService } from '../../user-logs/logs.service';
 import { ICountry } from '../../country/models/country.model';
 import { CountryService } from '../../country/country.service';
 import { IUser } from '../../user/models/user.model';
-import { IBrand } from '../../brand/models/brand.model';
 import { ICyclo } from '../../cyclo/models/cyclo.model';
 import { IDr } from '../../dr/models/dr.model';
 import { IPos } from '../../pos-vente/models/pos.model';
 import { ISup } from '../../sups/models/sup.model';
 import { IPosForm } from '../../posform/models/posform.model';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { UserService } from '../../user/user.service';
 
 @Component({
   selector: 'app-asm-list',
@@ -41,7 +38,7 @@ export class AsmListComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'province', 'user', 'sup', 'dr', 'cyclo', 'pos', 'postform', 'id'];
+  displayedColumns: string[] = ['country', 'province', 'user', 'sups', 'drs', 'cyclos', 'pos', 'postforms', 'uuid'];
   dataSource = new MatTableDataSource<IAsm>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -50,7 +47,7 @@ export class AsmListComponent implements OnInit {
   public search = '';
 
   // Forms  
-  idItem!: string;
+  uuidItem!: string;
   dataItem!: IAsm; // Single data 
 
   formGroup!: FormGroup;
@@ -61,14 +58,6 @@ export class AsmListComponent implements OnInit {
   provinceList: IProvince[] = [];
   provinceFilterList: IProvince[] = [];
 
-  userList: IUser[] = [];
-  userListFiltered: IUser[] = [];
-  filteredOptions: IUser[] = []
-
-  @ViewChild('user_uuid') user_uuid!: ElementRef<HTMLInputElement>;
-  isload = false;
-  userId: number = 0;
-
   constructor(
     private router: Router,
     private _formBuilder: FormBuilder,
@@ -76,7 +65,6 @@ export class AsmListComponent implements OnInit {
     public asmService: AsmService,
     private countryService: CountryService,
     private provinceService: ProvinceService,
-    private userService: UserService,
     private logActivity: LogsService,
     private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
     private toastr: ToastrService
@@ -90,7 +78,7 @@ export class AsmListComponent implements OnInit {
         this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
         this.dataSource.sort = this.sort; // Bind sort to dataSource
         this.cdr.detectChanges(); // Trigger change detection
-        
+
         this.asmService.refreshDataList$.subscribe(() => {
           this.fetchProducts(this.currentUser);
         });
@@ -116,22 +104,17 @@ export class AsmListComponent implements OnInit {
     this.formGroup = this._formBuilder.group({
       country_uuid: ['', Validators.required],
       province_uuid: ['', Validators.required],
-      user_uuid: ['', Validators.required],
     });
-    this.fetchUsers();
   }
 
-  getSupCount(sup: ISup[]): string {
-    return sup ? sup.length > 0 ? sup.length.toString() : '0' : '0';
+  getSupCount(sups: ISup[]): string {
+    return sups ? sups.length > 0 ? sups.length.toString() : '0' : '0';
   }
-  getDrCount(dr: IDr[]): string {
-    return dr ? dr.length > 0 ? dr.length.toString() : '0' : '0';
+  getDrCount(drs: IDr[]): string {
+    return drs ? drs.length > 0 ? drs.length.toString() : '0' : '0';
   }
-  getCycloCount(cyclo: ICyclo[]): string {
-    return cyclo ? cyclo.length > 0 ? cyclo.length.toString() : '0' : '0';
-  }
-  getBrandCount(brand: IBrand[]): string {
-    return brand ? brand.length > 0 ? brand.length.toString() : '0' : '0';
+  getCycloCount(cyclos: ICyclo[]): string {
+    return cyclos ? cyclos.length > 0 ? cyclos.length.toString() : '0' : '0';
   }
   getPosCount(pos: IPos[]): string {
     return pos ? pos.length > 0 ? pos.length.toString() : '0' : '0';
@@ -139,48 +122,12 @@ export class AsmListComponent implements OnInit {
   getPosFormCount(posForm: IPosForm[]): string {
     return posForm ? posForm.length > 0 ? posForm.length.toString() : '0' : '0';
   }
-  getUserCount(user: IUser[]): string {
-    return user ? user.length > 0 ? user.length.toString() : '0' : '0';
-  }
 
   onCountryChange(event: any) {
     const country_uuid = event.value;
-    console.log('country_uuid:', country_uuid);
-    const provinceArray = this.provinceList.filter((v) => v.country_uuid == event.value);
+    const provinceArray = this.provinceList.filter((v) => v.country_uuid == country_uuid);
     this.provinceFilterList = provinceArray;
   }
-
-
-  fetchUsers(): void {
-    const filterValue = this.user_uuid.nativeElement.value.toLowerCase();
-
-    this.isload = true;
-    this.userService.getPaginated2(this.current_page, this.page_size, filterValue).subscribe(res => {
-      this.userList = res.data;
-      this.total_pages = res.pagination.total_pages;
-      this.total_records = res.pagination.total_records;
-
-      this.userListFiltered = this.userList.filter((v) => v.role == 'ASM');
-      
-      this.filteredOptions = this.userListFiltered.filter(o => o.fullname.toLowerCase().includes(filterValue));
-
-      this.isload = false;
-    });
-  }
-
-  displayFn(user: IUser): any {
-    return user && user.fullname ? user.fullname : '';
-  }
-
-  optionSelected(event: MatAutocompleteSelectedEvent) {
-    const selectedOption = event.option.value;
-    const user_uuid = selectedOption.uuid;
-    const fullname = selectedOption.fullname;
-    this.userId = user_uuid;
-    console.log('user_uuid:', user_uuid);
-    console.log('fullname:', fullname);
-  }
-
 
   onPageChange(event: PageEvent): void {
     this.isLoadingData = true;
@@ -192,7 +139,7 @@ export class AsmListComponent implements OnInit {
   fetchProducts(currentUser: IUser) {
     if (currentUser.role == 'Manager') {
       this.asmService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
-        this.dataList = res.data;
+        this.dataList = res.data; 
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
         this.dataSource.data = this.dataList; // Update dataSource data
@@ -210,6 +157,7 @@ export class AsmListComponent implements OnInit {
     } else {
       this.asmService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
+         console.log('dataList', res.data);
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
         this.dataSource.data = this.dataList; // Update dataSource data
@@ -247,10 +195,10 @@ export class AsmListComponent implements OnInit {
     try {
       if (this.formGroup.valid) {
         this.isLoading = true;
-        var body = {
+        var body: IAsm = {
           country_uuid: this.formGroup.value.country_uuid,
           province_uuid: this.formGroup.value.province_uuid,
-          user_uuid: this.userId,
+          title: 'ASM',
           signature: this.currentUser.fullname,
         };
         this.asmService.create(body).subscribe({
@@ -290,13 +238,13 @@ export class AsmListComponent implements OnInit {
   onSubmitUpdate() {
     try {
       this.isLoading = true;
-      var body = {
+      var body: IAsm = {
         country_uuid: this.formGroup.value.country_uuid,
         province_uuid: this.formGroup.value.province_uuid,
-        user_uuid: this.userId,
+        title: 'ASM',
         signature: this.currentUser.fullname,
       };
-      this.asmService.update(this.idItem, body)
+      this.asmService.update(this.uuidItem, body)
         .subscribe({
           next: (res) => {
             this.logActivity.activity(
@@ -331,27 +279,27 @@ export class AsmListComponent implements OnInit {
   }
 
   findValue(value: string) {
-    this.idItem = value;
-    this.asmService.get(this.idItem).subscribe(item => {
+    this.uuidItem = value;
+    this.asmService.get(this.uuidItem).subscribe(item => {
       this.dataItem = item.data;
       this.formGroup.patchValue({
-        // country_uuid: this.dataItem.country_uuid,
-        // province_uuid: this.dataItem.province_uuid,
-        user_uuid: this.dataItem.user_uuid,
+        country_uuid: this.dataItem.country_uuid,
+        province_uuid: this.dataItem.province_uuid,
+        title: this.dataItem.title,
       });
     });
   }
 
   delete(): void {
     this.asmService
-      .delete(this.idItem)
+      .delete(this.uuidItem)
       .subscribe({
         next: () => {
           this.logActivity.activity(
             'ASM',
             this.currentUser.uuid,
             'deleted',
-            `Delete ASM id: ${this.idItem}`,
+            `Delete ASM id: ${this.uuidItem}`,
             this.currentUser.fullname
           ).subscribe({
             next: () => {

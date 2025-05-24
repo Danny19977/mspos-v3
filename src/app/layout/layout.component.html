@@ -19,19 +19,19 @@
   'greenFontColor': fontColor === 'green_font_color'
 }" [class.header-collapse]="isCollapsed">
 
-<div *ngIf="showPreloader" class="preloader">
-  <div class="preloader">
-    <div class="loader"></div>
+  <div *ngIf="showPreloader" class="preloader">
+    <div class="preloader">
+      <div class="loader"></div>
+    </div>
   </div>
-</div>
 
 
-@if (page !== 'coming-soon' && page !== 'under-maintenance') {
-<app-header></app-header>
+  @if (page !== 'coming-soon' && page !== 'under-maintenance') {
+  <app-header></app-header>
 
-<app-sidebar></app-sidebar> 
-<app-layout-common></app-layout-common> 
-}
+  <app-sidebar></app-sidebar>
+  <app-layout-common></app-layout-common>
+  }
 
-<router-outlet></router-outlet>
+  <router-outlet></router-outlet>
 </div>

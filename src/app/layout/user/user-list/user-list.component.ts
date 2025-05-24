@@ -59,12 +59,12 @@ export class UserListComponent implements OnInit, AfterViewInit {
   public password: boolean[] = [false];
   isStatusList: boolean[] = [false, true];
   isTitleList: string[] = [
+    
     'Manager',
     'ASM',
     'Supervisor',
     'DR',
     'Cyclo',
-    'MarketInfo',
     'Support'
   ];
 
@@ -109,7 +109,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
         this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
         this.dataSource.sort = this.sort; // Bind sort to dataSource
         this.cdr.detectChanges();
-        
+
         this.usersService.refreshDataList$.subscribe(() => {
           this.fetchProducts();
         });
@@ -155,6 +155,10 @@ export class UserListComponent implements OnInit, AfterViewInit {
       area_uuid: ['',],
       subarea_uuid: [''],
       commune_uuid: [''],
+      asm_uuid: [''],
+      sup_uuid: [''],
+      dr_uuid: [''],
+      cyclo_uuid: [''],
     });
 
 
@@ -229,6 +233,11 @@ export class UserListComponent implements OnInit, AfterViewInit {
           subarea_uuid: this.formGroup.value.subarea_uuid,
           commune_uuid: this.formGroup.value.commune_uuid,
 
+          asm_uuid: this.formGroup.value.asm_uuid,
+          sup_uuid: this.formGroup.value.sup_uuid,
+          dr_uuid: this.formGroup.value.dr_uuid,
+          cyclo_uuid: this.formGroup.value.cyclo_uuid,
+
           // pos_id: (this.isManager) ? 0 : parseInt(this.formGroup.value.pos_id),
           role: this.formGroup.value.title, // Role et title c'est la meme chose mais le role cest pour le code source
           permission: this.formGroup.value.permission,
@@ -288,6 +297,11 @@ export class UserListComponent implements OnInit, AfterViewInit {
         area_uuid: this.formGroup.value.area_uuid,
         subarea_uuid: this.formGroup.value.subarea_uuid,
         commune_uuid: this.formGroup.value.commune_uuid,
+
+        asm_uuid: this.formGroup.value.asm_uuid,
+        sup_uuid: this.formGroup.value.sup_uuid,
+        dr_uuid: this.formGroup.value.dr_uuid,
+        cyclo_uuid: this.formGroup.value.cyclo_uuid,
 
         // pos_id: (this.isManager) ? 0 : parseInt(this.formGroup.value.pos_id),
         role: this.formGroup.value.title, // Role et title c'est la meme chose mais le role cest pour le code source
@@ -404,7 +418,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
     const areaArray = this.areaList.filter((v) => v.province_uuid == event.value);
     this.areaListFilter = areaArray.filter((obj, index, self) =>
       index === self.findIndex((t) => t.name === obj.name)
-    ); 
+    );
   }
 
   onAreaChange(event: any) {

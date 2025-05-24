@@ -11,7 +11,6 @@ import { ProvinceService } from '../../province/province.service';
 import { ISup } from '../models/sup.model';
 import { SupService } from '../sup.service';
 import { IAsm } from '../../asm/models/asm.model';
-import { AsmService } from '../../asm/asm.service';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { LogsService } from '../../user-logs/logs.service';
 import { ICountry } from '../../country/models/country.model';
@@ -19,12 +18,10 @@ import { IArea } from '../../areas/models/area.model';
 import { IUser } from '../../user/models/user.model';
 import { CountryService } from '../../country/country.service';
 import { AreaService } from '../../areas/area.service';
-import { UserService } from '../../user/user.service';
 import { ICyclo } from '../../cyclo/models/cyclo.model';
 import { IDr } from '../../dr/models/dr.model';
 import { IPos } from '../../pos-vente/models/pos.model';
 import { IPosForm } from '../../posform/models/posform.model';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 
 
 @Component({
@@ -44,7 +41,7 @@ export class SupListComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'province', 'area', 'asm', 'user', 'dr', 'cyclo', 'pos', 'postform', 'id'];
+  displayedColumns: string[] = ['country', 'province', 'area', 'asm', 'user', 'drs', 'cyclos', 'pos', 'postforms', 'uuid'];
   dataSource = new MatTableDataSource<ISup>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -67,22 +64,6 @@ export class SupListComponent implements OnInit {
   areaList: IArea[] = [];
   areaFilterList: IArea[] = [];
 
-  userList: IUser[] = [];
-  userListFiltered: IUser[] = [];
-  filteredOptions: IUser[] = []
-  @ViewChild('user_uuid') user_uuid!: ElementRef<HTMLInputElement>;
-  isload = false;
-  userId: number = 0;
-
-
-  asmList: IAsm[] = [];
-  asmListFiltered: IAsm[] = [];
-  filteredOptionsASM: IAsm[] = []
-  @ViewChild('asm_uuid') asm_uuid!: ElementRef<HTMLInputElement>;
-  isloadAsm = false;
-  asmId: number = 0;
-
-
 
   constructor(
     private router: Router,
@@ -92,7 +73,6 @@ export class SupListComponent implements OnInit {
     private countryService: CountryService,
     private provinceService: ProvinceService,
     private areaService: AreaService,
-    private userService: UserService, 
     private logActivity: LogsService,
     private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
     private toastr: ToastrService
@@ -107,7 +87,7 @@ export class SupListComponent implements OnInit {
         this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
         this.dataSource.sort = this.sort; // Bind sort to dataSource
         this.cdr.detectChanges();
-        
+
         this.supService.refreshDataList$.subscribe(() => {
           this.fetchProducts(this.currentUser);
         });
@@ -135,9 +115,8 @@ export class SupListComponent implements OnInit {
     this.isLoadingData = true;
     this.formGroup = this._formBuilder.group({
       area_uuid: ['', Validators.required],
-      user_uuid: ['', Validators.required],
+      // user_uuid: ['', Validators.required],
     });
-    // this.fetchUsers();
   }
 
   getDrCount(dr: IDr[]): string {
@@ -163,38 +142,6 @@ export class SupListComponent implements OnInit {
   onProvinceChange(event: any) {
     const areaArray = this.areaList.filter((v) => v.province_uuid == event.value);
     this.areaFilterList = areaArray;
-  }
-
-
-  /// USER
-  fetchUsers(): void {
-    const filterValue = this.user_uuid.nativeElement.value.toLowerCase();
-
-    this.isload = true;
-    this.userService.getPaginated2(this.current_page, this.page_size, filterValue).subscribe(res => {
-      this.userList = res.data;
-      this.total_pages = res.pagination.total_pages;
-      this.total_records = res.pagination.total_records;
-
-      this.userListFiltered = this.userList.filter((v) => v.role == 'Supervisor');
-
-      this.filteredOptions = this.userListFiltered.filter(o => o.fullname.toLowerCase().includes(filterValue));
-
-      this.isload = false;
-    });
-  }
-
-  displayFn(user: IUser): string {
-    return user && user.fullname ? user.fullname : '';
-  }
-
-  optionSelected(event: MatAutocompleteSelectedEvent) {
-    const selectedOption = event.option.value;
-    const user_uuid = selectedOption.uuid;
-    const fullname = selectedOption.fullname;
-    this.userId = selectedOption.uuid;
-    console.log('userId:', user_uuid);
-    console.log('fullname:', fullname);
   }
 
   onPageChange(event: PageEvent): void {
@@ -233,6 +180,7 @@ export class SupListComponent implements OnInit {
     } else {
       this.supService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
+        console.log(res.data);
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
         this.dataSource.data = this.dataList; // Update dataSource data
@@ -274,8 +222,8 @@ export class SupListComponent implements OnInit {
           country_uuid: this.currentUser.country_uuid,
           province_uuid: this.currentUser.province_uuid,
           area_uuid: this.formGroup.value.area_uuid,
-          asm_uuid: this.currentUser.Asm.uuid,
-          user_uuid: this.userId,
+          asm_uuid: this.currentUser.asm_uuid,
+          title: 'Supervisor',
           signature: this.currentUser.fullname,
         };
         this.supService.create(body).subscribe({
@@ -319,8 +267,8 @@ export class SupListComponent implements OnInit {
         country_uuid: this.currentUser.country_uuid,
         province_uuid: this.currentUser.province_uuid,
         area_uuid: this.formGroup.value.area_uuid,
-        asm_uuid: this.currentUser.Asm.uuid,
-        user_uuid: this.userId,
+        asm_uuid: this.currentUser.asm_uuid,
+        title: 'Supervisor',
         signature: this.currentUser.fullname,
       };
       this.supService.update(this.idItem, body)
@@ -366,13 +314,11 @@ export class SupListComponent implements OnInit {
         province_uuid: this.dataItem.Province.uuid,
         area_uuid: this.dataItem.Area.uuid,
         asm_uuid: this.dataItem.Asm.uuid,
-        user_uuid: this.dataItem.User.uuid,
+        title: this.dataItem.title,
       });
     });
   }
-
-
-
+ 
   delete(): void {
     this.supService
       .delete(this.idItem)
@@ -406,23 +352,23 @@ export class SupListComponent implements OnInit {
   }
 
   compareFn(c1: ICountry, c2: ICountry): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareProvinceFn(c1: IProvince, c2: IProvince): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareAREAFn(c1: IArea, c2: IArea): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareASMFn(c1: IAsm, c2: IAsm): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareUserFn(c1: IUser, c2: IUser): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
 }

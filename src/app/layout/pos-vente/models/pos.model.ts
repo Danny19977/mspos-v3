@@ -5,7 +5,6 @@ import { ICountry } from "../../country/models/country.model";
 import { ICyclo } from "../../cyclo/models/cyclo.model";
 import { IDr } from "../../dr/models/dr.model";
 import { IPosForm } from "../../posform/models/posform.model";
-import { IPosFormItem } from "../../posform/models/posform_item.model";
 import { IProvince } from "../../province/models/province.model";
 import { ISubArea } from "../../subarea/models/subarea.model";
 import { ISup } from "../../sups/models/sup.model";
@@ -35,20 +34,19 @@ export interface IPos {
     subarea_uuid: string;
     subarea_name?: string;
     commune_uuid: string;
-    commune_name?: string; 
+    commune_name?: string;
 
     user_uuid: string;
     User?: IUser;
-    user_fullname?: string;
 
-    asm_uuid: string; 
-    asm_fullname?: string;
+    asm_uuid: string;
+    Asm?: IAsm;
     sup_uuid: string;
-    sup_fullname?: string;
+    Sup?: ISup;
     dr_uuid: string;
-    dr_fullname?: string;
+    Dr?: IDr;
     cyclo_uuid: string;
-    cyclo_fullname?: string;
+    Cyclo?: ICyclo;
 
     status: boolean;
     signature: string;
@@ -61,11 +59,8 @@ export interface IPos {
     SubArea?: ISubArea;
     Commune?: ICommune;
 
-    Asm?: IAsm;
-    Sup?: ISup;
-    Dr?: IDr;
-    Cyclo?: ICyclo;
  
+
     PosEquipements?: IPosEquipment[];
     PosForms?: IPosForm[];
 }   

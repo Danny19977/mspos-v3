@@ -43,7 +43,7 @@ export class CycloComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'province', 'area', 'subarea', 'commune', 'asm', 'sup', 'dr', 'user', 'pos', 'postform', 'id'];
+  displayedColumns: string[] = ['country', 'province', 'area', 'subarea', 'commune', 'asm', 'sup', 'dr', 'user', 'pos', 'postforms', 'uuid'];
   dataSource = new MatTableDataSource<ICyclo>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -72,43 +72,13 @@ export class CycloComponent implements OnInit {
   communeList: ICommune[] = [];
   communeFilterList: ICommune[] = [];
 
-  userList: IUser[] = [];
-  userListFiltered: IUser[] = [];
-  filteredOptions: IUser[] = []
-  @ViewChild('user_uuid') user_uuid!: ElementRef<HTMLInputElement>;
-  isload = false;
-  userId: number = 0;
-
-
-  asmList: IAsm[] = [];
-  asmListFiltered: IAsm[] = [];
-  filteredOptionsASM: IAsm[] = []
-  @ViewChild('asm_uuid') asm_uuid!: ElementRef<HTMLInputElement>;
-  isloadAsm = false;
-  asmId: number = 0;
-
-
-  supList: ISup[] = [];
-  supListFiltered: ISup[] = [];
-  filteredOptionsSup: ISup[] = []
-  @ViewChild('sup_uuid') sup_uuid!: ElementRef<HTMLInputElement>;
-  isloadSup = false;
-  supId: number = 0;
-
-  drList: IDr[] = [];
-  drListFiltered: IDr[] = [];
-  filteredOptionsDr: IDr[] = []
-  @ViewChild('dr_id') dr_id!: ElementRef<HTMLInputElement>;
-  isloadDr = false;
-  drId: number = 0;
-
 
   constructor(
     private router: Router,
     private _formBuilder: FormBuilder,
-    private authService: AuthService, 
+    private authService: AuthService,
     private communeService: CommuneService,
-    private userService: UserService, 
+    private userService: UserService,
     private cycloService: CycloService,
     private logActivity: LogsService,
     private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
@@ -130,21 +100,9 @@ export class CycloComponent implements OnInit {
         });
         this.fetchProducts(this.currentUser);
 
-        // this.countryService.getAll().subscribe(res => {
-        //   this.countryList = res.data;
-        // });
-        // this.provinceService.getAll().subscribe(res => {
-        //   this.provinceList = res.data;
-        // });
-        // this.areaService.getAll().subscribe(res => {
-        //   this.areaList = res.data;
-        // });
-        // this.subareaService.getAll().subscribe(res => {
-        //   this.subareaList = res.data;
-        // });
         this.communeService.getAllById(this.currentUser.subarea_uuid).subscribe(res => {
           this.communeList = res.data;
-        }); 
+        });
       },
       error: (error) => {
         this.isLoadingData = false;
@@ -165,7 +123,7 @@ export class CycloComponent implements OnInit {
       // asm_uuid: ['', Validators.required],
       // sup_uuid: ['', Validators.required],
       // dr_id: ['', Validators.required],
-      user_uuid: ['', Validators.required],
+      // user_uuid: ['', Validators.required],
     });
   }
 
@@ -200,48 +158,6 @@ export class CycloComponent implements OnInit {
     const communeArray = this.communeList.filter((v) => v.subarea_uuid == event.value);
     this.communeFilterList = communeArray;
     console.log('communeArray:', communeArray);
-  }
-
-
-
-  /// USER
-  fetchUsers(): void {
-    const filterValue = this.user_uuid.nativeElement.value.toLowerCase();
-
-    this.isload = true;
-    this.userService.getPaginated2(this.current_page, this.page_size, filterValue).subscribe(res => {
-      this.userList = res.data;
-      this.total_pages = res.pagination.total_pages;
-      this.total_records = res.pagination.total_records;
-
-      this.userListFiltered = this.userList.filter((v) => v.role == 'Cyclo');
-
-      this.filteredOptions = this.userListFiltered.filter(o => o.fullname.toLowerCase().includes(filterValue));
-
-      this.isload = false;
-    });
-  }
-
-  displayFn(user: IUser): any {
-    return user && user.fullname ? user.fullname : '';
-  }
-
-  optionSelected(event: MatAutocompleteSelectedEvent) {
-    const selectedOption = event.option.value;
-    const user_uuid = selectedOption.uuid;
-    const fullname = selectedOption.fullname;
-    this.userId = selectedOption.uuid;
-    console.log('userId:', user_uuid);
-    console.log('fullname:', fullname);
-  }
-
-
-
-  onPageChange(event: PageEvent): void {
-    this.isLoadingData = true;
-    this.current_page = event.pageIndex + 1; // Adjust for 1-based page index
-    this.page_size = event.pageSize;
-    this.fetchProducts(this.currentUser);
   }
 
 
@@ -299,6 +215,14 @@ export class CycloComponent implements OnInit {
     }
   }
 
+  onPageChange(event: PageEvent): void {
+    this.isLoadingData = true;
+    this.current_page = event.pageIndex + 1; // Adjust for 1-based page index
+    this.page_size = event.pageSize;
+    this.fetchProducts(this.currentUser);
+  }
+
+
   onSearchChange(search: string) {
     this.search = search;
     this.fetchProducts(this.currentUser);
@@ -327,16 +251,16 @@ export class CycloComponent implements OnInit {
     try {
       if (this.formGroup.valid) {
         this.isLoading = true;
-        var body = {
+        var body: ICyclo = {
+          title: 'Cyclo',
           country_uuid: this.currentUser.country_uuid,
           province_uuid: this.currentUser.province_uuid,
           area_uuid: this.currentUser.area_uuid,
           subarea_uuid: this.currentUser.subarea_uuid,
           commune_uuid: this.formGroup.value.commune_uuid,
-          asm_uuid: this.currentUser.Asm.uuid,
-          sup_uuid: this.currentUser.Sup.uuid,
-          dr_id: this.currentUser.Dr.uuid,
-          user_uuid: this.userId,
+          asm_uuid: this.currentUser.asm_uuid,
+          sup_uuid: this.currentUser.sup_uuid,
+          dr_uuid: this.currentUser.dr_uuid,
           signature: this.currentUser.fullname,
         };
         this.cycloService.create(body).subscribe({
@@ -376,16 +300,16 @@ export class CycloComponent implements OnInit {
   onSubmitUpdate() {
     try {
       this.isLoading = true;
-      var body = {
+      var body: ICyclo = {
+        title: 'Cyclo',
         country_uuid: this.currentUser.country_uuid,
         province_uuid: this.currentUser.province_uuid,
         area_uuid: this.currentUser.area_uuid,
         subarea_uuid: this.currentUser.subarea_uuid,
         commune_uuid: this.formGroup.value.commune_uuid,
-        asm_uuid: this.currentUser.Asm.uuid,
-        sup_uuid: this.currentUser.Sup.uuid,
-        dr_id: this.currentUser.Dr.uuid,
-        user_uuid: this.userId,
+        asm_uuid: this.currentUser.asm_uuid,
+        sup_uuid: this.currentUser.sup_uuid,
+        dr_uuid: this.currentUser.dr_uuid,
         signature: this.currentUser.fullname,
       };
       this.cycloService.update(this.idItem, body)
@@ -427,11 +351,14 @@ export class CycloComponent implements OnInit {
     this.cycloService.get(this.idItem).subscribe(item => {
       this.dataItem = item.data;
       this.formGroup.patchValue({
-        country_uuid: this.dataItem.Country.ID,
-        province_uuid: this.dataItem.Province.ID,
-        area_uuid: this.dataItem.Area.ID,
-        asm_uuid: this.dataItem.Asm.ID,
-        user_uuid: this.dataItem.User.ID,
+        country_uuid: this.dataItem.country_uuid,
+        province_uuid: this.dataItem.province_uuid,
+        area_uuid: this.dataItem.area_uuid,
+        subarea_uuid: this.dataItem.subarea_uuid,
+        commune_uuid: this.dataItem.commune_uuid,
+        asm_uuid: this.dataItem.asm_uuid,
+        sup_uuid: this.dataItem.sup_uuid,
+        dr_uuid: this.dataItem.dr_uuid,
       });
     });
   }
@@ -471,39 +398,39 @@ export class CycloComponent implements OnInit {
   }
 
   compareFn(c1: ICountry, c2: ICountry): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareProvinceFn(c1: IProvince, c2: IProvince): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareAREAFn(c1: IArea, c2: IArea): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareSubAREAFn(c1: ISubArea, c2: ISubArea): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareCOMMUNEFn(c1: ICommune, c2: ICommune): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareASMFn(c1: IAsm, c2: IAsm): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareSUPFn(c1: ISup, c2: ISup): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareDRFn(c1: IDr, c2: IDr): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareUserFn(c1: IUser, c2: IUser): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
 

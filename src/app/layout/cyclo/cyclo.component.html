@@ -110,25 +110,25 @@
                                 <!-- asm Column -->
                                 <ng-container matColumnDef="asm">
                                     <th mat-header-cell *matHeaderCellDef> ASM </th>
-                                    <td mat-cell *matCellDef="let element"> 
-                                        <app-user-get *ngIf="element.Asm" [uuid]="element.Asm.user_uuid"></app-user-get> 
+                                    <td mat-cell *matCellDef="let element">
+                                        {{ element.asm_fullname }}
                                     </td>
                                 </ng-container>
 
                                 <!-- sup Column -->
                                 <ng-container matColumnDef="sup">
                                     <th mat-header-cell *matHeaderCellDef> Supervisor </th>
-                                    <td mat-cell *matCellDef="let element"> 
-                                        <app-user-get *ngIf="element.Sup" [uuid]="element.Sup.user_uuid"></app-user-get> 
+                                    <td mat-cell *matCellDef="let element">
+                                        {{ element.sup_fullname }}
                                     </td>
-                                </ng-container> 
+                                </ng-container>
 
 
                                 <!-- dr Column -->
                                 <ng-container matColumnDef="dr">
                                     <th mat-header-cell *matHeaderCellDef> DR </th>
-                                    <td mat-cell *matCellDef="let element"> 
-                                        <app-user-get *ngIf="element.Dr" [uuid]="element.Dr.user_uuid"></app-user-get> 
+                                    <td mat-cell *matCellDef="let element">
+                                        {{ element.dr_fullname }}
                                     </td>
                                 </ng-container>
 
@@ -136,7 +136,7 @@
                                 <ng-container matColumnDef="user">
                                     <th mat-header-cell *matHeaderCellDef> Cyclo </th>
                                     <td mat-cell *matCellDef="let element">
-                                        <app-user-get *ngIf="element.user_uuid" [uuid]="element.user_uuid"></app-user-get>  
+                                        {{ element.fullname }}
                                     </td>
                                 </ng-container>
 
@@ -152,7 +152,7 @@
                                 </ng-container>
 
                                 <!-- postform Column -->
-                                <ng-container matColumnDef="postform">
+                                <ng-container matColumnDef="postforms">
                                     <th mat-header-cell *matHeaderCellDef> PosForms </th>
                                     <td mat-cell *matCellDef="let element"
                                         style="background-color: rgba(255, 140, 0, 0.506); font-size: larger; text-align: center;">
@@ -163,7 +163,7 @@
                                 </ng-container>
 
                                 <!-- id Column -->
-                                <ng-container matColumnDef="id">
+                                <ng-container matColumnDef="uuid">
                                     <th mat-header-cell *matHeaderCellDef> Action </th>
                                     <td mat-cell *matCellDef="let element">
                                         @if(
@@ -258,27 +258,6 @@
                         </mat-error>
                     </div>
                 </div>
-                <div class="col-md-12">
-                    <div class="mb-3">
-                        <label class="col-form-label" for="user_uuid">Select Agent <span
-                                class="text-danger">*</span></label>
-                        <input #user_uuid type="text" matInput formControlName="user_uuid" [matAutocomplete]="auto22"
-                            placeholder="Selectionner le User" class="form-control" (input)="fetchUsers()"
-                            (focus)="fetchUsers()">
-                        @if (isload) {
-                        <div class="d-flex align-items-center">
-                            <strong role="status">Loading...</strong>
-                            <div class="spinner-border ms-auto" aria-hidden="true"></div>
-                        </div>
-                        }
-                        <mat-autocomplete requireSelection #auto22="matAutocomplete"
-                            (optionSelected)="optionSelected($event)" [displayWith]="displayFn">
-                            @for (item of filteredOptions; track item) {
-                            <mat-option [value]="item">{{item.fullname}}</mat-option>
-                            }
-                        </mat-autocomplete>
-                    </div>
-                </div>
             </div>
             <div class="d-flex align-items-center justify-content-end">
                 <button type="button" data-bs-dismiss="offcanvas" class="btn btn-light me-2">Annuler</button>
@@ -328,27 +307,6 @@
                         <mat-error *ngIf="formGroup.controls['commune_uuid'].hasError('required')">
                             Ce champs est obligatoire
                         </mat-error>
-                    </div>
-                </div>
-                <div class="col-md-12">
-                    <div class="mb-3">
-                        <label class="col-form-label" for="user_uuid">Select Agent <span
-                                class="text-danger">*</span></label>
-                        <input #user_uuid type="text" matInput formControlName="user_uuid" [matAutocomplete]="auto22"
-                            placeholder="Selectionner le User" class="form-control" (input)="fetchUsers()"
-                            (focus)="fetchUsers()">
-                        @if (isload) {
-                        <div class="d-flex align-items-center">
-                            <strong role="status">Loading...</strong>
-                            <div class="spinner-border ms-auto" aria-hidden="true"></div>
-                        </div>
-                        }
-                        <mat-autocomplete requireSelection #auto22="matAutocomplete"
-                            (optionSelected)="optionSelected($event)" [displayWith]="displayFn">
-                            @for (item of filteredOptions; track item) {
-                            <mat-option [value]="item">{{item.fullname}}</mat-option>
-                            }
-                        </mat-autocomplete>
                     </div>
                 </div>
             </div>

@@ -8,26 +8,27 @@ import { ISup } from "../../sups/models/sup.model";
 import { IUser } from "../../user/models/user.model";
 
 export interface IAsm {
-    ID: number;
-    uuid: string;
+    uuid?: string;
+
+    title: string;
+    fullname?: string;
 
     country_uuid: string;
+    Country?: ICountry;
     province_uuid: string;
-    user_uuid: string;
+    Province?: IProvince;
 
     signature: string;
 
-    CreatedAt: Date;
-    UpdatedAt: Date;
+    CreatedAt?: Date;
+    UpdatedAt?: Date;
 
-    Country: ICountry;
-    Province: IProvince;
-    User: IUser;
+    Users?: IUser[];
+    
+    Sups?: ISup[];
+    Drs?: IDr[];
+    Cyclo?: ICyclo[];
 
-    Sups: ISup[];
-    Drs: IDr[];
-    Cyclos: ICyclo[];
-
-    Pos: IPos[];
-    PosForms: IPosForm[];
+    Pos?: IPos[];
+    PosForms?: IPosForm[];
 }

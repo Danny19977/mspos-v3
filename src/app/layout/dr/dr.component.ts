@@ -41,7 +41,7 @@ export class DrComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'province', 'area', 'subarea', 'asm', 'sup', 'user', 'cyclo', 'pos', 'postform', 'id'];
+  displayedColumns: string[] = ['country', 'province', 'area', 'subarea', 'asm', 'sup', 'user', 'cyclos', 'pos', 'postforms', 'uuid'];
   dataSource = new MatTableDataSource<IDr>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -50,7 +50,7 @@ export class DrComponent implements OnInit {
   public search = '';
 
   // Forms  
-  idItem!: string;
+  uuidItem!: string;
   dataItem!: IDr; // Single data 
 
   formGroup!: FormGroup;
@@ -67,36 +67,11 @@ export class DrComponent implements OnInit {
   subareaList: ISubArea[] = [];
   subareaFilterList: ISubArea[] = [];
 
-  userList: IUser[] = [];
-  userListFiltered: IUser[] = [];
-  filteredOptions: IUser[] = []
-  @ViewChild('user_uuid') user_uuid!: ElementRef<HTMLInputElement>;
-  isload = false;
-  userId: number = 0;
-
-
-  asmList: IAsm[] = [];
-  asmListFiltered: IAsm[] = [];
-  filteredOptionsASM: IAsm[] = []
-  @ViewChild('asm_uuid') asm_uuid!: ElementRef<HTMLInputElement>;
-  isloadAsm = false;
-  asmId: number = 0;
-
-
-  supList: ISup[] = [];
-  supListFiltered: ISup[] = [];
-  filteredOptionsSup: ISup[] = []
-  @ViewChild('sup_uuid') sup_uuid!: ElementRef<HTMLInputElement>;
-  isloadSup = false;
-  supId: number = 0;
-
-
   constructor(
     private router: Router,
     private _formBuilder: FormBuilder,
     private authService: AuthService,
-    private subareaService: SubareaService,
-    private userService: UserService,
+    private subareaService: SubareaService, 
     private drService: DrService,
     private logActivity: LogsService,
     private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
@@ -116,17 +91,8 @@ export class DrComponent implements OnInit {
         this.drService.refreshDataList$.subscribe(() => {
           this.fetchProducts(this.currentUser);
         });
-        this.fetchProducts(this.currentUser);
-
-        // this.countryService.getAll().subscribe(res => {
-        //   this.countryList = res.data;
-        // });
-        // this.provinceService.getAll().subscribe(res => {
-        //   this.provinceList = res.data;
-        // });
-        // this.areaService.getAll().subscribe(res => {
-        //   this.areaList = res.data;
-        // });
+        this.fetchProducts(this.currentUser); 
+        
         this.subareaService.getAllById(this.currentUser.area_uuid).subscribe(res => {
           this.subareaList = res.data;
           console.log('subareaList:', this.subareaList);
@@ -149,7 +115,7 @@ export class DrComponent implements OnInit {
       subarea_uuid: ['', Validators.required],
       // asm_uuid: ['', Validators.required],
       // sup_uuid: ['', Validators.required],
-      user_uuid: ['', Validators.required],
+      // user_uuid: ['', Validators.required],
     });
   }
 
@@ -167,63 +133,7 @@ export class DrComponent implements OnInit {
     return user ? user.length > 0 ? user.length.toString() : '0' : '0';
   }
 
-  // onCountryChange(event: any) {
-  //   const provinceArray = this.provinceList.filter((v) => v.country_uuid == event.value);
-  //   this.provinceFilterList = provinceArray;
-  // }
-  // onProvinceChange(event: any) {
-  //   const areaArray = this.areaList.filter((v) => v.province_uuid == event.value);
-  //   this.areaFilterList = areaArray;
-  // }
-  // onAreaChange(event: any) {
-  //   const subareaArray = this.subareaList.filter((v) => v.area_uuid == event.value);
-  //   this.subareaFilterList = subareaArray;
-  //   console.log('subareaArray:', subareaArray);
-  // }
 
-
-
-
-
-
-  /// USER
-  fetchUsers(): void {
-    const filterValue = this.user_uuid.nativeElement.value.toLowerCase();
-
-    this.isload = true;
-    this.userService.getPaginated2(this.current_page, this.page_size, filterValue).subscribe(res => {
-      this.userList = res.data;
-      this.total_pages = res.pagination.total_pages;
-      this.total_records = res.pagination.total_records;
-
-      this.userListFiltered = this.userList.filter((v) => v.role == 'DR');
-
-      this.filteredOptions = this.userListFiltered.filter(o => o.fullname.toLowerCase().includes(filterValue));
-
-      this.isload = false;
-    });
-  }
-
-  displayFn(user: IUser): any {
-    return user && user.fullname ? user.fullname : '';
-  }
-
-  optionSelected(event: MatAutocompleteSelectedEvent) {
-    const selectedOption = event.option.value;
-    const user_uuid = selectedOption.uuid;
-    const fullname = selectedOption.fullname;
-    this.userId = selectedOption.uuid;
-    console.log('userId:', user_uuid);
-    console.log('fullname:', fullname);
-  }
-
-
-  onPageChange(event: PageEvent): void {
-    this.isLoadingData = true;
-    this.current_page = event.pageIndex + 1; // Adjust for 1-based page index
-    this.page_size = event.pageSize;
-    this.fetchProducts(this.currentUser);
-  }
 
 
   fetchProducts(currentUser: IUser) {
@@ -263,6 +173,7 @@ export class DrComponent implements OnInit {
     } else {
       this.drService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
+        console.log('dataList DR:', this.dataList);
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
         this.dataSource.data = this.dataList; // Update dataSource data
@@ -271,6 +182,14 @@ export class DrComponent implements OnInit {
       });
     }
   }
+
+  onPageChange(event: PageEvent): void {
+    this.isLoadingData = true;
+    this.current_page = event.pageIndex + 1; // Adjust for 1-based page index
+    this.page_size = event.pageSize;
+    this.fetchProducts(this.currentUser);
+  }
+
 
   onSearchChange(search: string) {
     this.search = search;
@@ -300,14 +219,14 @@ export class DrComponent implements OnInit {
     try {
       if (this.formGroup.valid) {
         this.isLoading = true;
-        var body = {
+        var body: IDr = {
           country_uuid: this.currentUser.country_uuid,
           province_uuid: this.currentUser.province_uuid,
           area_uuid: this.currentUser.area_uuid,
           subarea_uuid: this.formGroup.value.subarea_uuid,
-          asm_uuid: this.currentUser.Asm.uuid,
-          sup_uuid: this.currentUser.Sup.uuid,
-          user_uuid: this.userId,
+          title: 'DR', // Assuming title is the subarea name
+          asm_uuid: this.currentUser.asm_uuid,
+          sup_uuid: this.currentUser.sup_uuid,
           signature: this.currentUser.fullname,
         };
         console.log('body:', body);
@@ -348,17 +267,17 @@ export class DrComponent implements OnInit {
   onSubmitUpdate() {
     try {
       this.isLoading = true;
-      var body = {
+      var body: IDr = {
         country_uuid: this.currentUser.country_uuid,
         province_uuid: this.currentUser.province_uuid,
         area_uuid: this.currentUser.area_uuid,
         subarea_uuid: this.formGroup.value.subarea_uuid,
-        asm_uuid: this.currentUser.Asm.uuid,
-        sup_uuid: this.currentUser.Sup.uuid,
-        user_uuid: this.userId,
+        title: 'DR', // Assuming title is the subarea name
+        asm_uuid: this.currentUser.asm_uuid,
+        sup_uuid: this.currentUser.sup_uuid,
         signature: this.currentUser.fullname,
       };
-      this.drService.update(this.idItem, body)
+      this.drService.update(this.uuidItem, body)
         .subscribe({
           next: (res) => {
             this.logActivity.activity(
@@ -393,17 +312,16 @@ export class DrComponent implements OnInit {
   }
 
   findValue(value: string) {
-    this.idItem = value;
-    this.drService.get(this.idItem).subscribe(item => {
+    this.uuidItem = value;
+    this.drService.get(this.uuidItem).subscribe(item => {
       this.dataItem = item.data;
       this.formGroup.patchValue({
-        country_uuid: this.dataItem.Country.uuid,
-        province_uuid: this.dataItem.Province.uuid,
-        area_uuid: this.dataItem.Area.uuid,
-        subarea_uuid: this.dataItem.SubArea.uuid,
-        asm_uuid: this.dataItem.Asm.uuid,
-        sup_uuid: this.dataItem.Sup.uuid,
-        user_uuid: this.dataItem.User.uuid,
+        country_uuid: this.dataItem.country_uuid,
+        province_uuid: this.dataItem.province_uuid,
+        area_uuid: this.dataItem.area_uuid,
+        subarea_uuid: this.dataItem.subarea_uuid,
+        asm_uuid: this.dataItem.asm_uuid,
+        sup_uuid: this.dataItem.sup_uuid,
       });
     });
   }
@@ -412,14 +330,14 @@ export class DrComponent implements OnInit {
 
   delete(): void {
     this.drService
-      .delete(this.idItem)
+      .delete(this.uuidItem)
       .subscribe({
         next: () => {
           this.logActivity.activity(
             'DR',
             this.currentUser.uuid,
             'deleted',
-            `Delete DR id: ${this.idItem}`,
+            `Delete DR uuid: ${this.uuidItem}`,
             this.currentUser.fullname
           ).subscribe({
             next: () => {
@@ -442,31 +360,31 @@ export class DrComponent implements OnInit {
   }
 
   compareFn(c1: ICountry, c2: ICountry): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareProvinceFn(c1: IProvince, c2: IProvince): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareAREAFn(c1: IArea, c2: IArea): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareSubAREAFn(c1: ISubArea, c2: ISubArea): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareASMFn(c1: IAsm, c2: IAsm): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareSUPFn(c1: ISup, c2: ISup): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
   compareUserFn(c1: IUser, c2: IUser): boolean {
-    return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
   }
 
 

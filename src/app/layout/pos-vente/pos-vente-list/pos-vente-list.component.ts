@@ -135,7 +135,7 @@ export class PosVenteListComponent implements OnInit {
         this.posVenteService.refreshDataList$.subscribe(() => {
           this.fetchProducts(this.currentUser);
         });
-        this.fetchProducts(this.currentUser); 
+        this.fetchProducts(this.currentUser);
       },
       error: (error) => {
         this.isLoadingData = false;
@@ -145,7 +145,7 @@ export class PosVenteListComponent implements OnInit {
     });
 
     // Appel de la méthode onChanges
-    this.onChanges(); 
+    this.onChanges();
 
   }
 
@@ -283,12 +283,11 @@ export class PosVenteListComponent implements OnInit {
           area_uuid: this.currentUser.area_uuid,
           subarea_uuid: this.currentUser.subarea_uuid,
           commune_uuid: this.currentUser.commune_uuid,
-          user_uuid: this.currentUser.uuid,
-          user_fullname: this.currentUser.fullname,
-          asm_uuid: this.currentUser.Asm.user_uuid!,
-          sup_uuid: this.currentUser.Sup.user_uuid!,
-          dr_uuid: this.currentUser.Dr.user_uuid!,
-          cyclo_uuid: this.currentUser.Cyclo.user_uuid!,
+          asm_uuid: this.dataItem.asm_uuid,
+          sup_uuid: this.dataItem.sup_uuid,
+          dr_uuid: this.dataItem.dr_uuid,
+          cyclo_uuid: this.dataItem.cyclo_uuid,
+          user_uuid: this.dataItem.user_uuid,
           status: true, // le status change une fois que le pos est synchronisé
           signature: this.currentUser.fullname,
         };
@@ -344,12 +343,11 @@ export class PosVenteListComponent implements OnInit {
         area_uuid: this.currentUser.area_uuid,
         subarea_uuid: this.currentUser.subarea_uuid,
         commune_uuid: this.currentUser.commune_uuid,
-        user_uuid: this.currentUser.uuid,
-        user_fullname: this.currentUser.fullname,
-        asm_uuid: this.currentUser.Asm.user_uuid!,
-        sup_uuid: this.currentUser.Sup.user_uuid!,
-        dr_uuid: this.currentUser.Dr.user_uuid!,
-        cyclo_uuid: this.currentUser.Cyclo.user_uuid!,
+        asm_uuid: this.dataItem.asm_uuid,
+        sup_uuid: this.dataItem.sup_uuid,
+        dr_uuid: this.dataItem.dr_uuid,
+        cyclo_uuid: this.dataItem.cyclo_uuid,
+        user_uuid: this.dataItem.user_uuid,
         status: true, // le status change une fois que le pos est synchronisé
         signature: this.currentUser.fullname,
         UpdatedAt: new Date(),

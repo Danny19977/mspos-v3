@@ -313,7 +313,7 @@ export class PostformListComponent implements OnInit {
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'DR') {
-      this.posformService.getPaginatedRangeDateBySubAreaId(currentUser.Dr.uuid, this.current_page, this.page_size, this.search,
+      this.posformService.getPaginatedRangeDateBySubAreaId(currentUser.dr_uuid, this.current_page, this.page_size, this.search,
         this.start_date, this.end_date).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
@@ -323,7 +323,7 @@ export class PostformListComponent implements OnInit {
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'Cyclo') {
-      this.posformService.getPaginatedRangeDateByUserId(currentUser.Cyclo.uuid, this.current_page, this.page_size, this.search,
+      this.posformService.getPaginatedRangeDateByUserId(currentUser.cyclo_uuid, this.current_page, this.page_size, this.search,
         this.start_date, this.end_date).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
@@ -343,77 +343,6 @@ export class PostformListComponent implements OnInit {
           this.isLoadingData = false;
         });
     }
-  }
-
-
-  synchronizeBrand(currentUser: IUser) {
-    this.isLoadingBrand = true;
-    db.brands
-      .toArray()
-      .then((brandLocalList) => {
-        if (currentUser.role == 'Manager' || currentUser.role == 'Support') {
-          this.brandService.getAll().subscribe(res => {
-            const brandList: IBrand[] = res.data;
-
-            // Compare posLocalList and posList
-            const localUuids = brandLocalList.map(localItem => localItem.uuid);
-            const newItems = brandList.filter(item => !localUuids.includes(item.uuid));
-
-            // Insert new items into local database
-            newItems.forEach((brand: IBrand) => {
-              const body: IBrand = {
-                uuid: brand.uuid,
-                name: brand.name,
-                country_uuid: brand.country_uuid,
-                province_uuid: brand.province_uuid,
-                signature: brand.signature,
-                CreatedAt: brand.CreatedAt,
-                UpdatedAt: brand.UpdatedAt,
-              };
-              db.brands.add(body).then(() => {
-                console.log('New Brand added to Dexie DB');
-                this.isLoadingBrand = false;
-              }).catch((error) => {
-                this.isLoadingBrand = false;
-                this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-                console.error('Error adding item to Dexie DB:', error);
-              });
-            });
-          });
-        } else {
-          this.brandService.getAllByASM(this.currentUser.province_uuid).subscribe(res => {
-            const brandList: IBrand[] = res.data;
-
-            // Compare posLocalList and posList
-            const localUuids = brandLocalList.map(localItem => localItem.uuid);
-            const newItems = brandList.filter(item => !localUuids.includes(item.uuid));
-
-            // Insert new items into local database
-            newItems.forEach((brand: IBrand) => {
-              const body: IBrand = {
-                uuid: brand.uuid,
-                name: brand.name,
-                country_uuid: brand.country_uuid,
-                province_uuid: brand.province_uuid,
-                signature: brand.signature,
-                CreatedAt: brand.CreatedAt,
-                UpdatedAt: brand.UpdatedAt,
-              };
-              db.brands.add(body).then(() => {
-                console.log('New Brand added to Dexie DB');
-                this.isLoadingBrand = false;
-              }).catch((error) => {
-                this.isLoadingBrand = false;
-                this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-                console.error('Error adding item to Dexie DB:', error);
-              });
-            });
-          });
-        }
-      })
-      .catch((error) => {
-        console.error('Error retrieving Brand with status = true from Dexie DB:', error);
-      });
   }
 
   onSearchChange(search: string) {
@@ -464,19 +393,20 @@ export class PostformListComponent implements OnInit {
       latitude: this.latitude,
       longitude: this.longitude,
       pos_uuid: this.posUUID,
-      pos_name: this.posName,
       country_uuid: this.currentUser.country_uuid,
       province_uuid: this.currentUser.province_uuid,
       area_uuid: this.currentUser.area_uuid,
       subarea_uuid: this.currentUser.subarea_uuid,
       commune_uuid: this.currentUser.commune_uuid,
-      asm_uuid: this.currentUser.Asm.user_uuid!,
-      sup_uuid: this.currentUser.Sup.user_uuid!,
-      dr_uuid: this.currentUser.Dr.user_uuid!,
-      cyclo_uuid: this.currentUser.Cyclo.user_uuid!,
+      asm_uuid: this.currentUser.asm_uuid,
+      sup_uuid: this.currentUser.sup_uuid,
+      dr_uuid: this.currentUser.dr_uuid!,
+      cyclo_uuid: this.currentUser.cyclo_uuid,
+      user_uuid: this.currentUser.uuid,
 
       signature: this.currentUser.fullname, // Added signature property
-      sync: true, // Default value for 'sync', adjust as needed 
+      sync: true,
+
     };
     this.posformService.create(body).subscribe({
       next: (res) => {
@@ -514,19 +444,19 @@ export class PostformListComponent implements OnInit {
         var body: IPosForm = {
           price: parseInt(this.formGroup.value.price),
           comment: this.formGroup.value.comment,
-          // latitude: this.latitude,
-          // longitude: this.longitude,
+          latitude: this.latitude,
+          longitude: this.longitude,
           pos_uuid: this.posUUID,
-          pos_name: this.posName,
           country_uuid: this.currentUser.country_uuid,
           province_uuid: this.currentUser.province_uuid,
           area_uuid: this.currentUser.area_uuid,
           subarea_uuid: this.currentUser.subarea_uuid,
           commune_uuid: this.currentUser.commune_uuid,
-          asm_uuid: this.currentUser.Asm.user_uuid!,
-          sup_uuid: this.currentUser.Sup.user_uuid!,
-          dr_uuid: this.currentUser.Dr.user_uuid!,
-          cyclo_uuid: this.currentUser.Cyclo.user_uuid!,
+          asm_uuid: this.currentUser.asm_uuid,
+          sup_uuid: this.currentUser.sup_uuid,
+          dr_uuid: this.currentUser.dr_uuid!,
+          cyclo_uuid: this.currentUser.cyclo_uuid,
+          user_uuid: this.currentUser.uuid,
           signature: this.currentUser.fullname,
           sync: true, // Default value for 'sync', adjust as needed 
         };
@@ -574,16 +504,16 @@ export class PostformListComponent implements OnInit {
         latitude: this.latitude,
         longitude: this.longitude,
         pos_uuid: this.posUUID,
-        pos_name: this.posName,
         country_uuid: this.currentUser.country_uuid,
         province_uuid: this.currentUser.province_uuid,
         area_uuid: this.currentUser.area_uuid,
         subarea_uuid: this.currentUser.subarea_uuid,
         commune_uuid: this.currentUser.commune_uuid,
-        asm_uuid: this.currentUser.Asm.uuid,
-        sup_uuid: this.currentUser.Sup.uuid,
-        dr_uuid: this.currentUser.Dr.uuid,
-        cyclo_uuid: this.currentUser.Cyclo.uuid,
+        asm_uuid: this.currentUser.asm_uuid,
+        sup_uuid: this.currentUser.sup_uuid,
+        dr_uuid: this.currentUser.dr_uuid!,
+        cyclo_uuid: this.currentUser.cyclo_uuid,
+        user_uuid: this.currentUser.uuid,
         signature: this.currentUser.fullname,
         sync: true, // Default value for 'sync', adjust as needed 
       };
@@ -633,7 +563,7 @@ export class PostformListComponent implements OnInit {
         brand_name: this.brandName,
         number_farde: this.formGroupPosFormItem.value.number_farde,
         counter: 1,
-        sold: parseInt(this.formGroupPosFormItem.value.sold), 
+        sold: parseInt(this.formGroupPosFormItem.value.sold),
       };
       this.posformItemService.create(body).subscribe({
         next: (res) => {
@@ -667,7 +597,7 @@ export class PostformListComponent implements OnInit {
   findValue(value: string) {
     this.uuidItem = value;
     this.posformService.get(this.uuidItem).subscribe(item => {
-      this.dataItem = item.data; 
+      this.dataItem = item.data;
       this.formGroup.patchValue({
         price: this.dataItem.price,
         comment: this.dataItem.comment,
@@ -682,6 +612,7 @@ export class PostformListComponent implements OnInit {
         sup_uuid: this.dataItem.sup_uuid,
         dr_uuid: this.dataItem.dr_uuid,
         cyclo_uuid: this.dataItem.cyclo_uuid,
+        user_uuid: this.dataItem.user_uuid,
       });
     });
   }
@@ -749,6 +680,6 @@ export class PostformListComponent implements OnInit {
         this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
       }
     });
-  } 
+  }
 
 }

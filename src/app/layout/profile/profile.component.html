@@ -163,25 +163,25 @@
                             <li class="row mb-3">
                                 <span class="col-6">ASM</span>
                                 <span class="col-6"> 
-                                    <app-user-get *ngIf="currentUser.Asm" [uuid]="currentUser.Asm.user_uuid"></app-user-get>
+                                    {{ currentUser.Asm!.title }}
                                 </span>
                             </li>
                             <li class="row mb-3">
                                 <span class="col-6">Supervisor</span>
                                 <span class="col-6"> 
-                                    <app-user-get *ngIf="currentUser.Sup" [uuid]="currentUser.Sup.user_uuid"></app-user-get>
-                                </span>
+                                   {{ currentUser.Sup!.title }}
+                                </span> 
                             </li>
                             <li class="row mb-3">
                                 <span class="col-6">DR</span>
                                 <span class="col-6"> 
-                                    <app-user-get *ngIf="currentUser.Dr" [uuid]="currentUser.Dr.user_uuid"></app-user-get>
+                                   {{ currentUser.Dr!.title }}
                                 </span>
                             </li>
                             <li class="row mb-3">
                                 <span class="col-6">Cyclo</span>
                                 <span class="col-6"> 
-                                    <app-user-get *ngIf="currentUser.Cyclo" [uuid]="currentUser.Cyclo.user_uuid"></app-user-get>
+                                  {{ currentUser.Cyclo!.title }}
                                 </span>
                             </li>
                         </ul>

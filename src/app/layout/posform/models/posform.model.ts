@@ -8,6 +8,7 @@ import { IPos } from "../../pos-vente/models/pos.model";
 import { IProvince } from "../../province/models/province.model";
 import { ISubArea } from "../../subarea/models/subarea.model";
 import { ISup } from "../../sups/models/sup.model";
+import { IUser } from "../../user/models/user.model";
 import { IPosFormItem } from "./posform_item.model";
 
 export interface IPosForm {
@@ -16,44 +17,49 @@ export interface IPosForm {
     uuid?: string;
 
     price: number;
-   
+
     comment: string;
 
     latitude?: number;
     longitude?: number;
 
     pos_uuid: string;
-    pos_name?: string;
+    Pos?: IPos;
 
-    country_uuid: string; 
-    province_uuid: string; 
-    area_uuid: string; 
-    subarea_uuid: string; 
-    commune_uuid: string; 
+    user_uuid: string; // uuid de l'utilisateur qui a rempli le posform
+    User?: IUser;
 
-    asm_uuid: string; 
-    sup_uuid: string; 
-    dr_uuid: string; 
-    cyclo_uuid: string; 
-    
+    country_uuid: string;
+    Country?: ICountry;
+    province_uuid: string;
+    Province?: IProvince;
+    area_uuid: string;
+    Area?: IArea;
+    subarea_uuid: string;
+    SubArea?: ISubArea;
+    commune_uuid: string;
+    Commune?: ICommune;
+
+    asm_uuid: string;
+    Asm?: IAsm;
+    sup_uuid: string;
+    Sup?: ISup;
+    dr_uuid: string;
+    Dr?: IDr;
+    cyclo_uuid: string;
+    Cyclo?: ICyclo;
+
+
     sync: boolean; // pour savoir si le posform est synchronisé ou non
     signature: string;
 
     CreatedAt?: Date;
-    UpdatedAt?: Date; 
+    UpdatedAt?: Date;
 
-    Pos?: IPos;
 
-    Country?: ICountry;
-    Province?: IProvince;
-    Area?: IArea;
-    SubArea?: ISubArea;
-    Commune?: ICommune;
 
-    ASM?: IAsm;
-    Sup?: ISup;
-    Dr?: IDr;
-    Cyclo?: ICyclo;
+
+
 
     PosFormItems?: IPosFormItem[];
 }
