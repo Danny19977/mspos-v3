@@ -6,12 +6,7 @@ import { RegisterComponent } from './register/register.component';
 import { LockScreenComponent } from './lock-screen/lock-screen.component';
 import { onlineGuard } from './guard/online.guard';
 
-const routes: Routes = [
-  // { 
-  //   path: '', 
-  //   redirectTo: 'signin', 
-  //   pathMatch: 'full' 
-  // },
+const routes: Routes = [ 
   {
     path: '',
     component: AuthComponent,
@@ -23,8 +18,7 @@ const routes: Routes = [
       },
       {
         path: 'login',
-        component: LoginComponent,
-        // canActivate: [onlineGuard] 
+        component: LoginComponent, 
       },
       {
         path: 'register',

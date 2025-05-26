@@ -174,7 +174,6 @@ export class PosVenteListComponent implements OnInit {
   }
 
 
-
   fetchProducts(currentUser: IUser) {
     if (currentUser.role == 'Manager') {
       this.posVenteService.getPaginatedRangeDate2(this.current_page, this.page_size, this.search,

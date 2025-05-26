@@ -81,20 +81,20 @@
                                 <!-- country Column -->
                                 <ng-container matColumnDef="country">
                                     <th mat-header-cell *matHeaderCellDef> Pays </th>
-                                    <td mat-cell *matCellDef="let element"> {{element.Country.name }} </td>
+                                    <td mat-cell *matCellDef="let element"> {{element.Country.name || '--' }} </td>
                                 </ng-container>
 
                                 <!-- province Column -->
                                 <ng-container matColumnDef="province">
                                     <th mat-header-cell *matHeaderCellDef> Province </th>
-                                    <td mat-cell *matCellDef="let element"> {{element.Province.name }} </td>
+                                    <td mat-cell *matCellDef="let element"> {{element.Province.name || '--' }} </td>
                                 </ng-container> 
 
                                 <!-- user Column -->
                                 <ng-container matColumnDef="user">
                                     <th mat-header-cell *matHeaderCellDef> ASM </th>
                                     <td mat-cell *matCellDef="let element">
-                                        {{ element.User!.fullname }}
+                                        {{ element.User!.fullname || '--' }}
                                     </td>
                                 </ng-container>
 

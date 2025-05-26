@@ -114,11 +114,7 @@
                 <ng-container matColumnDef="country">
                   <th mat-header-cell *matHeaderCellDef> Pays </th>
                   <td mat-cell *matCellDef="let element">
-                    @if (element.Country.name) {
-                      {{element.Country.name}}
-                    }@else {
-                      --
-                    }
+                    {{ element.Country.name || '-' }}
                   </td>
                 </ng-container>
 
@@ -126,11 +122,7 @@
                 <ng-container matColumnDef="province">
                   <th mat-header-cell *matHeaderCellDef> Province </th>
                   <td mat-cell *matCellDef="let element">
-                    @if (element.Province.name) {
-                      {{element.Province.name}}
-                    }@else {
-                      --
-                    } 
+                    {{ element.Province.name || '--' }}
                   </td>
                 </ng-container>
 
@@ -138,11 +130,7 @@
                 <ng-container matColumnDef="area">
                   <th mat-header-cell *matHeaderCellDef> Area </th>
                   <td mat-cell *matCellDef="let element">
-                    @if (element.Area.name) {
-                      {{element.Area.name}}
-                    }@else {
-                      --
-                    }  
+                    {{ element.Area.name || '--' }}
                   </td>
                 </ng-container>
 
@@ -150,11 +138,7 @@
                 <ng-container matColumnDef="subarea">
                   <th mat-header-cell *matHeaderCellDef> Subarea </th>
                   <td mat-cell *matCellDef="let element">
-                    @if (element.SubArea.name) {
-                      {{element.SubArea.name}}
-                    }@else {
-                      --
-                    }   
+                    {{ element.SubArea.name || '--' }}
                   </td>
                 </ng-container>
 
@@ -162,20 +146,48 @@
                 <ng-container matColumnDef="commune">
                   <th mat-header-cell *matHeaderCellDef> Commune </th>
                   <td mat-cell *matCellDef="let element">
-                    @if (element.Commune.name) {
-                      {{element.Commune.name}}
-                    }@else {
-                      --
-                    }
+                    {{ element.Commune.name || '--' }}
                   </td>
                 </ng-container>
- 
+
+                <!-- asm Column -->
+                <ng-container matColumnDef="asm">
+                  <th mat-header-cell *matHeaderCellDef> ASM </th>
+                  <td mat-cell *matCellDef="let element">
+                    {{ element.asm_uuid || '--' }}
+                  </td>
+                </ng-container>
+
+                <!-- sup Column -->
+                <ng-container matColumnDef="sup">
+                  <th mat-header-cell *matHeaderCellDef> Supervisor </th>
+                  <td mat-cell *matCellDef="let element">
+                    {{ element.sup_uuid || '--' }}
+                  </td>
+                </ng-container>
+
+                <!-- dr Column -->
+                <ng-container matColumnDef="dr">
+                  <th mat-header-cell *matHeaderCellDef> DR </th>
+                  <td mat-cell *matCellDef="let element">
+                    {{ element.dr_uuid || '--' }}
+                  </td>
+                </ng-container>
+
+                <!-- cyclo Column -->
+                <ng-container matColumnDef="cyclo">
+                  <th mat-header-cell *matHeaderCellDef> Cyclo </th>
+                  <td mat-cell *matCellDef="let element">
+                    {{ element.cyclo_uuid || '--' }}
+                  </td>
+                </ng-container>
+
                 <!-- uuid Column -->
                 <ng-container matColumnDef="uuid">
                   <th mat-header-cell *matHeaderCellDef> Action </th>
                   <td mat-cell *matCellDef="let element">
-                    @if(currentUser.role == 'Manager' || 
-                    currentUser.role == 'Support'  && currentUser.permission === 'ALL' ||
+                    @if(currentUser.role == 'Manager' ||
+                    currentUser.role == 'Support' && currentUser.permission === 'ALL' ||
                     currentUser.permission === 'VAE' ||
                     currentUser.permission === 'VED' ||
                     currentUser.permission === 'VE') {
@@ -184,7 +196,7 @@
                       <mat-icon class="text-blue">edit</mat-icon>
                     </button>
                     }
-                    @if(currentUser.role == 'Manager' || 
+                    @if(currentUser.role == 'Manager' ||
                     currentUser.role == 'Support' && currentUser.permission === 'ALL' ||
                     currentUser.permission === 'VED') {
                     <button mat-icon-button (click)="findValue(element.uuid)" data-bs-toggle="modal"
@@ -309,8 +321,8 @@
             <div class="icon-form-end">
               <span class="form-icon" (click)="togglePassword(2)" (keydown.enter)="togglePassword(2)" tabindex="0"><i
                   class="ti" [ngClass]="password[2] ? 'ti-eye' : 'ti-eye-off'"></i></span>
-              <input [type]="password[2] ? 'text' : 'password'" class="form-control"
-                formControlName="password_confirm" required />
+              <input [type]="password[2] ? 'text' : 'password'" class="form-control" formControlName="password_confirm"
+                required />
               <mat-error *ngIf="formGroup.controls['password_confirm'].hasError('required')">
                 Ce champs est obligatoire
               </mat-error>
@@ -342,11 +354,11 @@
             </div>
           </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-12">
           <div class="mb-3">
             <label class="col-form-label" for="country">Pays <span class="text-danger">*</span></label>
-            <mat-select [compareWith]="compareFn" class="select custom-mat-select" formControlName="country_uuid" placeholder="Choose pays"
-              (selectionChange)="onCountryChange($event)">
+            <mat-select [compareWith]="compareFn" class="select custom-mat-select" formControlName="country_uuid"
+              placeholder="Choose pays" (selectionChange)="onCountryChange($event)">
               @for (item of countryList; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
               }
@@ -356,7 +368,8 @@
         <div class="col-md-6">
           <div class="mb-3">
             <label class="col-form-label" for="location">Province <span class="text-danger">*</span></label>
-            <mat-select [compareWith]="compareFnProvince" class="select custom-mat-select" formControlName="province_uuid" placeholder="Choose province"
+            <mat-select [compareWith]="compareFnProvince" class="select custom-mat-select"
+              formControlName="province_uuid" placeholder="Choose province"
               (selectionChange)="onProvinceChange($event)">
               @for (item of provinceList; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
@@ -366,12 +379,31 @@
         </div>
         <div class="col-md-6">
           <div class="mb-3">
+            <label class="col-form-label" for="user_asm_uuid">ASM <span class="text-danger">*</span></label>
+            <input #user_asm_uuid type="text" matInput [matAutocomplete]="autopos3" placeholder="Selectionner le user"
+              class="form-control" (input)="getAllASM()" (focus)="getAllASM()">
+            @if (isloadASM) {
+            <div class="d-flex align-items-center">
+              <strong role="status">Loading...</strong>
+              <div class="spinner-border ms-auto" aria-hidden="true"></div>
+            </div>
+            }
+            <mat-autocomplete requireSelection #autopos3="matAutocomplete" (optionSelected)="optionSelectedASM($event)"
+              [displayWith]="displayFnASM">
+              @for (item of filteredOptionASMs; track item.uuid) {
+              <mat-option [value]="item">{{item.fullname}}</mat-option>
+              }
+            </mat-autocomplete>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
             <label class="col-form-label" for="area_uuid">
               Area
               <span class="text-danger">*</span>
             </label>
-            <mat-select [compareWith]="compareFnArea" class="select custom-mat-select" formControlName="area_uuid" placeholder="Choose area"
-            (selectionChange)="onAreaChange($event)">
+            <mat-select [compareWith]="compareFnArea" class="select custom-mat-select" formControlName="area_uuid"
+              placeholder="Choose area" (selectionChange)="onAreaChange($event)">
               @for (item of areaListFilter; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
               }
@@ -380,12 +412,33 @@
         </div>
         <div class="col-md-6">
           <div class="mb-3">
+            <label class="col-form-label" for="user_sup_uuid">
+              Supervisor
+              <span class="text-danger">*</span></label>
+            <input #user_sup_uuid type="text" matInput [matAutocomplete]="autopos4" placeholder="Selectionner le user"
+              class="form-control" (input)="getAllSup()" (focus)="getAllSup()">
+            @if (isloadSup) {
+            <div class="d-flex align-items-center">
+              <strong role="status">Loading...</strong>
+              <div class="spinner-border ms-auto" aria-hidden="true"></div>
+            </div>
+            }
+            <mat-autocomplete requireSelection #autopos4="matAutocomplete" (optionSelected)="optionSelectedSup($event)"
+              [displayWith]="displayFnSup">
+              @for (item of filteredOptionSups; track item.uuid) {
+              <mat-option [value]="item">{{item.fullname}}</mat-option>
+              }
+            </mat-autocomplete>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
             <label class="col-form-label" for="subarea_uuid">
               SubArea
               <span class="text-danger">*</span>
             </label>
-            <mat-select [compareWith]="compareFnSubArea" class="select custom-mat-select" formControlName="subarea_uuid" placeholder="Choose subarea"
-            (selectionChange)="onSubAreaChange($event)">
+            <mat-select [compareWith]="compareFnSubArea" class="select custom-mat-select" formControlName="subarea_uuid"
+              placeholder="Choose subarea" (selectionChange)="onSubAreaChange($event)">
               @for (item of subAreaListFilter; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
               }
@@ -394,15 +447,56 @@
         </div>
         <div class="col-md-6">
           <div class="mb-3">
+            <label class="col-form-label" for="user_dr_uuid">DR <span class="text-danger">*</span></label>
+            <input #user_dr_uuid type="text" matInput [matAutocomplete]="autopos5" placeholder="Selectionner le user"
+              class="form-control" (input)="getAllDr()" (focus)="getAllDr()">
+            @if (isloadDr) {
+            <div class="d-flex align-items-center">
+              <strong role="status">Loading...</strong>
+              <div class="spinner-border ms-auto" aria-hidden="true"></div>
+            </div>
+            }
+            <mat-autocomplete requireSelection #autopos5="matAutocomplete" (optionSelected)="optionSelectedDr($event)"
+              [displayWith]="displayFnDr">
+              @for (item of filteredOptionDrs; track item.uuid) {
+              <mat-option [value]="item">{{item.fullname}}</mat-option>
+              }
+            </mat-autocomplete>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
             <label class="col-form-label" for="commune_uuid">
-              Commune
+              Communes
               <span class="text-danger">*</span>
             </label>
-            <mat-select [compareWith]="compareFnCommune" class="select custom-mat-select" formControlName="commune_uuid" placeholder="Choose commune">
+            <mat-select [compareWith]="compareFnCommune" class="select custom-mat-select" formControlName="commune_uuid"
+              placeholder="Choose commune">
               @for (item of communeListFilter; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
               }
             </mat-select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label" for="text">
+              Cyclos
+              <span class="text-danger">*</span></label>
+            <input #user_cyclo_uuid type="text" matInput [matAutocomplete]="autopos6" placeholder="Selectionner le user"
+              class="form-control" (input)="getAllCyclo()" (focus)="getAllCyclo()">
+            @if (isloadCyclo) {
+            <div class="d-flex align-items-center">
+              <strong role="status">Loading...</strong>
+              <div class="spinner-border ms-auto" aria-hidden="true"></div>
+            </div>
+            }
+            <mat-autocomplete requireSelection #autopos6="matAutocomplete"
+              (optionSelected)="optionSelectedCyclo($event)" [displayWith]="displayFnCyclo">
+              @for (item of filteredOptionCyclos; track item.uuid) {
+              <mat-option [value]="item">{{item.fullname}}</mat-option>
+              }
+            </mat-autocomplete>
           </div>
         </div>
       </div>
@@ -482,6 +576,34 @@
         </div>
         <div class="col-md-6">
           <div class="mb-3">
+            <label class="col-form-label" for="Password">Password <span class="text-danger">*</span></label>
+            <div class="icon-form-end">
+              <span class="form-icon" (click)="togglePassword(1)" tabindex="0"><i class="ti"
+                  [ngClass]="password[1] ? 'ti-eye' : 'ti-eye-off'"></i></span>
+              <input [type]="password[1] ? 'text' : 'password'" class="form-control" formControlName="password"
+                required />
+              <mat-error *ngIf="formGroup.controls['password'].hasError('required')">
+                Ce champs est obligatoire
+              </mat-error>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label" for="text">Repeat Password <span class="text-danger">*</span></label>
+            <div class="icon-form-end">
+              <span class="form-icon" (click)="togglePassword(2)" (keydown.enter)="togglePassword(2)" tabindex="0"><i
+                  class="ti" [ngClass]="password[2] ? 'ti-eye' : 'ti-eye-off'"></i></span>
+              <input [type]="password[2] ? 'text' : 'password'" class="form-control" formControlName="password_confirm"
+                required />
+              <mat-error *ngIf="formGroup.controls['password_confirm'].hasError('required')">
+                Ce champs est obligatoire
+              </mat-error>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
             <label class="col-form-label" for="permission">
               Permission
               <span class="text-danger">*</span>
@@ -505,11 +627,11 @@
             </div>
           </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-12">
           <div class="mb-3">
             <label class="col-form-label" for="country">Pays <span class="text-danger">*</span></label>
-            <mat-select [compareWith]="compareFn" class="select custom-mat-select" formControlName="country_uuid" placeholder="Choose pays"
-              (selectionChange)="onCountryChange($event)">
+            <mat-select [compareWith]="compareFn" class="select custom-mat-select" formControlName="country_uuid"
+              placeholder="Choose pays" (selectionChange)="onCountryChange($event)">
               @for (item of countryList; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
               }
@@ -519,7 +641,8 @@
         <div class="col-md-6">
           <div class="mb-3">
             <label class="col-form-label" for="location">Province <span class="text-danger">*</span></label>
-            <mat-select [compareWith]="compareFnProvince" class="select custom-mat-select" formControlName="province_uuid" placeholder="Choose province"
+            <mat-select [compareWith]="compareFnProvince" class="select custom-mat-select"
+              formControlName="province_uuid" placeholder="Choose province"
               (selectionChange)="onProvinceChange($event)">
               @for (item of provinceList; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
@@ -529,12 +652,31 @@
         </div>
         <div class="col-md-6">
           <div class="mb-3">
+            <label class="col-form-label" for="user_asm_uuid">ASM <span class="text-danger">*</span></label>
+            <input #user_asm_uuid type="text" matInput [matAutocomplete]="autopos3" placeholder="Selectionner le user"
+              class="form-control" (input)="getAllASM()" (focus)="getAllASM()">
+            @if (isloadASM) {
+            <div class="d-flex align-items-center">
+              <strong role="status">Loading...</strong>
+              <div class="spinner-border ms-auto" aria-hidden="true"></div>
+            </div>
+            }
+            <mat-autocomplete requireSelection #autopos3="matAutocomplete" (optionSelected)="optionSelectedASM($event)"
+              [displayWith]="displayFnASM">
+              @for (item of filteredOptionASMs; track item.uuid) {
+              <mat-option [value]="item">{{item.fullname}}</mat-option>
+              }
+            </mat-autocomplete>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
             <label class="col-form-label" for="area_uuid">
               Area
               <span class="text-danger">*</span>
             </label>
-            <mat-select [compareWith]="compareFnArea" class="select custom-mat-select" formControlName="area_uuid" placeholder="Choose area"
-            (selectionChange)="onAreaChange($event)">
+            <mat-select [compareWith]="compareFnArea" class="select custom-mat-select" formControlName="area_uuid"
+              placeholder="Choose area" (selectionChange)="onAreaChange($event)">
               @for (item of areaListFilter; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
               }
@@ -543,12 +685,33 @@
         </div>
         <div class="col-md-6">
           <div class="mb-3">
+            <label class="col-form-label" for="user_sup_uuid">
+              Supervisor
+              <span class="text-danger">*</span></label>
+            <input #user_sup_uuid type="text" matInput [matAutocomplete]="autopos4" placeholder="Selectionner le user"
+              class="form-control" (input)="getAllSup()" (focus)="getAllSup()">
+            @if (isloadSup) {
+            <div class="d-flex align-items-center">
+              <strong role="status">Loading...</strong>
+              <div class="spinner-border ms-auto" aria-hidden="true"></div>
+            </div>
+            }
+            <mat-autocomplete requireSelection #autopos4="matAutocomplete" (optionSelected)="optionSelectedSup($event)"
+              [displayWith]="displayFnSup">
+              @for (item of filteredOptionSups; track item.uuid) {
+              <mat-option [value]="item">{{item.fullname}}</mat-option>
+              }
+            </mat-autocomplete>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
             <label class="col-form-label" for="subarea_uuid">
               SubArea
               <span class="text-danger">*</span>
             </label>
-            <mat-select [compareWith]="compareFnSubArea" class="select custom-mat-select" formControlName="subarea_uuid" placeholder="Choose subarea"
-            (selectionChange)="onSubAreaChange($event)">
+            <mat-select [compareWith]="compareFnSubArea" class="select custom-mat-select" formControlName="subarea_uuid"
+              placeholder="Choose subarea" (selectionChange)="onSubAreaChange($event)">
               @for (item of subAreaListFilter; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
               }
@@ -557,15 +720,56 @@
         </div>
         <div class="col-md-6">
           <div class="mb-3">
+            <label class="col-form-label" for="user_dr_uuid">DR <span class="text-danger">*</span></label>
+            <input #user_dr_uuid type="text" matInput [matAutocomplete]="autopos5" placeholder="Selectionner le user"
+              class="form-control" (input)="getAllDr()" (focus)="getAllDr()">
+            @if (isloadDr) {
+            <div class="d-flex align-items-center">
+              <strong role="status">Loading...</strong>
+              <div class="spinner-border ms-auto" aria-hidden="true"></div>
+            </div>
+            }
+            <mat-autocomplete requireSelection #autopos5="matAutocomplete" (optionSelected)="optionSelectedDr($event)"
+              [displayWith]="displayFnDr">
+              @for (item of filteredOptionDrs; track item.uuid) {
+              <mat-option [value]="item">{{item.fullname}}</mat-option>
+              }
+            </mat-autocomplete>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
             <label class="col-form-label" for="commune_uuid">
-              Commune
+              Communes
               <span class="text-danger">*</span>
             </label>
-            <mat-select [compareWith]="compareFnCommune" class="select custom-mat-select" formControlName="commune_uuid" placeholder="Choose commune">
+            <mat-select [compareWith]="compareFnCommune" class="select custom-mat-select" formControlName="commune_uuid"
+              placeholder="Choose commune">
               @for (item of communeListFilter; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
               }
             </mat-select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label" for="text">
+              Cyclos
+              <span class="text-danger">*</span></label>
+            <input #user_cyclo_uuid type="text" matInput [matAutocomplete]="autopos6" placeholder="Selectionner le user"
+              class="form-control" (input)="getAllCyclo()" (focus)="getAllCyclo()">
+            @if (isloadCyclo) {
+            <div class="d-flex align-items-center">
+              <strong role="status">Loading...</strong>
+              <div class="spinner-border ms-auto" aria-hidden="true"></div>
+            </div>
+            }
+            <mat-autocomplete requireSelection #autopos6="matAutocomplete"
+              (optionSelected)="optionSelectedCyclo($event)" [displayWith]="displayFnCyclo">
+              @for (item of filteredOptionCyclos; track item.uuid) {
+              <mat-option [value]="item">{{item.fullname}}</mat-option>
+              }
+            </mat-autocomplete>
           </div>
         </div>
       </div>
