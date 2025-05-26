@@ -37,7 +37,7 @@ export class BrandComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'province', 'name', 'posformitem', 'id'];
+  displayedColumns: string[] = ['country', 'province', 'name', 'posformitem', 'uuid'];
   dataSource = new MatTableDataSource<IBrand>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;

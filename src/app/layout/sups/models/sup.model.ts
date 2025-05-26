@@ -26,11 +26,13 @@ export interface ISup {
     asm_uuid: string;
     Asm: IAsm;
 
+    User?: IUser;
+
     signature: string;
     CreatedAt: Date;
     UpdatedAt: Date;
 
-    Users?: IUser[];
+    // Users?: IUser[];
     Drs?: IDr[];
     Cyclos?: ICyclo[];
     PosForms: IPosForm[];

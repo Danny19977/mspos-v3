@@ -30,7 +30,7 @@
                                     <span class="form-icon"><i class="ti ti-search"></i></span>
                                     <input type="text" #input [(ngModel)]="search"
                                         (ngModelChange)="onSearchChange($event)" class="form-control"
-                                        placeholder="Ex. Funa">
+                                        placeholder="Ex. Jean claude">
                                 </div>
                             </div>
                             <div class="col-sm-8">
@@ -44,14 +44,14 @@
                                                 <li>
                                                     <a href="javascript:void(0);" class="dropdown-item"><i
                                                             class="ti ti-file-type-pdf text-danger me-1"></i>
-                                                        Export as
-                                                        PDF</a>
+                                                        Export as PDF
+                                                    </a>
                                                 </li>
                                                 <li>
                                                     <a href="javascript:void(0);" class="dropdown-item"><i
                                                             class="ti ti-file-type-xls text-green me-1"></i>
-                                                        Export as
-                                                        Excel </a>
+                                                        Export as Excel
+                                                    </a>
                                                 </li>
                                             </ul>
                                         </div>
@@ -73,106 +73,123 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive custom-table">
-                            <table class="table mb-5" id="campaign-list" matSort (matSortChange)="sortData($event)">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th mat-sort-header="synchronisation">Sync</th>
-                                        <th mat-sort-header="created">Date</th>
-                                        <th mat-sort-header="country">Pays</th>
-                                        <th mat-sort-header="province">Province</th>
-                                        <th mat-sort-header="area">Area</th>
-                                        <th mat-sort-header="subarea">Subarea</th>
-                                        <th mat-sort-header="commune">Commune</th>
-                                        <th mat-sort-header="agent">Agent</th>
-                                        <th mat-sort-header="total_pos">Total Pos</th>
-                                        <th mat-sort-header="pourcent">Pourcent</th>
-                                        <th class="text-end">Action</th>
-                                    </tr>
-                                </thead>
+                            <table mat-table [dataSource]="dataSource" matSort (matSortChange)="sortData($event)"
+                                class="mat-elevation-z8">
+                                <!-- country Column -->
+                                <ng-container matColumnDef="created">
+                                    <th mat-header-cell *matHeaderCellDef> Date </th>
+                                    <td mat-cell *matCellDef="let element">
+                                        {{ element.CreatedAt | date:'dd/MM/yyyy HH:mm' }}
+                                    </td>
+                                </ng-container>
 
-                                <tbody>
-                                    @for (data of dataSource.data; track $index) {
-                                    <tr class="odd">
-                                        <td>
-                                            <span class="badge bg-success text-white">
-                                                <i class="ti ti-check"></i>
-                                            </span>
-                                        </td>
-                                        <td>{{ data.CreatedAt | date: 'dd/MM/YYYY HH:mm' }}</td>
-                                        <td>@if (data.Country) {
-                                            {{ data.Country!.name }}
-                                            }
-                                        </td>
-                                        <td>
-                                            @if (data.Province) {
-                                            {{ data.Province!.name }}
-                                            }
-                                        </td>
-                                        <td>
-                                            @if (data.Area) {
-                                            {{ data.Area!.name }}
-                                            }
-                                        </td>
-                                        <td>
-                                            @if (data.Subarea) {
-                                            {{ data.Subarea!.name }}
-                                            }
-                                        </td>
-                                        <td>
-                                            @if (data.Commune) {
-                                            {{ data.Commune!.name }}
-                                            }
-                                        </td>
-                                        <td>{{ data.User!.fullname }}</td>
-                                        <td
-                                            style="background-color: rgba(255, 0, 0, 0.173); font-size: larger; text-align: center;">
-                                            <a [routerLink]="['/web/pos/pos-list']">
-                                                {{ getRoutePlanItemTrueCount(data.RoutePlanItems!) }} / {{
-                                                getRoutePlanItemCount(data.RoutePlanItems!) }}
-                                            </a>
-                                        </td>
-                                        <td
-                                            style="background-color: rgba(0, 136, 255, 0.173); font-size: larger; text-align: center;">
-                                            <a [routerLink]="['/web/pos/pos-list']">
-                                                <ng-container
-                                                    *ngIf="+getRoutePlanItemTrueCount(data.RoutePlanItems!) > 1 && +getRoutePlanItemCount(data.RoutePlanItems!) > 1; else zeroPercent">
-                                                    {{ ((+getRoutePlanItemTrueCount(data.RoutePlanItems!) /
-                                                    +getRoutePlanItemCount(data.RoutePlanItems!)) * 100) |
-                                                    number:'1.0-2' }} %
-                                                </ng-container>
-                                                <ng-template #zeroPercent>
-                                                    0 %
-                                                </ng-template>
-                                            </a>
-                                        </td>
-                                        <td>
-                                            <div class="dropdown table-action">
-                                                <a href="javascript:void(0);" class="action-icon"
-                                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fa fa-ellipsis-v"></i>
-                                                </a>
-                                                <div class="dropdown-menu dropdown-menu-right">
-                                                    <a class="dropdown-item" data-bs-toggle="offcanvas"
-                                                        (click)="findValue(data.uuid)" data-bs-target="#offcanvas_pos"
-                                                        href="javascript:void(0);"><i class="ti ti-eye text-blue"></i>
-                                                        Visibility
-                                                    </a>
+                                <!-- country Column -->
+                                <ng-container matColumnDef="country">
+                                    <th mat-header-cell *matHeaderCellDef> Pays </th>
+                                    <td mat-cell *matCellDef="let element"> {{element.Country.name }} </td>
+                                </ng-container>
 
-                                                    @if(currentUser.permission === 'ALL' ||
-                                                    currentUser.permission === 'VED') {
-                                                    <a class="dropdown-item" href="javascript:void(0);"
-                                                        (click)="findValue(data.uuid)" data-bs-toggle="modal"
-                                                        data-bs-target="#delete_contact"><i
-                                                            class="ti ti-trash text-danger"></i> 
-                                                            Delete
-                                                    </a>
-                                                    }
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                <!-- province Column -->
+                                <ng-container matColumnDef="province">
+                                    <th mat-header-cell *matHeaderCellDef> Province </th>
+                                    <td mat-cell *matCellDef="let element"> {{element.Province.name || '--' }} </td>
+                                </ng-container>
+
+                                <!-- area Column -->
+                                <ng-container matColumnDef="area">
+                                    <th mat-header-cell *matHeaderCellDef> Province </th>
+                                    <td mat-cell *matCellDef="let element"> {{element.Area.name || '--' }} </td>
+                                </ng-container>
+
+                                <!-- subarea Column -->
+                                <ng-container matColumnDef="subarea">
+                                    <th mat-header-cell *matHeaderCellDef> SubArea </th>
+                                    <td mat-cell *matCellDef="let element"> {{element.SubArea.name || '--' }} </td>
+                                </ng-container>
+
+                                <!-- commune Column -->
+                                <ng-container matColumnDef="commune">
+                                    <th mat-header-cell *matHeaderCellDef> Commune </th>
+                                    <td mat-cell *matCellDef="let element"> {{element.Commune.name || '--' }} </td>
+                                </ng-container>
+
+                                <!-- asm Column -->
+                                <ng-container matColumnDef="asm">
+                                    <th mat-header-cell *matHeaderCellDef> ASM </th>
+                                    <td mat-cell *matCellDef="let element"> {{ element.Asm?.User?.fullname || '--' }}
+                                    </td>
+                                </ng-container>
+
+                                <!-- sup Column -->
+                                <ng-container matColumnDef="sup">
+                                    <th mat-header-cell *matHeaderCellDef> Supervisor </th>
+                                    <td mat-cell *matCellDef="let element"> {{ element.Sup?.User?.fullname || '--' }}
+                                    </td>
+                                </ng-container>
+
+                                <!-- dr Column -->
+                                <ng-container matColumnDef="dr">
+                                    <th mat-header-cell *matHeaderCellDef> DR </th>
+                                    <td mat-cell *matCellDef="let element">{{ element.Dr?.User?.fullname || '--' }}
+                                    </td>
+                                </ng-container>
+
+                                <!-- cyclo Column -->
+                                <ng-container matColumnDef="cyclo">
+                                    <th mat-header-cell *matHeaderCellDef> Cyclo </th>
+                                    <td mat-cell *matCellDef="let element"> {{ element.Cyclo?.User?.fullname || '--' }}
+                                    </td>
+                                </ng-container>
+
+                                <!-- total_pos Column -->
+                                <ng-container matColumnDef="total_pos">
+                                    <th mat-header-cell *matHeaderCellDef> Total_Pos </th>
+                                    <td mat-cell *matCellDef="let element"> 0 </td>
+                                </ng-container>
+
+                                <!-- pourcent Column -->
+                                <ng-container matColumnDef="pourcent">
+                                    <th mat-header-cell *matHeaderCellDef> Progression </th>
+                                    <td mat-cell *matCellDef="let element"> 0 </td>
+                                </ng-container>
+
+                                <!-- uuid Column -->
+                                <ng-container matColumnDef="uuid">
+                                    <th mat-header-cell *matHeaderCellDef> Action </th>
+                                    <td mat-cell *matCellDef="let element" class="d-flex align-items-center">
+                                        <button mat-icon-button (click)="findValue(element.uuid)"
+                                            data-bs-toggle="offcanvas" data-bs-target="#offcanvas_pos">
+                                            <mat-icon class="text-primary">add</mat-icon>
+                                        </button> 
+                                         
+                                         <button mat-icon-button (click)="findValue(element.uuid)"
+                                            data-bs-toggle="offcanvas" data-bs-target="#offcanvas_api">
+                                            <mat-icon class="text-blue">visibility</mat-icon>
+                                        </button> 
+
+                                       <button mat-icon-button (click)="findValue(element.uuid)" data-bs-toggle="modal"
+                                            data-bs-target="#delete_data">
+                                            <mat-icon class="text-danger">delete</mat-icon>
+                                        </button> 
+                                    </td>
+                                </ng-container>
+                                <!-- Table Header and Rows -->
+                                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                                <!-- Row shown when there is no matching data. -->
+                                <tr class="mat-row" *matNoDataRow>
+                                    @if (isLoadingData){
+                                    <button disabled class="btn btn-primary">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </button>
+                                    } @else {
+                                    <td class="mat-cell" colspan="4">Aucune donnée correspondant au filtre
+                                        "{{input.value}}"</td>
                                     }
-                                </tbody>
+                                </tr>
                             </table>
                         </div>
 
@@ -201,12 +218,7 @@
 <!-- Liste RoutePLAnItem local -->
 <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_pos">
     <div class="offcanvas-header border-bottom">
-        <h4>Liste des Points de vente</h4>
-        <button type="button"
-            class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle"
-            data-bs-dismiss="offcanvas" aria-label="Close">
-            <i class="ti ti-x"></i>
-        </button>
+        <h4>Liste des Points de vente</h4> 
     </div>
     <div class="offcanvas-body">
         <!-- Forms Task List -->
@@ -257,11 +269,11 @@
         <!-- Pos List -->
         <div class="task-wrapper">
             <a href="javascript:void(0);" class="task-accordion" data-bs-toggle="collapse" data-bs-target="#recent">
-                <h4>Vos POS
-                    <span>{{ dataListItem.length }}</span>
+                <h4>Vos Points de ventes a visiter
+                    <!-- <span>{{ dataListItem.length }}</span>
                     <span class="bg-success">
                         {{ getRoutePlanItemTrueCount(dataListItem) }}
-                    </span>
+                    </span> -->
                 </h4>
             </a>
             <div class="tasks-activity tasks collapse show" id="recent">
@@ -313,12 +325,7 @@
 <!-- Liste RoutePlanItem API -->
 <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_api">
     <div class="offcanvas-header border-bottom">
-        <h4>Liste des Points de ventes</h4>
-        <button type="button"
-            class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle"
-            data-bs-dismiss="offcanvas" aria-label="Close">
-            <i class="ti ti-x"></i>
-        </button>
+        <h4>Liste des Points de ventes</h4> 
     </div>
     <div class="offcanvas-body">
         <!-- Pos List -->
@@ -403,7 +410,7 @@
 
 
 <!-- Delete routePlan -->
-<div class="modal fade" id="delete_contact" role="dialog">
+<div class="modal fade" id="delete_data" role="dialog">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-body">

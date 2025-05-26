@@ -127,7 +127,6 @@ export class PosVenteListComponent implements OnInit {
     this.authService.user().subscribe({
       next: (user) => {
         this.currentUser = user;
-        console.log("currentUser", this.currentUser);
         this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
         this.dataSource.sort = this.sort; // Bind sort to dataSource
         this.cdr.detectChanges(); // Trigger change detection
@@ -264,7 +263,36 @@ export class PosVenteListComponent implements OnInit {
   }
 
 
-  async onSubmit() {
+
+  findValue(value: string) {
+    this.uuidItem = value;
+    this.posVenteService.get(this.uuidItem).subscribe(item => {
+      this.dataItem = item.data;
+      this.formGroup.patchValue({
+        name: this.dataItem.name,
+        shop: this.dataItem.shop,
+        postype: this.dataItem.postype,
+        gerant: this.dataItem.gerant,
+        avenue: this.dataItem.avenue,
+        quartier: this.dataItem.quartier,
+        reference: this.dataItem.reference,
+        telephone: this.dataItem.telephone,
+        country_uuid: this.dataItem.country_uuid,
+        province_uuid: this.dataItem.province_uuid,
+        area_uuid: this.dataItem.area_uuid,
+        subarea_uuid: this.dataItem.subarea_uuid,
+        commune_uuid: this.dataItem.commune_uuid,
+        user_uuid: this.dataItem.user_uuid,
+        asm_uuid: this.dataItem.asm_uuid,
+        sup_uuid: this.dataItem.sup_uuid,
+        dr_uuid: this.dataItem.dr_uuid,
+        cyclo_uuid: this.dataItem.cyclo_uuid,
+        status: this.dataItem.status,
+      });
+    });
+  }
+
+  onSubmit() {
     try {
       if (this.formGroup.valid) {
         this.isLoading = true;
@@ -283,11 +311,11 @@ export class PosVenteListComponent implements OnInit {
           area_uuid: this.currentUser.area_uuid,
           subarea_uuid: this.currentUser.subarea_uuid,
           commune_uuid: this.currentUser.commune_uuid,
-          asm_uuid: this.dataItem.asm_uuid,
-          sup_uuid: this.dataItem.sup_uuid,
-          dr_uuid: this.dataItem.dr_uuid,
-          cyclo_uuid: this.dataItem.cyclo_uuid,
-          user_uuid: this.dataItem.user_uuid,
+          asm_uuid: this.currentUser.asm_uuid,
+          sup_uuid: this.currentUser.sup_uuid,
+          dr_uuid: this.currentUser.dr_uuid,
+          cyclo_uuid: this.currentUser.cyclo_uuid,
+          user_uuid: this.currentUser.uuid,
           status: true, // le status change une fois que le pos est synchronisé
           signature: this.currentUser.fullname,
         };
@@ -343,11 +371,11 @@ export class PosVenteListComponent implements OnInit {
         area_uuid: this.currentUser.area_uuid,
         subarea_uuid: this.currentUser.subarea_uuid,
         commune_uuid: this.currentUser.commune_uuid,
-        asm_uuid: this.dataItem.asm_uuid,
-        sup_uuid: this.dataItem.sup_uuid,
-        dr_uuid: this.dataItem.dr_uuid,
-        cyclo_uuid: this.dataItem.cyclo_uuid,
-        user_uuid: this.dataItem.user_uuid,
+        asm_uuid: this.currentUser.asm_uuid,
+        sup_uuid: this.currentUser.sup_uuid,
+        dr_uuid: this.currentUser.dr_uuid,
+        cyclo_uuid: this.currentUser.cyclo_uuid,
+        user_uuid: this.currentUser.uuid,
         status: true, // le status change une fois que le pos est synchronisé
         signature: this.currentUser.fullname,
         UpdatedAt: new Date(),
@@ -386,33 +414,6 @@ export class PosVenteListComponent implements OnInit {
     }
   }
 
-  findValue(value: string) {
-    this.uuidItem = value;
-    this.posVenteService.get(this.uuidItem).subscribe(item => {
-      this.dataItem = item.data;
-      this.formGroup.patchValue({
-        name: this.dataItem.name,
-        shop: this.dataItem.shop,
-        postype: this.dataItem.postype,
-        gerant: this.dataItem.gerant,
-        avenue: this.dataItem.avenue,
-        quartier: this.dataItem.quartier,
-        reference: this.dataItem.reference,
-        telephone: this.dataItem.telephone,
-        country_uuid: this.dataItem.country_uuid,
-        province_uuid: this.dataItem.province_uuid,
-        area_uuid: this.dataItem.area_uuid,
-        subarea_uuid: this.dataItem.subarea_uuid,
-        commune_uuid: this.dataItem.commune_uuid,
-        user_uuid: this.dataItem.user_uuid,
-        asm_uuid: this.dataItem.asm_uuid,
-        sup_uuid: this.dataItem.sup_uuid,
-        dr_uuid: this.dataItem.dr_uuid,
-        cyclo_uuid: this.dataItem.cyclo_uuid,
-        status: this.dataItem.status,
-      });
-    });
-  }
 
   delete(): void {
     this.posVenteService

@@ -99,6 +99,8 @@ export class ProfileComponent implements OnInit {
       next: (user) => {
         this.currentUser = user;
 
+        console.log("currentUser", this.currentUser)
+
         this.formGroup.patchValue({
           fullname: this.currentUser.fullname,
           email: this.currentUser.email,

@@ -16,7 +16,6 @@ import { IRoutePlanItem } from './models/routeplanItem.model';
 import { IPos } from '../pos-vente/models/pos.model';
 import { PosVenteService } from '../pos-vente/pos-vente.service';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { v4 as uuidv4 } from 'uuid';
 
 @Component({
   selector: 'app-routeplan',
@@ -34,10 +33,10 @@ export class RouteplanComponent implements OnInit {
   total_pages: number = 0;
   page_size: number = 15;
   current_page: number = 1;
-  total_records: number = 0; 
+  total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['created', 'country', 'province', 'area', 'subarea', 'commune', 'agent', 'total_pos', 'pourcent', 'id'];
+  displayedColumns: string[] = ['created', 'country', 'province', 'area', 'subarea', 'commune', 'asm', 'sup', 'dr', 'cyclo', 'total_pos', 'pourcent', 'uuid'];
   dataSource = new MatTableDataSource<IRoutePlan>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -45,43 +44,25 @@ export class RouteplanComponent implements OnInit {
 
   public search = '';
 
-
-  // Forms
-  // Api
   uuidItem!: string;
   dataItem!: IRoutePlan; // Single data  
 
 
-  // RoutePlanItem
-  // Api
   uuidRoutePlanItem!: string;
   dataRoutePlanItem!: IRoutePlanItem; // Single data
-
 
   formGroup!: FormGroup;
   currentUser!: IUser;
   isLoading = false;
   isLoadingItem = false;
 
-
-  posSyncLocal: IPos[] = []; // pos synchromisation local
-
   posList: IPos[] = [];
   posListFilter: IPos[] = [];
-  filteredOptions: IPos[] = []
+  filteredOptions: IPos[] = [];
   @ViewChild('pos_uuid') pos_uuid!: ElementRef<HTMLInputElement>;
   isload = false;
   posuuId: string = '';
-  pos_name: string = '';
-  pos_gerant: string = '';
-  pos_shop: string = '';
-  postype: string = '';
 
-
-  onLine = signal<boolean>(false);
-  isOnline = computed(() => navigator.onLine);
-
-  isCreatedRoutePlan = false;
 
   constructor(
     private router: Router,
@@ -129,55 +110,67 @@ export class RouteplanComponent implements OnInit {
 
 
   getAllPos(currentUser: IUser): void {
-    const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
-    this.isload = true; 
-
     if (currentUser.role == 'Manager') {
+      const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
+      this.isload = true;
       this.posVenteService.getAll().subscribe(res => {
         this.posList = res.data;
         this.posListFilter = this.posList;
+        this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
+        this.isload = false;
       });
     } else if (currentUser.role == 'ASM') {
+      const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
+      this.isload = true;
       this.posVenteService.getAllByASM(currentUser.province_uuid).subscribe(res => {
         this.posList = res.data;
         this.posListFilter = this.posList;
+        this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
+        this.isload = false;
       });
     } else if (currentUser.role == 'Supervisor') {
+      const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
+      this.isload = true;
       this.posVenteService.getAllBySup(currentUser.area_uuid).subscribe(res => {
         this.posList = res.data;
         this.posListFilter = this.posList;
+        this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
+        this.isload = false;
       });
     } else if (currentUser.role == 'DR') {
+      console.log("currentUser.subarea_uuid", currentUser.subarea_uuid);
+      const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
+      this.isload = true;
       this.posVenteService.getAllByDR(currentUser.subarea_uuid).subscribe(res => {
         this.posList = res.data;
+        console.log("posList", this.posList);
         this.posListFilter = this.posList;
+        this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
+        this.isload = false;
       });
     } else if (currentUser.role == 'Cyclo') {
+      const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
+      this.isload = true;
       this.posVenteService.getAllByCyclo(currentUser.uuid).subscribe(res => {
         this.posList = res.data;
         this.posListFilter = this.posList;
+        this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
+        this.isload = false;
       });
-    }
-    
+    };
 
-    this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
-    this.isload = false; 
+
   }
 
-  displayFn(pos: any): any {
+  displayFn(pos: IPos): any {
     return pos && pos.name ? pos.name : '';
   }
 
   optionSelected(event: MatAutocompleteSelectedEvent) {
     const selectedOption = event.option.value;
     this.posuuId = selectedOption.uuid;
-    this.pos_name = selectedOption.name;
-    this.pos_gerant = selectedOption.gerant;
-    this.pos_shop = selectedOption.shop;
-    this.postype = selectedOption.postype;
     // Utilisez id et fullName comme vous le souhaitez
     console.log('pos_uuid:', this.posuuId);
-    console.log('Name:', this.pos_name);
   }
 
 
@@ -244,14 +237,6 @@ export class RouteplanComponent implements OnInit {
   }
 
 
-  getAllRoutePlanItem(uuid: string) {
-     this.routePlanItemService.getAllById(uuid).subscribe(res => {
-      this.dataListItem = res.data;
-      this.isLoadingDataItem = false;
-    });
-  }
-
-
   getRoutePlanItemCount(routeplanItem: IRoutePlanItem[]): string {
     return routeplanItem ? routeplanItem.length > 0 ? routeplanItem.length.toString() : '0' : '0';
   }
@@ -288,22 +273,60 @@ export class RouteplanComponent implements OnInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
+  // Get value RoutePlan api
+  findValue(value: any) {
+    this.uuidItem = value;
+    this.routeplanService.get(this.uuidItem).subscribe(item => {
+      this.dataItem = item.data;
+      this.formGroup.patchValue({
+        user_uuid: this.dataItem.user_uuid,
+        country_uuid: this.dataItem.country_uuid,
+        province_uuid: this.dataItem.province_uuid,
+        area_uuid: this.dataItem.area_uuid,
+        subarea_uuid: this.dataItem.subarea_uuid,
+        commune_uuid: this.dataItem.commune_uuid,
+        asm_uuid: this.dataItem.asm_uuid,
+        sup_uuid: this.dataItem.sup_uuid,
+        dr_uuid: this.dataItem.dr_uuid,
+        cyclo_uuid: this.dataItem.cyclo_uuid,
+      });
+    });
+  }
+
+
+  // Get value RoutePlanItem api
+  findValueItem(value: string) {
+    this.uuidRoutePlanItem = value;
+    this.routePlanItemService.get(this.uuidRoutePlanItem).subscribe(item => {
+      this.dataRoutePlanItem = item.data;
+      this.formGroup.patchValue({
+        routplan_uuid: this.dataRoutePlanItem.routplan_uuid,
+        pos_uuid: this.dataRoutePlanItem.pos_uuid,
+        status: this.dataRoutePlanItem.status,
+      });
+    });
+  }
+
   // Create new RoutePlan
   onSubmit() {
     try {
       this.isLoading = true;
       var body: IRoutePlan = {
-        uuid: uuidv4(),
-        country_uuid: this.currentUser.country_uuid, 
-        province_uuid: this.currentUser.province_uuid, 
-        area_uuid: this.currentUser.area_uuid, 
-        subarea_uuid: this.currentUser.subarea_uuid, 
-        commune_uuid: this.currentUser.commune_uuid, 
+        country_uuid: this.currentUser.country_uuid,
+        province_uuid: this.currentUser.province_uuid,
+        area_uuid: this.currentUser.area_uuid,
+        subarea_uuid: this.currentUser.subarea_uuid,
+        commune_uuid: this.currentUser.commune_uuid,
+        asm_uuid: this.currentUser.asm_uuid,
+        sup_uuid: this.currentUser.sup_uuid,
+        dr_uuid: this.currentUser.dr_uuid,
+        cyclo_uuid: this.currentUser.uuid, // Assuming the current user is the cyclo
         user_uuid: this.currentUser.uuid,
         signature: this.currentUser.fullname,
       };
       this.routeplanService.create(body).subscribe({
         next: (res) => {
+          this.dataItem = res.data;
           this.logActivity.activity(
             'RoutePlan',
             this.currentUser.uuid,
@@ -340,10 +363,9 @@ export class RouteplanComponent implements OnInit {
       if (this.formGroup.valid) {
         this.isLoadingItem = true;
         var body: IRoutePlanItem = {
-          uuid: uuidv4(),
           routplan_uuid: this.dataItem.uuid!,
-          pos_uuid: this.posuuId,  
-          status: false, 
+          pos_uuid: this.posuuId,
+          status: false,
         };
         this.routePlanItemService.create(body).subscribe({
           next: (res) => {
@@ -377,40 +399,52 @@ export class RouteplanComponent implements OnInit {
     }
   }
 
-
-  // Get value RoutePlan api
-  findValue(value: any) {
-    this.uuidItem = value;
-    this.routeplanService.get(this.uuidItem).subscribe(item => {
-      this.dataItem = item.data;
-      this.getAllRoutePlanItem(this.dataItem.uuid!);
-      this.formGroup.patchValue({
-        user_uuid: this.dataItem.user_uuid,
-        country_uuid: this.dataItem.country_uuid,
-        province_uuid: this.dataItem.province_uuid,
-        area_uuid: this.dataItem.area_uuid,
-        subarea_uuid: this.dataItem.subarea_uuid,
-        commune_uuid: this.dataItem.commune_uuid,
-      });
-    });
-  } 
-
-
-  // Get value RoutePlanItem api
-  findValueItem(value: string) {
-    this.uuidRoutePlanItem = value;
-    this.routePlanItemService.get(this.uuidRoutePlanItem).subscribe(item => {
-      this.dataRoutePlanItem = item.data;
-      this.formGroup.patchValue({
-        routplan_uuid: this.dataRoutePlanItem.routplan_uuid,
-        pos_uuid: this.dataRoutePlanItem.pos_uuid,
-        status: this.dataRoutePlanItem.status,
-      });
-    });
+  onSubmitUpdateItem() {
+    try {
+      if (this.formGroup.valid) {
+        this.isLoadingItem = true;
+        var body: IRoutePlanItem = {
+          uuid: this.dataRoutePlanItem.uuid,
+          routplan_uuid: this.dataRoutePlanItem.routplan_uuid,
+          pos_uuid: this.dataRoutePlanItem.pos_uuid,
+          status: true,
+        };
+        this.routePlanItemService.update(this.uuidRoutePlanItem, body).subscribe({
+          next: (res) => {
+            this.logActivity.activity(
+              'RoutePlanItem',
+              this.currentUser.uuid,
+              'updated',
+              `Update RoutePlanItem uuid: ${body.uuid}`,
+              this.currentUser.fullname
+            ).subscribe({
+              next: () => {
+                this.toastr.success('POS Modifier avec succès!', 'Success!');
+                this.isLoadingItem = false;
+              }, error: (err) => {
+                this.isLoadingItem = false;
+                this.toastr.error(`${err.error.message}`, 'Oupss!');
+                console.log(err);
+              }
+            });
+          },
+          error: (err) => {
+            this.isLoadingItem = false;
+            this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+            console.log(err);
+          }
+        });
+      }
+    } catch (error) {
+      this.isLoadingItem = false;
+      console.log(error);
+    }
   }
 
 
- // Delete RoutePlan
+
+
+  // Delete RoutePlan
   delete(): void {
     this.routeplanService
       .delete(this.uuidItem)

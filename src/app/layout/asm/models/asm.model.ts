@@ -12,6 +12,7 @@ export interface IAsm {
 
     title: string;
     fullname?: string;
+    User?: IUser;
 
     country_uuid: string;
     Country?: ICountry;
@@ -23,7 +24,7 @@ export interface IAsm {
     CreatedAt?: Date;
     UpdatedAt?: Date;
 
-    Users?: IUser[];
+    // Users?: IUser[];
     
     Sups?: ISup[];
     Drs?: IDr[];

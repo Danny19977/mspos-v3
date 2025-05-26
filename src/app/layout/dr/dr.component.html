@@ -101,19 +101,19 @@
                                     <td mat-cell *matCellDef="let element"> {{element.SubArea.name }} </td>
                                 </ng-container>
 
-                                <!-- asm Column -->
+                               <!-- asm Column -->
                                 <ng-container matColumnDef="asm">
                                     <th mat-header-cell *matHeaderCellDef> ASM </th>
                                     <td mat-cell *matCellDef="let element">
-                                        {{ element.asm_fullname }}
+                                        {{ element.Asm!.User!.fullname }}
                                     </td>
                                 </ng-container>
 
-                                <!-- sup Column -->
+                                <!-- sup Column --> 
                                 <ng-container matColumnDef="sup">
                                     <th mat-header-cell *matHeaderCellDef> Supervisor </th>
                                     <td mat-cell *matCellDef="let element">
-                                        {{ element.sup_fullname }}
+                                        {{ element.Sup!.User!.fullname }}
                                     </td>
                                 </ng-container>
 
@@ -121,7 +121,7 @@
                                 <ng-container matColumnDef="user">
                                     <th mat-header-cell *matHeaderCellDef> DR </th>
                                     <td mat-cell *matCellDef="let element">
-                                        {{ element.dr_fullname }}
+                                        {{ element.User!.fullname }}
                                     </td>
                                 </ng-container>
 
@@ -157,7 +157,7 @@
                                     </td>
                                 </ng-container>
 
-                                <!-- id Column -->
+                                <!-- uuid Column -->
                                 <ng-container matColumnDef="uuid">
                                     <th mat-header-cell *matHeaderCellDef> Action </th>
                                     <td mat-cell *matCellDef="let element">
