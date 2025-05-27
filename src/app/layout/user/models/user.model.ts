@@ -32,14 +32,18 @@ export interface IUser {
     commune_uuid: string;
     Commune: ICommune;
 
+    support_uuuid: string;
+    support: string;
+    manager_uuid: string;
+    manager: string;
     asm_uuid: string;
-    Asm: IAsm;
+    asm: string;
     sup_uuid: string;
-    Sup: ISup;
+    sup: string;
     dr_uuid: string;
-    Dr: IDr;
+    dr: string;
     cyclo_uuid: string;
-    Cyclo: ICyclo;
+    cyclo: string;
 
     role: string; // Idem with title
     permission: string;
@@ -50,6 +54,10 @@ export interface IUser {
     CreatedAt: Date;
     UpdatedAt: Date;
 
+    total_asm: number;
+    total_sup: number; 
+    total_dr: number;
+    total_cyclo: number;
 
     Manager?: IManager[];
     UserLogs?: UserLogsModel[];

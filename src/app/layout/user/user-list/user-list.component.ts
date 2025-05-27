@@ -93,6 +93,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
   @ViewChild('user_asm_uuid') user_asm_uuid!: ElementRef<HTMLInputElement>;
   isloadASM = false;
   asmUserUUID: string = '';
+  asmFUserullName: string = '';
 
   userSupList: IUser[] = [];
   userSupListFilter: IUser[] = [];
@@ -100,6 +101,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
   @ViewChild('user_sup_uuid') user_sup_uuid!: ElementRef<HTMLInputElement>;
   isloadSup = false;
   supUserUUID: string = '';
+  supUserFullName: string = '';
 
   userDrList: IUser[] = [];
   userDrListFilter: IUser[] = [];
@@ -107,6 +109,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
   @ViewChild('user_dr_uuid') user_dr_uuid!: ElementRef<HTMLInputElement>;
   isloadDr = false;
   drUserUUID: string = '';
+  drUserFullName: string = '';
 
   userCycloList: IUser[] = [];
   userCycloListFilter: IUser[] = [];
@@ -114,18 +117,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
   @ViewChild('user_cyclo_uuid') user_cyclo_uuid!: ElementRef<HTMLInputElement>;
   isloadCyclo = false;
   cycloUserUUID: string = '';
-
-  // asmList: IAsm[] = [];
-  // asmListFilter: IUser[] = [];
-
-  // supList: ISup[] = [];
-  // supListFilter: IUser[] = [];
-
-  // drList: IDr[] = [];
-  // drListFilter: IUser[] = [];
-
-  // cycloList: ICyclo[] = [];
-  // cycloListFilter: IUser[] = [];
+  cycloUserFullName: string = '';
 
 
 
@@ -216,6 +208,8 @@ export class UserListComponent implements OnInit, AfterViewInit {
       area_uuid: ['',],
       subarea_uuid: [''],
       commune_uuid: [''],
+      support_uuuid: [''],
+      manager_uuid: [''],
       asm_uuid: [''],
       sup_uuid: [''],
       dr_uuid: [''],
@@ -284,7 +278,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
         email: this.dataItem.email,
         title: this.dataItem.title,
         phone: this.dataItem.phone,
-        password: this.dataItem.password,
+        // password: this.dataItem.password,
         role: this.dataItem.title, // Role et title c'est la meme chose mais le role cest pour le code source
         permission: this.dataItem.permission,
         // image: this.imageUrl,
@@ -294,10 +288,18 @@ export class UserListComponent implements OnInit, AfterViewInit {
         area_uuid: this.dataItem.area_uuid,
         subarea_uuid: this.dataItem.subarea_uuid,
         commune_uuid: this.dataItem.commune_uuid,
+        support_uuuid: this.dataItem.support_uuuid,
+        support: this.dataItem.support,
+        manager_uuid: this.dataItem.manager_uuid,
+        manager: this.dataItem.manager,
         asm_uuid: this.dataItem.asm_uuid,
+        asm: this.dataItem.asm,
         sup_uuid: this.dataItem.sup_uuid,
+        sup: this.dataItem.sup,
         dr_uuid: this.dataItem.dr_uuid,
+        dr: this.dataItem.dr,
         cyclo_uuid: this.dataItem.cyclo_uuid,
+        cyclo: this.dataItem.cyclo,
       });
     }
     );
@@ -373,9 +375,11 @@ export class UserListComponent implements OnInit, AfterViewInit {
   optionSelectedASM(event: MatAutocompleteSelectedEvent) {
     const selectedOption = event.option.value;
     this.asmUserUUID = selectedOption.uuid;
+    this.asmFUserullName = selectedOption.fullname;
 
     // Utilisez id et fullName comme vous le souhaitez
     console.log('asmUserUUID:', this.asmUserUUID);
+    console.log('asmUserFullName:', this.asmFUserullName);
   }
 
 
@@ -406,6 +410,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
   optionSelectedSup(event: MatAutocompleteSelectedEvent) {
     const selectedOption = event.option.value;
     this.supUserUUID = selectedOption.uuid;
+    this.supUserFullName = selectedOption.fullname;
 
     // Utilisez id et fullName comme vous le souhaitez
     console.log('supUserUUID:', this.supUserUUID);
@@ -439,6 +444,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
   optionSelectedDr(event: MatAutocompleteSelectedEvent) {
     const selectedOption = event.option.value;
     this.drUserUUID = selectedOption.uuid;
+    this.drUserFullName = selectedOption.fullname;
 
     // Utilisez id et fullName comme vous le souhaitez
     console.log('drUserUUID:', this.drUserUUID);
@@ -473,6 +479,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
   optionSelectedCyclo(event: MatAutocompleteSelectedEvent) {
     const selectedOption = event.option.value;
     this.cycloUserUUID = selectedOption.uuid;
+    this.cycloUserFullName = selectedOption.fullname;
 
     // Utilisez id et fullName comme vous le souhaitez
     console.log('cycloUserUUID:', this.cycloUserUUID);
@@ -499,10 +506,18 @@ export class UserListComponent implements OnInit, AfterViewInit {
           subarea_uuid: this.formGroup.value.subarea_uuid,
           commune_uuid: this.formGroup.value.commune_uuid,
 
+          support_uuuid: (this.currentUser.role === 'Support') ? this.currentUser.uuid : '',
+          support: (this.currentUser.role === 'Support') ? this.currentUser.fullname : '', // Pour le fullname
+          manager_uuid: '',
+          manager: '', // Pour le fullname
           asm_uuid: this.asmUserUUID,
+          asm: this.asmFUserullName, // Pour le fullname
           sup_uuid: this.supUserUUID,
+          sup: this.supUserFullName, // Pour le fullname
           dr_uuid: this.drUserUUID,
+          dr: this.drUserFullName, // Pour le fullname
           cyclo_uuid: this.cycloUserUUID,
+          cyclo: this.cycloUserFullName, // Pour le fullname
 
           // pos_id: (this.isManager) ? 0 : parseInt(this.formGroup.value.pos_id),
           role: this.formGroup.value.title, // Role et title c'est la meme chose mais le role cest pour le code source
@@ -555,8 +570,8 @@ export class UserListComponent implements OnInit, AfterViewInit {
         email: this.formGroup.value.email,
         title: this.formGroup.value.title,
         phone: this.formGroup.value.phone,
-        password: this.formGroup.value.password,
-        password_confirm: this.formGroup.value.password_confirm,
+        // password: this.formGroup.value.password,
+        // password_confirm: this.formGroup.value.password_confirm,
 
         country_uuid: this.formGroup.value.country_uuid,
         province_uuid: this.formGroup.value.province_uuid,
@@ -564,10 +579,18 @@ export class UserListComponent implements OnInit, AfterViewInit {
         subarea_uuid: this.formGroup.value.subarea_uuid,
         commune_uuid: this.formGroup.value.commune_uuid,
 
+        support_uuuid: (this.currentUser.role === 'Support') ? this.currentUser.uuid : '',
+        support: (this.currentUser.role === 'Support') ? this.currentUser.fullname : '', // Pour le fullname
+        manager_uuid: '',
+        manager: '', // Pour le fullname
         asm_uuid: this.asmUserUUID,
+        asm: this.asmFUserullName, // Pour le fullname
         sup_uuid: this.supUserUUID,
+        sup: this.supUserFullName, // Pour le fullname
         dr_uuid: this.drUserUUID,
+        dr: this.drUserFullName, // Pour le fullname
         cyclo_uuid: this.cycloUserUUID,
+        cyclo: this.cycloUserFullName, // Pour le fullname
 
         // pos_id: (this.isManager) ? 0 : parseInt(this.formGroup.value.pos_id),
         role: this.formGroup.value.title, // Role et title c'est la meme chose mais le role cest pour le code source

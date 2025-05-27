@@ -81,20 +81,20 @@
                                 <!-- country Column -->
                                 <ng-container matColumnDef="country">
                                     <th mat-header-cell *matHeaderCellDef> Pays </th>
-                                    <td mat-cell *matCellDef="let element"> {{element.Country.name || '--' }} </td>
+                                    <td mat-cell *matCellDef="let element"> {{ element.Country.name || '--' }} </td>
                                 </ng-container>
 
                                 <!-- province Column -->
                                 <ng-container matColumnDef="province">
                                     <th mat-header-cell *matHeaderCellDef> Province </th>
-                                    <td mat-cell *matCellDef="let element"> {{element.Province.name || '--' }} </td>
+                                    <td mat-cell *matCellDef="let element"> {{ element.Province.name || '--' }} </td>
                                 </ng-container> 
 
                                 <!-- user Column -->
                                 <ng-container matColumnDef="user">
                                     <th mat-header-cell *matHeaderCellDef> ASM </th>
                                     <td mat-cell *matCellDef="let element">
-                                        {{ element.User!.fullname || '--' }}
+                                        {{ element.asm || '--' }}
                                     </td>
                                 </ng-container>
 
@@ -102,8 +102,8 @@
                                 <ng-container matColumnDef="sups">
                                     <th mat-header-cell *matHeaderCellDef> Total Sup </th>
                                     <td mat-cell *matCellDef="let element">
-                                        <a [routerLink]="['/web/supervisors/sup-list']"> {{
-                                            getSupCount(element.Sups) }}
+                                        <a [routerLink]="['/web/supervisors/sup-list']"> 
+                                            {{ element.total_sup }}
                                         </a>
                                     </td>
                                 </ng-container>
@@ -113,7 +113,7 @@
                                     <th mat-header-cell *matHeaderCellDef> Total Drs </th>
                                     <td mat-cell *matCellDef="let element">
                                         <a [routerLink]="['/web/drs/dr-list']">
-                                            {{ getDrCount(element.Drs)}}
+                                            {{  element.total_dr }}
                                         </a>
                                     </td>
                                 </ng-container>
@@ -122,8 +122,8 @@
                                 <ng-container matColumnDef="cyclos">
                                     <th mat-header-cell *matHeaderCellDef> Total Cyclo </th>
                                     <td mat-cell *matCellDef="let element">
-                                        <a [routerLink]="['/web/cyclos/cyclo-list']"> {{
-                                            getCycloCount(element.Cyclos) }}
+                                        <a [routerLink]="['/web/cyclos/cyclo-list']"> 
+                                            {{ element.total_cyclo }}
                                         </a>
                                     </td>
                                 </ng-container>
@@ -150,31 +150,7 @@
                                         </a>
                                     </td>
                                 </ng-container>
-
-                                <!-- uuid Column -->
-                                <ng-container matColumnDef="uuid">
-                                    <th mat-header-cell *matHeaderCellDef> Action </th>
-                                    <td mat-cell *matCellDef="let element">
-                                        @if(currentUser.role == 'Manager' ||
-                                        currentUser.role == 'Support' && currentUser.permission === 'ALL' ||
-                                        currentUser.permission === 'VAE' ||
-                                        currentUser.permission === 'VED' ||
-                                        currentUser.permission === 'VE') {
-                                        <button mat-icon-button (click)="findValue(element.uuid)"
-                                            data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit">
-                                            <mat-icon class="text-blue">edit</mat-icon>
-                                        </button>
-                                        }
-                                        @if(currentUser.role == 'Manager' ||
-                                        currentUser.role == 'Support' && currentUser.permission === 'ALL' ||
-                                        currentUser.permission === 'VED') {
-                                        <button mat-icon-button (click)="findValue(element.uuid)" data-bs-toggle="modal"
-                                            data-bs-target="#delete_contact">
-                                            <mat-icon class="text-danger">delete</mat-icon>
-                                        </button>
-                                        }
-                                    </td>
-                                </ng-container>
+ 
 
                                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                                 <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
@@ -215,153 +191,4 @@
     </div>
 </div>
 <!-- /Page Wrapper -->
-<!-- Add New Contracts -->
-<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add">
-
-    <div class="offcanvas-header border-bottom">
-        <h4>Add New ASM</h4>
-        <button type="button"
-            class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle"
-            data-bs-dismiss="offcanvas" aria-label="Close">
-            <i class="ti ti-x"></i>
-        </button>
-    </div>
-    <div class="offcanvas-body">
-        <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="mb-3">
-                        <label class="col-form-label" for="country">Pays <span class="text-danger">*</span></label>
-                        <mat-select class="select custom-mat-select" formControlName="country_uuid"
-                            placeholder="Choose pays" (selectionChange)="onCountryChange($event)">
-                            @for (item of countryList; track item) {
-                            <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
-                            }
-                        </mat-select>
-                        <mat-error *ngIf="formGroup.controls['country_uuid'].hasError('required')">
-                            Ce champs est obligatoire
-                        </mat-error>
-                    </div>
-                </div>
-                <div class="col-md-12">
-                    <div class="mb-3">
-                        <label class="col-form-label" for="location">Province <span class="text-danger">*</span></label>
-                        <mat-select class="select custom-mat-select" formControlName="province_uuid"
-                            placeholder="Choose province">
-                            @for (item of provinceFilterList; track item) {
-                            <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
-                            }
-                        </mat-select>
-                        <mat-error *ngIf="formGroup.controls['province_uuid'].hasError('required')">
-                            Ce champs est obligatoire
-                        </mat-error>
-                    </div>
-                </div> 
-            </div>
-            <div class="d-flex align-items-center justify-content-end">
-                <button type="button" data-bs-dismiss="offcanvas" class="btn btn-light me-2">Annuler</button>
-                @if (isLoading) {
-                <button disabled class="btn btn-primary">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </button>
-                }
-                @if (!isLoading) {
-                <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-dismiss="offcanvas"
-                    data-bs-target="#create_success">Create</button>
-                }
-            </div>
-        </form>
-    </div>
-
-</div>
-<!-- /Add New Contracts -->
-
-
-<!-- Edit Contracts -->
-<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_edit">
-
-    <div class="offcanvas-header border-bottom">
-        <h4>Modification ASM</h4>
-        <button type="button"
-            class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle"
-            data-bs-dismiss="offcanvas" aria-label="Close">
-            <i class="ti ti-x"></i>
-        </button>
-    </div>
-    <div class="offcanvas-body">
-        <form [formGroup]="formGroup" (ngSubmit)="onSubmitUpdate()">
-            <div class="row">
-                <div class="col-md-12">
-                    <div class="mb-3">
-                        <label class="col-form-label" for="country">Pays <span class="text-danger">*</span></label>
-                        <mat-select class="select custom-mat-select" formControlName="country_uuid"
-                            placeholder="Choose pays" (selectionChange)="onCountryChange($event)">
-                            @for (item of countryList; track item) {
-                            <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
-                            }
-                        </mat-select>
-                        <mat-error *ngIf="formGroup.controls['country_uuid'].hasError('required')">
-                            Ce champs est obligatoire
-                        </mat-error>
-                    </div>
-                </div>
-                <div class="col-md-12">
-                    <div class="mb-3">
-                        <label class="col-form-label" for="location">Province <span class="text-danger">*</span></label>
-                        <mat-select class="select custom-mat-select" formControlName="province_uuid"
-                            placeholder="Choose province">
-                            @for (item of provinceFilterList; track item) {
-                            <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
-                            }
-                        </mat-select>
-                        <mat-error *ngIf="formGroup.controls['province_uuid'].hasError('required')">
-                            Ce champs est obligatoire
-                        </mat-error>
-                    </div>
-                </div> 
-            </div>
-            <div class="d-flex align-items-center justify-content-end">
-                <button type="button" data-bs-dismiss="offcanvas" class="btn btn-light me-2">Annuler</button>
-                @if (isLoading) {
-                <button disabled class="btn btn-primary">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </button>
-                }
-                @if (!isLoading) {
-                <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-dismiss="offcanvas"
-                    data-bs-target="#create_success">Enregistrer les modifications</button>
-                }
-            </div>
-        </form>
-    </div>
-
-</div>
-<!-- /Edit Contracts -->
-
-<!-- Delete User -->
-<div class="modal fade" id="delete_contact" role="dialog">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-body">
-                <div class="text-center">
-                    <div class="avatar avatar-xl bg-danger-light rounded-circle mb-3">
-                        <i class="ti ti-trash-x fs-36 text-danger"></i>
-                    </div>
-                    <h4 class="mb-2">Supprimer l'article ?</h4>
-                    <p class="mb-0">Êtes-vous sûr de vouloir le supprimer ?</p>
-                    <div class="d-flex align-items-center justify-content-center mt-4">
-                        <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="modal">Annuler</a>
-                        <button (click)="delete()" class="btn btn-danger" data-bs-dismiss="modal">
-                            Oui, Supprimer le
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-<!-- /Delete User -->
+ 
