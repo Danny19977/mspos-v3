@@ -58,6 +58,8 @@ export interface IUser {
     total_sup: number; 
     total_dr: number;
     total_cyclo: number;
+    total_pos: number;
+    total_posforms: number;
 
     Manager?: IManager[];
     UserLogs?: UserLogsModel[];

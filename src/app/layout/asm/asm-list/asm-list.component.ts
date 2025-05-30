@@ -1,18 +1,16 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { MatSort, Sort } from '@angular/material/sort';
-import { routes } from '../../../shared/routes/routes';
-import { FormBuilder, FormGroup } from '@angular/forms';
-import { AuthService } from '../../../auth/auth.service';
-import { IAsm } from '../models/asm.model';
+import { routes } from '../../../shared/routes/routes'; 
+import { AuthService } from '../../../auth/auth.service'; 
 import { IProvince } from '../../province/models/province.model';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { ICountry } from '../../country/models/country.model';
 import { IUser } from '../../user/models/user.model';
 import { IPos } from '../../pos-vente/models/pos.model';
 import { IPosForm } from '../../posform/models/posform.model';
-import { UserService } from '../../user/user.service';
+import { AsmService } from '../asm.service';
 
 @Component({
   selector: 'app-asm-list',
@@ -24,7 +22,7 @@ export class AsmListComponent implements OnInit {
   isLoadingData = false;
   public routes = routes;
   // Table 
-  dataList: IAsm[] = [];
+  dataList: IUser[] = [];
   total_pages: number = 0;
   page_size: number = 15;
   current_page: number = 1;
@@ -32,20 +30,15 @@ export class AsmListComponent implements OnInit {
 
   // Table 
   displayedColumns: string[] = ['country', 'province', 'user', 'sups', 'drs', 'cyclos', 'pos', 'postforms'];
-  dataSource = new MatTableDataSource<IAsm>(this.dataList);
+  dataSource = new MatTableDataSource<IUser>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   public search = '';
-
-  // Forms  
-  uuidItem!: string;
-  dataItem!: IAsm; // Single data 
-
-  formGroup!: FormGroup;
-  currentUser!: IUser;
-  isLoading = false;
+ 
+ 
+  currentUser!: IUser; 
 
   countryList: ICountry[] = [];
   provinceList: IProvince[] = [];
@@ -53,9 +46,8 @@ export class AsmListComponent implements OnInit {
 
   constructor(
     private router: Router,
-    private _formBuilder: FormBuilder,
     private authService: AuthService,
-    public usersService: UserService,
+    public asmService: AsmService,
     private cdr: ChangeDetectorRef,
   ) {
   }
@@ -68,7 +60,7 @@ export class AsmListComponent implements OnInit {
         this.dataSource.sort = this.sort; // Bind sort to dataSource
         this.cdr.detectChanges(); // Trigger change detection
 
-        this.usersService.refreshDataList$.subscribe(() => {
+        this.asmService.refreshDataList$.subscribe(() => {
           this.fetchProducts(this.currentUser);
         });
         this.fetchProducts(this.currentUser);
@@ -109,7 +101,7 @@ export class AsmListComponent implements OnInit {
 
   fetchProducts(currentUser: IUser) {
     if (currentUser.role == 'Manager') {
-      this.usersService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
+      this.asmService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
@@ -118,15 +110,16 @@ export class AsmListComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'ASM') {
-      this.usersService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.asmService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
         this.dataSource.data = this.dataList; // Update dataSource data
+        console.log('dataList', res.pagination);
         this.isLoadingData = false;
       });
     } else {
-      this.usersService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
+      this.asmService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         console.log('dataList', res.data);
         this.total_pages = res.pagination.total_pages;

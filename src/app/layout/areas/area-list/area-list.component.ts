@@ -40,7 +40,7 @@ export class AreaListComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'province', 'name', 'subarea', 'commune', 'pos', 'sup', 'dr', 'cyclo', 'posforms', 'user', 'id'];
+  displayedColumns: string[] = ['country', 'province', 'name', 'subarea', 'commune', 'pos', 'posforms', 'users', 'uuid'];
   dataSource = new MatTableDataSource<IArea>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;

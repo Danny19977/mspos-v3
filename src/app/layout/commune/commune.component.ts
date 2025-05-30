@@ -40,7 +40,7 @@ export class CommuneComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'province', 'area', 'subarea', 'name', 'pos', 'cyclo', 'posforms', 'user', 'id'];
+  displayedColumns: string[] = ['country', 'province', 'area', 'subarea', 'name', 'pos', 'posforms', 'users', 'uuid'];
   dataSource = new MatTableDataSource<ICommune>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;

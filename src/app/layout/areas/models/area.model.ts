@@ -7,36 +7,37 @@ import { IUser } from "../../user/models/user.model";
 
 
 export interface IArea {
-    ID: number; 
+    ID: number;
     uuid: string;
     name: string;
-    
+
     country_uuid: string;
     province_uuid: string;
 
-    signature: string; 
+    signature: string;
     CreatedAt: Date;
-    UpdatedAt: Date; 
+    UpdatedAt: Date;
 
     Country: string;
     Province: string;
 
     SubAreas: ISubArea[];
     Communes: ICommune[];
-    Sups: ISup[];
-    Pos: IPos[];
-    PosForms: IPosForm[];
-    Users: IUser[];
-    
+    // Sups: ISup[];
+    // Pos: IPos[];
+    // PosForms: IPosForm[];
+    // Users: IUser[];
+
+    total_users: number;
+    total_pos: number;
+    total_posforms: number;
 
 
-  
 }
 
 export interface IAreaDropdown {
     ID: number;
-    name: string; 
+    name: string;
     province_uuid: string;
     commune: string[];
-}  
- 
+}

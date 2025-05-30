@@ -22,6 +22,7 @@ import { ICyclo } from '../../cyclo/models/cyclo.model';
 import { IDr } from '../../dr/models/dr.model';
 import { IPos } from '../../pos-vente/models/pos.model';
 import { IPosForm } from '../../posform/models/posform.model';
+import { UserService } from '../../user/user.service';
 
 
 @Component({
@@ -34,48 +35,29 @@ export class SupListComponent implements OnInit {
   isLoadingData = false;
   public routes = routes;
   // Table 
-  dataList: ISup[] = [];
+  dataList: IUser[] = [];
   total_pages: number = 0;
   page_size: number = 15;
   current_page: number = 1;
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'province', 'area', 'asm', 'user', 'drs', 'cyclos', 'pos', 'postforms', 'uuid'];
-  dataSource = new MatTableDataSource<ISup>(this.dataList);
+  displayedColumns: string[] = ['country', 'province', 'area', 'asm', 'user', 'drs', 'cyclos', 'pos', 'postforms'];
+  dataSource = new MatTableDataSource<IUser>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   public search = '';
-
-  // Forms  
-  idItem!: string;
-  dataItem!: ISup; // Single data 
-
-  formGroup!: FormGroup;
-  currentUser!: IUser;
-  isLoading = false;
-
-  countryList: ICountry[] = [];
-  provinceList: IProvince[] = [];
-  provinceFilterList: IProvince[] = [];
-
-  areaList: IArea[] = [];
-  areaFilterList: IArea[] = [];
-
+ 
+  currentUser!: IUser; 
+ 
 
   constructor(
-    private router: Router,
-    private _formBuilder: FormBuilder,
+    private router: Router, 
     private authService: AuthService,
-    public supService: SupService,
-    private countryService: CountryService,
-    private provinceService: ProvinceService,
-    private areaService: AreaService,
-    private logActivity: LogsService,
-    private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
-    private toastr: ToastrService
+    public supService: SupService, 
+    private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef 
   ) {
   }
 
@@ -91,17 +73,7 @@ export class SupListComponent implements OnInit {
         this.supService.refreshDataList$.subscribe(() => {
           this.fetchProducts(this.currentUser);
         });
-        this.fetchProducts(this.currentUser);
-
-        this.countryService.getAll().subscribe(res => {
-          this.countryList = res.data;
-        });
-        this.provinceService.getAll().subscribe(res => {
-          this.provinceList = res.data;
-        });
-        this.areaService.getAllById(this.currentUser.province_uuid).subscribe(res => {
-          this.areaList = res.data;
-        });
+        this.fetchProducts(this.currentUser); 
       },
       error: (error) => {
         this.isLoadingData = false;
@@ -112,19 +84,15 @@ export class SupListComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.isLoadingData = true;
-    this.formGroup = this._formBuilder.group({
-      area_uuid: ['', Validators.required],
-      // user_uuid: ['', Validators.required],
-    });
+    this.isLoadingData = true; 
   }
 
-  getDrCount(dr: IDr[]): string {
-    return dr ? dr.length > 0 ? dr.length.toString() : '0' : '0';
-  }
-  getCycloCount(cyclo: ICyclo[]): string {
-    return cyclo ? cyclo.length > 0 ? cyclo.length.toString() : '0' : '0';
-  }
+  // getDrCount(dr: IDr[]): string {
+  //   return dr ? dr.length > 0 ? dr.length.toString() : '0' : '0';
+  // }
+  // getCycloCount(cyclo: ICyclo[]): string {
+  //   return cyclo ? cyclo.length > 0 ? cyclo.length.toString() : '0' : '0';
+  // }
   getPosCount(pos: IPos[]): string {
     return pos ? pos.length > 0 ? pos.length.toString() : '0' : '0';
   }
@@ -135,14 +103,7 @@ export class SupListComponent implements OnInit {
     return user ? user.length > 0 ? user.length.toString() : '0' : '0';
   }
 
-  onCountryChange(event: any) {
-    const provinceArray = this.provinceList.filter((v) => v.country_uuid == event.value);
-    this.provinceFilterList = provinceArray;
-  }
-  onProvinceChange(event: any) {
-    const areaArray = this.areaList.filter((v) => v.province_uuid == event.value);
-    this.areaFilterList = areaArray;
-  }
+ 
 
   onPageChange(event: PageEvent): void {
     this.isLoadingData = true;
@@ -213,162 +174,5 @@ export class SupListComponent implements OnInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-
-  onSubmit() {
-    try {
-      if (this.formGroup.valid) {
-        this.isLoading = true;
-        var body = {
-          country_uuid: this.currentUser.country_uuid,
-          province_uuid: this.currentUser.province_uuid,
-          area_uuid: this.formGroup.value.area_uuid,
-          asm_uuid: this.currentUser.asm_uuid,
-          title: 'Supervisor',
-          signature: this.currentUser.fullname,
-        };
-        this.supService.create(body).subscribe({
-          next: (res) => {
-            this.logActivity.activity(
-              'Supervisor',
-              this.currentUser.uuid,
-              'created',
-              `Created new sup uuid: ${res.data.uuid}`,
-              this.currentUser.fullname
-            ).subscribe({
-              next: () => {
-                this.isLoading = false;
-                this.formGroup.reset();
-                this.toastr.success('Ajouter avec succès!', 'Success!');
-              },
-              error: (err) => {
-                this.isLoading = false;
-                this.toastr.error(`${err.error.message}`, 'Oupss!');
-                console.log(err);
-              }
-            });
-          },
-          error: (err) => {
-            this.isLoading = false;
-            this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-            console.log(err);
-          }
-        });
-      }
-    } catch (error) {
-      this.isLoading = false;
-      console.log(error);
-    }
-  }
-
-  onSubmitUpdate() {
-    try {
-      this.isLoading = true;
-      var body = {
-        country_uuid: this.currentUser.country_uuid,
-        province_uuid: this.currentUser.province_uuid,
-        area_uuid: this.formGroup.value.area_uuid,
-        asm_uuid: this.currentUser.asm_uuid,
-        title: 'Supervisor',
-        signature: this.currentUser.fullname,
-      };
-      this.supService.update(this.idItem, body)
-        .subscribe({
-          next: (res) => {
-            this.logActivity.activity(
-              'Supervisor',
-              this.currentUser.uuid,
-              'updated',
-              `Updated sup uuid: ${res.data.uuid}`,
-              this.currentUser.fullname
-            ).subscribe({
-              next: () => {
-                this.formGroup.reset();
-                this.toastr.success('Modification enregistré!', 'Success!');
-                this.isLoading = false;
-              },
-              error: (err) => {
-                this.isLoading = false;
-                this.toastr.error(`${err.error.message}`, 'Oupss!');
-                console.log(err);
-              }
-            });
-          },
-          error: err => {
-            console.log(err);
-            this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-            this.isLoading = false;
-          }
-        });
-    } catch (error) {
-      this.isLoading = false;
-      console.log(error);
-    }
-  }
-
-  findValue(value: string) {
-    this.idItem = value;
-    this.supService.get(this.idItem).subscribe(item => {
-      this.dataItem = item.data;
-      this.formGroup.patchValue({
-        country_uuid: this.dataItem.Country.uuid,
-        province_uuid: this.dataItem.Province.uuid,
-        area_uuid: this.dataItem.Area.uuid,
-        asm_uuid: this.dataItem.Asm.uuid,
-        title: this.dataItem.title,
-      });
-    });
-  }
- 
-  delete(): void {
-    this.supService
-      .delete(this.idItem)
-      .subscribe({
-        next: () => {
-          this.logActivity.activity(
-            'Sup',
-            this.currentUser.uuid,
-            'deleted',
-            `Delete sup id: ${this.idItem}`,
-            this.currentUser.fullname
-          ).subscribe({
-            next: () => {
-              this.formGroup.reset();
-              this.toastr.info('Supprimé avec succès!', 'Success!');
-              this.isLoading = false;
-            },
-            error: (err) => {
-              this.isLoading = false;
-              this.toastr.error(`${err.error.message}`, 'Oupss!');
-              console.log(err);
-            }
-          });
-        },
-        error: err => {
-          this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-          console.log(err);
-        }
-      }
-      );
-  }
-
-  compareFn(c1: ICountry, c2: ICountry): boolean {
-    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
-  }
-
-  compareProvinceFn(c1: IProvince, c2: IProvince): boolean {
-    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
-  }
-
-  compareAREAFn(c1: IArea, c2: IArea): boolean {
-    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
-  }
-
-  compareASMFn(c1: IAsm, c2: IAsm): boolean {
-    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
-  }
-
-  compareUserFn(c1: IUser, c2: IUser): boolean {
-    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
-  }
 
 }

@@ -56,18 +56,7 @@
                                                 </li>
                                             </ul>
                                         </div>
-                                    </div>
-                                    @if(currentUser.role == 'Manager' ||
-                                    currentUser.role == 'Support' &&
-                                    currentUser.permission === 'ALL' ||
-                                    currentUser.permission === 'VAE' ||
-                                    currentUser.permission === 'VA') {
-                                    <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="offcanvas"
-                                        data-bs-target="#offcanvas_add">
-                                        <i class="ti ti-square-rounded-plus me-2"></i>
-                                        Add New ASM
-                                    </a>
-                                    }
+                                    </div> 
                                 </div>
                             </div>
                         </div>
@@ -135,7 +124,7 @@
                                     <td mat-cell *matCellDef="let element"
                                         style="background-color: rgba(255, 0, 0, 0.173); font-size: larger; text-align: center;">
                                         <a [routerLink]="['/web/pos/pos-list']">
-                                            {{ getPosCount(element.Pos) }}
+                                            {{ element.total_pos }}
                                         </a>
                                     </td>
                                 </ng-container>
@@ -146,7 +135,7 @@
                                     <td mat-cell *matCellDef="let element"
                                         style="background-color: rgba(255, 140, 0, 0.506); font-size: larger; text-align: center;">
                                         <a [routerLink]="['/web/posforms/pos-form-list']">
-                                            {{ getPosFormCount(element.PosForms) }}
+                                            {{ element.total_posforms }}
                                         </a>
                                     </td>
                                 </ng-container>

@@ -16,18 +16,22 @@ export interface ICommune {
     province_uuid: string;
     area_uuid: string;
     subarea_uuid: string;
-    
-    signature: string; 
+
+    signature: string;
     CreatedAt: Date;
-    UpdatedAt: Date; 
+    UpdatedAt: Date;
 
     Country: ICountry;
     Province: IProvince;
     Area: IArea;
     SubArea: ISubArea
 
-    Cyclos: ICyclo[];
-    Pos: IPos[];
-    PosForms: IPosForm[];
-    Users: IUser[];
+    // Cyclos: ICyclo[];
+    // Pos: IPos[];
+    // PosForms: IPosForm[];
+    // Users: IUser[];
+
+    total_users: number;
+    total_pos: number;
+    total_posforms: number;
 }

@@ -41,7 +41,7 @@ export class CountryComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['name', 'province', 'area', 'subarea', 'commune', 'brand', 'pos', 'asm', 'sup', 'dr', 'cyclo', 'posforms', 'user', 'id'];
+  displayedColumns: string[] = ['name', 'province', 'area', 'subarea', 'commune', 'brand', 'pos', 'posforms', 'users', 'uuid'];
   dataSource = new MatTableDataSource<ICountry>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;

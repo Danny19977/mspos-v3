@@ -1,28 +1,15 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
-import { Router } from '@angular/router';
-import { ToastrService } from 'ngx-toastr';
+import { Router } from '@angular/router'; 
 import { AuthService } from '../../auth/auth.service';
-import { routes } from '../../shared/routes/routes';
-import { IArea } from '../areas/models/area.model';
-import { IAsm } from '../asm/models/asm.model';
-import { ICountry } from '../country/models/country.model';
-import { ICyclo } from '../cyclo/models/cyclo.model';
+import { routes } from '../../shared/routes/routes'; 
 import { IPos } from '../pos-vente/models/pos.model';
-import { IPosForm } from '../posform/models/posform.model';
-import { IProvince } from '../province/models/province.model';
-import { ISup } from '../sups/models/sup.model';
-import { LogsService } from '../user-logs/logs.service';
+import { IPosForm } from '../posform/models/posform.model'; 
 import { IUser } from '../user/models/user.model';
-import { UserService } from '../user/user.service';
-import { IDr } from './models/dr.model';
+import { UserService } from '../user/user.service'; 
 import { DrService } from './dr.service';
-import { ISubArea } from '../subarea/models/subarea.model';
-import { SubareaService } from '../subarea/subarea.service';
 
 @Component({
   selector: 'app-dr',
@@ -34,48 +21,30 @@ export class DrComponent implements OnInit {
   isLoadingData = false;
   public routes = routes;
   // Table 
-  dataList: IDr[] = [];
+  dataList: IUser[] = [];
   total_pages: number = 0;
   page_size: number = 15;
   current_page: number = 1;
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'province', 'area', 'subarea', 'asm', 'sup', 'user', 'cyclos', 'pos', 'postforms', 'uuid'];
-  dataSource = new MatTableDataSource<IDr>(this.dataList);
+  displayedColumns: string[] = ['country', 'province', 'area', 'subarea', 'asm', 'sup', 'user', 'cyclos', 'pos', 'postforms'];
+  dataSource = new MatTableDataSource<IUser>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   public search = '';
+ 
+ 
+  currentUser!: IUser; 
 
-  // Forms  
-  uuidItem!: string;
-  dataItem!: IDr; // Single data 
-
-  formGroup!: FormGroup;
-  currentUser!: IUser;
-  isLoading = false;
-
-  countryList: ICountry[] = [];
-  provinceList: IProvince[] = [];
-  provinceFilterList: IProvince[] = [];
-
-  areaList: IArea[] = [];
-  areaFilterList: IArea[] = [];
-
-  subareaList: ISubArea[] = [];
-  subareaFilterList: ISubArea[] = [];
 
   constructor(
     private router: Router,
-    private _formBuilder: FormBuilder,
     private authService: AuthService,
-    private subareaService: SubareaService, 
-    private drService: DrService,
-    private logActivity: LogsService,
-    private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
-    private toastr: ToastrService
+    private drService: DrService,  
+    private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef 
   ) {
   }
 
@@ -92,11 +61,7 @@ export class DrComponent implements OnInit {
           this.fetchProducts(this.currentUser);
         });
         this.fetchProducts(this.currentUser); 
-        
-        this.subareaService.getAllById(this.currentUser.area_uuid).subscribe(res => {
-          this.subareaList = res.data;
-          console.log('subareaList:', this.subareaList);
-        });
+         
       },
       error: (error) => {
         this.isLoadingData = false;
@@ -107,22 +72,13 @@ export class DrComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.isLoadingData = true;
-    this.formGroup = this._formBuilder.group({
-      // country_uuid: ['', Validators.required],
-      // province_uuid: ['', Validators.required],
-      // area_uuid: ['', Validators.required],
-      subarea_uuid: ['', Validators.required],
-      // asm_uuid: ['', Validators.required],
-      // sup_uuid: ['', Validators.required],
-      // user_uuid: ['', Validators.required],
-    });
+    this.isLoadingData = true; 
   }
 
 
-  getCycloCount(cyclo: ICyclo[]): string {
-    return cyclo ? cyclo.length > 0 ? cyclo.length.toString() : '0' : '0';
-  }
+  // getCycloCount(cyclo: ICyclo[]): string {
+  //   return cyclo ? cyclo.length > 0 ? cyclo.length.toString() : '0' : '0';
+  // }
   getPosCount(pos: IPos[]): string {
     return pos ? pos.length > 0 ? pos.length.toString() : '0' : '0';
   }
@@ -214,180 +170,7 @@ export class DrComponent implements OnInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-
-  onSubmit() {
-    try {
-      if (this.formGroup.valid) {
-        this.isLoading = true;
-        var body: IDr = {
-          country_uuid: this.currentUser.country_uuid,
-          province_uuid: this.currentUser.province_uuid,
-          area_uuid: this.currentUser.area_uuid,
-          subarea_uuid: this.formGroup.value.subarea_uuid,
-          title: 'DR', // Assuming title is the subarea name
-          asm_uuid: this.currentUser.asm_uuid,
-          sup_uuid: this.currentUser.sup_uuid,
-          signature: this.currentUser.fullname,
-        };
-        console.log('body:', body);
-        this.drService.create(body).subscribe({
-          next: (res) => {
-            this.logActivity.activity(
-              'DR',
-              this.currentUser.uuid,
-              'created',
-              `Created new DR uuid: ${res.data.uuid}`,
-              this.currentUser.fullname
-            ).subscribe({
-              next: () => {
-                this.isLoading = false;
-                this.formGroup.reset();
-                this.toastr.success('Ajouter avec succès!', 'Success!');
-              },
-              error: (err) => {
-                this.isLoading = false;
-                this.toastr.error(`${err.error.message}`, 'Oupss!');
-                console.log(err);
-              }
-            });
-          },
-          error: (err) => {
-            this.isLoading = false;
-            this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-            console.log(err);
-          }
-        });
-      }
-    } catch (error) {
-      this.isLoading = false;
-      console.log(error);
-    }
-  }
-
-  onSubmitUpdate() {
-    try {
-      this.isLoading = true;
-      var body: IDr = {
-        country_uuid: this.currentUser.country_uuid,
-        province_uuid: this.currentUser.province_uuid,
-        area_uuid: this.currentUser.area_uuid,
-        subarea_uuid: this.formGroup.value.subarea_uuid,
-        title: 'DR', // Assuming title is the subarea name
-        asm_uuid: this.currentUser.asm_uuid,
-        sup_uuid: this.currentUser.sup_uuid,
-        signature: this.currentUser.fullname,
-      };
-      this.drService.update(this.uuidItem, body)
-        .subscribe({
-          next: (res) => {
-            this.logActivity.activity(
-              'DR',
-              this.currentUser.uuid,
-              'updated',
-              `Updated DR uuid: ${res.data.uuid}`,
-              this.currentUser.fullname
-            ).subscribe({
-              next: () => {
-                this.formGroup.reset();
-                this.toastr.success('Modification enregistré!', 'Success!');
-                this.isLoading = false;
-              },
-              error: (err) => {
-                this.isLoading = false;
-                this.toastr.error(`${err.error.message}`, 'Oupss!');
-                console.log(err);
-              }
-            });
-          },
-          error: err => {
-            console.log(err);
-            this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-            this.isLoading = false;
-          }
-        });
-    } catch (error) {
-      this.isLoading = false;
-      console.log(error);
-    }
-  }
-
-  findValue(value: string) {
-    this.uuidItem = value;
-    this.drService.get(this.uuidItem).subscribe(item => {
-      this.dataItem = item.data;
-      this.formGroup.patchValue({
-        country_uuid: this.dataItem.country_uuid,
-        province_uuid: this.dataItem.province_uuid,
-        area_uuid: this.dataItem.area_uuid,
-        subarea_uuid: this.dataItem.subarea_uuid,
-        asm_uuid: this.dataItem.asm_uuid,
-        sup_uuid: this.dataItem.sup_uuid,
-      });
-    });
-  }
-
-
-
-  delete(): void {
-    this.drService
-      .delete(this.uuidItem)
-      .subscribe({
-        next: () => {
-          this.logActivity.activity(
-            'DR',
-            this.currentUser.uuid,
-            'deleted',
-            `Delete DR uuid: ${this.uuidItem}`,
-            this.currentUser.fullname
-          ).subscribe({
-            next: () => {
-              this.formGroup.reset();
-              this.toastr.info('Supprimé avec succès!', 'Success!');
-              this.isLoading = false;
-            },
-            error: (err) => {
-              this.isLoading = false;
-              this.toastr.error(`${err.error.message}`, 'Oupss!');
-              console.log(err);
-            }
-          });
-        },
-        error: err => {
-          this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-          console.log(err);
-        }
-      });
-  }
-
-  compareFn(c1: ICountry, c2: ICountry): boolean {
-    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
-  }
-
-  compareProvinceFn(c1: IProvince, c2: IProvince): boolean {
-    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
-  }
-
-  compareAREAFn(c1: IArea, c2: IArea): boolean {
-    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
-  }
-
-  compareSubAREAFn(c1: ISubArea, c2: ISubArea): boolean {
-    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
-  }
-
-  compareASMFn(c1: IAsm, c2: IAsm): boolean {
-    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
-  }
-
-  compareSUPFn(c1: ISup, c2: ISup): boolean {
-    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
-  }
-
-  compareUserFn(c1: IUser, c2: IUser): boolean {
-    return c1 && c2 ? c1.uuid === c2.uuid : c1 === c2;
-  }
-
-
+ 
 
 }
 

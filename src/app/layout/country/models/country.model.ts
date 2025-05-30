@@ -1,15 +1,8 @@
-import { IArea } from "../../areas/models/area.model";
-import { IAsm } from "../../asm/models/asm.model";
+import { IArea } from "../../areas/models/area.model"; 
 import { IBrand } from "../../brand/models/brand.model";
-import { ICommune } from "../../commune/models/commune.model";
-import { ICyclo } from "../../cyclo/models/cyclo.model";
-import { IDr } from "../../dr/models/dr.model";
-import { IManager } from "../../managers/models/manager.model";
-import { IPos } from "../../pos-vente/models/pos.model";
+import { ICommune } from "../../commune/models/commune.model"; 
 import { IProvince } from "../../province/models/province.model";
-import { ISubArea } from "../../subarea/models/subarea.model";
-import { ISup } from "../../sups/models/sup.model";
-import { IUser } from "../../user/models/user.model";
+import { ISubArea } from "../../subarea/models/subarea.model"; 
 
 export interface ICountry {
     ID: number;
@@ -22,13 +15,12 @@ export interface ICountry {
     Provinces: IProvince[];
     Areas: IArea[];
     Subareas: ISubArea[];
-    Communes: ICommune[];
-    Managers: IManager[]; 
-    Asms: IAsm[];
-    Sups: ISup[];
-    Drs: IDr[];
-    Cyclos: ICyclo[];
+    Communes: ICommune[]; 
     Brands: IBrand[];
-    Pos: IPos[];
-    Users: IUser[];
+    // Pos: IPos[];
+    // Users: IUser[];
+
+    total_users: number;
+    total_pos: number;
+    total_posforms: number;
 }

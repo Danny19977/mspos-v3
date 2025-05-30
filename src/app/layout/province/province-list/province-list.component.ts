@@ -43,7 +43,7 @@ export class ProvinceListComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'name', 'area', 'subarea', 'commune', 'brand', 'pos', 'asm', 'sup', 'dr', 'cyclo', 'posforms', 'user', 'id'];
+  displayedColumns: string[] = ['country', 'name', 'area', 'subarea', 'commune', 'brand', 'pos', 'posforms', 'users', 'uuid'];
   dataSource = new MatTableDataSource<IProvince>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;

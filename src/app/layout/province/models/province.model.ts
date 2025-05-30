@@ -10,34 +10,38 @@ import { ISubArea } from "../../subarea/models/subarea.model";
 import { ISup } from "../../sups/models/sup.model";
 import { IUser } from "../../user/models/user.model";
 
-export interface IProvince { 
-    ID: number;
-    uuid: string; 
-    name: string; 
-    country_uuid: string;
-    signature: string;
-    CreatedAt: Date;
-    UpdatedAt: Date;
+export interface IProvince {
+  ID: number;
+  uuid: string;
+  name: string;
+  country_uuid: string;
+  signature: string;
+  CreatedAt: Date;
+  UpdatedAt: Date;
 
-    Country: ICountry;
-    
-    Areas: IArea[];
-    Subareas: ISubArea[];
-    Communes: ICommune[];
+  Country: ICountry;
 
-    Brands: IBrand[];
-    Posforms: IPosForm[];
+  Areas: IArea[];
+  Subareas: ISubArea[];
+  Communes: ICommune[];
 
-    Asms: IAsm[]; 
-    Sups: ISup[];
-    Drs: IDr[];
-    Cyclos: ICyclo[];
+  Brands: IBrand[];
+  // Posforms: IPosForm[];
 
-    Users: IUser[];
+  // Asms: IAsm[]; 
+  // Sups: ISup[];
+  // Drs: IDr[];
+  // Cyclos: ICyclo[];
+
+  // Users: IUser[];
+
+  total_users: number;
+  total_pos: number;
+  total_posforms: number;
 
 }
 
 export interface IProvinceDropdown {
-    uuid: string;
-    name: string; 
+  uuid: string;
+  name: string;
 }  
