@@ -58,23 +58,7 @@
                                             </ul>
                                         </div>
                                     </div>
-                                    <div class="me-2">
-                                        <div *ngIf="dataListLocal.length > 0" class="alert alert-warning mt-2"
-                                            role="alert">
-                                            Total hors ligne : <span style="font-size: larger;">
-                                                {{ dataListLocal.length }}</span>
-                                        </div>
-                                    </div>
-                                    <form [formGroup]="dateRange">
-                                        <div class="daterange-picker">
-                                            <div class="form-sort me-2">
-                                                <i class="ti ti-calendar"></i>
-                                                <input type="text" class="form-control date-range bookingrange"
-                                                    bsDaterangepicker [bsConfig]="{ adaptivePosition: true }"
-                                                    formControlName="rangeValue" />
-                                            </div>
-                                        </div>
-                                    </form>
+
                                     @if(currentUser.permission === 'ALL' ||
                                     currentUser.permission === 'VAE' ||
                                     currentUser.permission === 'VA') {
@@ -85,6 +69,7 @@
                                     </a>
                                     }
                                 </div>
+
                             </div>
                         </div>
                         <!-- /Search -->
@@ -233,7 +218,7 @@
                                 <ng-container matColumnDef="asm">
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>ASM</th>
                                     <td mat-cell *matCellDef="let data">
-                                        {{ data.Asm!.User!.fullname || '--' }}  
+                                        {{ data.asm || '--' }}
                                     </td>
                                 </ng-container>
 
@@ -241,7 +226,7 @@
                                 <ng-container matColumnDef="sup">
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Supervisor</th>
                                     <td mat-cell *matCellDef="let data">
-                                        {{ data.Sup!.User!.fullname || '--' }}
+                                        {{ data.sup || '--' }}
                                     </td>
                                 </ng-container>
 
@@ -249,7 +234,7 @@
                                 <ng-container matColumnDef="dr">
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>DR</th>
                                     <td mat-cell *matCellDef="let data">
-                                         {{ data.Dr!.User!.fullname || '--' }}
+                                        {{ data.dr || '--' }}
                                     </td>
                                 </ng-container>
 
@@ -257,7 +242,7 @@
                                 <ng-container matColumnDef="cyclo">
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Cyclo</th>
                                     <td mat-cell *matCellDef="let data">
-                                         {{ data.Cyclo!.User!.fullname || '--' }}
+                                        {{ data.cyclo || '--' }}
                                     </td>
                                 </ng-container>
 
@@ -270,7 +255,7 @@
                                     </td>
                                 </ng-container>
 
-                                <!-- Action Column --> 
+                                <!-- Action Column -->
                                 <ng-container matColumnDef="action">
                                     <th mat-header-cell *matHeaderCellDef> Action </th>
                                     <td mat-cell *matCellDef="let element" class="d-flex align-items-center">
@@ -285,8 +270,8 @@
                                         }
                                         @if(currentUser.permission === 'ALL' ||
                                         currentUser.permission === 'VED') {
-                                        <button mat-icon-button (click)="findValue(element.uuid)"
-                                            data-bs-toggle="modal" data-bs-target="#delete_contact">
+                                        <button mat-icon-button (click)="findValue(element.uuid)" data-bs-toggle="modal"
+                                            data-bs-target="#delete_contact">
                                             <mat-icon class="text-danger">delete</mat-icon>
                                         </button>
                                         }
@@ -297,7 +282,7 @@
                                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                                 <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
 
-                                 <!-- Row shown when there is no matching data. -->
+                                <!-- Row shown when there is no matching data. -->
                                 <tr class="mat-row" *matNoDataRow>
                                     @if (isLoadingData){
                                     <button disabled class="btn btn-primary">
@@ -306,7 +291,7 @@
                                         </div>
                                     </button>
                                     } @else {
-                                    <td class="mat-cell" colspan="4">Aucune donnée correspondant au filtre
+                                    <td class="mat-cell" colspan="4">Aucune donnée correspondante au filtre
                                         "{{input.value}}"</td>
                                     }
                                 </tr>
@@ -348,7 +333,7 @@
     <div class="offcanvas-body">
         <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
             <div class="row">
-                   <div class="col-md-6">
+                <div class="col-md-6">
                     <div class="mb-3">
                         <label class="col-form-label" for="text">Shop <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" formControlName="shop" required />
@@ -357,7 +342,7 @@
                         </mat-error>
                     </div>
                 </div>
-                 <div class="col-md-6">
+                <div class="col-md-6">
                     <div class="mb-3">
                         <label class="col-form-label" for="postype">POS Type <span class="text-danger">*</span></label>
                         <select class="form-control" formControlName="postype" required>
@@ -371,13 +356,14 @@
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label class="col-form-label" for="text">Nom du vendeur<span class="text-danger">*</span></label>
+                        <label class="col-form-label" for="text">Nom du vendeur<span
+                                class="text-danger">*</span></label>
                         <input type="text" class="form-control" formControlName="name" required />
                         <mat-error *ngIf="formGroup.controls['name'].hasError('required')">
                             Ce champs est obligatoire
                         </mat-error>
                     </div>
-                </div>  
+                </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="col-form-label" for="text">Gérant <span class="text-danger">*</span></label>
@@ -468,7 +454,7 @@
     <div class="offcanvas-body">
         <form [formGroup]="formGroup" (ngSubmit)="onSubmitUpdate()">
             <div class="row">
-                   <div class="col-md-6">
+                <div class="col-md-6">
                     <div class="mb-3">
                         <label class="col-form-label" for="text">Shop <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" formControlName="shop" required />
@@ -477,7 +463,7 @@
                         </mat-error>
                     </div>
                 </div>
-                 <div class="col-md-6">
+                <div class="col-md-6">
                     <div class="mb-3">
                         <label class="col-form-label" for="postype">POS Type <span class="text-danger">*</span></label>
                         <select class="form-control" formControlName="postype" required>
@@ -491,13 +477,14 @@
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
-                        <label class="col-form-label" for="text">Nom du vendeur<span class="text-danger">*</span></label>
+                        <label class="col-form-label" for="text">Nom du vendeur<span
+                                class="text-danger">*</span></label>
                         <input type="text" class="form-control" formControlName="name" required />
                         <mat-error *ngIf="formGroup.controls['name'].hasError('required')">
                             Ce champs est obligatoire
                         </mat-error>
                     </div>
-                </div>  
+                </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="col-form-label" for="text">Gérant <span class="text-danger">*</span></label>

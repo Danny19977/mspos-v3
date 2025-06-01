@@ -33,7 +33,7 @@
                                             placeholder="Ex. jean kasongo" #input /> -->
                                     <input type="text" #input [(ngModel)]="search"
                                         (ngModelChange)="onSearchChange($event)" class="form-control"
-                                        placeholder="Ex. Jean paul">
+                                        placeholder="Rechercher un commentaire....">
                                 </div>
                             </div>
                             <div class="col-sm-8">
@@ -63,107 +63,255 @@
                         <!-- /Search -->
                     </div>
                     <div class="card-body">
-                        <div class="table-responsive custom-table mb-3">
-                            <table class="table" id="campaign-list" matSort (matSortChange)="sortData($event)">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th mat-sort-header="synchronisation">Sync</th>
-                                        <th mat-sort-header="pos">POS</th>
-                                        <th mat-sort-header="country">Pays</th>
-                                        <th mat-sort-header="province">Province</th>
-                                        <th mat-sort-header="area">Area</th>
-                                        <th mat-sort-header="subarea">Subarea</th>
-                                        <th mat-sort-header="commune">Commune</th>
-                                        <th mat-sort-header="price">Price</th>
-                                        <th mat-sort-header="asm">ASM</th>
-                                        <th mat-sort-header="sup">Sup</th>
-                                        <th mat-sort-header="dr">DR</th>
-                                        <th mat-sort-header="cyclo">Cyclo</th>
-                                        <th mat-sort-header="brand">Brand</th>
-                                        <th mat-sort-header="comment">Commentaire</th>
-                                        <th class="text-end">Action</th>
-                                    </tr>
-                                </thead>
+                        <div class="table-responsive custom-table">
+                            <table mat-table [dataSource]="dataSource" matSort (matSortChange)="sortData($event)"
+                                class="mat-elevation-z8">
 
-                                <tbody>
-                                    @if (isLoadingData) {
-                                    <tr>
-                                        <td colspan="15" class="text-start">
-                                            <div class="d-flex align-items-center justify-content-center">
-                                                <strong role="status">Loading...</strong>
-                                                <div class="spinner-border ms-2" aria-hidden="true"></div>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                <!-- createdat Column -->
+                                <ng-container matColumnDef="createdat">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Date</th>
+                                    <td mat-cell *matCellDef="let data">
+                                        @if (data.pos_uuid != '') {
+                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
+                                            {{ data.CreatedAt | date: 'dd/MM/yyyy HH:mm' }}
+                                        </a>
+                                        } @else {
+                                        {{ data.CreatedAt | date: 'dd/MM/yyyy HH:mm' }}
+                                        }
+                                    </td>
+                                </ng-container>
+
+                                <!-- pos Column -->
+                                <ng-container matColumnDef="pos">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Pos</th>
+                                    <td mat-cell *matCellDef="let data">
+                                        @if (data.pos_uuid != '') {
+                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
+                                            {{ data.Pos!.name || '--' }}
+                                        </a>
+                                        } @else {
+                                        {{ data.Pos!.name || '--' }}
+                                        }
+                                    </td>
+                                </ng-container>
+
+                                <!-- Country Column -->
+                                <ng-container matColumnDef="country">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Pays</th>
+                                    <td mat-cell *matCellDef="let data">
+                                        @if (data.pos_uuid != '') {
+                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
+                                            {{ data.Country!.name || '--' }}
+                                        </a>
+                                        } @else {
+                                        {{ data.Country!.name || '--' }}
+                                        }
+                                    </td>
+                                </ng-container>
+
+                                <!-- Province Column -->
+                                <ng-container matColumnDef="province">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Province</th>
+                                    <td mat-cell *matCellDef="let data">
+                                        @if (data.pos_uuid != '') {
+                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
+                                            {{ data.Province!.name || '--' }}
+                                        </a>
+                                        } @else {
+                                        {{ data.Province!.name || '--' }}
+                                        }
+                                    </td>
+                                </ng-container>
+
+                                <!-- Area Column -->
+                                <ng-container matColumnDef="area">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Area</th>
+                                    <td mat-cell *matCellDef="let data">
+                                        @if (data.pos_uuid != '') {
+                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
+                                            {{ data.Area?.name || '--' }}
+                                        </a>
+                                        } @else {
+                                        {{ data.Area?.name || '--' }}
+                                        }
+                                    </td>
+                                </ng-container>
+
+                                <!-- Subarea Column -->
+                                <ng-container matColumnDef="subarea">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Subarea</th>
+                                    <td mat-cell *matCellDef="let data">
+                                        @if (data.pos_uuid != '') {
+                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
+                                            {{ data.SubArea?.name || '--' }}
+                                        </a>
+                                        } @else {
+                                        {{ data.SubArea?.name || '--' }}
+                                        }
+                                    </td>
+                                </ng-container>
+
+                                <!-- Commune Column -->
+                                <ng-container matColumnDef="commune">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Commune</th>
+                                    <td mat-cell *matCellDef="let data">
+                                        @if (data.pos_uuid != '') {
+                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
+                                            {{ data.Commune?.name || '--' }}
+                                        </a>
+                                        } @else {
+                                        {{ data.Commune?.name || '--' }}
+                                        }
+                                    </td>
+                                </ng-container>
+
+                                <!-- price Column -->
+                                <ng-container matColumnDef="price">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Prix</th>
+                                    <td mat-cell *matCellDef="let data">
+                                        @if (data.pos_uuid != '') {
+                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
+                                            {{ data.price }}
+                                        </a>
+                                        } @else {
+                                        {{ data.price }}
+                                        }
+                                    </td>
+                                </ng-container>
+
+                                <!-- ASM Column -->
+                                <ng-container matColumnDef="asm">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>ASM</th>
+                                    <td mat-cell *matCellDef="let data">
+                                        @if (data.pos_uuid != '') {
+                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
+                                            {{ data.asm || '--' }}
+                                        </a>
+                                        } @else {
+                                        {{ data.asm || '--' }}
+                                        }
+                                    </td>
+                                </ng-container>
+
+                                <!-- Supervisor Column -->
+                                <ng-container matColumnDef="sup">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Supervisor</th>
+                                    <td mat-cell *matCellDef="let data">
+                                        @if (data.pos_uuid != '') {
+                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
+                                            {{ data.sup || '--' }}
+                                        </a>
+                                        } @else {
+                                        {{ data.sup || '--' }}
+                                        }
+                                    </td>
+                                </ng-container>
+
+                                <!-- DR Column -->
+                                <ng-container matColumnDef="dr">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>DR</th>
+                                    <td mat-cell *matCellDef="let data">
+                                        @if (data.pos_uuid != '') {
+                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
+                                            {{ data.dr || '--' }}
+                                        </a>
+                                        } @else {
+                                        {{ data.dr || '--' }}
+                                        }
+                                    </td>
+                                </ng-container>
+
+                                <!-- Cyclo Column -->
+                                <ng-container matColumnDef="cyclo">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Cyclo</th>
+                                    <td mat-cell *matCellDef="let data">
+                                        @if (data.pos_uuid != '') {
+                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
+                                            {{ data.cyclo || '--' }}
+                                        </a>
+                                        } @else {
+                                        {{ data.cyclo || '--' }}
+                                        }
+                                    </td>
+                                </ng-container>
+
+                                <!-- brand Column -->
+                                <ng-container matColumnDef="brand">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Total Marques</th>
+                                    <td mat-cell *matCellDef="let data">
+                                        @if (data.pos_uuid != '') {
+                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
+                                            {{ data.PosFormItems.length || '0' }}
+                                        </a>
+                                        } @else {
+                                        {{ data.PosFormItems.length || '0' }}
+                                        }
+                                    </td>
+                                </ng-container>
+
+
+                                <!-- comment Column -->
+                                <ng-container matColumnDef="comment">
+                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Commentaire</th>
+                                    <td mat-cell *matCellDef="let data" style="width: 200px;">
+                                        {{ data.comment || '--' }}
+                                    </td>
+                                </ng-container>
+
+                                <!-- Action Column -->
+                                <ng-container matColumnDef="action">
+                                    <th mat-header-cell *matHeaderCellDef> Action </th>
+                                    <td mat-cell *matCellDef="let element" class="d-flex align-items-center">
+                                        @if(element.pos_uuid == '') {
+                                        <button mat-icon-button (click)="findValue(element.uuid)"
+                                            data-bs-toggle="offcanvas" data-bs-target="#offcanvas_add">
+                                            <mat-icon class="text-primary">add</mat-icon>
+                                        </button>
+                                        }
+
+                                        <button mat-icon-button (click)="findValue(element.uuid)"
+                                            data-bs-toggle="offcanvas" data-bs-target="#offcanvas_visibility">
+                                            <mat-icon class="text-blue">visibility</mat-icon>
+                                        </button>
+
+                                        @if(element.pos_uuid != '' && currentUser.permission === 'ALL' ||
+                                        currentUser.permission === 'VAE' ||
+                                        currentUser.permission === 'VED' ||
+                                        currentUser.permission === 'VE' &&
+                                        isLessThan24HoursOld(element.CreatedAt)) {
+                                        <button mat-icon-button (click)="findValue(element.uuid)"
+                                            data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit">
+                                            <mat-icon class="text-blue">edit</mat-icon>
+                                        </button>
+                                        }
+                                        @if(currentUser.permission === 'ALL' ||
+                                        currentUser.permission === 'VED' &&
+                                        isLessThan24HoursOld(element.CreatedAt)) {
+                                        <button mat-icon-button (click)="findValue(element.uuid)" data-bs-toggle="modal"
+                                            data-bs-target="#delete_contact">
+                                            <mat-icon class="text-danger">delete</mat-icon>
+                                        </button>
+                                        }
+                                    </td>
+                                </ng-container>
+
+                                <!-- Table Header and Rows -->
+                                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                                <!-- Row shown when there is no matching data. -->
+                                <tr class="mat-row" *matNoDataRow>
+                                    @if (isLoadingData){
+                                    <button disabled class="btn btn-primary">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </button>
                                     } @else {
-                                    @for (data of dataSource.data; track $index) {
-                                    <tr class="odd">
-                                        <td>
-                                            <span class="badge bg-success text-white">
-                                                <i class="ti ti-check"></i>
-                                            </span>
-                                        </td>
-                                        <td>
-                                            <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
-                                                {{ data.Pos!.name }}
-                                            </a>
-                                        </td>
-                                        <td>{{ data.Country!.name }}</td>
-                                        <td>{{ data.Province!.name }}</td>
-                                        <td>{{ data.Area!.name }}</td>
-                                        <td>{{ data.SubArea!.name }}</td>
-                                        <td>{{ data.Commune!.name }}</td>
-                                        <td>{{ data.price }} FC</td>
-                                        <td>
-                                            <app-user-get *ngIf="data.asm_uuid" [uuid]="data.asm_uuid"></app-user-get>
-                                        </td>
-                                        <td>
-                                            <app-user-get *ngIf="data.sup_uuid" [uuid]="data.sup_uuid"></app-user-get>
-                                        </td>
-                                        <td>
-                                            <app-user-get *ngIf="data.dr_uuid" [uuid]="data.dr_uuid"></app-user-get>
-                                        </td>
-                                        <td>
-                                            <app-user-get *ngIf="data.cyclo_uuid"
-                                                [uuid]="data.cyclo_uuid"></app-user-get>
-                                        </td>
-                                        <td
-                                            style="background-color: rgba(0, 195, 255, 0.31); font-size: larger; text-align: center;">
-                                            {{ data.PosFormItems?.length }} </td>
-                                        <td>{{ data.comment }}</td>
-                                        <td>
-                                            <div class="dropdown table-action">
-                                                <a href="javascript:void(0);" class="action-icon"
-                                                    data-bs-toggle="dropdown" aria-expanded="false">
-                                                    <i class="fa fa-ellipsis-v"></i>
-                                                </a>
-                                                <div class="dropdown-menu dropdown-menu-right">
-                                                    @if(currentUser.permission === 'ALL' ||
-                                                    currentUser.permission === 'VAE' ||
-                                                    currentUser.permission === 'VED' ||
-                                                    currentUser.permission === 'VE') {
-                                                    <a class="dropdown-item" data-bs-toggle="offcanvas"
-                                                        (click)="findValue(data.uuid!)" data-bs-target="#offcanvas_edit"
-                                                        href="javascript:void(0);"><i class="ti ti-edit text-blue"></i>
-                                                        Edit
-                                                    </a>
-                                                    }
-
-                                                    @if(currentUser.permission === 'ALL' ||
-                                                    currentUser.permission === 'VED') {
-                                                    <a class="dropdown-item" href="javascript:void(0);"
-                                                        (click)="findValue(data.uuid!)" data-bs-toggle="modal"
-                                                        data-bs-target="#delete_contact"><i
-                                                            class="ti ti-trash text-danger"></i> Delete
-                                                    </a>
-                                                    }
-                                                </div>
-                                            </div>
-                                        </td>
-                                    </tr>
+                                    <td class="mat-cell" colspan="4">Aucune donnée correspondante au filtre
+                                        "{{input.value}}"</td>
                                     }
-                                    }
-                                </tbody>
+                                </tr>
                             </table>
                         </div>
 
@@ -192,7 +340,7 @@
 <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add">
 
     <div class="offcanvas-header border-bottom">
-        <h4>Ajouter le rapport de visite</h4>
+        <h4>Ajouter le rapport de visite </h4>
         <button type="button"
             class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle"
             data-bs-dismiss="offcanvas" aria-label="Close">
@@ -303,8 +451,11 @@
                                 <div class="card-body">
                                     <div class="task-info d-flex align-items-center justify-content-between">
                                         <div>
-                                            <p class="mb-1"><strong>Brand:</strong> {{ item.brand_name }}</p>
-                                            <p class="mb-1"><strong>Nombre de Farde:</strong> {{ item.number_farde }}
+                                            <p class="mb-1"><strong>
+                                                    Brand:</strong> {{ item.Brand!.name }}
+                                            </p>
+                                            <p class="mb-1"><strong>
+                                                    Nombre de Farde:</strong> {{ item.number_farde }}
                                             </p>
                                             <p *ngIf="item.sold > 0" class="mb-1">
                                                 <strong>{{ item.sold > 1 ? 'Ventes:' : 'Vente:' }}</strong>
@@ -361,7 +512,7 @@
 <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_edit">
 
     <div class="offcanvas-header border-bottom">
-        <h4>Modifier le rapport de visite</h4>
+        <h4>Modifier le rapport de visite </h4>
         <button type="button"
             class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle"
             data-bs-dismiss="offcanvas" aria-label="Close">
@@ -438,7 +589,6 @@
                                 </mat-error>
                             </div>
                         </div>
-
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label class="col-form-label" for="text">Ventes <span
@@ -450,7 +600,7 @@
                             </div>
                         </div>
                         <div class="col-md-6 d-flex align-items-end mb-3">
-                            <button type="submit" class="btn btn-success">
+                            <button type="submit" class="btn btn-success w-100">
                                 <i class="ti ti-check me-2"></i>
                                 Ajouter
                             </button>
@@ -459,7 +609,7 @@
                 </form>
 
                 <!-- Pos List -->
-                <div class="task-wrapper">
+                <div class="task-wrapper" *ngIf="dataItem">
                     <div class="row">
                         @if (isLoadingPosFormItem) {
                         <div class="d-flex align-items-center justify-content-center w-100">
@@ -473,12 +623,12 @@
                                 <div class="card-body">
                                     <div class="task-info d-flex align-items-center justify-content-between">
                                         <div>
-                                            <p class="mb-1"><strong>Brand:</strong> {{ item.brand_name }}</p>
+                                            <p class="mb-1"><strong>Brand:</strong> {{ item.Brand!.name }}</p>
                                             <p class="mb-1"><strong>Nombre de Farde:</strong> {{ item.number_farde }}
                                             </p>
-                                            <p class="mb-1">
-                                                <strong>{{ item.sold > 1 ? 'Ventes:' : 'Vente:' }}</strong> {{ item.sold
-                                                }}
+                                            <p *ngIf="item.sold > 0" class="mb-1">
+                                                <strong>{{ item.sold > 1 ? 'Ventes:' : 'Vente:' }}</strong>
+                                                {{ item.sold }}
                                             </p>
                                         </div>
                                     </div>
@@ -525,6 +675,82 @@
 
 </div>
 <!-- /Edit Contracts -->
+
+
+<!-- Visibility report -->
+<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_visibility" *ngIf="dataItem">
+
+    <div class="offcanvas-header border-bottom">
+        <h4>Rapport de visite </h4>
+        <button type="button"
+            class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle"
+            data-bs-dismiss="offcanvas" aria-label="Close">
+            <i class="ti ti-x"></i>
+        </button>
+    </div>
+    <div class="offcanvas-body">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <p>
+                        <strong>POS:</strong>
+                        {{dataItem.Pos!.name}} | {{dataItem.Pos!.shop}}
+                    </p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <p>
+                        <strong>Prix:</strong> {{ dataItem.price || '--' }} FC
+                    </p>
+                </div>
+            </div>
+
+            <!-- Pos List -->
+            <div class="task-wrapper">
+                <div class="row">
+                    @if (isLoadingPosFormItem) {
+                    <div class="d-flex align-items-center justify-content-center w-100">
+                        <strong role="status">Loading...</strong>
+                        <div class="spinner-border ms-2" aria-hidden="true"></div>
+                    </div>
+                    } @else {
+                    @for (item of dataListPosFormItem; track $index) {
+                    <div class="col-md-4 mb-3">
+                        <div class="card task-card">
+                            <div class="card-body">
+                                <div class="task-info d-flex align-items-center justify-content-between">
+                                    <div>
+                                        <p class="mb-1"><strong>Brand:</strong> {{ item.Brand!.name }}</p>
+                                        <p class="mb-1"><strong>Nombre de Farde:</strong> {{ item.number_farde }}
+                                        </p>
+                                        <p *ngIf="item.sold > 0" class="mb-1">
+                                            <strong>{{ item.sold > 1 ? 'Ventes:' : 'Vente:' }}</strong>
+                                            {{ item.sold }}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    }
+                    }
+                </div>
+            </div>
+
+            <div class="col-md-12">
+                <div class="mb-3">
+                    <p>
+                        <strong>Commentaire:</strong>
+                        {{ dataItem.comment || '--' }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<!-- /Visibility report -->
 
 <!-- Delete User -->
 <div class="modal fade" id="delete_contact" role="dialog">

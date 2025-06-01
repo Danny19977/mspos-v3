@@ -36,7 +36,7 @@ export class RouteplanComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['created', 'country', 'province', 'area', 'subarea', 'commune', 'asm', 'sup', 'dr', 'cyclo', 'total_pos', 'pourcent', 'uuid'];
+  displayedColumns: string[] = ['created', 'country', 'province', 'area', 'subarea', 'commune', 'user', 'uuid']; //  'total_pos', 'pourcent',
   dataSource = new MatTableDataSource<IRoutePlan>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -44,11 +44,11 @@ export class RouteplanComponent implements OnInit {
 
   public search = '';
 
-  uuidItem!: string;
+  uuidItem: string = '';
   dataItem!: IRoutePlan; // Single data  
 
 
-  uuidRoutePlanItem!: string;
+  uuidRoutePlanItem: string = '';
   dataRoutePlanItem!: IRoutePlanItem; // Single data
 
   formGroup!: FormGroup;
@@ -62,6 +62,8 @@ export class RouteplanComponent implements OnInit {
   @ViewChild('pos_uuid') pos_uuid!: ElementRef<HTMLInputElement>;
   isload = false;
   posuuId: string = '';
+
+  isRoutePlanCreatedRecently = signal<boolean>(false); // Signal to track if a RoutePlan was created recently
 
 
   constructor(
@@ -115,45 +117,48 @@ export class RouteplanComponent implements OnInit {
       this.isload = true;
       this.posVenteService.getAll().subscribe(res => {
         this.posList = res.data;
-        this.posListFilter = this.posList;
+        const posUuidsInCurrentDataList = this.dataListItem.map(item => item.pos_uuid);
+        this.posListFilter = this.posList.filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
         this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
         this.isload = false;
       });
     } else if (currentUser.role == 'ASM') {
       const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
       this.isload = true;
-      this.posVenteService.getAllByASM(currentUser.province_uuid).subscribe(res => {
+      this.posVenteService.getAllByASM(currentUser.asm_uuid).subscribe(res => {
         this.posList = res.data;
-        this.posListFilter = this.posList;
+        const posUuidsInCurrentDataList = this.dataListItem.map(item => item.pos_uuid);
+        this.posListFilter = this.posList.filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
         this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
         this.isload = false;
       });
     } else if (currentUser.role == 'Supervisor') {
       const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
       this.isload = true;
-      this.posVenteService.getAllBySup(currentUser.area_uuid).subscribe(res => {
+      this.posVenteService.getAllBySup(currentUser.sup_uuid).subscribe(res => {
         this.posList = res.data;
-        this.posListFilter = this.posList;
+        const posUuidsInCurrentDataList = this.dataListItem.map(item => item.pos_uuid);
+        this.posListFilter = this.posList.filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
         this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
         this.isload = false;
       });
     } else if (currentUser.role == 'DR') {
-      console.log("currentUser.subarea_uuid", currentUser.subarea_uuid);
       const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
       this.isload = true;
-      this.posVenteService.getAllByDR(currentUser.subarea_uuid).subscribe(res => {
+      this.posVenteService.getAllByDR(currentUser.dr_uuid).subscribe(res => {
         this.posList = res.data;
-        console.log("posList", this.posList);
-        this.posListFilter = this.posList;
+        const posUuidsInCurrentDataList = this.dataListItem.map(item => item.pos_uuid);
+        this.posListFilter = this.posList.filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
         this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
         this.isload = false;
       });
     } else if (currentUser.role == 'Cyclo') {
       const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
       this.isload = true;
-      this.posVenteService.getAllByCyclo(currentUser.uuid).subscribe(res => {
+      this.posVenteService.getAllByCyclo(currentUser.cyclo_uuid).subscribe(res => {
         this.posList = res.data;
-        this.posListFilter = this.posList;
+        const posUuidsInCurrentDataList = this.dataListItem.map(item => item.pos_uuid);
+        this.posListFilter = this.posList.filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
         this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
         this.isload = false;
       });
@@ -223,6 +228,19 @@ export class RouteplanComponent implements OnInit {
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
         this.dataSource.data = this.dataList; // Update dataSource data
+
+        const now = new Date();
+        const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+        const wasCreatedRecently = res.data.some((plan: any) => {
+          // Assuming plan.created is a string, number (timestamp), or Date object
+          if (plan.created) {
+            const createdDate = new Date(plan.created);
+            // Check if createdDate is a valid date and if it's after twentyFourHoursAgo
+            return !isNaN(createdDate.getTime()) && createdDate > twentyFourHoursAgo;
+          }
+          return false;
+        });
+        this.isRoutePlanCreatedRecently.set(wasCreatedRecently);
         this.isLoadingData = false;
       });
     } else {
@@ -273,11 +291,27 @@ export class RouteplanComponent implements OnInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
+  // Get All routeplamitems
+  getAllRoutePlanItems(value: string) {
+    this.isLoadingDataItem = true;
+    this.uuidRoutePlanItem = value;
+    this.routePlanItemService.getAllById(this.uuidRoutePlanItem).subscribe((res) => {
+      this.dataListItem = res.data;
+      console.log("dataListItem", this.dataListItem);
+      this.isLoadingDataItem = false;
+    });
+  }
+
   // Get value RoutePlan api
   findValue(value: any) {
     this.uuidItem = value;
     this.routeplanService.get(this.uuidItem).subscribe(item => {
       this.dataItem = item.data;
+      this.routePlanItemService.refreshDataList$.subscribe(() => {
+        this.getAllRoutePlanItems(this.dataItem.uuid!);
+      });
+      this.getAllRoutePlanItems(this.dataItem.uuid!);
+      this.getAllPos(this.currentUser);
       this.formGroup.patchValue({
         user_uuid: this.dataItem.user_uuid,
         country_uuid: this.dataItem.country_uuid,
@@ -285,10 +319,6 @@ export class RouteplanComponent implements OnInit {
         area_uuid: this.dataItem.area_uuid,
         subarea_uuid: this.dataItem.subarea_uuid,
         commune_uuid: this.dataItem.commune_uuid,
-        asm_uuid: this.dataItem.asm_uuid,
-        sup_uuid: this.dataItem.sup_uuid,
-        dr_uuid: this.dataItem.dr_uuid,
-        cyclo_uuid: this.dataItem.cyclo_uuid,
       });
     });
   }
@@ -300,7 +330,7 @@ export class RouteplanComponent implements OnInit {
     this.routePlanItemService.get(this.uuidRoutePlanItem).subscribe(item => {
       this.dataRoutePlanItem = item.data;
       this.formGroup.patchValue({
-        routplan_uuid: this.dataRoutePlanItem.routplan_uuid,
+        routeplan_uuid: this.dataRoutePlanItem.routeplan_uuid,
         pos_uuid: this.dataRoutePlanItem.pos_uuid,
         status: this.dataRoutePlanItem.status,
       });
@@ -317,10 +347,6 @@ export class RouteplanComponent implements OnInit {
         area_uuid: this.currentUser.area_uuid,
         subarea_uuid: this.currentUser.subarea_uuid,
         commune_uuid: this.currentUser.commune_uuid,
-        asm_uuid: this.currentUser.asm_uuid,
-        sup_uuid: this.currentUser.sup_uuid,
-        dr_uuid: this.currentUser.dr_uuid,
-        cyclo_uuid: this.currentUser.uuid, // Assuming the current user is the cyclo
         user_uuid: this.currentUser.uuid,
         signature: this.currentUser.fullname,
       };
@@ -363,7 +389,7 @@ export class RouteplanComponent implements OnInit {
       if (this.formGroup.valid) {
         this.isLoadingItem = true;
         var body: IRoutePlanItem = {
-          routplan_uuid: this.dataItem.uuid!,
+          routeplan_uuid: this.dataItem.uuid!,
           pos_uuid: this.posuuId,
           status: false,
         };
@@ -373,10 +399,12 @@ export class RouteplanComponent implements OnInit {
               'RoutePlanItem',
               this.currentUser.uuid,
               'created',
-              `Create RoutePlanItem uuid: ${body.uuid}`,
+              `Create RoutePlanItem uuid: ${res.data.uuid}`,
               this.currentUser.fullname
             ).subscribe({
               next: () => {
+                this.formGroup.reset();
+                this.pos_uuid.nativeElement.value = ''; // Reset the input field
                 this.toastr.success('POS Ajouter avec succès!', 'Success!');
                 this.isLoadingItem = false;
               }, error: (err) => {
@@ -405,7 +433,7 @@ export class RouteplanComponent implements OnInit {
         this.isLoadingItem = true;
         var body: IRoutePlanItem = {
           uuid: this.dataRoutePlanItem.uuid,
-          routplan_uuid: this.dataRoutePlanItem.routplan_uuid,
+          routeplan_uuid: this.dataRoutePlanItem.routeplan_uuid,
           pos_uuid: this.dataRoutePlanItem.pos_uuid,
           status: true,
         };
@@ -506,8 +534,14 @@ export class RouteplanComponent implements OnInit {
           console.log(err);
         }
       }
-      );
-  }
+);
+}
 
+  isLessThan24HoursOld(created: Date): boolean {
+    const twentyFourHoursInMilliseconds = 24 * 60 * 60 * 1000;
+    const currentTime = new Date().getTime();
+    const createdTime = new Date(created).getTime();
+    return currentTime - createdTime < twentyFourHoursInMilliseconds;
+  }
 }
 

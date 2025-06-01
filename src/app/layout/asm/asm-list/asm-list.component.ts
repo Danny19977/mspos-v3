@@ -110,7 +110,7 @@ export class AsmListComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'ASM') {
-      this.asmService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.asmService.getPaginatedByProvinceId(currentUser.uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;

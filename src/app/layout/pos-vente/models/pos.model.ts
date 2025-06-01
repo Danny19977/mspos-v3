@@ -40,18 +40,20 @@ export interface IPos {
     User?: IUser;
 
     asm_uuid: string;
-    Asm?: IAsm;
+    asm: string;
     sup_uuid: string;
-    Sup?: ISup;
+    sup: string;
     dr_uuid: string;
-    Dr?: IDr;
+    dr: string;
     cyclo_uuid: string;
-    Cyclo?: ICyclo;
+    cyclo: string;
 
     status: boolean;
     signature: string;
     CreatedAt?: Date;
     UpdatedAt?: Date;
+
+    sync: boolean;
 
     Country?: ICountry;
     Province?: IProvince;
@@ -59,7 +61,7 @@ export interface IPos {
     SubArea?: ISubArea;
     Commune?: ICommune;
 
- 
+
 
     PosEquipements?: IPosEquipment[];
     PosForms?: IPosForm[];

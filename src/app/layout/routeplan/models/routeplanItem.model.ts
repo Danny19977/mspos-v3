@@ -5,7 +5,7 @@ export interface IRoutePlanItem {
     ID?: number; 
     uuid?: string;
     
-    routplan_uuid: string;
+    routeplan_uuid: string;
     pos_uuid: string; 
 
     status: boolean;

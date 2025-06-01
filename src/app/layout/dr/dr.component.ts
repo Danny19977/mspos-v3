@@ -102,7 +102,7 @@ export class DrComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'ASM') {
-      this.drService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.drService.getPaginatedByProvinceId(currentUser.uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
@@ -110,7 +110,7 @@ export class DrComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'Supervisor') {
-      this.drService.getPaginatedByAreaId(currentUser.area_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.drService.getPaginatedByAreaId(currentUser.uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         console.log('dataList DR:', this.dataList);
         this.total_pages = res.pagination.total_pages;
@@ -119,7 +119,7 @@ export class DrComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'DR') {
-      this.drService.getPaginatedBySubAreaId(currentUser.subarea_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.drService.getPaginatedBySubAreaId(currentUser.uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;

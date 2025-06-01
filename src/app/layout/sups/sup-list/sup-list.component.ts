@@ -123,7 +123,7 @@ export class SupListComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'ASM') {
-      this.supService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.supService.getPaginatedByProvinceId(currentUser.uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
@@ -131,7 +131,7 @@ export class SupListComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'Supervisor') {
-      this.supService.getPaginatedByAreaId(currentUser.area_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.supService.getPaginatedByAreaId(currentUser.uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;

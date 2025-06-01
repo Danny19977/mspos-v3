@@ -23,7 +23,7 @@ export interface IPosForm {
     latitude?: number;
     longitude?: number;
 
-    pos_uuid: string;
+    pos_uuid?: string;
     Pos?: IPos;
 
     user_uuid: string; // uuid de l'utilisateur qui a rempli le posform
@@ -41,13 +41,13 @@ export interface IPosForm {
     Commune?: ICommune;
 
     asm_uuid: string;
-    Asm?: IAsm;
+    asm: string;
     sup_uuid: string;
-    Sup?: ISup;
+    sup: string;
     dr_uuid: string;
-    Dr?: IDr;
+    dr: string;
     cyclo_uuid: string;
-    Cyclo?: ICyclo;
+    cyclo: string;
 
 
     sync: boolean; // pour savoir si le posform est synchronisé ou non
@@ -55,11 +55,7 @@ export interface IPosForm {
 
     CreatedAt?: Date;
     UpdatedAt?: Date;
-
-
-
-
-
+ 
 
     PosFormItems?: IPosFormItem[];
 }

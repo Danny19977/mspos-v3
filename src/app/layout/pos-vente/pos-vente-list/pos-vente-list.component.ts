@@ -3,7 +3,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
 import { MatSort, Sort } from '@angular/material/sort';
 import { routes } from '../../../shared/routes/routes';
-import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../../auth/auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { IPos } from '../models/pos.model';
@@ -11,9 +11,7 @@ import { PosVenteService } from '../pos-vente.service';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { LogsService } from '../../user-logs/logs.service';
 import { IUser } from '../../user/models/user.model';
-import { db } from '../../../shared/services/db';
-import { IPosForm } from '../../posform/models/posform.model';
-import { formatDate } from '@angular/common';
+import { IPosForm } from '../../posform/models/posform.model'; 
 
 @Component({
   selector: 'app-pos-vente-list',
@@ -24,12 +22,7 @@ import { formatDate } from '@angular/common';
 export class PosVenteListComponent implements OnInit {
   isLoadingData = false;
 
-  public routes = routes;
-
-  dateRange!: FormGroup;
-  start_date!: string;
-  end_date!: string;
-  rangeDate: any[] = [];
+  public routes = routes; 
 
   // Table 
   dataList: IPos[] = [];
@@ -110,19 +103,7 @@ export class PosVenteListComponent implements OnInit {
       telephone: ['', Validators.required],
       // status: ['', Validators.required],
     });
-
-
-    const date = new Date();
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1); // First day of the current month
-    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 1); // First day of the next month
-    lastDay.setDate(lastDay.getDate() + 1); // Add 1 day to the last day
-    this.rangeDate = [firstDay, lastDay];
-
-    this.dateRange = this._formBuilder.group({
-      rangeValue: new FormControl(this.rangeDate),
-    });
-    this.start_date = formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US');
-    this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
+ 
 
     this.authService.user().subscribe({
       next: (user) => {
@@ -141,10 +122,7 @@ export class PosVenteListComponent implements OnInit {
         this.router.navigate(['/auth/login']);
         console.log(error);
       }
-    });
-
-    // Appel de la méthode onChanges
-    this.onChanges();
+    }); 
 
   }
 
@@ -161,23 +139,13 @@ export class PosVenteListComponent implements OnInit {
     this.fetchProducts(this.currentUser);
   }
 
-  // Méthode onChanges
-  onChanges(): void {
-    this.dateRange.valueChanges.subscribe((val) => {
-      this.start_date = formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US');
-
-      val.rangeValue[1].setDate(val.rangeValue[1].getDate() + 1);
-      this.end_date = formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US');
-
-      this.fetchProducts(this.currentUser);
-    });
-  }
+ 
 
 
   fetchProducts(currentUser: IUser) {
     if (currentUser.role == 'Manager') {
-      this.posVenteService.getPaginatedRangeDate2(this.current_page, this.page_size, this.search,
-        this.start_date, this.end_date).subscribe(res => {
+      this.posVenteService.getPaginated2(this.current_page, this.page_size, this.search,
+        ).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
@@ -185,8 +153,8 @@ export class PosVenteListComponent implements OnInit {
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'ASM') {
-      this.posVenteService.getPaginatedRangeDateByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search,
-        this.start_date, this.end_date
+      this.posVenteService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search,
+        
       ).subscribe(res => {
         this.dataList = res.data;
         console.log("dataList", this.dataList);
@@ -196,8 +164,8 @@ export class PosVenteListComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'Supervisor') {
-      this.posVenteService.getPaginatedRangeDateByAreaId(currentUser.area_uuid, this.current_page, this.page_size, this.search,
-        this.start_date, this.end_date
+      this.posVenteService.getPaginatedByAreaId(currentUser.area_uuid, this.current_page, this.page_size, this.search,
+        
       ).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
@@ -206,8 +174,8 @@ export class PosVenteListComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'DR') {
-      this.posVenteService.getPaginatedRangeDateBySubAreaId(currentUser.subarea_uuid, this.current_page, this.page_size, this.search,
-        this.start_date, this.end_date
+      this.posVenteService.getPaginatedBySubAreaId(currentUser.subarea_uuid, this.current_page, this.page_size, this.search,
+        
       ).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
@@ -216,8 +184,8 @@ export class PosVenteListComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'Cyclo') {
-      this.posVenteService.getPaginatedRangeDateByCommuneId(currentUser.cyclo_uuid, this.current_page, this.page_size, this.search,
-        this.start_date, this.end_date
+      this.posVenteService.getPaginatedByCommuneId(currentUser.cyclo_uuid, this.current_page, this.page_size, this.search,
+        
       ).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
@@ -226,9 +194,10 @@ export class PosVenteListComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else {
-      this.posVenteService.getPaginatedRangeDate2(this.current_page, this.page_size, this.search,
-        this.start_date, this.end_date).subscribe(res => {
+      this.posVenteService.getPaginated2(this.current_page, this.page_size, this.search,
+        ).subscribe(res => {
           this.dataList = res.data;
+          console.log("dataList", this.dataList);
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
           this.dataSource.data = this.dataList; // Update dataSource data
@@ -311,12 +280,17 @@ export class PosVenteListComponent implements OnInit {
           subarea_uuid: this.currentUser.subarea_uuid,
           commune_uuid: this.currentUser.commune_uuid,
           asm_uuid: this.currentUser.asm_uuid,
+          asm: this.currentUser.asm,
           sup_uuid: this.currentUser.sup_uuid,
+          sup: this.currentUser.sup,
           dr_uuid: this.currentUser.dr_uuid,
+          dr: this.currentUser.dr,
           cyclo_uuid: this.currentUser.cyclo_uuid,
+          cyclo: this.currentUser.cyclo,
           user_uuid: this.currentUser.uuid,
           status: true, // le status change une fois que le pos est synchronisé
           signature: this.currentUser.fullname,
+          sync: false, // Indique que le POS n'est pas encore synchronisé 
         };
         this.posVenteService.create(body)
           .subscribe({
@@ -371,13 +345,17 @@ export class PosVenteListComponent implements OnInit {
         subarea_uuid: this.currentUser.subarea_uuid,
         commune_uuid: this.currentUser.commune_uuid,
         asm_uuid: this.currentUser.asm_uuid,
+        asm: this.currentUser.asm,
         sup_uuid: this.currentUser.sup_uuid,
+        sup: this.currentUser.sup,
         dr_uuid: this.currentUser.dr_uuid,
+        dr: this.currentUser.dr,
         cyclo_uuid: this.currentUser.cyclo_uuid,
+        cyclo: this.currentUser.cyclo,
         user_uuid: this.currentUser.uuid,
         status: true, // le status change une fois que le pos est synchronisé
-        signature: this.currentUser.fullname,
-        UpdatedAt: new Date(),
+        signature: this.currentUser.fullname, 
+        sync: false // Indique que le POS n'est pas encore synchronisé,
       };
       this.posVenteService.update(this.uuidItem, body)
         .subscribe({

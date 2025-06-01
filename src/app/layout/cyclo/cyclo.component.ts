@@ -99,7 +99,7 @@ export class CycloComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'ASM') {
-      this.cycloService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.cycloService.getPaginatedByProvinceId(currentUser.uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
@@ -107,7 +107,7 @@ export class CycloComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'Supervisor') {
-      this.cycloService.getPaginatedByAreaId(currentUser.area_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.cycloService.getPaginatedByAreaId(currentUser.uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
@@ -115,7 +115,7 @@ export class CycloComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'DR') {
-      this.cycloService.getPaginatedBySubAreaId(currentUser.subarea_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.cycloService.getPaginatedBySubAreaId(currentUser.uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
