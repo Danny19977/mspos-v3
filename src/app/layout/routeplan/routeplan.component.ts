@@ -125,7 +125,7 @@ export class RouteplanComponent implements OnInit {
     } else if (currentUser.role == 'ASM') {
       const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
       this.isload = true;
-      this.posVenteService.getAllByASM(currentUser.asm_uuid).subscribe(res => {
+      this.posVenteService.getAllByASM(currentUser.province_uuid).subscribe(res => {
         this.posList = res.data;
         const posUuidsInCurrentDataList = this.dataListItem.map(item => item.pos_uuid);
         this.posListFilter = this.posList.filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
@@ -135,7 +135,7 @@ export class RouteplanComponent implements OnInit {
     } else if (currentUser.role == 'Supervisor') {
       const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
       this.isload = true;
-      this.posVenteService.getAllBySup(currentUser.sup_uuid).subscribe(res => {
+      this.posVenteService.getAllBySup(currentUser.area_uuid).subscribe(res => {
         this.posList = res.data;
         const posUuidsInCurrentDataList = this.dataListItem.map(item => item.pos_uuid);
         this.posListFilter = this.posList.filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
@@ -145,7 +145,7 @@ export class RouteplanComponent implements OnInit {
     } else if (currentUser.role == 'DR') {
       const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
       this.isload = true;
-      this.posVenteService.getAllByDR(currentUser.dr_uuid).subscribe(res => {
+      this.posVenteService.getAllByDR(currentUser.subarea_uuid).subscribe(res => {
         this.posList = res.data;
         const posUuidsInCurrentDataList = this.dataListItem.map(item => item.pos_uuid);
         this.posListFilter = this.posList.filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
@@ -534,8 +534,8 @@ export class RouteplanComponent implements OnInit {
           console.log(err);
         }
       }
-);
-}
+      );
+  }
 
   isLessThan24HoursOld(created: Date): boolean {
     const twentyFourHoursInMilliseconds = 24 * 60 * 60 * 1000;

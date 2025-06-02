@@ -154,7 +154,7 @@ export class PosVenteListComponent implements OnInit {
         });
     } else if (currentUser.role == 'ASM') {
       this.posVenteService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search,
-        
+         
       ).subscribe(res => {
         this.dataList = res.data;
         console.log("dataList", this.dataList);
