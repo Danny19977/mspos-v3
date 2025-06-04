@@ -184,8 +184,7 @@ export class PosVenteListComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'Cyclo') {
-      this.posVenteService.getPaginatedByCommuneId(currentUser.cyclo_uuid, this.current_page, this.page_size, this.search,
-        
+      this.posVenteService.getPaginatedByCommuneId(currentUser.uuid, this.current_page, this.page_size, this.search,
       ).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;

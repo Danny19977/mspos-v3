@@ -413,6 +413,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
 
   onSubmitInit() {
+     this.isLoading = true;
     var body: IPosForm = {
       // uuid: uuidv4(),
       price: 50,
@@ -446,8 +447,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
           `Created Posform uuid: ${res.data.uuid}`,
           this.currentUser.fullname
         ).subscribe({
-          next: (res) => {
-            this.findValue(res.data.uuid!);
+          next: () => { 
             this.formGroup.reset();
             this.toastr.success('Ajouter avec succès!', 'Success!');
             this.isLoading = false;
@@ -508,7 +508,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
                       this.currentUser.fullname
                     ).subscribe({
                       next: () => {
-                        this.findValue(res.data.uuid!);
+                        this.findValue(this.uuidItem);
                         this.formGroup.reset();
                         this.toastr.success('Ajouts enregistré!', 'Success!');
                         this.isLoading = false;
@@ -631,6 +631,8 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         counter: 1,
         sold: parseInt(this.formGroupPosFormItem.value.sold),
       };
+      console.log('Body PosFormItem:', body);
+      
       this.posformItemService.create(body).subscribe({
         next: (res) => {
           this.logActivity.activity(
@@ -641,7 +643,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
             this.currentUser.fullname
           ).subscribe({
             next: () => {
-              this.findValue(res.data.uuid!);
+              this.findValue(this.dataItem.uuid!);
               this.formGroupPosFormItem.reset();
               this.toastr.success('Ajouter avec succès!', 'Success!');
               this.isLoadingPosFormItem = false;

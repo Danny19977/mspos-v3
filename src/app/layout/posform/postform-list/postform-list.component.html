@@ -51,11 +51,19 @@
                                     @if(currentUser.permission === 'ALL' ||
                                     currentUser.permission === 'VAE' ||
                                     currentUser.permission === 'VA') {
-                                    <a href="javascript:void(0);" (click)="onSubmitInit()" class="btn btn-primary"
-                                        data-bs-toggle="offcanvas" data-bs-target="#offcanvas_add">
-                                        <i class="ti ti-square-rounded-plus me-2"></i>
-                                        Add New PosForm
-                                    </a>
+                                        @if(isLoading) {
+                                            <button disabled class="btn btn-primary">
+                                                <div class="spinner-border" role="status">
+                                                    <span class="visually-hidden">Loading...</span>
+                                                </div>
+                                            </button>
+                                        } @else {
+                                            <a href="javascript:void(0);" (click)="onSubmitInit()" class="btn btn-primary"
+                                                data-bs-toggle="offcanvas">
+                                                <i class="ti ti-square-rounded-plus me-2"></i>
+                                                Add New PosForm
+                                            </a>
+                                        }
                                     }
                                 </div>
                             </div>
