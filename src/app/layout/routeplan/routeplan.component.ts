@@ -317,7 +317,7 @@ export class RouteplanComponent implements OnInit {
         country_uuid: this.dataItem.country_uuid,
         province_uuid: this.dataItem.province_uuid,
         area_uuid: this.dataItem.area_uuid,
-        subarea_uuid: this.dataItem.subarea_uuid,
+        sub_area_uuid: this.dataItem.sub_area_uuid,
         commune_uuid: this.dataItem.commune_uuid,
       });
     });
@@ -345,7 +345,7 @@ export class RouteplanComponent implements OnInit {
         country_uuid: this.currentUser.country_uuid,
         province_uuid: this.currentUser.province_uuid,
         area_uuid: this.currentUser.area_uuid,
-        subarea_uuid: this.currentUser.sub_area_uuid,
+        sub_area_uuid: this.currentUser.sub_area_uuid,
         commune_uuid: this.currentUser.commune_uuid,
         user_uuid: this.currentUser.uuid,
         signature: this.currentUser.fullname,

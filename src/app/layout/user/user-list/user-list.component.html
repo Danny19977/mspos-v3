@@ -433,11 +433,11 @@
         </div>
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label" for="subarea_uuid">
+            <label class="col-form-label" for="sub_area_uuid">
               SubArea
               <span class="text-danger">*</span>
             </label>
-            <mat-select [compareWith]="compareFnSubArea" class="select custom-mat-select" formControlName="subarea_uuid"
+            <mat-select [compareWith]="compareFnSubArea" class="select custom-mat-select" formControlName="sub_area_uuid"
               placeholder="Choose subarea" (selectionChange)="onSubAreaChange($event)">
               @for (item of subAreaListFilter; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
@@ -678,11 +678,11 @@
         </div>
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label" for="subarea_uuid">
+            <label class="col-form-label" for="sub_area_uuid">
               SubArea
               <span class="text-danger">*</span>
             </label>
-            <mat-select [compareWith]="compareFnSubArea" class="select custom-mat-select" formControlName="subarea_uuid"
+            <mat-select [compareWith]="compareFnSubArea" class="select custom-mat-select" formControlName="sub_area_uuid"
               placeholder="Choose subarea" (selectionChange)="onSubAreaChange($event)">
               @for (item of subAreaListFilter; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>

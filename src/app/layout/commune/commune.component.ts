@@ -121,7 +121,7 @@ export class CommuneComponent implements OnInit {
       country_uuid: ['', Validators.required],
       province_uuid: ['', Validators.required],
       area_uuid: ['', Validators.required],
-      subarea_uuid: ['', Validators.required],
+      sub_area_uuid: ['', Validators.required],
     });
   }
 
@@ -250,7 +250,7 @@ export class CommuneComponent implements OnInit {
           country_uuid: this.formGroup.value.country_uuid,
           province_uuid: this.formGroup.value.province_uuid,
           area_uuid: this.formGroup.value.area_uuid,
-          subarea_uuid: this.formGroup.value.subarea_uuid,
+          sub_area_uuid: this.formGroup.value.sub_area_uuid,
           signature: this.currentUser.fullname,
         };
         this.communeService.create(body).subscribe({
@@ -295,7 +295,7 @@ export class CommuneComponent implements OnInit {
         country_uuid: this.formGroup.value.country_uuid,
         province_uuid: this.formGroup.value.province_uuid,
         area_uuid: this.formGroup.value.area_uuid,
-        subarea_uuid: this.formGroup.value.subarea_uuid,
+        sub_area_uuid: this.formGroup.value.sub_area_uuid,
         signature: this.currentUser.fullname,
       };
       this.communeService.update(this.idItem, body)
@@ -341,7 +341,7 @@ export class CommuneComponent implements OnInit {
         country_uuid: this.dataItem.country_uuid,
         province_uuid: this.dataItem.province_uuid,
         area_uuid: this.dataItem.area_uuid,
-        subarea_uuid: this.dataItem.subarea_uuid,
+        sub_area_uuid: this.dataItem.sub_area_uuid,
       });
     });
   }

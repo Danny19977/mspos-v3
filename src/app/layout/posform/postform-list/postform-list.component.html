@@ -51,20 +51,19 @@
                                     @if(currentUser.permission === 'ALL' ||
                                     currentUser.permission === 'VAE' ||
                                     currentUser.permission === 'VA') {
-                                        @if(isLoading) {
-                                            <button disabled class="btn btn-primary">
-                                                <div class="spinner-border" role="status">
-                                                    <span class="visually-hidden">Loading...</span>
-                                                </div>
-                                            </button>
-                                        } @else {
-                                            <a href="javascript:void(0);" 
-                                            (click)="onSubmitInit()" class="btn btn-primary"
-                                                data-bs-toggle="offcanvas">
-                                                <i class="ti ti-square-rounded-plus me-2"></i>
-                                                Add New PosForm
-                                            </a>
-                                        }
+                                    @if(isLoading) {
+                                    <button disabled class="btn btn-primary">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </button>
+                                    } @else {
+                                    <a href="javascript:void(0);" (click)="onSubmitInit()" class="btn btn-primary"
+                                        data-bs-toggle="offcanvas">
+                                        <i class="ti ti-square-rounded-plus me-2"></i>
+                                        Add New PosForm
+                                    </a>
+                                    }
                                     }
                                 </div>
                             </div>
@@ -359,39 +358,6 @@
     <div class="offcanvas-body">
         <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
             <div class="row">
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="col-form-label" for="text">POS <span class="text-danger">*</span></label>
-                        <input #pos_uuid type="text" matInput formControlName="pos_uuid" [matAutocomplete]="autopos1"
-                            placeholder="Selectionner le POS" class="form-control" (input)="getAllRoutePlans()"
-                            (focus)="getAllRoutePlans()">
-                        @if (isload) {
-                        <div class="d-flex align-items-center">
-                            <strong role="status">Loading...</strong>
-                            <div class="spinner-border ms-auto" aria-hidden="true"></div>
-                        </div>
-                        }
-                        <mat-autocomplete requireSelection #autopos1="matAutocomplete"
-                            (optionSelected)="optionSelected($event)" [displayWith]="displayFn">
-                            @for (item of filteredOptions; track item.uuid) {
-                            <mat-option [value]="item">{{item.Pos!.name}} | {{item.Pos!.shop}}</mat-option>
-                            }
-                        </mat-autocomplete>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="mb-3">
-                        <label class="col-form-label" for="price">Prix <span class="text-danger">*</span></label>
-                        <select class="form-control" formControlName="price" required>
-                            <option value="" disabled selected>Selectionner un prix</option>
-                            <option *ngFor="let price of priceList" [value]="price">{{ price }}</option>
-                        </select>
-                        <mat-error *ngIf="formGroup.controls['price'].hasError('required')">
-                            Ce champs est obligatoire
-                        </mat-error>
-                    </div>
-                </div>
-
                 <form [formGroup]="formGroupPosFormItem" (ngSubmit)="onSubmitItem()"
                     style="background-color: rgba(10, 128, 179, 0.045);">
                     <div class="row align-items-center">
@@ -418,7 +384,7 @@
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
-                                <label class="col-form-label" for="text">Total de farde <span
+                                <label class="col-form-label" for="text">Présence des fardes <span
                                         class="text-danger">*</span></label>
                                 <input type="number" class="form-control" formControlName="number_farde" required />
                                 <mat-error *ngIf="formGroupPosFormItem.controls['number_farde'].hasError('required')">
@@ -486,6 +452,38 @@
                     </div>
                 </div>
 
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="col-form-label" for="text">POS <span class="text-danger">*</span></label>
+                        <input #pos_uuid type="text" matInput formControlName="pos_uuid" [matAutocomplete]="autopos1"
+                            placeholder="Selectionner le POS" class="form-control" (input)="getAllRoutePlans()"
+                            (focus)="getAllRoutePlans()">
+                        @if (isload) {
+                        <div class="d-flex align-items-center">
+                            <strong role="status">Loading...</strong>
+                            <div class="spinner-border ms-auto" aria-hidden="true"></div>
+                        </div>
+                        }
+                        <mat-autocomplete requireSelection #autopos1="matAutocomplete"
+                            (optionSelected)="optionSelected($event)" [displayWith]="displayFn">
+                            @for (item of filteredOptions; track item.uuid) {
+                            <mat-option [value]="item">{{item.Pos!.name}} | {{item.Pos!.shop}}</mat-option>
+                            }
+                        </mat-autocomplete>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="col-form-label" for="price">Prix <span class="text-danger">*</span></label>
+                        <select class="form-control" formControlName="price" required>
+                            <option value="" disabled selected>Selectionner un prix</option>
+                            <option *ngFor="let price of priceList" [value]="price">{{ price }}</option>
+                        </select>
+                        <mat-error *ngIf="formGroup.controls['price'].hasError('required')">
+                            Ce champs est obligatoire
+                        </mat-error>
+                    </div>
+                </div>
                 <div class="col-md-12">
                     <div class="mb-3">
                         <label class="col-form-label" for="text">Commentaire <span class="text-danger">*</span></label>
@@ -529,8 +527,102 @@
         </button>
     </div>
     <div class="offcanvas-body">
-        <form [formGroup]="formGroup" (ngSubmit)="onSubmitUpdate()">
+        <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
             <div class="row">
+                <form [formGroup]="formGroupPosFormItem" (ngSubmit)="onSubmitItem()"
+                    style="background-color: rgba(10, 128, 179, 0.045);">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="col-form-label" for="text">Brand <span
+                                        class="text-danger">*</span></label>
+                                <input #brand_uuid type="text" matInput [matAutocomplete]="autopos3"
+                                    placeholder="Selectionner le brand" class="form-control" (input)="getAllBrand()"
+                                    (focus)="getAllBrand()">
+                                @if (isloadBrand) {
+                                <div class="d-flex align-items-center">
+                                    <strong role="status">Loading...</strong>
+                                    <div class="spinner-border ms-auto" aria-hidden="true"></div>
+                                </div>
+                                }
+                                <mat-autocomplete requireSelection #autopos3="matAutocomplete"
+                                    (optionSelected)="optionSelectedBrand($event)" [displayWith]="displayFnBrand">
+                                    @for (item of filteredOptionBrand; track item.uuid) {
+                                    <mat-option [value]="item">{{item.name}}</mat-option>
+                                    }
+                                </mat-autocomplete>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="col-form-label" for="text">Présence des fardes <span
+                                        class="text-danger">*</span></label>
+                                <input type="number" class="form-control" formControlName="number_farde" required />
+                                <mat-error *ngIf="formGroupPosFormItem.controls['number_farde'].hasError('required')">
+                                    Ce champs est obligatoire
+                                </mat-error>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="col-form-label" for="text">Ventes <span
+                                        class="text-danger">*</span></label>
+                                <input type="number" class="form-control" formControlName="sold" required />
+                                <mat-error *ngIf="formGroupPosFormItem.controls['sold'].hasError('required')">
+                                    Ce champs est obligatoire
+                                </mat-error>
+                            </div>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end mb-3">
+                            <button type="submit" class="btn btn-success">
+                                <i class="ti ti-check me-2"></i>
+                                Ajouter
+                            </button>
+                        </div>
+                    </div>
+                </form>
+
+                <!-- Pos List -->
+                <div class="task-wrapper">
+                    <div class="row">
+                        @if (isLoadingPosFormItem) {
+                        <div class="d-flex align-items-center justify-content-center w-100">
+                            <strong role="status">Loading...</strong>
+                            <div class="spinner-border ms-2" aria-hidden="true"></div>
+                        </div>
+                        } @else {
+                        @for (item of dataListPosFormItem; track $index) {
+                        <div class="col-md-4 mb-3">
+                            <div class="card task-card">
+                                <div class="card-body">
+                                    <div class="task-info d-flex align-items-center justify-content-between">
+                                        <div>
+                                            <p class="mb-1"><strong>
+                                                    Brand:</strong> {{ item.Brand!.name }}
+                                            </p>
+                                            <p class="mb-1"><strong>
+                                                    Nombre de Farde:</strong> {{ item.number_farde }}
+                                            </p>
+                                            <p *ngIf="item.sold > 0" class="mb-1">
+                                                <strong>{{ item.sold > 1 ? 'Ventes:' : 'Vente:' }}</strong>
+                                                {{ item.sold }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="task-actions mt-3 text-end">
+                                        <a href="javascript:void(0);" (click)="deletePosFormItem(item.uuid!)"
+                                            class="text-danger">
+                                            <i class="ti ti-trash"></i> Delete
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        }
+                        }
+                    </div>
+                </div>
+
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="col-form-label" for="text">POS <span class="text-danger">*</span></label>
@@ -563,98 +655,6 @@
                         </mat-error>
                     </div>
                 </div>
-
-                <form [formGroup]="formGroupPosFormItem" (ngSubmit)="onSubmitItem()"
-                    style="background-color: rgba(10, 128, 179, 0.045);">
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="col-form-label" for="text">Brand <span
-                                        class="text-danger">*</span></label>
-                                <input #brand_uuid type="text" matInput [matAutocomplete]="autopos3"
-                                    placeholder="Selectionner le brand" class="form-control" (input)="getAllBrand()"
-                                    (focus)="getAllBrand()">
-                                @if (isloadBrand) {
-                                <div class="d-flex align-items-center">
-                                    <strong role="status">Loading...</strong>
-                                    <div class="spinner-border ms-auto" aria-hidden="true"></div>
-                                </div>
-                                }
-                                <mat-autocomplete requireSelection #autopos3="matAutocomplete"
-                                    (optionSelected)="optionSelectedBrand($event)" [displayWith]="displayFnBrand">
-                                    @for (item of filteredOptionBrand; track item.uuid) {
-                                    <mat-option [value]="item">{{item.name}}</mat-option>
-                                    }
-                                </mat-autocomplete>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="col-form-label" for="text">Total de farde <span
-                                        class="text-danger">*</span></label>
-                                <input type="number" class="form-control" formControlName="number_farde" required />
-                                <mat-error *ngIf="formGroupPosFormItem.controls['number_farde'].hasError('required')">
-                                    Ce champs est obligatoire
-                                </mat-error>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="col-form-label" for="text">Ventes <span
-                                        class="text-danger">*</span></label>
-                                <input type="number" class="form-control" formControlName="sold" required />
-                                <mat-error *ngIf="formGroupPosFormItem.controls['sold'].hasError('required')">
-                                    Ce champs est obligatoire
-                                </mat-error>
-                            </div>
-                        </div>
-                        <div class="col-md-6 d-flex align-items-end mb-3">
-                            <button type="submit" class="btn btn-success w-100">
-                                <i class="ti ti-check me-2"></i>
-                                Ajouter
-                            </button>
-                        </div>
-                    </div>
-                </form>
-
-                <!-- Pos List -->
-                <div class="task-wrapper" *ngIf="dataItem">
-                    <div class="row">
-                        @if (isLoadingPosFormItem) {
-                        <div class="d-flex align-items-center justify-content-center w-100">
-                            <strong role="status">Loading...</strong>
-                            <div class="spinner-border ms-2" aria-hidden="true"></div>
-                        </div>
-                        } @else {
-                        @for (item of dataListPosFormItem; track $index) {
-                        <div class="col-md-4 mb-3">
-                            <div class="card task-card">
-                                <div class="card-body">
-                                    <div class="task-info d-flex align-items-center justify-content-between">
-                                        <div>
-                                            <p class="mb-1"><strong>Brand:</strong> {{ item.Brand!.name }}</p>
-                                            <p class="mb-1"><strong>Nombre de Farde:</strong> {{ item.number_farde }}
-                                            </p>
-                                            <p *ngIf="item.sold > 0" class="mb-1">
-                                                <strong>{{ item.sold > 1 ? 'Ventes:' : 'Vente:' }}</strong>
-                                                {{ item.sold }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="task-actions mt-3 text-end">
-                                        <a href="javascript:void(0);" (click)="deletePosFormItem(item.uuid!)"
-                                            class="text-danger">
-                                            <i class="ti ti-trash"></i> Delete
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        }
-                        }
-                    </div>
-                </div>
-
                 <div class="col-md-12">
                     <div class="mb-3">
                         <label class="col-form-label" for="text">Commentaire <span class="text-danger">*</span></label>
@@ -676,7 +676,7 @@
                 }
                 @if (!isLoading) {
                 <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-dismiss="offcanvas"
-                    data-bs-target="#create_success">Enregistrer les modifications</button>
+                    data-bs-target="#create_success">Soumettre</button>
                 }
             </div>
         </form>

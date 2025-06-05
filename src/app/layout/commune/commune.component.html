@@ -264,15 +264,15 @@
                 </div>
                 <div class="col-md-12">
                     <div class="mb-3">
-                        <label class="col-form-label" for="subarea_uuid">Sub Area <span
+                        <label class="col-form-label" for="sub_area_uuid">Sub Area <span
                                 class="text-danger">*</span></label>
-                        <mat-select class="select custom-mat-select" formControlName="subarea_uuid"
+                        <mat-select class="select custom-mat-select" formControlName="sub_area_uuid"
                             placeholder="Choose SubArea">
                             @for (item of subAreaFilterList; track item) {
                             <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
                             }
                         </mat-select>
-                        <mat-error *ngIf="formGroup.controls['subarea_uuid'].hasError('required')">
+                        <mat-error *ngIf="formGroup.controls['sub_area_uuid'].hasError('required')">
                             Ce champs est obligatoire
                         </mat-error>
                     </div>
@@ -367,15 +367,15 @@
                 </div>
                 <div class="col-md-12">
                     <div class="mb-3">
-                        <label class="col-form-label" for="subarea_uuid">Sub Area <span
+                        <label class="col-form-label" for="sub_area_uuid">Sub Area <span
                                 class="text-danger">*</span></label>
-                        <mat-select class="select custom-mat-select" formControlName="subarea_uuid"
+                        <mat-select class="select custom-mat-select" formControlName="sub_area_uuid"
                             placeholder="Choose SubArea">
                             @for (item of subAreaFilterList; track item) {
                             <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
                             }
                         </mat-select>
-                        <mat-error *ngIf="formGroup.controls['subarea_uuid'].hasError('required')">
+                        <mat-error *ngIf="formGroup.controls['sub_area_uuid'].hasError('required')">
                             Ce champs est obligatoire
                         </mat-error>
                     </div>

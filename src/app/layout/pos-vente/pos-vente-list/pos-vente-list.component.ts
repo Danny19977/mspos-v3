@@ -174,6 +174,7 @@ export class PosVenteListComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'DR') {
+      console.log("sub_area_uuid", currentUser.dr_uuid);
       this.posVenteService.getPaginatedBySubAreaId(currentUser.sub_area_uuid, this.current_page, this.page_size, this.search,
         
       ).subscribe(res => {
@@ -247,7 +248,7 @@ export class PosVenteListComponent implements OnInit {
         country_uuid: this.dataItem.country_uuid,
         province_uuid: this.dataItem.province_uuid,
         area_uuid: this.dataItem.area_uuid,
-        subarea_uuid: this.dataItem.subarea_uuid,
+        sub_area_uuid: this.dataItem.sub_area_uuid,
         commune_uuid: this.dataItem.commune_uuid,
         user_uuid: this.dataItem.user_uuid,
         asm_uuid: this.dataItem.asm_uuid,
@@ -276,7 +277,7 @@ export class PosVenteListComponent implements OnInit {
           country_uuid: this.currentUser.country_uuid,
           province_uuid: this.currentUser.province_uuid,
           area_uuid: this.currentUser.area_uuid,
-          subarea_uuid: this.currentUser.sub_area_uuid,
+          sub_area_uuid: this.currentUser.sub_area_uuid,
           commune_uuid: this.currentUser.commune_uuid,
           asm_uuid: this.currentUser.asm_uuid,
           asm: this.currentUser.asm,
@@ -341,7 +342,7 @@ export class PosVenteListComponent implements OnInit {
         country_uuid: this.currentUser.country_uuid,
         province_uuid: this.currentUser.province_uuid,
         area_uuid: this.currentUser.area_uuid,
-        subarea_uuid: this.currentUser.sub_area_uuid,
+        sub_area_uuid: this.currentUser.sub_area_uuid,
         commune_uuid: this.currentUser.commune_uuid,
         asm_uuid: this.currentUser.asm_uuid,
         asm: this.currentUser.asm,

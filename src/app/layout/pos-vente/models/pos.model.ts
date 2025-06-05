@@ -31,7 +31,7 @@ export interface IPos {
     province_name?: string;
     area_uuid: string;
     area_name?: string;
-    subarea_uuid: string;
+    sub_area_uuid: string;
     subarea_name?: string;
     commune_uuid: string;
     commune_name?: string;

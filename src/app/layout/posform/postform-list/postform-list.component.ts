@@ -257,8 +257,8 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     this.brandService.getAllByASM(this.currentUser.province_uuid).subscribe({
       next: (res) => {
         this.brandList = res.data;
-        const posUuidsInCurrentDataList = this.dataListPosFormItem.map(item => item.brand_uuid);
-        this.brandListFilter = this.brandList.filter(brand => brand.uuid && !posUuidsInCurrentDataList.includes(brand.uuid));
+        // const posUuidsInCurrentDataList = this.dataListPosFormItem.map(item => item.brand_uuid);
+        this.brandListFilter = this.brandList.filter(brand => brand.uuid);
         this.filteredOptionBrand = this.brandListFilter.filter(o => o.name!.toLowerCase().includes(filterValue));
         this.isloadBrand = false;
       },

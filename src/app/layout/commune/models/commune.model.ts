@@ -15,7 +15,7 @@ export interface ICommune {
     country_uuid: string;
     province_uuid: string;
     area_uuid: string;
-    subarea_uuid: string;
+    sub_area_uuid: string;
 
     signature: string;
     CreatedAt: Date;

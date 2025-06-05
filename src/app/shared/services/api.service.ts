@@ -109,15 +109,15 @@ export abstract class ApiService {
     return this.http.get<any>(`${this.endpoint}/all/paginate/area/${area_uuid}`, { params });
   }
 
-  getPaginatedBySubAreaId(subarea_uuid: string, page: number, pageSize: number, search: string): Observable<any> {
+  getPaginatedBySubAreaId(sub_area_uuid: string, page: number, pageSize: number, search: string): Observable<any> {
     let params = new HttpParams()
       .set("page", page.toString())
       .set("page_size", pageSize.toString())
       .set("search", search)
-    return this.http.get<any>(`${this.endpoint}/all/paginate/subarea/${subarea_uuid}`, { params });
+    return this.http.get<any>(`${this.endpoint}/all/paginate/subarea/${sub_area_uuid}`, { params });
   }
 
-  getPaginatedRangeDateBySubAreaId(subarea_uuid: string, page: number, pageSize: number, search: string,
+  getPaginatedRangeDateBySubAreaId(sub_area_uuid: string, page: number, pageSize: number, search: string,
     startDateStr: string, endDateStr: string): Observable<any> {
     let params = new HttpParams()
       .set("page", page.toString())
@@ -125,7 +125,7 @@ export abstract class ApiService {
       .set("search", search)
       .set("start_date", startDateStr)
       .set("end_date", endDateStr)
-    return this.http.get<any>(`${this.endpoint}/all/paginate/subarea/${subarea_uuid}`, { params });
+    return this.http.get<any>(`${this.endpoint}/all/paginate/subarea/${sub_area_uuid}`, { params });
   }
 
   getPaginatedByCommuneId(user_uuid: string, page: number, pageSize: number, search: string): Observable<any> {
@@ -197,8 +197,8 @@ export abstract class ApiService {
     return this.http.get(`${this.endpoint}/all/areas/${area_uuid}`);
   }
 
-  getAllByDR(subarea_uuid: string): Observable<any> {
-    return this.http.get(`${this.endpoint}/all/subareas/${subarea_uuid}`);
+  getAllByDR(sub_area_uuid: string): Observable<any> {
+    return this.http.get(`${this.endpoint}/all/subareas/${sub_area_uuid}`);
   }
 
   getAllByCyclo(cyclo_uuid: string): Observable<any> {

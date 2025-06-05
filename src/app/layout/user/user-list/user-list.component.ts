@@ -206,7 +206,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
       country_uuid: [''],
       province_uuid: [''],
       area_uuid: ['',],
-      subarea_uuid: [''],
+      sub_area_uuid: [''],
       commune_uuid: [''],
       support_uuuid: [''],
       manager_uuid: [''],
@@ -286,7 +286,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
         country_uuid: this.dataItem.country_uuid,
         province_uuid: this.dataItem.province_uuid,
         area_uuid: this.dataItem.area_uuid,
-        subarea_uuid: this.dataItem.subarea_uuid,
+        sub_area_uuid: this.dataItem.sub_area_uuid,
         commune_uuid: this.dataItem.commune_uuid,
         support_uuuid: this.dataItem.support_uuuid,
         support: this.dataItem.support,
@@ -337,7 +337,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
   }
 
   onSubAreaChange(event: any) {
-    const communeArray = this.communeList.filter((v) => v.subarea_uuid == event.value);
+    const communeArray = this.communeList.filter((v) => v.sub_area_uuid == event.value);
     this.communeListFilter = communeArray.filter((obj, index, self) =>
       index === self.findIndex((t) => t.name === obj.name)
     );
@@ -503,7 +503,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
           country_uuid: this.formGroup.value.country_uuid,
           province_uuid: this.formGroup.value.province_uuid,
           area_uuid: this.formGroup.value.area_uuid,
-          subarea_uuid: this.formGroup.value.subarea_uuid,
+          sub_area_uuid: this.formGroup.value.sub_area_uuid,
           commune_uuid: this.formGroup.value.commune_uuid,
 
           support_uuuid: (this.currentUser.role === 'Support') ? this.currentUser.uuid : '',
@@ -576,7 +576,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
         country_uuid: this.formGroup.value.country_uuid,
         province_uuid: this.formGroup.value.province_uuid,
         area_uuid: this.formGroup.value.area_uuid,
-        subarea_uuid: this.formGroup.value.subarea_uuid,
+        sub_area_uuid: this.formGroup.value.sub_area_uuid,
         commune_uuid: this.formGroup.value.commune_uuid,
 
         support_uuuid: (this.currentUser.role === 'Support') ? this.currentUser.uuid : '',

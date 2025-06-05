@@ -22,10 +22,10 @@ export class AppDB extends Dexie {
     super('ngdexieliveQuery');
     this.version(4).stores({
       brands: '++id, uuid, name, country_uuid, province_uuid, signature, CreatedAt, UpdatedAt',
-      pos: '++id, name, shop, postype, gerant, avenue, quartier, reference, telephone, country_uuid, country_name, province_uuid, province_name, area_uuid, area_name, subarea_uuid, subarea_name, commune_uuid, commune_name, asm_uuid, sup_uuid, dr_uuid, cyclo_uuid, user_uuid, user_fullname, status, signature, CreatedAt, UpdatedAt',
-      posForms: '++id, uuid, price, comment, latitude, longitude, pos_uuid, country_name, province_uuid, province_name, area_uuid, area_name, subarea_uuid, subarea_name, commune_uuid, commune_name, asm_uuid, sup_uuid, dr_uuid, cyclo_uuid, sync, signature, CreatedAt, UpdatedAt',
+      pos: '++id, name, shop, postype, gerant, avenue, quartier, reference, telephone, country_uuid, country_name, province_uuid, province_name, area_uuid, area_name, sub_area_uuid, subarea_name, commune_uuid, commune_name, asm_uuid, sup_uuid, dr_uuid, cyclo_uuid, user_uuid, user_fullname, status, signature, CreatedAt, UpdatedAt',
+      posForms: '++id, uuid, price, comment, latitude, longitude, pos_uuid, country_name, province_uuid, province_name, area_uuid, area_name, sub_area_uuid, subarea_name, commune_uuid, commune_name, asm_uuid, sup_uuid, dr_uuid, cyclo_uuid, sync, signature, CreatedAt, UpdatedAt',
       posformItems: '++id, uuid, posform_uuid, brand_uuid, brand_name, number_farde, counter, sold, CreatedAt, UpdatedAt',
-      routePlans: '++id, uuid, country_uuid, country_name, province_uuid, province_name, area_uuid, area_name, subarea_uuid, subarea_name, commune_uuid, commune_name, user_uuid, user_fullname, total_pos, signature, CreatedAt, UpdatedAt',
+      routePlans: '++id, uuid, country_uuid, country_name, province_uuid, province_name, area_uuid, area_name, sub_area_uuid, subarea_name, commune_uuid, commune_name, user_uuid, user_fullname, total_pos, signature, CreatedAt, UpdatedAt',
       routePlanItems: '++id, uuid, routplan_uuid, pos_uuid, pos_name, pos_gerant, pos_shop, postype, status, CreatedAt, UpdatedAt',
       posEquipments: '++id, pos_uuid, parasol, parasol_status, stand, stand_status, kiosk, kiosk_status, CreatedAt, UpdatedAt',
       UserLogs: '++id, name, user_uuid, action, description, signature, CreatedAt, UpdatedAt',

@@ -24,7 +24,7 @@ export interface IRoutePlan {
     Province?: IProvince;
     area_uuid: string;
     Area?: IArea;
-    subarea_uuid: string;
+    sub_area_uuid: string;
     Subarea?: ISubArea;
     commune_uuid: string;
     Commune?: ICommune; 
