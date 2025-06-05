@@ -136,7 +136,7 @@ export abstract class ApiService {
     return this.http.get<any>(`${this.endpoint}/all/paginate/commune/${user_uuid}`, { params });
   }
 
-  getPaginatedRangeDateByCommuneId(commune_uuid: string, page: number, pageSize: number, search: string,
+  getPaginatedRangeDateByCommuneId(user_uuid: string, page: number, pageSize: number, search: string,
     startDateStr: string, endDateStr: string): Observable<any> {
     let params = new HttpParams()
       .set("page", page.toString())
@@ -144,7 +144,7 @@ export abstract class ApiService {
       .set("search", search)
       .set("start_date", startDateStr)
       .set("end_date", endDateStr)
-    return this.http.get<any>(`${this.endpoint}/all/paginate/commune/${commune_uuid}`, { params });
+    return this.http.get<any>(`${this.endpoint}/all/paginate/commune/${user_uuid}`, { params });
   }
 
   getPaginatedByUserId(user_uuid: string, page: number, pageSize: number, search: string): Observable<any> {

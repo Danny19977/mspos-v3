@@ -318,7 +318,8 @@ export class PostformListComponent implements OnInit, AfterViewInit {
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'ASM') {
-      this.posformService.getPaginatedRangeDateByProvinceId(currentUser.asm_uuid, this.current_page, this.page_size, this.search,
+      this.posformService.getPaginatedRangeDateByProvinceId(
+        currentUser.province_uuid, this.current_page, this.page_size, this.search,
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
@@ -328,7 +329,8 @@ export class PostformListComponent implements OnInit, AfterViewInit {
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'Supervisor') {
-      this.posformService.getPaginatedRangeDateByAreaId(currentUser.sup_uuid, this.current_page, this.page_size, this.search,
+      this.posformService.getPaginatedRangeDateByAreaId(
+        currentUser.area_uuid, this.current_page, this.page_size, this.search,
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
@@ -338,7 +340,8 @@ export class PostformListComponent implements OnInit, AfterViewInit {
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'DR') {
-      this.posformService.getPaginatedRangeDateBySubAreaId(currentUser.dr_uuid, this.current_page, this.page_size, this.search,
+      this.posformService.getPaginatedRangeDateBySubAreaId(
+        currentUser.subarea_uuid, this.current_page, this.page_size, this.search,
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
@@ -348,7 +351,8 @@ export class PostformListComponent implements OnInit, AfterViewInit {
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'Cyclo') {
-      this.posformService.getPaginatedRangeDateByCommuneId(currentUser.cyclo_uuid, this.current_page, this.page_size, this.search,
+      this.posformService.getPaginatedRangeDateByCommuneId(
+        currentUser.uuid, this.current_page, this.page_size, this.search,
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
           console.log('Data List:', this.dataList);
