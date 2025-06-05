@@ -444,7 +444,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
           'PosForm',
           this.currentUser.uuid,
           'created',
-          `Created Posform uuid: ${res.data.uuid}`,
+          `Created Posform uuid: `,  // ${res.data.uuid!}
           this.currentUser.fullname
         ).subscribe({
           next: () => { 
