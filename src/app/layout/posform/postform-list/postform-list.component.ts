@@ -199,7 +199,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
     this.formGroup = this._formBuilder.group({
       pos_uuid: ['', Validators.required],
-      price: ['', Validators.required],
+      price: ['50', Validators.required],
       comment: ['Rien à signaler', Validators.required],
     });
 
@@ -421,8 +421,8 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       this.isLoading = true;
       var body: IPosForm = {
         // uuid: uuidv4(),
-        price: 50,
-        comment: 'Rien á signaler',
+        price: parseInt(this.formGroup.value.price),
+        comment: this.formGroup.value.comment, 
         latitude: this.latitude,
         longitude: this.longitude,
         pos_uuid: '', // This will be set later
