@@ -416,7 +416,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   }
 
 
-   onSubmitInit() {
+  async onSubmitInit() {
     this.isLoading = true;
     var body: IPosForm = {
       // uuid: uuidv4(),
@@ -442,6 +442,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       signature: this.currentUser.fullname, // Added signature property
       sync: true,
     };
+    console.log('Body:', body);
     this.posformService.create(body).subscribe({
       next: (res) => {
         this.logActivity.activity(
