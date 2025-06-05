@@ -50,7 +50,7 @@ export interface IPosForm {
     cyclo: string;
 
 
-    sync: boolean; // pour savoir si le posform est synchronisé ou non
+    // sync: boolean; // pour savoir si le posform est synchronisé ou non
     signature: string;
 
     CreatedAt?: Date;

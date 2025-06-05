@@ -440,7 +440,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       cyclo: this.currentUser.cyclo || '',
       user_uuid: this.currentUser.uuid,
       signature: this.currentUser.fullname, // Added signature property
-      sync: true,
+      // sync: true,
     };
     console.log('Body:', body);
     this.posformService.create(body).subscribe({
@@ -497,7 +497,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
           cyclo: this.currentUser.cyclo,
           user_uuid: this.currentUser.uuid,
           signature: this.currentUser.fullname,
-          sync: false,
+          // sync: false,
         };
         this.posformService.update(this.uuidItem, body)
           .subscribe({
@@ -571,7 +571,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         cyclo: this.currentUser.cyclo,
         user_uuid: this.currentUser.uuid,
         signature: this.currentUser.fullname,
-        sync: false, // Default value for 'sync', adjust as needed 
+        // sync: false, // Default value for 'sync', adjust as needed 
       };
       console.log('Body:', body);
       this.posformService.update(this.uuidItem, body)
