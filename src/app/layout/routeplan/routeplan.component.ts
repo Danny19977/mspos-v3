@@ -145,7 +145,7 @@ export class RouteplanComponent implements OnInit {
     } else if (currentUser.role == 'DR') {
       const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
       this.isload = true;
-      this.posVenteService.getAllByDR(currentUser.subarea_uuid).subscribe(res => {
+      this.posVenteService.getAllByDR(currentUser.sub_area_uuid).subscribe(res => {
         this.posList = res.data;
         const posUuidsInCurrentDataList = this.dataListItem.map(item => item.pos_uuid);
         this.posListFilter = this.posList.filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
@@ -215,7 +215,7 @@ export class RouteplanComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'DR') {
-      this.routeplanService.getPaginatedBySubAreaId(currentUser.subarea_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.routeplanService.getPaginatedBySubAreaId(currentUser.sub_area_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
@@ -345,7 +345,7 @@ export class RouteplanComponent implements OnInit {
         country_uuid: this.currentUser.country_uuid,
         province_uuid: this.currentUser.province_uuid,
         area_uuid: this.currentUser.area_uuid,
-        subarea_uuid: this.currentUser.subarea_uuid,
+        subarea_uuid: this.currentUser.sub_area_uuid,
         commune_uuid: this.currentUser.commune_uuid,
         user_uuid: this.currentUser.uuid,
         signature: this.currentUser.fullname,

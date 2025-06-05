@@ -341,7 +341,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         });
     } else if (currentUser.role == 'DR') {
       this.posformService.getPaginatedRangeDateBySubAreaId(
-        currentUser.subarea_uuid, this.current_page, this.page_size, this.search,
+        currentUser.sub_area_uuid, this.current_page, this.page_size, this.search,
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
@@ -428,7 +428,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       country_uuid: this.currentUser.country_uuid || '',
       province_uuid: this.currentUser.province_uuid || '',
       area_uuid: this.currentUser.area_uuid || '',
-      subarea_uuid: this.currentUser.subarea_uuid || '',
+      sub_area_uuid: this.currentUser.sub_area_uuid || '',
       commune_uuid: this.currentUser.commune_uuid || '',
       asm_uuid: this.currentUser.asm_uuid || '',
       asm: this.currentUser.asm || '',
@@ -485,7 +485,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
           country_uuid: this.currentUser.country_uuid,
           province_uuid: this.currentUser.province_uuid,
           area_uuid: this.currentUser.area_uuid,
-          subarea_uuid: this.currentUser.subarea_uuid,
+          sub_area_uuid: this.currentUser.sub_area_uuid,
           commune_uuid: this.currentUser.commune_uuid,
           asm_uuid: this.currentUser.asm_uuid,
           asm: this.currentUser.asm,
@@ -559,7 +559,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         country_uuid: this.currentUser.country_uuid,
         province_uuid: this.currentUser.province_uuid,
         area_uuid: this.currentUser.area_uuid,
-        subarea_uuid: this.currentUser.subarea_uuid,
+        sub_area_uuid: this.currentUser.sub_area_uuid,
         commune_uuid: this.currentUser.commune_uuid,
         asm_uuid: this.currentUser.asm_uuid,
         asm: this.currentUser.asm,
@@ -683,7 +683,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         country_uuid: this.dataItem.country_uuid,
         province_uuid: this.dataItem.province_uuid,
         area_uuid: this.dataItem.area_uuid,
-        subarea_uuid: this.dataItem.subarea_uuid,
+        sub_area_uuid: this.dataItem.sub_area_uuid,
         asm_uuid: this.dataItem.asm_uuid,
         asm: this.dataItem.asm,
         sup_uuid: this.dataItem.sup_uuid,
