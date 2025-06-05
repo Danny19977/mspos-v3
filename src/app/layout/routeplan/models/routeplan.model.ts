@@ -1,15 +1,10 @@
 import { IArea } from "../../areas/models/area.model";
 import { ICommune } from "../../commune/models/commune.model";
-import { ICountry } from "../../country/models/country.model";
-import { IPos } from "../../pos-vente/models/pos.model";
+import { ICountry } from "../../country/models/country.model"; 
 import { IProvince } from "../../province/models/province.model";
 import { ISubArea } from "../../subarea/models/subarea.model";
 import { IUser } from "../../user/models/user.model";
-import { IRoutePlanItem } from "./routeplanItem.model";
-import { IAsm } from "../../asm/models/asm.model";
-import { ICyclo } from "../../cyclo/models/cyclo.model";
-import { IDr } from "../../dr/models/dr.model";
-import { ISup } from "../../sups/models/sup.model";
+import { IRoutePlanItem } from "./routeplanItem.model"; 
 
 export interface IRoutePlan {
     ID?: number;

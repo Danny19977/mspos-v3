@@ -215,6 +215,7 @@ export class RouteplanComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'DR') {
+      console.log("currentUser.sub_area_uuid", currentUser.sub_area_uuid);
       this.routeplanService.getPaginatedBySubAreaId(currentUser.sub_area_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
         this.total_pages = res.pagination.total_pages;

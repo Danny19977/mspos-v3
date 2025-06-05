@@ -649,6 +649,9 @@ export class PostformListComponent implements OnInit, AfterViewInit {
           ).subscribe({
             next: () => {
               this.findValue(this.dataItem.uuid!);
+              this.brand_uuid.nativeElement.value = "";
+              this.brandUUID = "";
+              this.brandName = "";
               this.formGroupPosFormItem.reset();
               this.toastr.success('Ajouter avec succès!', 'Success!');
               this.isLoadingPosFormItem = false;
