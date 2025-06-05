@@ -199,7 +199,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
     this.formGroup = this._formBuilder.group({
       pos_uuid: ['', Validators.required],
-      price: ['50', Validators.required],
+      price: ['', Validators.required],
       comment: ['Rien à signaler', Validators.required],
     });
 
@@ -416,62 +416,59 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   }
 
 
-  onSubmitInit() {
-    if (this.formGroup.valid) {
-      this.isLoading = true;
-      var body: IPosForm = {
-        // uuid: uuidv4(),
-        price: parseInt(this.formGroup.value.price),
-        comment: this.formGroup.value.comment, 
-        latitude: this.latitude,
-        longitude: this.longitude,
-        pos_uuid: '', // This will be set later
-        country_uuid: this.currentUser.country_uuid || '',
-        province_uuid: this.currentUser.province_uuid || '',
-        area_uuid: this.currentUser.area_uuid || '',
-        subarea_uuid: this.currentUser.subarea_uuid || '',
-        commune_uuid: this.currentUser.commune_uuid || '',
-        asm_uuid: this.currentUser.asm_uuid || '',
-        asm: this.currentUser.asm || '',
-        sup_uuid: this.currentUser.sup_uuid || '',
-        sup: this.currentUser.sup || '',
-        dr_uuid: this.currentUser.dr_uuid || '',
-        dr: this.currentUser.dr || '',
-        cyclo_uuid: this.currentUser.cyclo_uuid || '',
-        cyclo: this.currentUser.cyclo || '',
-        user_uuid: this.currentUser.uuid,
-        signature: this.currentUser.fullname, // Added signature property
-        sync: true,
-      };
-      console.log('Body:', body);
-      this.posformService.create(body).subscribe({
-        next: (res) => {
-          this.logActivity.activity(
-            'PosForm',
-            this.currentUser.uuid,
-            'created',
-            `Created Posform uuid: ${res.data.uuid!}`,  // 
-            this.currentUser.fullname
-          ).subscribe({
-            next: () => {
-              this.formGroup.reset();
-              this.toastr.success('Ajouter avec succès!', 'Success!');
-              this.isLoading = false;
-            },
-            error: (err) => {
-              this.isLoading = false;
-              this.toastr.error(`${err.error.message}`, 'Oupss!');
-              console.log(err);
-            }
-          });
-        },
-        error: err => {
-          console.log(err);
-          this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-          this.isLoading = false;
-        }
-      });
-    }
+   onSubmitInit() {
+    this.isLoading = true;
+    var body: IPosForm = {
+      // uuid: uuidv4(),
+      price: 50,
+      comment: 'Rien á signaler',
+      latitude: this.latitude,
+      longitude: this.longitude,
+      pos_uuid: '', // This will be set later
+      country_uuid: this.currentUser.country_uuid || '',
+      province_uuid: this.currentUser.province_uuid || '',
+      area_uuid: this.currentUser.area_uuid || '',
+      subarea_uuid: this.currentUser.subarea_uuid || '',
+      commune_uuid: this.currentUser.commune_uuid || '',
+      asm_uuid: this.currentUser.asm_uuid || '',
+      asm: this.currentUser.asm || '',
+      sup_uuid: this.currentUser.sup_uuid || '',
+      sup: this.currentUser.sup || '',
+      dr_uuid: this.currentUser.dr_uuid || '',
+      dr: this.currentUser.dr || '',
+      cyclo_uuid: this.currentUser.cyclo_uuid || '',
+      cyclo: this.currentUser.cyclo || '',
+      user_uuid: this.currentUser.uuid,
+      signature: this.currentUser.fullname, // Added signature property
+      sync: true,
+    };
+    this.posformService.create(body).subscribe({
+      next: (res) => {
+        this.logActivity.activity(
+          'PosForm',
+          this.currentUser.uuid,
+          'created',
+          `Created Posform uuid: ${res.data.uuid!}`, // 
+          this.currentUser.fullname
+        ).subscribe({
+          next: () => {
+            this.formGroup.reset();
+            this.toastr.success('Ajouter avec succès!', 'Success!');
+            this.isLoading = false;
+          },
+          error: (err) => {
+            this.isLoading = false;
+            this.toastr.error(`${err.error.message}`, 'Oupss!');
+            console.log(err);
+          }
+        });
+      },
+      error: err => {
+        console.log(err);
+        this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+        this.isLoading = false;
+      }
+    });
   }
 
   onSubmit() {
