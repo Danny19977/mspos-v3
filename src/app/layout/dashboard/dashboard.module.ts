@@ -49,8 +49,13 @@ import { KpiTableViewAreaComponent } from './kpi-dashboard/kpi-table-view-area/k
 import { KpiTableViewCommuneComponent } from './kpi-dashboard/kpi-table-view-commune/kpi-table-view-commune.component';
 import { KpiTableViewProvinceComponent } from './kpi-dashboard/kpi-table-view-province/kpi-table-view-province.component';
 import { KpiTableViewSubareaComponent } from './kpi-dashboard/kpi-table-view-subarea/kpi-table-view-subarea.component'; 
-
-
+// Dashboard Services - Lazy loaded only when dashboard module is loaded
+import { GoogleMapService } from './services/google-map.service';
+import { KpiService } from './services/kpi.service';
+import { NdService } from './services/nd.service';
+import { SaleEvolutionService } from './services/sale-evolution.service';
+import { SosService } from './services/sos.service';
+import { SummaryService } from './services/summary.service';
 
 @NgModule({
   declarations: [
@@ -105,6 +110,15 @@ import { KpiTableViewSubareaComponent } from './kpi-dashboard/kpi-table-view-sub
     DashboardRoutingModule,
     SharedModule,
     GoogleMapsModule
+  ],
+  providers: [
+    // Dashboard services loaded only when this module is loaded
+    GoogleMapService,
+    KpiService,
+    NdService,
+    SaleEvolutionService,
+    SosService,
+    SummaryService,
   ]
 })
 export class DashboardModule { }

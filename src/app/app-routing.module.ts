@@ -1,7 +1,8 @@
 import { NgModule } from '@angular/core';
-import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { PreloadAllModules, RouterModule, Routes, NoPreloading } from '@angular/router';
 import { onlineGuard } from './auth/guard/online.guard';
 import { AuthGuard } from './auth/guard/auth.guard';
+import { SelectivePreloadingStrategy } from './utils/selective-preloading-strategy';
 
 const routes: Routes = [
   {
@@ -16,7 +17,8 @@ const routes: Routes = [
     loadChildren: () =>
       import('../app/layout/layout.module').then(
         (m) => m.LayoutModule
-      ), 
+      ),
+    data: { preload: true } // Preload only this important module
   },
   {
     path: 'error-pages',
@@ -32,7 +34,13 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, { useHash: true, preloadingStrategy: PreloadAllModules })],
+  imports: [RouterModule.forRoot(routes, { 
+    useHash: true, 
+    preloadingStrategy: SelectivePreloadingStrategy,
+    enableTracing: false,
+    initialNavigation: 'enabledBlocking'
+  })],
+  providers: [SelectivePreloadingStrategy],
   exports: [RouterModule]
 })
 export class AppRoutingModule { }
