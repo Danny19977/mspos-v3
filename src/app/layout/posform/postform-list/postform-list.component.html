@@ -235,7 +235,7 @@
                                 </div>
                             </div>
                             
-                            <!-- Filtres hiérarchie commerciale -->
+                            <!-- Filtres hiérarchie commerciale avec recherche intégrée -->
                             <div class="row g-3 mt-2">
                                 <div class="col-12">
                                     <h6 class="mb-2"><i class="ti ti-users me-2"></i>Hiérarchie commerciale</h6>
@@ -243,77 +243,62 @@
                                 
                                 <div class="col-md-3">
                                     <label class="form-label">👔 ASM</label>
-                                    <select class="form-select" [(ngModel)]="filters.asm" (ngModelChange)="applyFilters()">
-                                        <option value="">Tous les ASM</option>
-                                        <option *ngFor="let asm of uniqueAsms" [value]="asm">{{asm}}</option>
-                                    </select>
+                                    <div class="dropdown-with-search">
+                                        <input type="text" 
+                                               class="form-control mb-1" 
+                                               [(ngModel)]="filters.asmSearch" 
+                                               (ngModelChange)="filterAsmOptions($event)"
+                                               placeholder="� Rechercher un ASM...">
+                                        <select class="form-select" [(ngModel)]="filters.asm" (ngModelChange)="applyFilters()">
+                                            <option value="">Tous les ASM</option>
+                                            <option *ngFor="let asm of getFilteredAsms()" [value]="asm">{{asm}}</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 
                                 <div class="col-md-3">
                                     <label class="form-label">👨‍💼 Supervisor</label>
-                                    <select class="form-select" [(ngModel)]="filters.supervisor" (ngModelChange)="applyFilters()">
-                                        <option value="">Tous les supervisors</option>
-                                        <option *ngFor="let sup of uniqueSupervisors" [value]="sup">{{sup}}</option>
-                                    </select>
+                                    <div class="dropdown-with-search">
+                                        <input type="text" 
+                                               class="form-control mb-1" 
+                                               [(ngModel)]="filters.supervisorSearch" 
+                                               (ngModelChange)="filterSupervisorOptions($event)"
+                                               placeholder="🔍 Rechercher un supervisor...">
+                                        <select class="form-select" [(ngModel)]="filters.supervisor" (ngModelChange)="applyFilters()">
+                                            <option value="">Tous les supervisors</option>
+                                            <option *ngFor="let sup of getFilteredSupervisors()" [value]="sup">{{sup}}</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 
                                 <div class="col-md-3">
                                     <label class="form-label">🏢 DR</label>
-                                    <select class="form-select" [(ngModel)]="filters.dr" (ngModelChange)="applyFilters()">
-                                        <option value="">Tous les DR</option>
-                                        <option *ngFor="let dr of uniqueDrs" [value]="dr">{{dr}}</option>
-                                    </select>
+                                    <div class="dropdown-with-search">
+                                        <input type="text" 
+                                               class="form-control mb-1" 
+                                               [(ngModel)]="filters.drSearch" 
+                                               (ngModelChange)="filterDrOptions($event)"
+                                               placeholder="🔍 Rechercher un DR...">
+                                        <select class="form-select" [(ngModel)]="filters.dr" (ngModelChange)="applyFilters()">
+                                            <option value="">Tous les DR</option>
+                                            <option *ngFor="let dr of getFilteredDrs()" [value]="dr">{{dr}}</option>
+                                        </select>
+                                    </div>
                                 </div>
                                 
                                 <div class="col-md-3">
-                                    <label class="form-label">🚴 Cyclo</label>
-                                    <select class="form-select" [(ngModel)]="filters.cyclo" (ngModelChange)="applyFilters()">
-                                        <option value="">Tous les cyclos</option>
-                                        <option *ngFor="let cyclo of uniqueCyclos" [value]="cyclo">{{cyclo}}</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <!-- Champs de recherche pour hiérarchie commerciale -->
-                            <div class="row g-3 mt-1">
-                                <div class="col-12">
-                                    <h6 class="mb-2"><i class="ti ti-search me-2"></i>Recherche dans la hiérarchie commerciale</h6>
-                                </div>
-                                
-                                <div class="col-md-3">
-                                    <label class="form-label">🔍 Recherche ASM</label>
-                                    <input type="text" 
-                                           class="form-control" 
-                                           [(ngModel)]="filters.asmSearch" 
-                                           (ngModelChange)="applyFilters()"
-                                           placeholder="Nom de l'ASM...">
-                                </div>
-                                
-                                <div class="col-md-3">
-                                    <label class="form-label">🔍 Recherche Supervisor</label>
-                                    <input type="text" 
-                                           class="form-control" 
-                                           [(ngModel)]="filters.supervisorSearch" 
-                                           (ngModelChange)="applyFilters()"
-                                           placeholder="Nom du supervisor...">
-                                </div>
-                                
-                                <div class="col-md-3">
-                                    <label class="form-label">🔍 Recherche DR</label>
-                                    <input type="text" 
-                                           class="form-control" 
-                                           [(ngModel)]="filters.drSearch" 
-                                           (ngModelChange)="applyFilters()"
-                                           placeholder="Nom du DR...">
-                                </div>
-                                
-                                <div class="col-md-3">
-                                    <label class="form-label">🔍 Recherche Cyclo</label>
-                                    <input type="text" 
-                                           class="form-control" 
-                                           [(ngModel)]="filters.cycloSearch" 
-                                           (ngModelChange)="applyFilters()"
-                                           placeholder="Nom du cyclo...">
+                                    <label class="form-label">� Cyclo</label>
+                                    <div class="dropdown-with-search">
+                                        <input type="text" 
+                                               class="form-control mb-1" 
+                                               [(ngModel)]="filters.cycloSearch" 
+                                               (ngModelChange)="filterCycloOptions($event)"
+                                               placeholder="🔍 Rechercher un cyclo...">
+                                        <select class="form-select" [(ngModel)]="filters.cyclo" (ngModelChange)="applyFilters()">
+                                            <option value="">Tous les cyclos</option>
+                                            <option *ngFor="let cyclo of getFilteredCyclos()" [value]="cyclo">{{cyclo}}</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </div>
                             

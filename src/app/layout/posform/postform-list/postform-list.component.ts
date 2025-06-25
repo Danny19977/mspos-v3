@@ -111,6 +111,12 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   uniqueDrs: string[] = [];
   uniqueCyclos: string[] = [];
 
+  // Listes filtrées pour la hiérarchie commerciale
+  filteredAsms: string[] = [];
+  filteredSupervisors: string[] = [];
+  filteredDrs: string[] = [];
+  filteredCyclos: string[] = [];
+
   // Données originales et filtrées
   originalDataList: IPosForm[] = [];
   filteredDataList: IPosForm[] = [];
@@ -559,6 +565,14 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       .map(item => item.cyclo)
       .filter(cyclo => cyclo))] as string[];
 
+    // Initialiser les listes filtrées pour la hiérarchie commerciale
+    this.filteredAsms = [...this.uniqueAsms];
+    this.filteredSupervisors = [...this.uniqueSupervisors];
+    this.filteredDrs = [...this.uniqueDrs];
+    this.filteredCyclos = [...this.uniqueCyclos];
+    this.filteredDrs = this.uniqueDrs;
+    this.filteredCyclos = this.uniqueCyclos;
+
     // Debug: Afficher les valeurs uniques dans la console
     console.log('🔍 Filtres hiérarchie commerciale mis à jour:');
     console.log('  - ASMs:', this.uniqueAsms);
@@ -750,6 +764,13 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       cyclo: '',
       cycloSearch: ''
     };
+
+    // Réinitialiser les listes filtrées
+    this.filteredAsms = [...this.uniqueAsms];
+    this.filteredSupervisors = [...this.uniqueSupervisors];
+    this.filteredDrs = [...this.uniqueDrs];
+    this.filteredCyclos = [...this.uniqueCyclos];
+
     this.applyFilters();
   }
 
@@ -1247,7 +1268,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     return !!(lastItem.pos_uuid && typeof lastItem.pos_uuid === 'string' && lastItem.pos_uuid.trim() !== '');
   }
 
-  async onSubmitInit() { 
+  async onSubmitInit() {
     this.isLoading = true;
     var body: IPosForm = {
       // uuid: uuidv4(),
@@ -1442,5 +1463,93 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
   trackByUuid(index: number, item: any): string {
     return item.uuid || index;
+  }
+
+  /**
+   * Méthodes de filtrage pour la hiérarchie commerciale
+   */
+
+  /**
+   * Filtrer les options ASM
+   */
+  filterAsmOptions(searchTerm: string): void {
+    if (!searchTerm || searchTerm.trim() === '') {
+      this.filteredAsms = [...this.uniqueAsms];
+    } else {
+      const search = searchTerm.toLowerCase();
+      this.filteredAsms = this.uniqueAsms.filter(asm =>
+        asm.toLowerCase().includes(search)
+      );
+    }
+  }
+
+  /**
+   * Obtenir les ASMs filtrés
+   */
+  getFilteredAsms(): string[] {
+    return this.filteredAsms;
+  }
+
+  /**
+   * Filtrer les options Supervisor
+   */
+  filterSupervisorOptions(searchTerm: string): void {
+    if (!searchTerm || searchTerm.trim() === '') {
+      this.filteredSupervisors = [...this.uniqueSupervisors];
+    } else {
+      const search = searchTerm.toLowerCase();
+      this.filteredSupervisors = this.uniqueSupervisors.filter(supervisor =>
+        supervisor.toLowerCase().includes(search)
+      );
+    }
+  }
+
+  /**
+   * Obtenir les Supervisors filtrés
+   */
+  getFilteredSupervisors(): string[] {
+    return this.filteredSupervisors;
+  }
+
+  /**
+   * Filtrer les options DR
+   */
+  filterDrOptions(searchTerm: string): void {
+    if (!searchTerm || searchTerm.trim() === '') {
+      this.filteredDrs = [...this.uniqueDrs];
+    } else {
+      const search = searchTerm.toLowerCase();
+      this.filteredDrs = this.uniqueDrs.filter(dr =>
+        dr.toLowerCase().includes(search)
+      );
+    }
+  }
+
+  /**
+   * Obtenir les DRs filtrés
+   */
+  getFilteredDrs(): string[] {
+    return this.filteredDrs;
+  }
+
+  /**
+   * Filtrer les options Cyclo
+   */
+  filterCycloOptions(searchTerm: string): void {
+    if (!searchTerm || searchTerm.trim() === '') {
+      this.filteredCyclos = [...this.uniqueCyclos];
+    } else {
+      const search = searchTerm.toLowerCase();
+      this.filteredCyclos = this.uniqueCyclos.filter(cyclo =>
+        cyclo.toLowerCase().includes(search)
+      );
+    }
+  }
+
+  /**
+   * Obtenir les Cyclos filtrés
+   */
+  getFilteredCyclos(): string[] {
+    return this.filteredCyclos;
   }
 }
