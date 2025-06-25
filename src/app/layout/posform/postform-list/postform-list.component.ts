@@ -1162,8 +1162,6 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     }
   }
 
-
-
   // PosFormItem Create
   onSubmitItem(): void {
     if (this.formGroupPosFormItem.valid && this.brandUUID) {
