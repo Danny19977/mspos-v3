@@ -112,59 +112,44 @@ export class RouteplanComponent implements OnInit {
 
 
   getAllPos(currentUser: IUser): void {
-    if (currentUser.role == 'Manager') {
-      const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
-      this.isload = true;
-      this.posVenteService.getAll().subscribe(res => {
-        this.posList = res.data;
-        const posUuidsInCurrentDataList = this.dataListItem.map(item => item.pos_uuid);
-        this.posListFilter = this.posList.filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
-        this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
-        this.isload = false;
-      });
-    } else if (currentUser.role == 'ASM') {
-      const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
-      this.isload = true;
-      this.posVenteService.getAllByASM(currentUser.province_uuid).subscribe(res => {
-        this.posList = res.data;
-        const posUuidsInCurrentDataList = this.dataListItem.map(item => item.pos_uuid);
-        this.posListFilter = this.posList.filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
-        this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
-        this.isload = false;
-      });
-    } else if (currentUser.role == 'Supervisor') {
-      const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
-      this.isload = true;
-      this.posVenteService.getAllBySup(currentUser.area_uuid).subscribe(res => {
-        this.posList = res.data;
-        const posUuidsInCurrentDataList = this.dataListItem.map(item => item.pos_uuid);
-        this.posListFilter = this.posList.filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
-        this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
-        this.isload = false;
-      });
-    } else if (currentUser.role == 'DR') {
-      const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
-      this.isload = true;
-      this.posVenteService.getAllByDR(currentUser.sub_area_uuid).subscribe(res => {
-        this.posList = res.data;
-        const posUuidsInCurrentDataList = this.dataListItem.map(item => item.pos_uuid);
-        this.posListFilter = this.posList.filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
-        this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
-        this.isload = false;
-      });
-    } else if (currentUser.role == 'Cyclo') {
-      const filterValue = this.pos_uuid.nativeElement.value.toLowerCase();
-      this.isload = true;
-      this.posVenteService.getAllByCyclo(currentUser.cyclo_uuid).subscribe(res => {
-        this.posList = res.data;
-        const posUuidsInCurrentDataList = this.dataListItem.map(item => item.pos_uuid);
-        this.posListFilter = this.posList.filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
-        this.filteredOptions = this.posListFilter.filter(o => o.name.toLowerCase().includes(filterValue));
-        this.isload = false;
-      });
+    const filterValue = this.pos_uuid?.nativeElement?.value?.toLowerCase() || '';
+    
+    const processPosList = (posList: IPos[]) => {
+      this.posList = posList;
+      // Filter out POS that are already selected in the current route plan
+      const posUuidsInCurrentDataList = this.dataListItem.map(item => item.pos_uuid);
+      this.posListFilter = this.posList.filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
+      // Apply text filter on the remaining POS
+      this.filteredOptions = this.posListFilter.filter(pos => 
+        pos.name?.toLowerCase().includes(filterValue) || 
+        pos.shop?.toLowerCase().includes(filterValue)
+      );
+      this.isload = false;
     };
 
+    this.isload = true;
 
+    if (currentUser.role == 'Manager') {
+      this.posVenteService.getAll().subscribe(res => {
+        processPosList(res.data);
+      });
+    } else if (currentUser.role == 'ASM') {
+      this.posVenteService.getAllByASM(currentUser.province_uuid).subscribe(res => {
+        processPosList(res.data);
+      });
+    } else if (currentUser.role == 'Supervisor') {
+      this.posVenteService.getAllBySup(currentUser.area_uuid).subscribe(res => {
+        processPosList(res.data);
+      });
+    } else if (currentUser.role == 'DR') {
+      this.posVenteService.getAllByDR(currentUser.sub_area_uuid).subscribe(res => {
+        processPosList(res.data);
+      });
+    } else if (currentUser.role == 'Cyclo') {
+      this.posVenteService.getAllByCyclo(currentUser.cyclo_uuid).subscribe(res => {
+        processPosList(res.data);
+      });
+    }
   }
 
   displayFn(pos: IPos): any {
@@ -310,9 +295,16 @@ export class RouteplanComponent implements OnInit {
       this.dataItem = item.data;
       this.routePlanItemService.refreshDataList$.subscribe(() => {
         this.getAllRoutePlanItems(this.dataItem.uuid!);
+        // Refresh pos list after route plan items are updated
+        setTimeout(() => {
+          this.getAllPos(this.currentUser);
+        }, 100);
       });
       this.getAllRoutePlanItems(this.dataItem.uuid!);
-      this.getAllPos(this.currentUser);
+      // Wait for dataListItem to be populated before filtering pos
+      setTimeout(() => {
+        this.getAllPos(this.currentUser);
+      }, 100);
       this.formGroup.patchValue({
         user_uuid: this.dataItem.user_uuid,
         country_uuid: this.dataItem.country_uuid,
@@ -406,6 +398,8 @@ export class RouteplanComponent implements OnInit {
               next: () => {
                 this.formGroup.reset();
                 this.pos_uuid.nativeElement.value = ''; // Reset the input field
+                this.getAllRoutePlanItems(this.dataItem.uuid!); // Refresh the list of route plan items
+                this.getAllPos(this.currentUser); // Refresh the pos list to exclude newly added pos
                 this.toastr.success('POS Ajouter avec succès!', 'Success!');
                 this.isLoadingItem = false;
               }, error: (err) => {
@@ -520,6 +514,8 @@ export class RouteplanComponent implements OnInit {
             this.currentUser.fullname
           ).subscribe({
             next: () => {
+              this.getAllRoutePlanItems(this.dataItem.uuid!); // Refresh the list of route plan items
+              this.getAllPos(this.currentUser); // Refresh the pos list to include deleted pos
               this.toastr.info('POS Supprimé avec succès!', 'Success!');
               this.isLoading = false;
             },

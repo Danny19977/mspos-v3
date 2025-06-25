@@ -32,10 +32,13 @@ import { DateRangePickerModule } from './common/date-range-picker/date-range-pic
 import { CollapseHeaderModule } from './common/collapse-header/collapse-header.module'; 
 import { ReloadComponent } from './components/reload/reload.component';
 import { UserGetComponent } from './components/user-get/user-get.component';
+import { HelpTooltipComponent } from './components/help-tooltip/help-tooltip.component';
+import { SmartFieldComponent } from './components/smart-field/smart-field.component';
+import { UserFriendlyTooltipDirective } from './directives/user-friendly-tooltip.directive';
+import { UserFriendlyFormsService } from './services/user-friendly-forms.service';
 
 
-@NgModule({
-    declarations: [ 
+@NgModule({    declarations: [ 
         ReloadComponent,
         UserGetComponent, 
     ],
@@ -68,10 +71,11 @@ import { UserGetComponent } from './components/user-get/user-get.component';
         DateRangePickerModule,
         // DropdownModule,
         TimepickerModule,
-        NgxMatTimepickerModule,
-
-        UserGetComponent,
+        NgxMatTimepickerModule,        UserGetComponent,
         ReloadComponent,
+        HelpTooltipComponent,
+        SmartFieldComponent,
+        UserFriendlyTooltipDirective,
     ], imports: [
         CommonModule,
         NgScrollbarModule,
@@ -98,15 +102,17 @@ import { UserGetComponent } from './components/user-get/user-get.component';
         NgChartsModule.forRoot(),
         LightboxModule,
         // ChipsModule,
-        // EditorModule,
-        DateRangePickerModule,
+        // EditorModule,        DateRangePickerModule,
         // DropdownModule,
         TimepickerModule.forRoot(),
-        NgxMatTimepickerModule],
-    providers: [
+        NgxMatTimepickerModule,
+        HelpTooltipComponent,
+        SmartFieldComponent,
+        UserFriendlyTooltipDirective],    providers: [
         BsDatepickerConfig,
         DatePipe,
         BsDaterangepickerConfig,
+        UserFriendlyFormsService,
         provideHttpClient(withInterceptorsFromDi())
     ]
 })
