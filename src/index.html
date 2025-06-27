@@ -67,24 +67,137 @@
             transition: opacity .3s;
             opacity: 0;
         }
+
+        /* Ajout d'un style pour le splash screen moderne */
+        #splash-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: fixed;
+            left: 0;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #fafafa;
+            z-index: 99999;
+        }
+
+        .splash-content {
+            text-align: center;
+        }
+
+        .splash-logo {
+            max-width: 150px;
+            margin-bottom: 20px;
+        }
+
+        .splash-spinner {
+            display: inline-block;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* Styles pour le nouveau splash screen */
+        .animated-logo {
+            animation: logoAnimation 1.5s ease-in-out infinite;
+        }
+
+        @keyframes logoAnimation {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        .splash-bounce-loader {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            margin: 10px 0;
+        }
+
+        .bounce-dot {
+            width: 10px;
+            height: 10px;
+            margin: 0 5px;
+            background-color: #1976d2;
+            border-radius: 50%;
+            animation: bounce 0.6s ease-in-out infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-15px);
+            }
+        }
+
+        .splash-message {
+            font-size: 18px;
+            color: #333;
+            margin-top: 10px;
+        }
+
+        .splash-quote {
+            display: block;
+            font-style: italic;
+            font-size: 14px;
+            color: #777;
+            margin-top: 5px;
+        }
     </style>
-  <link rel="manifest" href="manifest.webmanifest">
-  <meta name="theme-color" content="#1976d2">
+    <link rel="manifest" href="manifest.webmanifest">
+    <meta name="theme-color" content="#1976d2">
 </head>
 
 <body>
-    <div class="site-preloader"></div>
-
+    <div class="site-preloader" id="splash-screen">
+        <div class="splash-content">
+            <img src="img/logo.svg" alt="Logo" class="splash-logo animated-logo" />
+            <div class="splash-bounce-loader">
+                <div class="bounce-dot"></div>
+                <div class="bounce-dot"></div>
+                <div class="bounce-dot"></div>
+            </div>
+            <div class="splash-message">Bienvenue sur MSPOS !<br>
+                <span class="splash-quote">« Gagner du temps avec MSPOS. »</span>
+            </div>
+        </div>
+    </div>
     <app-root></app-root>
-
-
     <script>
-        (g => { var h, a, k, p = "The Google Maps JavaScript API", c = "google", l = "importLibrary", q = "__ib__", m = document, b = window; b = b[c] || (b[c] = {}); var d = b.maps || (b.maps = {}), r = new Set, e = new URLSearchParams, u = () => h || (h = new Promise(async (f, n) => { await (a = m.createElement("script")); e.set("libraries", [...r] + ""); for (k in g) e.set(k.replace(/[A-Z]/g, t => "_" + t[0].toLowerCase()), g[k]); e.set("callback", c + ".maps." + q); a.src = `https://maps.${c}apis.com/maps/api/js?` + e; d[q] = f; a.onerror = () => h = n(Error(p + " could not load.")); a.nonce = m.querySelector("script[nonce]")?.nonce || ""; m.head.append(a) })); d[l] ? console.warn(p + " only loads once. Ignoring:", g) : d[l] = (f, ...n) => r.add(f) && u().then(() => d[l](f, ...n)) })({
-            v: "weekly",
-            key: "AIzaSyChAGA30i7uZ3Z2Dq1MURL5gtngFfCbbr8"
+        // Hide splash when Angular is ready
+        window.addEventListener('DOMContentLoaded', function () {
+            var appRoot = document.querySelector('app-root');
+            if (appRoot) {
+                var observer = new MutationObserver(function () {
+                    var splash = document.getElementById('splash-screen');
+                    if (splash && appRoot.childNodes.length > 0) {
+                        splash.classList.add('site-preloader__fade');
+                        setTimeout(function () {
+                            splash.style.display = 'none';
+                        }, 400);
+                        observer.disconnect();
+                    }
+                });
+                observer.observe(appRoot, { childList: true });
+            }
         });
     </script>
-  <noscript>Please enable JavaScript to continue using this application.</noscript>
+    <noscript>Please enable JavaScript to continue using this application.</noscript>
 </body>
 
 </html>

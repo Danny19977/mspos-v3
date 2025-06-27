@@ -57,6 +57,6 @@ export interface IPos {
 
 
 
-    PosEquipements?: IPosEquipment[];
+    PosEquipments?: IPosEquipment[];
     PosForms?: IPosForm[];
 }   

@@ -88,6 +88,7 @@ export class PosViewComponent implements OnInit {
               reference: this.pos.reference,
               telephone: this.pos.telephone,
             });
+            this.isLoadingData = false;
           },
           error: (error) => {
             this.isLoadingData = false;
