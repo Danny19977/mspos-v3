@@ -1,1 +1,164 @@
-<p>pos-equipment works!</p>
+<div *ngIf="isLoading" class="text-center py-4">
+    <div class="spinner-border bs-primary" role="status">
+        <span class="visually-hidden">Chargement...</span>
+    </div>
+</div>
+<div *ngIf="!isLoading">
+    <div class="card">
+        <div class="card-header">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Liste des équipements du POS</h5>
+                <button class="btn btn-success" (click)="addEquipment()">Ajouter un équipement</button>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <input type="text" class="form-control" placeholder="Rechercher..." [(ngModel)]="search" (ngModelChange)="onTypeaheadSearch($event)">
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-primary w-100" (click)="onSearch()">Rechercher</button>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Parasol</th>
+                        <th>Statut Parasol</th>
+                        <th>Stand</th>
+                        <th>Statut Stand</th>
+                        <th>Kiosque</th>
+                        <th>Statut Kiosque</th>
+                        <th>Date création</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let eq of equipmentList">
+                        <td>{{ eq.parasol }}</td>
+                        <td>{{ eq.parasol_status }}</td>
+                        <td>{{ eq.stand }}</td>
+                        <td>{{ eq.stand_status }}</td>
+                        <td>{{ eq.kiosk }}</td>
+                        <td>{{ eq.kiosk_status }}</td>
+                        <td>{{ eq.CreatedAt | date: 'dd/MM/yyyy' }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-info me-1" (click)="editEquipment(eq)"><i
+                                    class="ti ti-edit"></i></button>
+                            <button class="btn btn-sm btn-danger" (click)="deleteEquipment(eq)"><i
+                                    class="ti ti-trash"></i></button>
+                        </td>
+                    </tr>
+                    <tr *ngIf="equipmentList.length === 0">
+                        <td colspan="8" class="text-center">Aucun équipement trouvé.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <!-- Pagination -->
+            <nav *ngIf="total_pages > 1">
+                <ul class="pagination justify-content-center">
+                    <li class="page-item" [class.disabled]="current_page === 1">
+                        <a class="page-link" (click)="changePage(current_page - 1)" href="#">Précédent</a>
+                    </li>
+                    <li class="page-item" *ngFor="let page of [].constructor(total_pages); let i = index" [class.active]="current_page === (i+1)">
+                        <a class="page-link" (click)="changePage(i+1)" href="#">{{ i+1 }}</a>
+                    </li>
+                    <li class="page-item" [class.disabled]="current_page === total_pages">
+                        <a class="page-link" (click)="changePage(current_page + 1)" href="#">Suivant</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Ajout/Édition Équipement POS -->
+<div class="modal fade" id="equipmentModal" tabindex="-1" aria-labelledby="equipmentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form [formGroup]="equipmentForm" (ngSubmit)="onSubmitEquipment()">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="equipmentModalLabel">{{ isEditMode ? 'Modifier' : 'Ajouter' }} un
+                        équipement</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Parasol -->
+                    <div class="mb-3">
+                        <label class="form-label">Parasol</label>
+                        <select class="form-select" formControlName="parasol">
+                            <option *ngFor="let brand of brandList" [value]="brand.name">{{ brand.name }}</option>
+                            <option value="Autres">Autres</option>
+                        </select>
+                    </div>
+                    <!-- Statut Parasol -->
+                    <div class="mb-3">
+                        <label class="form-label">Statut Parasol</label>
+                        <select class="form-select" formControlName="parasol_status">
+                            <option value="Bien">Bien</option>
+                            <option value="Vieux">Vieux</option>
+                            <option value="Cassé">Cassé</option>
+                        </select>
+                    </div>
+                    <!-- Stand -->
+                    <div class="mb-3">
+                        <label class="form-label">Stand</label>
+                        <select class="form-select" formControlName="stand">
+                            <option *ngFor="let brand of brandList" [value]="brand.name">{{ brand.name }}</option>
+                            <option value="Autres">Autres</option>
+                        </select>
+                    </div>
+                    <!-- Statut Stand -->
+                    <div class="mb-3">
+                        <label class="form-label">Statut Stand</label>
+                        <select class="form-select" formControlName="stand_status">
+                            <option value="Bien">Bien</option>
+                            <option value="Vieux">Vieux</option>
+                            <option value="Cassé">Cassé</option>
+                        </select>
+                    </div>
+                    <!-- Kiosque -->
+                    <div class="mb-3">
+                        <label class="form-label">Kiosque</label>
+                        <select class="form-select" formControlName="kiosk">
+                            <option *ngFor="let brand of brandList" [value]="brand.name">{{ brand.name }}</option>
+                            <option value="Autres">Autres</option>
+                        </select>
+                    </div>
+                    <!-- Statut Kiosque -->
+                    <div class="mb-3">
+                        <label class="form-label">Statut Kiosque</label>
+                        <select class="form-select" formControlName="kiosk_status">
+                            <option value="Bien">Bien</option>
+                            <option value="Vieux">Vieux</option>
+                            <option value="Cassé">Cassé</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn btn-primary" [disabled]="equipmentForm.invalid || isLoading">{{
+                        isEditMode ? 'Enregistrer' : 'Ajouter' }}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Confirmation Suppression -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteConfirmLabel">Confirmer la suppression</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Voulez-vous vraiment supprimer cet équipement ?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
+                <button type="button" class="btn btn-danger" (click)="confirmDelete()">Supprimer</button>
+            </div>
+        </div>
+    </div>
+</div>

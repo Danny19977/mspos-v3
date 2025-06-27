@@ -1,19 +1,13 @@
 import { IArea } from "../../areas/models/area.model";
-import { IAsm } from "../../asm/models/asm.model";
 import { ICommune } from "../../commune/models/commune.model";
 import { ICountry } from "../../country/models/country.model";
-import { ICyclo } from "../../cyclo/models/cyclo.model";
-import { IDr } from "../../dr/models/dr.model";
 import { IPosForm } from "../../posform/models/posform.model";
 import { IProvince } from "../../province/models/province.model";
 import { ISubArea } from "../../subarea/models/subarea.model";
-import { ISup } from "../../sups/models/sup.model";
 import { IUser } from "../../user/models/user.model";
-import { IPosEquipment } from "./posequipment.model";
+import { IPosEquipment } from "./pos-equipment.model";
 
 export interface IPos {
-    ID?: number;
-    id?: number;
     uuid?: string;
 
     name: string;

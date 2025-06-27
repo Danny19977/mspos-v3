@@ -4,7 +4,7 @@ import { IPos } from '../../layout/pos-vente/models/pos.model';
 import { IPosForm } from '../../layout/posform/models/posform.model';
 import { IPosFormItem } from '../../layout/posform/models/posform_item.model';
 import { IRoutePlan } from '../../layout/routeplan/models/routeplan.model';
-import { IPosEquipment } from '../../layout/pos-vente/models/posequipment.model';
+import { IPosEquipment } from '../../layout/pos-vente/models/pos-equipment.model';
 import { UserLogsModel } from '../../layout/user-logs/models/user-logs.model';
 import { IRoutePlanItem } from '../../layout/routeplan/models/routeplanItem.model';
 
