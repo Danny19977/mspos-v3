@@ -30,7 +30,7 @@
                                     <span class="form-icon"><i class="ti ti-search"></i></span>
                                     <input type="text" #input [(ngModel)]="search"
                                         (ngModelChange)="onSearchChange($event)" class="form-control"
-                                        placeholder="Ex. Jean claude">
+                                        placeholder="Rechercher par nom d'utilisateur...">
                                 </div>
                             </div>
                             <div class="col-sm-8">
@@ -49,8 +49,9 @@
                                     } @else {
                                     <button type="submit" class="btn btn-primary" data-bs-toggle="modal"
                                         data-bs-target="#create_routeplan">
-                                        <i class="ti ti-square-rounded-plus me-2"></i>
-                                        Add New RoutePlan
+                                        <i class="ti ti-route-2 me-2"></i>
+                                        <i class="ti ti-plus me-1"></i>
+                                        Nouveau Plan
                                     </button>
                                     }
                                     }
@@ -113,21 +114,20 @@
 
 
                                 <!-- total_pos Column -->
-                                <!-- <ng-container matColumnDef="total_pos">
+                                <ng-container matColumnDef="total_pos">
                                     <th mat-header-cell *matHeaderCellDef> Total_Pos </th>
                                     <td mat-cell *matCellDef="let element">
-                                        {{ element.total_route_plan_item_active || 0 }}/{{ element.RoutePlanItems.length || 0 }}
+                                        {{ getRoutePlanItemTrueCount(element.RoutePlanItems || []) }}/{{ getRoutePlanItemCount(element.RoutePlanItems || []) }}
                                     </td>
-                                </ng-container> -->
+                                </ng-container>
 
                                 <!-- pourcent Column -->
-                                <!-- <ng-container matColumnDef="pourcent">
+                                <ng-container matColumnDef="pourcent">
                                     <th mat-header-cell *matHeaderCellDef> Progression </th>
                                     <td mat-cell *matCellDef="let element">
-                                        {{ +element.total_route_plan_item_active / +element.RoutePlanItems.length * 100
-                                        || 0}} %
+                                        {{ getProgressionPercentage(element.RoutePlanItems || []) }}%
                                     </td>
-                                </ng-container> -->
+                                </ng-container>
 
                                 <!-- uuid Column -->
                                 <ng-container matColumnDef="uuid">
@@ -136,21 +136,30 @@
                                         @if(element.user_uuid === currentUser.uuid &&
                                         isLessThan24HoursOld(element.CreatedAt)) {
                                         <button mat-icon-button (click)="findValue(element.uuid)"
-                                            data-bs-toggle="offcanvas" data-bs-target="#offcanvas_pos">
-                                            <mat-icon class="text-primary">add</mat-icon>
+                                            data-bs-toggle="offcanvas" data-bs-target="#offcanvas_pos"
+                                            title="Ajouter des POS">
+                                            <mat-icon class="text-primary">
+                                                <i class="ti ti-circle-plus"></i>
+                                            </mat-icon>
                                         </button>
                                         }
 
                                         <button mat-icon-button (click)="findValue(element.uuid)"
-                                            data-bs-toggle="offcanvas" data-bs-target="#offcanvas_visibility">
-                                            <mat-icon class="text-blue">visibility</mat-icon>
+                                            data-bs-toggle="offcanvas" data-bs-target="#offcanvas_visibility"
+                                            title="Voir les détails">
+                                            <mat-icon class="text-blue">
+                                                <i class="ti ti-eye"></i>
+                                            </mat-icon>
                                         </button>
                                         
                                         @if(isLessThan24HoursOld(element.CreatedAt)) {
                                         <button mat-icon-button (click)="findValue(element.uuid)" 
                                             data-bs-toggle="modal"
-                                            data-bs-target="#delete_data">
-                                            <mat-icon class="text-danger">delete</mat-icon>
+                                            data-bs-target="#delete_data"
+                                            title="Supprimer le plan">
+                                            <mat-icon class="text-danger">
+                                                <i class="ti ti-trash-x"></i>
+                                            </mat-icon>
                                         </button>
                                         }
                                     </td>

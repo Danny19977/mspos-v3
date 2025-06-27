@@ -1,0 +1,201 @@
+/* Styles pour les filtres avancés */
+.advanced-filters-panel {
+  animation: slideDown 0.3s ease-in-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.advanced-filters-panel .card {
+  border: 1px solid #e3e6f0;
+  box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+}
+
+.advanced-filters-panel .card-header {
+  background-color: #f8f9fc;
+  border-bottom: 1px solid #e3e6f0;
+}
+
+.advanced-filters-panel .form-label {
+  font-weight: 600;
+  color: #5a5c69;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.advanced-filters-panel .form-select,
+.advanced-filters-panel .form-control {
+  font-size: 0.875rem;
+  border: 1px solid #d1d3e2;
+  border-radius: 0.35rem;
+  transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.advanced-filters-panel .form-select:focus,
+.advanced-filters-panel .form-control:focus {
+  border-color: #4e73df;
+  box-shadow: 0 0 0 0.2rem rgba(78, 115, 223, 0.25);
+}
+
+.advanced-filters-panel .form-control-sm {
+  font-size: 0.8rem;
+  padding: 0.25rem 0.5rem;
+}
+
+/* Styles pour les sections de filtres */
+.advanced-filters-panel h6 {
+  font-weight: 700;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #e3e6f0;
+}
+
+.advanced-filters-panel h6 i {
+  color: #4e73df;
+}
+
+/* Animation pour le bouton de bascule */
+.btn-outline-primary:hover {
+  transform: translateY(-1px);
+  transition: all 0.2s ease-in-out;
+}
+
+/* Responsive pour les filtres */
+@media (max-width: 768px) {
+  .advanced-filters-panel .col-md-2,
+  .advanced-filters-panel .col-md-3,
+  .advanced-filters-panel .col-md-4 {
+    margin-bottom: 1rem;
+  }
+}
+
+/* Badge pour compter les filtres actifs */
+.filter-count-badge {
+  background-color: #4e73df;
+  color: white;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 50%;
+  margin-left: 0.5rem;
+}
+
+/* Indicateur visuel pour les filtres actifs */
+.form-select.filter-active,
+.form-control.filter-active {
+  border-color: #4e73df;
+  background-color: #f8f9ff;
+}
+
+/* Style pour les boutons de filtres */
+.filter-buttons {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.filter-buttons .btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: 0.35rem;
+  font-size: 0.875rem;
+  padding: 0.5rem 1rem;
+  transition: all 0.2s ease-in-out;
+}
+
+.filter-buttons .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+/* Animation pour l'affichage/masquage des filtres */
+.filter-toggle-enter {
+  animation: filterSlideIn 0.3s ease-out;
+}
+
+.filter-toggle-leave {
+  animation: filterSlideOut 0.3s ease-in;
+}
+
+@keyframes filterSlideIn {
+  from {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    max-height: 1000px;
+    transform: translateY(0);
+  }
+}
+
+@keyframes filterSlideOut {
+  from {
+    opacity: 1;
+    max-height: 1000px;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-20px);
+  }
+}
+
+/* Styles pour les input de recherche dans la hiérarchie commerciale */
+.hierarchy-search {
+  border-left: 3px solid #4e73df;
+  padding-left: 0.75rem;
+}
+
+/* Styles pour les sections organisées */
+.filter-section {
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background-color: #fff;
+  border-radius: 0.5rem;
+  border: 1px solid #e3e6f0;
+}
+
+.filter-section:last-child {
+  margin-bottom: 0;
+}
+
+/* Style pour les tooltips informatifs */
+.filter-info {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+  font-style: italic;
+}
+
+/* Amélioration visuelle des sélecteurs */
+.form-select option {
+  padding: 0.5rem;
+}
+
+/* Style pour les compteurs de résultats */
+.results-summary {
+  background-color: #f8f9fc;
+  border: 1px solid #e3e6f0;
+  border-radius: 0.35rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  font-size: 0.875rem;
+  color: #5a5c69;
+}
+
+.results-summary .count {
+  font-weight: 700;
+  color: #4e73df;
+}

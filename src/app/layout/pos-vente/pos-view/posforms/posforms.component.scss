@@ -1,0 +1,75 @@
+.posforms-container {
+    .table-row-hover:hover {
+        background-color: #f8f9fa;
+        cursor: pointer;
+    }
+
+    .text-truncate {
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .badge {
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .dropdown-toggle::after {
+        display: none;
+    }
+
+    .card {
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+        border: 1px solid rgba(0, 0, 0, 0.125);
+    }
+
+    .card-header {
+        background-color: #f8f9fa;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    }
+
+    .icon-form {
+        position: relative;
+        
+        .form-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6c757d;
+            z-index: 1;
+        }
+
+        .form-control {
+            padding-left: 45px;
+        }
+    }
+
+    mat-paginator {
+        border-top: 1px solid #dee2e6;
+        background-color: #f8f9fa;
+    }
+
+    .table-responsive {
+        border-radius: 0.375rem;
+        overflow: hidden;
+    }
+
+    .mat-elevation-z2 {
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+    }
+
+    .mat-header-cell {
+        background-color: #f8f9fa;
+        font-weight: 600;
+        color: #495057;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    .mat-cell {
+        border-bottom: 1px solid #dee2e6;
+    }
+}

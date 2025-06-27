@@ -58,36 +58,65 @@ export class PosViewComponent implements OnInit {
   posUUID!: string;
   pos!: IPos;
 
+  // Propriétés pour la modification du POS
+  uuidItem!: string;
+  posDataItem!: IPos; // Single POS data for editing
+  
+  posTypes: string[] = [
+    'Gros',
+    'Détail',
+    'Mixte'
+  ];
+
   constructor(
     private route: ActivatedRoute,
-    private router: Router, 
+    private router: Router,
     private _formBuilder: FormBuilder,
     private authService: AuthService,
     private posService: PosVenteService,
-    private posformService: PosformService,
     private logActivity: LogsService,
-    private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
     private toastr: ToastrService
   ) {
   }
 
 
-  ngAfterViewInit(): void {
+  ngOnInit() {
+    this.isLoadingData = true;
+
+    // Initialiser le formulaire de modification du POS
+    this.formGroup = this._formBuilder.group({
+      name: ['', Validators.required],
+      shop: ['', Validators.required],
+      postype: ['', Validators.required],
+      gerant: ['', Validators.required],
+      avenue: ['', Validators.required],
+      quartier: ['', Validators.required],
+      reference: ['', Validators.required],
+      telephone: ['', Validators.required],
+    });
+
     this.route.params.subscribe(params => {
       this.posUUID = params['uuid'];
+      this.uuidItem = this.posUUID; // Assigner l'UUID pour la modification
       this.posService.get(this.posUUID).subscribe(item => {
-        this.pos = item.data;
         this.authService.user().subscribe({
           next: (user) => {
             this.currentUser = user;
-            this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
-            this.dataSource.sort = this.sort; // Bind sort to dataSource
-            this.cdr.detectChanges(); // Trigger change detection
-
-            this.posformService.refreshDataList$.subscribe(() => {
-              this.fetchProducts(this.pos.uuid!);
+            this.pos = item.data; // Assign the fetched POS data to the pos property
+            this.posDataItem = item.data; // Assign also to posDataItem for editing
+            console.log("Pos view", this.pos);
+            
+            // Pré-remplir le formulaire avec les données du POS
+            this.formGroup.patchValue({
+              name: this.posDataItem.name,
+              shop: this.posDataItem.shop,
+              postype: this.posDataItem.postype,
+              gerant: this.posDataItem.gerant,
+              avenue: this.posDataItem.avenue,
+              quartier: this.posDataItem.quartier,
+              reference: this.posDataItem.reference,
+              telephone: this.posDataItem.telephone,
             });
-            this.fetchProducts(this.pos.uuid!);
           },
           error: (error) => {
             this.isLoadingData = false;
@@ -97,134 +126,100 @@ export class PosViewComponent implements OnInit {
         });
       });
     });
+
   }
 
-
-  ngOnInit() {
-    this.isLoadingData = true;
-
-    const date = new Date();
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1); // First day of the current month
-    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 1); // First day of the next month
-    lastDay.setDate(lastDay.getDate() + 1); // Add 1 day to the last day
-    this.rangeDate = [firstDay, lastDay];
-
-    this.dateRange = this._formBuilder.group({
-      rangeValue: new FormControl(this.rangeDate),
-    });
-    this.start_date = formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US');
-    this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
- 
-  }
-
-
-  // Méthode onChanges
-  onChanges(): void {
-    this.dateRange.valueChanges.subscribe((val) => {
-      this.start_date = formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US');
-
-      val.rangeValue[1].setDate(val.rangeValue[1].getDate() + 1);
-      this.end_date = formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US');
-
-      this.fetchProducts(this.posUUID);
-
-    });
-  }
-
-
-
-  onPageChange(event: PageEvent): void {
-    this.isLoadingData = true;
-    this.current_page = event.pageIndex + 1; // Adjust for 1-based page index
-    this.page_size = event.pageSize;
-    this.fetchProducts(this.posUUID);
-  }
-
-  fetchProducts(uuid: string) {
-    this.posformService.getPaginatedRangeDateByUUID(
-      uuid, this.current_page, this.page_size, this.search,
-      this.start_date, this.end_date).subscribe(res => {
-        this.dataList = res.data;
-        this.total_pages = res.pagination.total_pages;
-        this.total_records = res.pagination.total_records;
-        this.dataSource.data = this.dataList; // Update dataSource data
-        this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
-        this.dataSource.sort = this.sort; // Bind sort to dataSource
-        this.isLoadingData = false;
-      });
-  }
-
-
-
-
-
-  onSearchChange(search: string) {
-    this.search = search;
-  }
-
-
-  public sortData(sort: Sort) {
-    const data = this.dataList.slice();
-    if (!sort.active || sort.direction === '') {
-      this.dataList = data;
-    } else {
-      this.dataList = data.sort((a, b) => {
-        const aValue = (a as never)[sort.active];
-        const bValue = (b as never)[sort.active];
-        return (aValue < bValue ? -1 : 1) * (sort.direction === 'asc' ? 1 : -1);
-      });
+  onSubmitUpdate() {
+    try {
+      this.isLoading = true;
+      var body: IPos = {
+        name: this.formGroup.value.name,
+        shop: this.formGroup.value.shop,
+        postype: this.formGroup.value.postype,
+        gerant: this.formGroup.value.gerant,
+        avenue: this.formGroup.value.avenue,
+        quartier: this.formGroup.value.quartier,
+        reference: this.formGroup.value.reference,
+        telephone: this.formGroup.value.telephone,
+        country_uuid: this.currentUser.country_uuid,
+        province_uuid: this.currentUser.province_uuid,
+        area_uuid: this.currentUser.area_uuid,
+        sub_area_uuid: this.currentUser.sub_area_uuid,
+        commune_uuid: this.currentUser.commune_uuid,
+        asm_uuid: this.currentUser.asm_uuid,
+        asm: this.currentUser.asm,
+        sup_uuid: this.currentUser.sup_uuid,
+        sup: this.currentUser.sup,
+        dr_uuid: this.currentUser.dr_uuid,
+        dr: this.currentUser.dr,
+        cyclo_uuid: this.currentUser.cyclo_uuid,
+        cyclo: this.currentUser.cyclo,
+        user_uuid: this.currentUser.uuid,
+        status: this.posDataItem.status, // Conserver le statut actuel
+        signature: this.currentUser.fullname,
+        sync: false // Indique que le POS n'est pas encore synchronisé
+      };
+      
+      this.posService.update(this.uuidItem, body)
+        .subscribe({
+          next: (res) => {
+            this.logActivity.activity(
+              'POS',
+              this.currentUser.uuid,
+              'updated',
+              `Updated Pos uuid: ${res.data.uuid}`,
+              this.currentUser.fullname
+            ).subscribe({
+              next: () => {
+                this.formGroup.reset();
+                this.toastr.success('Modification enregistré!', 'Success!');
+                this.isLoading = false;
+                // Fermer l'offcanvas automatiquement
+                const offcanvasElement = document.getElementById('offcanvas_edit');
+                if (offcanvasElement) {
+                  const offcanvas = (window as any).bootstrap.Offcanvas.getOrCreateInstance(offcanvasElement);
+                  offcanvas.hide();
+                }
+                // Recharger les données du POS pour afficher les modifications
+                this.loadPosData();
+              },
+              error: (err) => {
+                this.isLoading = false;
+                this.toastr.error(`${err.error.message}`, 'Oupss!');
+                console.log(err);
+              }
+            });
+          },
+          error: err => {
+            console.log(err);
+            this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+            this.isLoading = false;
+          }
+        });
+    } catch (error) {
+      this.isLoading = false;
+      console.log(error);
     }
   }
 
-  applyFilter(event: Event) {
-    const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
-  }
-
-
-  findValue(value: string) {
-    this.idItem = value;
-    this.posformService.get(this.idItem).subscribe(item => {
-      this.dataItem = item.data;
+  // Méthode pour recharger les données du POS après modification
+  private loadPosData() {
+    this.posService.get(this.posUUID).subscribe(item => {
+      this.pos = item.data;
+      this.posDataItem = item.data;
+      // Mettre à jour le formulaire avec les nouvelles données
+      this.formGroup.patchValue({
+        name: this.posDataItem.name,
+        shop: this.posDataItem.shop,
+        postype: this.posDataItem.postype,
+        gerant: this.posDataItem.gerant,
+        avenue: this.posDataItem.avenue,
+        quartier: this.posDataItem.quartier,
+        reference: this.posDataItem.reference,
+        telephone: this.posDataItem.telephone,
+      });
     });
   }
-
-
-
-  delete(): void {
-    this.posformService
-      .delete(this.idItem)
-      .subscribe({
-        next: () => {
-          this.logActivity.activity(
-            'PosForm',
-            this.currentUser.uuid,
-            'deleted',
-            `Delete PosForm id: ${this.idItem}`,
-            this.currentUser.fullname
-          ).subscribe({
-            next: () => {
-              this.formGroup.reset();
-              this.toastr.info('Supprimé avec succès!', 'Success!');
-              this.isLoading = false;
-            },
-            error: (err) => {
-              this.isLoading = false;
-              this.toastr.error(`${err.error.message}`, 'Oupss!');
-              console.log(err);
-            }
-          });
-        },
-        error: err => {
-          this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-          console.log(err);
-        }
-      }
-      );
-  }
-
-
-
 
 }
 

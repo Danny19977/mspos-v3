@@ -1,0 +1,617 @@
+// Styles pour améliorer l'UX de RoutePlan en respectant la palette existante
+
+// Amélioration de la page principale
+.page-wrapper {
+  .content {
+    padding: 20px;
+  }
+}
+
+// Header de la page avec amélioration visuelle
+.page-header {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  border-left: 4px solid #00918e;
+  
+  .page-title {
+    color: #5e5873;
+    font-weight: 600;
+    margin: 0;
+    
+    .count-title {
+      background: #00918e;
+      color: #fff;
+      padding: 4px 12px;
+      border-radius: 15px;
+      font-size: 0.85em;
+      margin-left: 10px;
+      font-weight: 500;
+    }
+  }
+}
+
+// Carte principale avec amélioration
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  
+  .card-header {
+    background: linear-gradient(135deg, #00918e 0%, #007a77 100%);
+    color: #fff;
+    border: none;
+    padding: 20px;
+    border-radius: 10px 10px 0 0;
+    
+    .icon-form {
+      position: relative;
+      
+      .form-icon {
+        position: absolute;
+        left: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6f6f6f;
+        z-index: 1;
+      }
+      
+      .form-control {
+        padding-left: 45px;
+        border-radius: 20px;
+        border: 1px solid #e8e8e8;
+        transition: all 0.3s ease;
+        height: 42px;
+        
+        &:focus {
+          border-color: #00918e;
+          box-shadow: 0 0 0 0.2rem rgba(0, 145, 142, 0.25);
+          transform: translateY(-1px);
+        }
+        
+        &::placeholder {
+          color: #6f6f6f;
+        }
+      }
+    }
+    
+    .btn-primary {
+      background: #fff;
+      color: #00918e;
+      border: 2px solid #fff;
+      border-radius: 20px;
+      padding: 10px 20px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: #00918e;
+        color: #fff;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 145, 142, 0.3);
+      }
+      
+      &:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none;
+      }
+      
+      // Styles pour les icônes personnalisées des boutons
+      .ti-route-2 {
+        font-size: 16px;
+        margin-right: 4px;
+      }
+      
+      .ti-plus {
+        font-size: 14px;
+        font-weight: bold;
+      }
+    }
+  }
+  
+  .card-body {
+    padding: 0;
+  }
+}
+
+// Table avec améliorations visuelles
+.table-responsive {
+  border-radius: 0 0 10px 10px;
+  
+  .mat-elevation-z8 {
+    box-shadow: none !important;
+    
+    .mat-header-row {
+      background: #f8f9fa;
+      
+      .mat-header-cell {
+        color: #5e5873;
+        font-weight: 600;
+        border-bottom: 2px solid #e8e8e8;
+        padding: 16px;
+        font-size: 14px;
+      }
+    }
+    
+    .mat-row {
+      transition: all 0.2s ease;
+      
+      &:hover {
+        background-color: #f8f9fa;
+        transform: translateX(3px);
+      }
+      
+      &:nth-child(even) {
+        background-color: #fafafa;
+      }
+      
+      .mat-cell {
+        padding: 16px;
+        border-bottom: 1px solid #e8e8e8;
+        color: #424848;
+        font-size: 14px;
+        
+        // Boutons d'action améliorés
+        .mat-icon-button {
+          margin: 0 2px;
+          transition: all 0.2s ease;
+          width: 36px;
+          height: 36px;
+          
+          &:hover {
+            transform: scale(1.1);
+            border-radius: 50%;
+          }
+          
+          .mat-icon {
+            font-size: 18px;
+            width: 18px;
+            height: 18px;
+            
+            &.text-primary { 
+              color: #00918e !important;
+              
+              &:hover {
+                color: #007a77 !important;
+              }
+            }
+            
+            &.text-blue { 
+              color: #17a2b8 !important;
+              
+              &:hover {
+                color: #138496 !important;
+              }
+            }
+            
+            &.text-danger { 
+              color: #e41f07 !important;
+              
+              &:hover {
+                color: #c31c06 !important;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Amélioration du paginator
+.mat-paginator {
+  background: #fff;
+  border: none;
+  border-radius: 0 0 10px 10px;
+  box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.05);
+  border-top: 1px solid #e8e8e8;
+  
+  .mat-paginator-page-size-select {
+    margin: 6px 4px 0 4px;
+  }
+  
+  .mat-paginator-range-label {
+    color: #5e5873;
+    margin: 0 32px 0 24px;
+  }
+  
+  .mat-icon-button {
+    color: #5e5873;
+    
+    &:hover {
+      background-color: rgba(0, 145, 142, 0.1);
+    }
+    
+    &[disabled] {
+      color: #babfc7;
+    }
+  }
+}
+
+// Styles pour les offcanvas (panneau latéral)
+.offcanvas {
+  border-radius: 10px 0 0 10px;
+  box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+  
+  .offcanvas-header {
+    background: linear-gradient(135deg, #00918e 0%, #007a77 100%);
+    color: #fff;
+    border-bottom: none;
+    
+    h4 {
+      margin: 0;
+      font-weight: 600;
+    }
+    
+    .btn-close {
+      filter: brightness(0) invert(1);
+      opacity: 0.8;
+      
+      &:hover {
+        opacity: 1;
+      }
+    }
+  }
+  
+  .offcanvas-body {
+    background: #f8f9fa;
+    padding: 20px;
+  }
+}
+
+// Styles pour les modales
+.modal {
+  .modal-dialog {
+    .modal-content {
+      border: none;
+      border-radius: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      
+      .modal-header {
+        background: linear-gradient(135deg, #00918e 0%, #007a77 100%);
+        color: #fff;
+        border-bottom: none;
+        border-radius: 10px 10px 0 0;
+        
+        .modal-title {
+          font-weight: 600;
+        }
+        
+        .btn-close {
+          filter: brightness(0) invert(1);
+          opacity: 0.8;
+          
+          &:hover {
+            opacity: 1;
+          }
+        }
+      }
+      
+      .modal-body {
+        padding: 30px;
+        
+        .avatar {
+          transition: all 0.3s ease;
+          
+          &:hover {
+            transform: scale(1.05);
+          }
+          
+          &.bg-success-light {
+            background: rgba(0, 145, 142, 0.1) !important;
+            color: #00918e !important;
+          }
+          
+          &.bg-danger-light {
+            background: rgba(228, 31, 7, 0.1) !important;
+            color: #e41f07 !important;
+          }
+        }
+        
+        h4 {
+          color: #5e5873;
+          font-weight: 600;
+          margin-bottom: 15px;
+        }
+        
+        p {
+          color: #6f6f6f;
+          margin-bottom: 25px;
+          line-height: 1.6;
+        }
+        
+        .btn {
+          border-radius: 6px;
+          padding: 12px 24px;
+          font-weight: 500;
+          min-width: 120px;
+          transition: all 0.3s ease;
+          
+          &:hover {
+            transform: translateY(-2px);
+          }
+          
+          &.btn-success {
+            background-color: #00918e;
+            border-color: #00918e;
+            
+            &:hover {
+              background-color: #007a77;
+              border-color: #007a77;
+              box-shadow: 0 4px 8px rgba(0, 145, 142, 0.3);
+            }
+          }
+          
+          &.btn-danger {
+            background-color: #e41f07;
+            border-color: #e41f07;
+            
+            &:hover {
+              background-color: #c31c06;
+              border-color: #c31c06;
+              box-shadow: 0 4px 8px rgba(228, 31, 7, 0.3);
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Amélioration des spinners de chargement
+.spinner-border {
+  border-color: #00918e;
+  border-right-color: transparent;
+  
+  &.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+  }
+}
+
+// État "Aucune donnée"
+.mat-row {
+  .mat-cell {
+    &[colspan] {
+      text-align: center;
+      padding: 40px 20px;
+      color: #6f6f6f;
+      font-style: italic;
+    }
+  }
+}
+
+// Amélioration responsive
+@media (max-width: 768px) {
+  .page-wrapper .content {
+    padding: 15px;
+  }
+  
+  .page-header {
+    padding: 15px;
+    
+    .page-title {
+      font-size: 1.2rem;
+      
+      .count-title {
+        display: block;
+        margin: 8px 0 0 0;
+        width: fit-content;
+      }
+    }
+  }
+  
+  .card {
+    .card-header {
+      padding: 15px;
+      
+      .row {
+        .col-sm-4,
+        .col-sm-8 {
+          margin-bottom: 15px;
+        }
+      }
+      
+      .btn-primary {
+        width: 100%;
+        margin-top: 10px;
+      }
+    }
+  }
+  
+  .table-responsive {
+    .mat-header-cell,
+    .mat-cell {
+      padding: 12px 8px;
+      font-size: 13px;
+    }
+  }
+}
+
+// Amélioration de l'accessibilité
+.btn:focus,
+.form-control:focus,
+.mat-icon-button:focus {
+  outline: 2px solid #00918e;
+  outline-offset: 2px;
+}
+
+// Animation fluide pour tous les éléments interactifs
+.btn,
+.form-control,
+.mat-icon-button,
+.mat-row {
+  transition: all 0.2s ease;
+}
+
+// États de hover pour les boutons
+.btn:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+// Amélioration du focus pour les éléments de formulaire
+.form-control:focus {
+  border-color: #00918e;
+  box-shadow: 0 0 0 0.2rem rgba(0, 145, 142, 0.25);
+}
+
+// Animation pour les tooltips des boutons
+.mat-icon-button[title] {
+  position: relative;
+  
+  &::after {
+    content: attr(title);
+    position: absolute;
+    bottom: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 1000;
+  }
+  
+  &:hover::after {
+    opacity: 1;
+    visibility: visible;
+    bottom: -32px;
+  }
+}
+
+// Styles pour les icônes personnalisées des boutons
+.btn-primary {
+  .ti-route-2 {
+    font-size: 16px;
+    margin-right: 4px;
+  }
+  
+  .ti-plus {
+    font-size: 14px;
+    font-weight: bold;
+  }
+}
+
+// Icônes des boutons d'action dans le tableau
+.mat-icon-button {
+  position: relative;
+  
+  .mat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    .ti {
+      font-size: 18px;
+      transition: all 0.2s ease;
+    }
+  }
+  
+  // Icône d'ajout de POS
+  &[title="Ajouter des POS"] {
+    .ti-circle-plus {
+      color: #00918e;
+      
+      &:hover {
+        transform: scale(1.2);
+        color: #007a77;
+      }
+    }
+    
+    &:hover {
+      background-color: rgba(0, 145, 142, 0.1);
+    }
+  }
+  
+  // Icône de visualisation
+  &[title="Voir les détails"] {
+    .ti-eye {
+      color: #17a2b8;
+      
+      &:hover {
+        transform: scale(1.2);
+        color: #138496;
+      }
+    }
+    
+    &:hover {
+      background-color: rgba(23, 162, 184, 0.1);
+    }
+  }
+  
+  // Icône de suppression
+  &[title="Supprimer le plan"] {
+    .ti-trash-x {
+      color: #e41f07;
+      
+      &:hover {
+        transform: scale(1.2);
+        color: #c31c06;
+      }
+    }
+    
+    &:hover {
+      background-color: rgba(228, 31, 7, 0.1);
+    }
+  }
+}
+
+// Amélioration du champ de recherche avec icône
+.icon-form {
+  .form-icon {
+    .ti-search {
+      color: #6f6f6f;
+      font-size: 16px;
+      transition: color 0.3s ease;
+    }
+  }
+  
+  .form-control:focus + .form-icon .ti-search,
+  .form-control:focus ~ .form-icon .ti-search {
+    color: #00918e;
+  }
+}
+
+// Responsive pour les icônes sur mobile
+@media (max-width: 768px) {
+  .btn-primary {
+    .ti-route-2,
+    .ti-plus {
+      font-size: 14px;
+    }
+  }
+  
+  .mat-icon-button {
+    .mat-icon .ti {
+      font-size: 16px;
+    }
+  }
+  
+  // Masquer les tooltips sur mobile
+  .mat-icon-button[title]::after {
+    display: none;
+  }
+}
+
+// États d'activation pour les boutons
+.mat-icon-button:active {
+  .ti {
+    transform: scale(0.95);
+  }
+}
+
+// Amélioration de l'accessibilité pour les icônes
+.mat-icon-button:focus {
+  .ti {
+    color: #00918e !important;
+  }
+}

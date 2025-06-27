@@ -50,12 +50,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   // Table
   displayedColumns: string[] = [
     'createdat',
-    'pos',
-    'country',
-    'province',
-    'area',
-    'subarea',
-    'commune',
+    'pos', 
     'price',
     'asm',
     'sup',
@@ -173,6 +168,9 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   brandUUID: string = '';
   brandName: string = '';
 
+  // Ajouter une nouvelle propriété pour stocker l'UUID du routePlanItem
+  routePlanItemUUID: string = '';
+
 
   constructor(
     private readonly geolocation$: GeolocationService,
@@ -222,7 +220,6 @@ export class PostformListComponent implements OnInit, AfterViewInit {
           this.getAllBrand();
         }
 
-
         this.posformService.refreshDataList$.subscribe(() => {
           this.fetchProducts(this.currentUser, this.start_date, this.end_date);
         });
@@ -236,9 +233,6 @@ export class PostformListComponent implements OnInit, AfterViewInit {
           // console.log('Latitude:', position.coords.latitude);
           // console.log('Longitude:', position.coords.longitude);
         });
-
-
-
 
       },
       error: (error) => {
@@ -281,8 +275,23 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
               // Extraire les pos_uuid déjà utilisés dans les posforms existants
               // Mais exclure le pos_uuid actuel si on modifie un rapport existant
+              // Filtrer uniquement les posforms d'aujourd'hui (de 0h00 à 23h59)
+              const today = new Date();
+              const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
+              const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+
               const usedPosUuids = this.dataList
-                .filter(posform => posform.uuid !== this.uuidItem) // Exclure le rapport actuel
+                .filter(posform => {
+                  // Exclure le rapport actuel
+                  if (posform.uuid === this.uuidItem) return false;
+
+                  // Filtrer uniquement les posforms d'aujourd'hui
+                  if (posform.CreatedAt) {
+                    const createdDate = new Date(posform.CreatedAt);
+                    return createdDate >= startOfDay && createdDate <= endOfDay;
+                  }
+                  return false;
+                })
                 .map(posform => posform.pos_uuid)
                 .filter(uuid => uuid !== null && uuid !== undefined);
 
@@ -318,12 +327,13 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     return item.Pos.name || '';
   }
 
+  // Modifier la méthode optionSelected pour capturer l'UUID du routePlanItem
   optionSelected(event: MatAutocompleteSelectedEvent) {
     const selectedOption = event.option.value;
     this.posUUID = selectedOption.pos_uuid;
     this.posName = selectedOption.pos_name;
-
-
+    // ✅ Capturer l'UUID du routePlanItem sélectionné
+    this.routePlanItemUUID = selectedOption.uuid; // Ceci est l'UUID du routePlanItem, pas du POS
   }
 
   // Pour obtenir la liste des marques visitées
@@ -393,17 +403,85 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   }
 
   fetchProducts(currentUser: IUser, start_date: string, end_date: string): void {
+    this.isLoadingData = true;
+
+    // Construire l'objet de filtres pour l'API
+    const apiFilters = {
+      search: this.search,
+      // Filtres géographiques
+      country: this.filters.country,
+      province: this.filters.province,
+      area: this.filters.area,
+      subarea: this.filters.subarea,
+      commune: this.filters.commune,
+      // Filtres commerciaux
+      price: this.filters.price,
+      status: this.filters.status,
+      brandCount: this.filters.brandCount,
+      posType: this.filters.posType,
+      posSearch: this.filters.posSearch,
+      // Hiérarchie commerciale avec recherche intégrée
+      asm: this.filters.asm,
+      asmSearch: this.filters.asmSearch,
+      supervisor: this.filters.supervisor,
+      supervisorSearch: this.filters.supervisorSearch,
+      dr: this.filters.dr,
+      drSearch: this.filters.drSearch,
+      cyclo: this.filters.cyclo,
+      cycloSearch: this.filters.cycloSearch,
+      // Filtres temporels
+      quickDate: this.filters.quickDate
+    };
+
+    // Utiliser la nouvelle méthode avec filtres avancés pour tous les rôles
+    // Les filtres côté serveur sont appliqués selon le rôle dans le backend
+    this.posformService.getPaginatedWithAdvancedFilters(
+      this.current_page,
+      this.page_size,
+      start_date,
+      end_date,
+      apiFilters
+    ).subscribe({
+      next: (res) => {
+        this.dataList = res.data;
+        this.originalDataList = [...res.data]; // Sauvegarder les données originales
+        this.total_pages = res.pagination.total_pages;
+        this.total_records = res.pagination.total_records;
+
+        // Mettre à jour les valeurs uniques pour les filtres frontend (si nécessaire)
+        this.updateUniqueValues();
+
+        // Puisque les filtres sont maintenant appliqués côté serveur,
+        // nous n'avons plus besoin d'appliquer les filtres côté client
+        this.dataSource.data = this.dataList;
+
+        this.getAllRoutePlans(); // Refresh route plans to exclude used POS
+        this.isLoadingData = false;
+      },
+      error: (error) => {
+        console.error('Erreur lors de la récupération des posforms:', error);
+        this.isLoadingData = false;
+
+        // Fallback : utiliser les anciennes méthodes selon le rôle
+        this.fetchProductsFallback(currentUser, start_date, end_date);
+      }
+    });
+  }
+
+  /**
+   * Méthode de fallback utilisant les anciennes endpoints si les filtres avancés échouent
+   */
+  private fetchProductsFallback(currentUser: IUser, start_date: string, end_date: string): void {
     if (currentUser.role == 'Manager') {
       this.posformService.getPaginatedRangeDate2(this.current_page, this.page_size, this.search,
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
-          this.originalDataList = [...res.data]; // Sauvegarder les données originales
+          this.originalDataList = [...res.data];
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
-          this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
-          this.applyFilters(); // Appliquer les filtres
-          this.getAllRoutePlans(); // Refresh route plans to exclude used POS
-
+          this.updateUniqueValues();
+          this.applyFilters();
+          this.getAllRoutePlans();
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'ASM') {
@@ -411,13 +489,12 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         currentUser.province_uuid, this.current_page, this.page_size, this.search,
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
-          this.originalDataList = [...res.data]; // Sauvegarder les données originales
+          this.originalDataList = [...res.data];
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
-          this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
-          this.applyFilters(); // Appliquer les filtres
-          this.getAllRoutePlans(); // Refresh route plans to exclude used POS
-
+          this.updateUniqueValues();
+          this.applyFilters();
+          this.getAllRoutePlans();
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'Supervisor') {
@@ -425,13 +502,12 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         currentUser.area_uuid, this.current_page, this.page_size, this.search,
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
-          this.originalDataList = [...res.data]; // Sauvegarder les données originales
+          this.originalDataList = [...res.data];
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
-          this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
-          this.applyFilters(); // Appliquer les filtres
-          this.getAllRoutePlans(); // Refresh route plans to exclude used POS
-
+          this.updateUniqueValues();
+          this.applyFilters();
+          this.getAllRoutePlans();
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'DR') {
@@ -439,13 +515,12 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         currentUser.dr_uuid, this.current_page, this.page_size, this.search,
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
-          this.originalDataList = [...res.data]; // Sauvegarder les données originales
+          this.originalDataList = [...res.data];
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
-          this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
-          this.applyFilters(); // Appliquer les filtres
-          this.getAllRoutePlans(); // Refresh route plans to exclude used POS
-
+          this.updateUniqueValues();
+          this.applyFilters();
+          this.getAllRoutePlans();
           this.isLoadingData = false;
         });
     } else if (currentUser.role == 'Cyclo') {
@@ -453,27 +528,24 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         currentUser.uuid, this.current_page, this.page_size, this.search,
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
-          this.originalDataList = [...res.data, currentUser.uuid]; // Sauvegarder les données originales
-          console.log('Data List:', this.dataList);
+          this.originalDataList = [...res.data];
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
-          this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
-          this.applyFilters(); // Appliquer les filtres
-          this.getAllRoutePlans(); // Refresh route plans to exclude used POS
-
+          this.updateUniqueValues();
+          this.applyFilters();
+          this.getAllRoutePlans();
           this.isLoadingData = false;
         });
     } else {
       this.posformService.getPaginatedRangeDate2(this.current_page, this.page_size, this.search,
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
-          this.originalDataList = [...res.data]; // Sauvegarder les données originales
+          this.originalDataList = [...res.data];
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
-          this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
-          this.applyFilters(); // Appliquer les filtres
-          this.getAllRoutePlans(); // Refresh route plans to exclude used POS
-
+          this.updateUniqueValues();
+          this.applyFilters();
+          this.getAllRoutePlans();
           this.isLoadingData = false;
         });
     }
@@ -481,6 +553,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
   onSearchChange(search: string) {
     this.search = search;
+    this.current_page = 1; // Reset à la première page lors de la recherche
     this.fetchProducts(this.currentUser, this.start_date, this.end_date);
   }
 
@@ -582,9 +655,18 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * Appliquer tous les filtres
+   * Appliquer tous les filtres - Maintenant optimisé côté serveur
    */
   applyFilters(): void {
+    // Au lieu de filtrer côté client, on déclenche un nouveau fetch avec les filtres
+    this.current_page = 1; // Reset à la première page lors de l'application de filtres
+    this.fetchProducts(this.currentUser, this.start_date, this.end_date);
+  }
+
+  /**
+   * Méthode héritée pour le filtrage côté client (utilisée comme fallback)
+   */
+  applyClientSideFilters(): void {
     let filteredData = [...this.originalDataList];
 
     // Filtre par pays
@@ -665,12 +747,12 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         switch (this.filters.brandCount) {
           case '0':
             return brandCount === 0;
-          case '1':
-            return brandCount === 1;
-          case '2-5':
-            return brandCount >= 2 && brandCount <= 5;
-          case '6+':
-            return brandCount >= 6;
+          case '5':
+            return brandCount === 5;
+          case '5-10':
+            return brandCount >= 5 && brandCount <= 10;
+          case '11+':
+            return brandCount >= 11;
           default:
             return true;
         }
@@ -684,7 +766,6 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       );
     }
 
-    // Filtre de recherche ASM
     if (this.filters.asmSearch) {
       const searchTerm = this.filters.asmSearch.toLowerCase();
       filteredData = filteredData.filter(item =>
@@ -698,7 +779,6 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       );
     }
 
-    // Filtre de recherche Supervisor
     if (this.filters.supervisorSearch) {
       const searchTerm = this.filters.supervisorSearch.toLowerCase();
       filteredData = filteredData.filter(item =>
@@ -712,7 +792,6 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       );
     }
 
-    // Filtre de recherche DR
     if (this.filters.drSearch) {
       const searchTerm = this.filters.drSearch.toLowerCase();
       filteredData = filteredData.filter(item =>
@@ -726,7 +805,6 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       );
     }
 
-    // Filtre de recherche Cyclo
     if (this.filters.cycloSearch) {
       const searchTerm = this.filters.cycloSearch.toLowerCase();
       filteredData = filteredData.filter(item =>
@@ -771,6 +849,14 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     this.filteredDrs = [...this.uniqueDrs];
     this.filteredCyclos = [...this.uniqueCyclos];
 
+    // Déclencher un nouveau fetch sans filtres
+    this.applyFilters();
+  }
+
+  /**
+   * Déclencher l'application des filtres quand un filtre change
+   */
+  onFilterChange(): void {
     this.applyFilters();
   }
 
@@ -792,7 +878,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    * Obtenir le nombre d'éléments filtrés
    */
   getFilteredCount(): number {
-    return this.filteredDataList.length;
+    return this.dataList.length;
   }
 
   /**
@@ -803,6 +889,13 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     const itemDate = new Date(date);
     const hoursDifference = (now.getTime() - itemDate.getTime()) / (1000 * 60 * 60);
     return hoursDifference < 24;
+  }
+
+  /**
+   * Méthode pour vérifier si l'utilisateur actuel est le créateur du posform
+   */
+  isCurrentUserCreator(posform: IPosForm): boolean {
+    return this.currentUser && posform.user_uuid === this.currentUser.uuid;
   }
 
   /**
@@ -1048,6 +1141,66 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     }
   }
 
+
+  // Creation de rapport de visite
+  async onSubmitInit() {
+    this.isLoading = true;
+    var body: IPosForm = {
+      // uuid: uuidv4(),
+      price: 50,
+      comment: 'Rien à signaler',
+      latitude: this.latitude,
+      longitude: this.longitude,
+      pos_uuid: '', // This will be set later
+      country_uuid: this.currentUser.country_uuid || '',
+      province_uuid: this.currentUser.province_uuid || '',
+      area_uuid: this.currentUser.area_uuid || '',
+      sub_area_uuid: this.currentUser.sub_area_uuid || '',
+      commune_uuid: this.currentUser.commune_uuid || '',
+      asm_uuid: this.currentUser.asm_uuid || '',
+      asm: this.currentUser.asm || '',
+      sup_uuid: this.currentUser.sup_uuid || '',
+      sup: this.currentUser.sup || '',
+      dr_uuid: this.currentUser.dr_uuid || '',
+      dr: this.currentUser.dr || '',
+      cyclo_uuid: this.currentUser.cyclo_uuid || '',
+      cyclo: this.currentUser.cyclo || '',
+      user_uuid: this.currentUser.uuid,
+      signature: this.currentUser.fullname, // Added signature property
+      // sync: true,
+    };
+    this.posformService.create(body).subscribe({
+      next: (res) => {
+        this.logActivity.activity(
+          'PosForm',
+          this.currentUser.uuid,
+          'created',
+          `Created Posform uuid: ${res.data.uuid!}`, // 
+          this.currentUser.fullname
+        ).subscribe({
+          next: () => {
+            this.formGroup.reset();
+            this.dataListPosFormItem = []; // Réinitialiser la liste des items
+            this.fetchProducts(this.currentUser, this.start_date, this.end_date);
+            this.toastr.success('Nouveau rapport créé avec succès!', 'Succès');
+            this.uuidItem = res.data.uuid!; // Définir l'UUID pour les ajouts d'items
+            this.isLoading = false;
+          },
+          error: (err) => {
+            this.isLoading = false;
+            this.toastr.error(`${err.error.message}`, 'Oupss!');
+            console.log(err);
+          }
+        });
+      },
+      error: (err) => {
+        this.isLoading = false;
+        this.toastr.error(`${err.error.message}`, 'Oupss!');
+        console.log(err);
+      }
+    });
+  }
+
   // Creation de rapport de visite
   onSubmit(): void {
     if (!this.canAddNewPosForm()) {
@@ -1059,17 +1212,30 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       this.isLoading = true;
 
       const formData = {
-        ...this.formGroup.value,
+        // ...this.formGroup.value,
+        price: parseInt(this.formGroup.value.price) || 50,
+        comment: this.formGroup.value.comment || '',
         pos_uuid: this.posUUID,
-        latitude: this.latitude,
-        longitude: this.longitude
+        // country_uuid: this.currentUser.country_uuid || '',
+        // province_uuid: this.currentUser.province_uuid || '',
+        // area_uuid: this.currentUser.area_uuid || '',
+        // sub_area_uuid: this.currentUser.sub_area_uuid || '',
+        // commune_uuid: this.currentUser.commune_uuid || '',
+        // asm_uuid: this.currentUser.asm_uuid || '',
+        // asm: this.currentUser.asm || '',
+        // sup_uuid: this.currentUser.sup_uuid || '',
+        // sup: this.currentUser.sup || '',
+        // dr_uuid: this.currentUser.dr_uuid || '',
+        // dr: this.currentUser.dr || '',
+        // cyclo_uuid: this.currentUser.cyclo_uuid || '',
+        // cyclo: this.currentUser.cyclo || '',
+        // user_uuid: this.currentUser.uuid,
       };
-
       this.posformService.update(this.uuidItem, formData).subscribe({
         next: (res) => {
           // Si un pos_uuid est fourni, mettre à jour le statut du routePlanItem à true
           if (this.posUUID && this.posUUID.trim() !== '') {
-            this.routePlanItemService.updatePosStatus(this.posUUID, { status: true })
+            this.routePlanItemService.update(this.routePlanItemUUID, { status: true })
               .subscribe({
                 next: () => {
                   console.log('Statut du RoutePlanItem mis à jour à true pour pos_uuid:', this.posUUID);
@@ -1081,7 +1247,6 @@ export class PostformListComponent implements OnInit, AfterViewInit {
                 }
               });
           }
-
           this.logActivity.activity(
             'PosForm',
             this.currentUser.uuid,
@@ -1122,66 +1287,155 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       this.isLoading = true;
 
       const formData = {
-        ...this.formGroup.value,
+        // ...this.formGroup.value,
+        price: parseInt(this.formGroup.value.price) || 50,
+        comment: this.formGroup.value.comment || '',
         pos_uuid: this.posUUID,
-        // latitude: this.latitude,
-        // longitude: this.longitude
+        // country_uuid: this.currentUser.country_uuid || '',
+        // province_uuid: this.currentUser.province_uuid || '',
+        // area_uuid: this.currentUser.area_uuid || '',
+        // sub_area_uuid: this.currentUser.sub_area_uuid || '',
+        // commune_uuid: this.currentUser.commune_uuid || '',
+        // asm_uuid: this.currentUser.asm_uuid || '',
+        // asm: this.currentUser.asm || '',
+        // sup_uuid: this.currentUser.sup_uuid || '',
+        // sup: this.currentUser.sup || '',
+        // dr_uuid: this.currentUser.dr_uuid || '',
+        // dr: this.currentUser.dr || '',
+        // cyclo_uuid: this.currentUser.cyclo_uuid || '',
+        // cyclo: this.currentUser.cyclo || '',
+        // user_uuid: this.currentUser.uuid,
       };
-
-      // Logique de soumission selon le contexte (création ou modification)
-      if (this.uuidItem) {
-        // Modification
-        this.posformService.update(this.uuidItem, formData).subscribe({
-          next: (res) => {
-            // Si un pos_uuid est fourni, mettre à jour le statut du routePlanItem à true
-            if (this.posUUID && this.posUUID.trim() !== '') {
-              this.routePlanItemService.updatePosStatus(this.posUUID, { status: true })
-                .subscribe({
-                  next: () => {
-                    console.log('Statut du RoutePlanItem mis à jour à true pour pos_uuid:', this.posUUID);
-                    this.getAllRoutePlans(); // Rafraîchir la liste des route plans
-                  },
-                  error: (err) => {
-                    console.error('Erreur lors de la mise à jour du statut RoutePlanItem:', err);
-                    // Ne pas bloquer le processus principal en cas d'erreur
-                  }
-                });
-            }
-
-            this.logActivity.activity(
-              'PosForm',
-              this.currentUser.uuid,
-              'updated',
-              `Updated PosForm uuid: ${this.uuidItem}`,
-              this.currentUser.fullname
-            ).subscribe({
-              next: () => {
-                this.toastr.success('Rapport modifié avec succès!', 'Succès');
-                this.fetchProducts(this.currentUser, this.start_date, this.end_date);
-                this.isLoading = false;
-              },
-              error: (err) => {
-                this.isLoading = false;
-                this.toastr.error('Erreur lors de la sauvegarde du log', 'Erreur');
-                console.error(err);
-              }
-            });
-          },
-          error: (err) => {
-            this.isLoading = false;
-            this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
-            console.error(err);
+      this.posformService.update(this.uuidItem, formData).subscribe({
+        next: (res) => {
+          // Si un pos_uuid est fourni, mettre à jour le statut du routePlanItem à true
+          if (this.posUUID && this.posUUID.trim() !== '') {
+            this.routePlanItemService.update(this.routePlanItemUUID, { status: true })
+              .subscribe({
+                next: () => {
+                  this.getAllRoutePlans(); // Rafraîchir la liste des route plans
+                },
+                error: (err) => {
+                  console.error('Erreur lors de la mise à jour du statut RoutePlanItem:', err);
+                  // Ne pas bloquer le processus principal en cas d'erreur
+                }
+              });
           }
-        });
-      } else {
-        // Création - cette logique est déjà gérée par onSubmitInit
-        this.toastr.warning('Utilisez le bouton "Nouveau rapport" pour créer', 'Information');
-        this.isLoading = false;
-      }
+
+          this.logActivity.activity(
+            'PosForm',
+            this.currentUser.uuid,
+            'updated',
+            `Updated PosForm uuid: ${this.uuidItem}`,
+            this.currentUser.fullname
+          ).subscribe({
+            next: () => {
+              this.toastr.success('Rapport modifié avec succès!', 'Succès');
+              this.fetchProducts(this.currentUser, this.start_date, this.end_date);
+              this.isLoading = false;
+            },
+            error: (err) => {
+              this.isLoading = false;
+              this.toastr.error('Erreur lors de la sauvegarde du log', 'Erreur');
+              console.error(err);
+            }
+          });
+        },
+        error: (err) => {
+          this.isLoading = false;
+          this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
+          console.error(err);
+        }
+      });
     } else {
       this.toastr.warning('Veuillez remplir tous les champs obligatoires', 'Attention');
     }
   }
+
+
+  /**
+ * Compléter un rapport existant en ajoutant un POS
+ */
+  completeReport(): void {
+    if (this.formGroup.valid && this.posUUID) {
+      this.isLoading = true;
+
+      const formData = {
+        price: parseInt(this.formGroup.value.price) || 50,
+        comment: this.formGroup.value.comment || '',
+        pos_uuid: this.posUUID,
+      };
+      console.log('Form Data pour la complétion du rapport:', formData);
+
+      // Mettre à jour le rapport avec le POS sélectionné
+      this.posformService.update(this.uuidItem, formData).subscribe({
+        next: (res) => {
+          // ✅ Utiliser l'UUID du routePlanItem au lieu du pos_uuid
+          if (this.routePlanItemUUID) {
+            console.log('Mise à jour du RoutePlanItem avec UUID:', this.routePlanItemUUID);
+            this.routePlanItemService.update(this.routePlanItemUUID, { status: true })
+              .subscribe({
+                next: () => {
+                  this.logActivity.activity(
+                    'PosForm',
+                    this.currentUser.uuid,
+                    'completed',
+                    `Completed PosForm uuid: ${this.uuidItem} with POS: ${this.posUUID}`,
+                    this.currentUser.fullname
+                  ).subscribe({
+                    next: () => {
+                      this.toastr.success('🎉 Rapport complété avec succès! Le point de vente a été assigné.', 'Succès');
+                      this.fetchProducts(this.currentUser, this.start_date, this.end_date);
+                      this.isLoading = false;
+
+                      // Réinitialiser les variables
+                      this.posUUID = '';
+                      this.posName = '';
+                      this.formGroup.reset();
+                    },
+                    error: (err) => {
+                      this.isLoading = false;
+                      this.toastr.error('Erreur lors de la sauvegarde du log', 'Erreur');
+                      console.error(err);
+                    }
+                  });
+                },
+                error: (err) => {
+                  console.error('❌ Erreur lors de la mise à jour du statut RoutePlanItem:', err);
+                  this.toastr.warning('Rapport mis à jour mais erreur de statut du plan de route', 'Attention');
+
+                  // Continuer même en cas d'erreur de mise à jour du statut
+                  this.logActivity.activity(
+                    'PosForm',
+                    this.currentUser.uuid,
+                    'completed',
+                    `Completed PosForm uuid: ${this.uuidItem} with POS: ${this.posUUID}`,
+                    this.currentUser.fullname
+                  ).subscribe({
+                    next: () => {
+                      this.fetchProducts(this.currentUser, this.start_date, this.end_date);
+                      this.isLoading = false;
+                    },
+                    error: (logErr) => {
+                      this.isLoading = false;
+                      console.error(logErr);
+                    }
+                  });
+                }
+              });
+          }
+        },
+        error: (err) => {
+          this.isLoading = false;
+          this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
+          console.error(err);
+        }
+      });
+    } else {
+      this.toastr.warning('Veuillez remplir tous les champs et sélectionner un point de vente', 'Attention');
+    }
+  }
+
 
   // PosFormItem Create
   onSubmitItem(): void {
@@ -1268,67 +1522,10 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     return !!(lastItem.pos_uuid && typeof lastItem.pos_uuid === 'string' && lastItem.pos_uuid.trim() !== '');
   }
 
-  async onSubmitInit() {
-    this.isLoading = true;
-    var body: IPosForm = {
-      // uuid: uuidv4(),
-      price: 50,
-      comment: 'Rien à signaler',
-      latitude: this.latitude,
-      longitude: this.longitude,
-      pos_uuid: '', // This will be set later
-      country_uuid: this.currentUser.country_uuid || '',
-      province_uuid: this.currentUser.province_uuid || '',
-      area_uuid: this.currentUser.area_uuid || '',
-      sub_area_uuid: this.currentUser.sub_area_uuid || '',
-      commune_uuid: this.currentUser.commune_uuid || '',
-      asm_uuid: this.currentUser.asm_uuid || '',
-      asm: this.currentUser.asm || '',
-      sup_uuid: this.currentUser.sup_uuid || '',
-      sup: this.currentUser.sup || '',
-      dr_uuid: this.currentUser.dr_uuid || '',
-      dr: this.currentUser.dr || '',
-      cyclo_uuid: this.currentUser.cyclo_uuid || '',
-      cyclo: this.currentUser.cyclo || '',
-      user_uuid: this.currentUser.uuid,
-      signature: this.currentUser.fullname, // Added signature property
-      // sync: true,
-    };
-    console.log('Body:', body);
-    this.posformService.create(body).subscribe({
-      next: (res) => {
-        this.logActivity.activity(
-          'PosForm',
-          this.currentUser.uuid,
-          'created',
-          `Created Posform uuid: ${res.data.uuid!}`, // 
-          this.currentUser.fullname
-        ).subscribe({
-          next: () => {
-            this.formGroup.reset();
-            this.dataListPosFormItem = []; // Réinitialiser la liste des items
-            this.fetchProducts(this.currentUser, this.start_date, this.end_date);
-            this.toastr.success('Nouveau rapport créé avec succès!', 'Succès');
-            this.uuidItem = res.data.uuid!; // Définir l'UUID pour les ajouts d'items
-            this.isLoading = false;
-          },
-          error: (err) => {
-            this.isLoading = false;
-            this.toastr.error(`${err.error.message}`, 'Oupss!');
-            console.log(err);
-          }
-        });
-      },
-      error: (err) => {
-        this.isLoading = false;
-        this.toastr.error(`${err.error.message}`, 'Oupss!');
-        console.log(err);
-      }
-    });
-  }
+
 
   delete(): void {
-    this.routePlanItemService.updatePosStatus(this.dataItem.pos_uuid!, { status: false })
+    this.routePlanItemService.update(this.dataItem.pos_uuid!, { status: false })
       .subscribe({
         next: () => {
           this.posformService
@@ -1371,88 +1568,6 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       });
   }
 
-  /**
-   * Compléter un rapport existant en ajoutant un POS
-   */
-  completeReport(): void {
-    if (this.formGroup.valid && this.posUUID) {
-      this.isLoading = true;
-
-      const formData = {
-        ...this.formGroup.value,
-        pos_uuid: this.posUUID,
-        latitude: this.latitude,
-        longitude: this.longitude
-      };
-
-      // Mettre à jour le rapport avec le POS sélectionné
-      this.posformService.update(this.uuidItem, formData).subscribe({
-        next: (res) => {
-          // Mettre à jour le statut du routePlanItem à true
-          this.routePlanItemService.updatePosStatus(this.posUUID, { status: true })
-            .subscribe({
-              next: () => {
-                console.log('✅ RoutePlanItem statut mis à jour à true pour pos_uuid:', this.posUUID);
-                this.getAllRoutePlans(); // Rafraîchir la liste des route plans
-
-                this.logActivity.activity(
-                  'PosForm',
-                  this.currentUser.uuid,
-                  'completed',
-                  `Completed PosForm uuid: ${this.uuidItem} with POS: ${this.posUUID}`,
-                  this.currentUser.fullname
-                ).subscribe({
-                  next: () => {
-                    this.toastr.success('🎉 Rapport complété avec succès! Le point de vente a été assigné.', 'Succès');
-                    this.fetchProducts(this.currentUser, this.start_date, this.end_date);
-                    this.isLoading = false;
-
-                    // Réinitialiser les variables
-                    this.posUUID = '';
-                    this.posName = '';
-                    this.formGroup.reset();
-                  },
-                  error: (err) => {
-                    this.isLoading = false;
-                    this.toastr.error('Erreur lors de la sauvegarde du log', 'Erreur');
-                    console.error(err);
-                  }
-                });
-              },
-              error: (err) => {
-                console.error('❌ Erreur lors de la mise à jour du statut RoutePlanItem:', err);
-                this.toastr.warning('Rapport mis à jour mais erreur de statut du plan de route', 'Attention');
-
-                // Continuer même en cas d'erreur de mise à jour du statut
-                this.logActivity.activity(
-                  'PosForm',
-                  this.currentUser.uuid,
-                  'completed',
-                  `Completed PosForm uuid: ${this.uuidItem} with POS: ${this.posUUID}`,
-                  this.currentUser.fullname
-                ).subscribe({
-                  next: () => {
-                    this.fetchProducts(this.currentUser, this.start_date, this.end_date);
-                    this.isLoading = false;
-                  },
-                  error: (logErr) => {
-                    this.isLoading = false;
-                    console.error(logErr);
-                  }
-                });
-              }
-            });
-        },
-        error: (err) => {
-          this.isLoading = false;
-          this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
-          console.error(err);
-        }
-      });
-    } else {
-      this.toastr.warning('Veuillez remplir tous les champs et sélectionner un point de vente', 'Attention');
-    }
-  }
 
   /**
    * TrackBy function pour optimiser les boucles ngFor
@@ -1551,5 +1666,23 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    */
   getFilteredCyclos(): string[] {
     return this.filteredCyclos;
+  }
+
+  /**
+   * Méthode de debug pour vérifier les filtres
+   */
+  debugFilters(): void {
+    console.log('🔍 État actuel des filtres:', {
+      filters: this.filters,
+      search: this.search,
+      hasActiveFilters: this.hasActiveFilters(),
+      activeFiltersCount: this.getActiveFiltersCount(),
+      currentPage: this.current_page,
+      pageSize: this.page_size,
+      startDate: this.start_date,
+      endDate: this.end_date,
+      currentUser: this.currentUser?.role,
+      totalRecords: this.total_records
+    });
   }
 }

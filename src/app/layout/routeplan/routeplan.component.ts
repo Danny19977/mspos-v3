@@ -36,7 +36,7 @@ export class RouteplanComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['created', 'country', 'province', 'area', 'subarea', 'commune', 'user', 'uuid']; //  'total_pos', 'pourcent',
+  displayedColumns: string[] = ['created', 'country', 'province', 'area', 'subarea', 'commune', 'user', 'total_pos', 'pourcent', 'uuid'];
   dataSource = new MatTableDataSource<IRoutePlan>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -251,6 +251,16 @@ export class RouteplanComponent implements OnInit {
     }
     const trueCount = routeplanItem.filter(item => item.status === true).length;
     return trueCount > 0 ? trueCount.toString() : '0';
+  }
+
+  getProgressionPercentage(routeplanItem: IRoutePlanItem[]): string {
+    if (!routeplanItem || routeplanItem.length === 0) {
+      return '0';
+    }
+    const trueCount = routeplanItem.filter(item => item.status === true).length;
+    const totalCount = routeplanItem.length;
+    const percentage = (trueCount / totalCount) * 100;
+    return percentage > 0 ? percentage.toFixed(1) : '0';
   }
 
 
@@ -535,10 +545,12 @@ export class RouteplanComponent implements OnInit {
   }
 
   isLessThan24HoursOld(created: Date): boolean {
-    const twentyFourHoursInMilliseconds = 24 * 60 * 60 * 1000;
-    const currentTime = new Date().getTime();
-    const createdTime = new Date(created).getTime();
-    return currentTime - createdTime < twentyFourHoursInMilliseconds;
+    const createdDate = new Date(created);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const endOfToday = new Date(today);
+    endOfToday.setHours(23, 59, 59, 999);
+    return createdDate >= today && createdDate <= endOfToday;
   }
 }
 

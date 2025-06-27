@@ -9,12 +9,16 @@ import { PosViewComponent } from '../pos-vente/pos-view/pos-view.component';
 import { PosEquipmentComponent } from '../pos-vente/pos-equipment/pos-equipment.component';
 import { RouteplanComponent } from '../routeplan/routeplan.component';
 import { BrandComponent } from '../brand/brand.component';
+import { MapPosComponent } from '../pos-vente/pos-view/map-pos/map-pos.component';
+import { PosformsComponent } from '../pos-vente/pos-view/posforms/posforms.component';
 
 // Services - Lazy loaded only when module is loaded
 import { PosVenteService } from '../pos-vente/pos-vente.service';
 import { RouteplanService } from '../routeplan/routeplan.service';
 import { RouteplanItemService } from '../routeplan/routeplanitem.service';
 import { BrandService } from '../brand/brand.service';
+import { MapPosCardComponent } from '../pos-vente/pos-view/map-pos/map-pos-card/map-pos-card.component';
+import { GoogleMapsModule } from '@angular/google-maps';
 
 const routes: Routes = [
   {
@@ -53,11 +57,15 @@ const routes: Routes = [
     PosEquipmentComponent,
     RouteplanComponent,
     BrandComponent,
+    MapPosComponent,
+    PosformsComponent,
+    MapPosCardComponent,
   ],
   imports: [
     CommonModule,
     SharedModule,
-    RouterModule.forChild(routes)
+    RouterModule.forChild(routes),
+    GoogleMapsModule,
   ],
   providers: [
     PosVenteService,

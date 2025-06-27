@@ -7,14 +7,14 @@ import { SharedModule } from '../shared/shared.module';
 
 import { SidebarComponent } from './common/sidebar/sidebar.component';
 import { HeaderComponent } from './common/header/header.component';
-import { LayoutCommonComponent } from './common/layout-common/layout-common.component';
+import { LayoutCommonComponent } from './common/layout-common/layout-common.component'; 
 
 @NgModule({
   declarations: [
     LayoutComponent,
     SidebarComponent,
     HeaderComponent,
-    LayoutCommonComponent,
+    LayoutCommonComponent, 
   ],
   imports: [
     CommonModule,

@@ -11,7 +11,7 @@ import { PosVenteService } from '../pos-vente.service';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { LogsService } from '../../user-logs/logs.service';
 import { IUser } from '../../user/models/user.model';
-import { IPosForm } from '../../posform/models/posform.model'; 
+import { IPosForm } from '../../posform/models/posform.model';
 
 @Component({
   selector: 'app-pos-vente-list',
@@ -22,7 +22,7 @@ import { IPosForm } from '../../posform/models/posform.model';
 export class PosVenteListComponent implements OnInit {
   isLoadingData = false;
 
-  public routes = routes; 
+  public routes = routes;
 
   // Table 
   dataList: IPos[] = [];
@@ -53,6 +53,7 @@ export class PosVenteListComponent implements OnInit {
     'sup',
     'dr',
     'cyclo',
+    'fullname',
     'posforms',
     'action'
   ];
@@ -62,6 +63,62 @@ export class PosVenteListComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   public search = '';
+
+  // Propriétés pour les filtres avancés
+  showAdvancedFilters = false;
+
+  // Objet contenant tous les filtres
+  filters = {
+    country: '',
+    province: '',
+    area: '',
+    subarea: '',
+    commune: '',
+    postype: '',
+    status: '',
+    shop: '',
+    name: '',
+    gerant: '',
+    telephone: '',
+    quartier: '',
+    avenue: '',
+    reference: '',
+    signature: '',
+    asm: '',
+    asmSearch: '',
+    supervisor: '',
+    supervisorSearch: '',
+    dr: '',
+    drSearch: '',
+    cyclo: '',
+    cycloSearch: '',
+    sync: '',
+    posformsCount: ''
+  };
+
+  // Listes des valeurs uniques pour les filtres
+  uniqueCountries: string[] = [];
+  uniqueProvinces: string[] = [];
+  uniqueAreas: string[] = [];
+  uniqueSubAreas: string[] = [];
+  uniqueCommunes: string[] = [];
+  uniquePosTypes: string[] = [];
+  uniqueShops: string[] = [];
+  uniqueSignatures: string[] = [];
+  uniqueAsms: string[] = [];
+  uniqueSupervisors: string[] = [];
+  uniqueDrs: string[] = [];
+  uniqueCyclos: string[] = [];
+
+  // Listes filtrées pour la hiérarchie commerciale
+  filteredAsms: string[] = [];
+  filteredSupervisors: string[] = [];
+  filteredDrs: string[] = [];
+  filteredCyclos: string[] = [];
+
+  // Données originales et filtrées
+  originalDataList: IPos[] = [];
+  filteredDataList: IPos[] = [];
 
   // Forms  
   uuidItem!: string;
@@ -103,7 +160,7 @@ export class PosVenteListComponent implements OnInit {
       telephone: ['', Validators.required],
       // status: ['', Validators.required],
     });
- 
+
 
     this.authService.user().subscribe({
       next: (user) => {
@@ -122,7 +179,7 @@ export class PosVenteListComponent implements OnInit {
         this.router.navigate(['/auth/login']);
         console.log(error);
       }
-    }); 
+    });
 
   }
 
@@ -139,70 +196,113 @@ export class PosVenteListComponent implements OnInit {
     this.fetchProducts(this.currentUser);
   }
 
- 
+
 
 
   fetchProducts(currentUser: IUser) {
+    // Préparer les filtres pour l'envoi au backend
+    const filterParams = {
+      search: this.search,
+      ...this.filters
+    };
+
+    // Utiliser la nouvelle méthode avec filtres avancés
+    this.posVenteService.getPaginatedWithAdvancedFilters(
+      this.current_page,
+      this.page_size,
+      filterParams
+    ).subscribe({
+      next: (res) => {
+        this.dataList = res.data;
+        this.originalDataList = [...res.data]; // Conserver une copie des données originales
+        this.total_pages = res.pagination.total_pages;
+        this.total_records = res.pagination.total_records;
+        this.dataSource.data = this.dataList;
+        this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
+        this.isLoadingData = false;
+      },
+      error: (err) => {
+        console.log('Erreur lors de la récupération des données:', err);
+        // Fallback vers les anciennes méthodes en cas d'erreur
+        this.fetchProductsOldMethod(currentUser);
+      }
+    });
+  }
+
+  // Méthode de fallback avec l'ancienne logique
+  fetchProductsOldMethod(currentUser: IUser) {
     if (currentUser.role == 'Manager') {
       this.posVenteService.getPaginated2(this.current_page, this.page_size, this.search,
-        ).subscribe(res => {
-          this.dataList = res.data;
-          this.total_pages = res.pagination.total_pages;
-          this.total_records = res.pagination.total_records;
-          this.dataSource.data = this.dataList; // Update dataSource data
-          this.isLoadingData = false;
-        });
-    } else if (currentUser.role == 'ASM') {
-      this.posVenteService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search,
-         
       ).subscribe(res => {
         this.dataList = res.data;
+        this.originalDataList = [...res.data];
+        this.total_pages = res.pagination.total_pages;
+        this.total_records = res.pagination.total_records;
+        this.dataSource.data = this.dataList;
+        this.updateUniqueValues();
+        this.isLoadingData = false;
+      });
+    } else if (currentUser.role == 'ASM') {
+      this.posVenteService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search,
+
+      ).subscribe(res => {
+        this.dataList = res.data;
+        this.originalDataList = [...res.data];
         console.log("dataList", this.dataList);
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
-        this.dataSource.data = this.dataList; // Update dataSource data
+        this.dataSource.data = this.dataList;
+        this.updateUniqueValues();
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'Supervisor') {
       this.posVenteService.getPaginatedByAreaId(currentUser.area_uuid, this.current_page, this.page_size, this.search,
-        
+
       ).subscribe(res => {
         this.dataList = res.data;
+        this.originalDataList = [...res.data];
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
-        this.dataSource.data = this.dataList; // Update dataSource data
+        this.dataSource.data = this.dataList;
+        this.updateUniqueValues();
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'DR') {
       console.log("sub_area_uuid", currentUser.dr_uuid);
       this.posVenteService.getPaginatedBySubAreaId(currentUser.sub_area_uuid, this.current_page, this.page_size, this.search,
-        
+
       ).subscribe(res => {
         this.dataList = res.data;
+        this.originalDataList = [...res.data];
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
-        this.dataSource.data = this.dataList; // Update dataSource data
+        this.dataSource.data = this.dataList;
+        this.updateUniqueValues();
         this.isLoadingData = false;
       });
     } else if (currentUser.role == 'Cyclo') {
       this.posVenteService.getPaginatedByCommuneId(currentUser.uuid, this.current_page, this.page_size, this.search,
       ).subscribe(res => {
         this.dataList = res.data;
+        this.originalDataList = [...res.data];
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
-        this.dataSource.data = this.dataList; // Update dataSource data
+        this.dataSource.data = this.dataList;
+        this.updateUniqueValues();
         this.isLoadingData = false;
       });
     } else {
       this.posVenteService.getPaginated2(this.current_page, this.page_size, this.search,
-        ).subscribe(res => {
-          this.dataList = res.data;
-          console.log("dataList", this.dataList);
-          this.total_pages = res.pagination.total_pages;
-          this.total_records = res.pagination.total_records;
-          this.dataSource.data = this.dataList; // Update dataSource data
-          this.isLoadingData = false;
-        });
+      ).subscribe(res => {
+        this.dataList = res.data;
+        this.originalDataList = [...res.data];
+        console.log("dataList", this.dataList);
+        this.total_pages = res.pagination.total_pages;
+        this.total_records = res.pagination.total_records;
+        this.dataSource.data = this.dataList;
+        this.updateUniqueValues();
+        this.isLoadingData = false;
+      });
     }
   }
 
@@ -210,6 +310,188 @@ export class PosVenteListComponent implements OnInit {
   onSearchChange(search: string) {
     this.search = search;
     this.fetchProducts(this.currentUser);
+  }
+
+  // Méthodes pour les filtres avancés
+
+  /**
+   * Afficher/masquer les filtres avancés
+   */
+  toggleAdvancedFilters(): void {
+    this.showAdvancedFilters = !this.showAdvancedFilters;
+  }
+
+  /**
+   * Mettre à jour les valeurs uniques pour tous les filtres
+   */
+  updateUniqueValues(): void {
+    // Valeurs géographiques
+    this.uniqueCountries = [...new Set(this.originalDataList
+      .map(item => item.Country?.name)
+      .filter(name => name))] as string[];
+
+    this.uniqueProvinces = [...new Set(this.originalDataList
+      .map(item => item.Province?.name)
+      .filter(name => name))] as string[];
+
+    this.uniqueAreas = [...new Set(this.originalDataList
+      .map(item => item.Area?.name)
+      .filter(name => name))] as string[];
+
+    this.uniqueSubAreas = [...new Set(this.originalDataList
+      .map(item => item.SubArea?.name)
+      .filter(name => name))] as string[];
+
+    this.uniqueCommunes = [...new Set(this.originalDataList
+      .map(item => item.Commune?.name)
+      .filter(name => name))] as string[];
+
+    // Valeurs spécifiques aux POS
+    this.uniquePosTypes = [...new Set(this.originalDataList
+      .map(item => item.postype)
+      .filter(type => type))] as string[];
+
+    this.uniqueShops = [...new Set(this.originalDataList
+      .map(item => item.shop)
+      .filter(shop => shop))] as string[];
+
+    // Valeurs de signature/fullname
+    this.uniqueSignatures = [...new Set(this.originalDataList
+      .map(item => item.signature)
+      .filter(signature => signature))] as string[];
+
+    // Hiérarchie commerciale
+    this.uniqueAsms = [...new Set(this.originalDataList
+      .map(item => item.asm)
+      .filter(asm => asm))] as string[];
+
+    this.uniqueSupervisors = [...new Set(this.originalDataList
+      .map(item => item.sup)
+      .filter(sup => sup))] as string[];
+
+    this.uniqueDrs = [...new Set(this.originalDataList
+      .map(item => item.dr)
+      .filter(dr => dr))] as string[];
+
+    this.uniqueCyclos = [...new Set(this.originalDataList
+      .map(item => item.cyclo)
+      .filter(cyclo => cyclo))] as string[];
+
+    // Initialiser les listes filtrées pour la hiérarchie commerciale
+    this.filteredAsms = [...this.uniqueAsms];
+    this.filteredSupervisors = [...this.uniqueSupervisors];
+    this.filteredDrs = [...this.uniqueDrs];
+    this.filteredCyclos = [...this.uniqueCyclos];
+
+    console.log('🔍 Filtres hiérarchie commerciale mis à jour pour POS:');
+    console.log('  - ASMs:', this.uniqueAsms);
+    console.log('  - Supervisors:', this.uniqueSupervisors);
+    console.log('  - DRs:', this.uniqueDrs);
+    console.log('  - Cyclos:', this.uniqueCyclos);
+  }
+
+  /**
+   * Appliquer tous les filtres
+   */
+  applyFilters(): void {
+    this.current_page = 1; // Reset à la première page lors de l'application de filtres
+    this.fetchProducts(this.currentUser);
+  }
+
+  /**
+   * Effacer tous les filtres
+   */
+  clearAllFilters(): void {
+    this.filters = {
+      country: '',
+      province: '',
+      area: '',
+      subarea: '',
+      commune: '',
+      postype: '',
+      status: '',
+      shop: '',
+      name: '',
+      gerant: '',
+      telephone: '',
+      quartier: '',
+      avenue: '',
+      reference: '',
+      signature: '',
+      asm: '',
+      asmSearch: '',
+      supervisor: '',
+      supervisorSearch: '',
+      dr: '',
+      drSearch: '',
+      cyclo: '',
+      cycloSearch: '',
+      sync: '',
+      posformsCount: ''
+    };
+
+    this.search = '';
+    this.applyFilters();
+  }
+
+  /**
+   * Filtrer les ASMs en fonction de la recherche
+   */
+  filterAsms(): void {
+    if (this.filters.asmSearch) {
+      const searchTerm = this.filters.asmSearch.toLowerCase();
+      this.filteredAsms = this.uniqueAsms.filter(asm =>
+        asm.toLowerCase().includes(searchTerm)
+      );
+    } else {
+      this.filteredAsms = [...this.uniqueAsms];
+    }
+    this.applyFilters();
+  }
+
+  /**
+   * Filtrer les Supervisors en fonction de la recherche
+   */
+  filterSupervisors(): void {
+    if (this.filters.supervisorSearch) {
+      const searchTerm = this.filters.supervisorSearch.toLowerCase();
+      this.filteredSupervisors = this.uniqueSupervisors.filter(sup =>
+        sup.toLowerCase().includes(searchTerm)
+      );
+    } else {
+      this.filteredSupervisors = [...this.uniqueSupervisors];
+    }
+    this.applyFilters();
+  }
+
+  /**
+   * Filtrer les DRs en fonction de la recherche
+   */
+  filterDrs(): void {
+    if (this.filters.drSearch) {
+      const searchTerm = this.filters.drSearch.toLowerCase();
+      this.filteredDrs = this.uniqueDrs.filter(dr =>
+        dr.toLowerCase().includes(searchTerm)
+      );
+    } else {
+      this.filteredDrs = [...this.uniqueDrs];
+    }
+    this.applyFilters();
+  }
+
+  /**
+   * Filtrer les Cyclos en fonction de la recherche
+   */
+  filterCyclos(): void {
+    if (this.filters.cycloSearch) {
+      const searchTerm = this.filters.cycloSearch.toLowerCase();
+      this.filteredCyclos = this.uniqueCyclos.filter(cyclo =>
+        cyclo.toLowerCase().includes(searchTerm)
+      );
+    } else {
+      this.filteredCyclos = [...this.uniqueCyclos];
+    }
+    this.applyFilters();
   }
 
   public sortData(sort: Sort) {
@@ -229,8 +511,6 @@ export class PosVenteListComponent implements OnInit {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
-
-
 
   findValue(value: string) {
     this.uuidItem = value;
@@ -354,7 +634,7 @@ export class PosVenteListComponent implements OnInit {
         cyclo: this.currentUser.cyclo,
         user_uuid: this.currentUser.uuid,
         status: true, // le status change une fois que le pos est synchronisé
-        signature: this.currentUser.fullname, 
+        signature: this.currentUser.fullname,
         sync: false // Indique que le POS n'est pas encore synchronisé,
       };
       this.posVenteService.update(this.uuidItem, body)
@@ -391,7 +671,6 @@ export class PosVenteListComponent implements OnInit {
     }
   }
 
-
   delete(): void {
     this.posVenteService
       .delete(this.uuidItem)
@@ -423,6 +702,4 @@ export class PosVenteListComponent implements OnInit {
       }
       );
   }
-
 }
-

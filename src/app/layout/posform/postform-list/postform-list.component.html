@@ -11,16 +11,16 @@
                                 📋 Rapports de visite
                                 <span class="count-title">
                                     @if (hasActiveFilters()) {
-                                        {{getFilteredCount()}} / {{total_records}}
+                                    {{getFilteredCount()}} / {{total_records}}
                                     } @else {
-                                        {{total_records}}
+                                    {{total_records}}
                                     }
                                 </span>
                             </h4>
                             @if (hasActiveFilters()) {
-                                <small class="text-muted">
-                                    <i class="ti ti-filter me-1"></i>{{getActiveFiltersCount()}} filtre(s) actif(s)
-                                </small>
+                            <small class="text-muted">
+                                <i class="ti ti-filter me-1"></i>{{getActiveFiltersCount()}} filtre(s) actif(s)
+                            </small>
                             }
                         </div>
                         <div class="col-md-8 text-end">
@@ -49,18 +49,18 @@
                             <div class="col-sm-8">
                                 <div class="d-flex align-items-center flex-wrap row-gap-2 justify-content-sm-end">
                                     <!-- Bouton pour afficher/masquer les filtres avancés -->
-                                    <button type="button" 
-                                            class="btn btn-outline-primary me-2" 
-                                            (click)="toggleAdvancedFilters()"
-                                            data-bs-toggle="tooltip" 
-                                            title="Afficher/masquer les filtres avancés">
-                                        <i class="ti" [class.ti-filter]="!showAdvancedFilters" [class.ti-filter-off]="showAdvancedFilters"></i>
+                                    <button type="button" class="btn btn-outline-primary me-2"
+                                        (click)="toggleAdvancedFilters()" data-bs-toggle="tooltip"
+                                        title="Afficher/masquer les filtres avancés">
+                                        <i class="ti" [class.ti-filter]="!showAdvancedFilters"
+                                            [class.ti-filter-off]="showAdvancedFilters"></i>
                                         Filtres {{ showAdvancedFilters ? 'moins' : 'plus' }}
                                         @if (hasActiveFilters()) {
-                                            <span class="badge bg-danger rounded-pill ms-1">{{getActiveFiltersCount()}}</span>
+                                        <span
+                                            class="badge bg-danger rounded-pill ms-1">{{getActiveFiltersCount()}}</span>
                                         }
                                     </button>
-                                    
+
                                     <form [formGroup]="dateRange">
                                         <div class="daterange-picker">
                                             <div class="form-sort me-2">
@@ -75,23 +75,20 @@
                                     currentUser.permission === 'VAE' ||
                                     currentUser.permission === 'VA') {
                                     @if(isLoading) {
-                                    <button disabled class="btn btn-primary" 
-                                            data-bs-toggle="tooltip" 
-                                            title="Création en cours, veuillez patienter...">
+                                    <button disabled class="btn btn-primary" data-bs-toggle="tooltip"
+                                        title="Création en cours, veuillez patienter...">
                                         <div class="spinner-border spinner-border-sm me-2" role="status">
                                             <span class="visually-hidden">Création en cours...</span>
                                         </div>
                                         Création en cours...
                                     </button>
                                     } @else {
-                                    <a href="javascript:void(0);" 
-                                       (click)="onSubmitInit()" 
-                                       class="btn btn-primary"
-                                       [class.disabled]="!canAddNewPosForm()"
-                                       [attr.disabled]="!canAddNewPosForm() ? true : null"
-                                       [attr.data-bs-toggle]="canAddNewPosForm() ? 'offcanvas' : 'tooltip'"
-                                       [attr.data-bs-target]="canAddNewPosForm() ? '#offcanvas_add' : ''"
-                                       [attr.title]="!canAddNewPosForm() ? 'Vous devez d\'abord compléter votre dernier rapport en sélectionnant un point de vente' : 'Créer un nouveau rapport de visite'">
+                                    <a href="javascript:void(0);" (click)="onSubmitInit()" class="btn btn-primary"
+                                        [class.disabled]="!canAddNewPosForm()"
+                                        [attr.disabled]="!canAddNewPosForm() ? true : null"
+                                        [attr.data-bs-toggle]="canAddNewPosForm() ? 'offcanvas' : 'tooltip'"
+                                        [attr.data-bs-target]="canAddNewPosForm() ? '#offcanvas_add' : ''"
+                                        [attr.title]="!canAddNewPosForm() ? 'Vous devez d\'abord compléter votre dernier rapport en sélectionnant un point de vente' : 'Créer un nouveau rapport de visite'">
                                         <i class="ti ti-square-rounded-plus me-2"></i>
                                         Nouveau rapport de visite
                                     </a>
@@ -106,77 +103,88 @@
                         <div class="advanced-filters mt-3 p-3 border rounded bg-light">
                             <h6 class="mb-3">
                                 <i class="ti ti-filter me-2"></i>Filtres avancés
-                                <button type="button" class="btn btn-sm btn-outline-secondary ms-2" 
-                                        (click)="clearAllFilters()"
-                                        data-bs-toggle="tooltip" 
-                                        title="Effacer tous les filtres">
+                                <button type="button" class="btn btn-sm btn-outline-secondary ms-2"
+                                    (click)="clearAllFilters()" data-bs-toggle="tooltip"
+                                    title="Effacer tous les filtres">
                                     <i class="ti ti-trash me-1"></i>Effacer
                                 </button>
                             </h6>
-                            
+
                             <div class="row g-3">
                                 <!-- Filtres géographiques -->
                                 <div class="col-md-3">
                                     <label class="form-label">🌍 Pays</label>
-                                    <select class="form-select" [(ngModel)]="filters.country" (ngModelChange)="applyFilters()">
+                                    <select class="form-select" [(ngModel)]="filters.country"
+                                        (ngModelChange)="applyFilters()">
                                         <option value="">Tous les pays</option>
-                                        <option *ngFor="let country of uniqueCountries" [value]="country">{{country}}</option>
+                                        <option *ngFor="let country of uniqueCountries" [value]="country">{{country}}
+                                        </option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="col-md-3">
                                     <label class="form-label">🏛️ Province</label>
-                                    <select class="form-select" [(ngModel)]="filters.province" (ngModelChange)="applyFilters()">
+                                    <select class="form-select" [(ngModel)]="filters.province"
+                                        (ngModelChange)="applyFilters()">
                                         <option value="">Toutes les provinces</option>
-                                        <option *ngFor="let province of uniqueProvinces" [value]="province">{{province}}</option>
+                                        <option *ngFor="let province of uniqueProvinces" [value]="province">{{province}}
+                                        </option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="col-md-3">
                                     <label class="form-label">🗺️ Area</label>
-                                    <select class="form-select" [(ngModel)]="filters.area" (ngModelChange)="applyFilters()">
+                                    <select class="form-select" [(ngModel)]="filters.area"
+                                        (ngModelChange)="applyFilters()">
                                         <option value="">Toutes les areas</option>
                                         <option *ngFor="let area of uniqueAreas" [value]="area">{{area}}</option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="col-md-3">
                                     <label class="form-label">📍 SubArea</label>
-                                    <select class="form-select" [(ngModel)]="filters.subarea" (ngModelChange)="applyFilters()">
+                                    <select class="form-select" [(ngModel)]="filters.subarea"
+                                        (ngModelChange)="applyFilters()">
                                         <option value="">Toutes les subareas</option>
-                                        <option *ngFor="let subarea of uniqueSubAreas" [value]="subarea">{{subarea}}</option>
+                                        <option *ngFor="let subarea of uniqueSubAreas" [value]="subarea">{{subarea}}
+                                        </option>
                                     </select>
                                 </div>
-                                
+
                                 <!-- Deuxième ligne de filtres -->
                                 <div class="col-md-3">
                                     <label class="form-label">🏘️ Commune</label>
-                                    <select class="form-select" [(ngModel)]="filters.commune" (ngModelChange)="applyFilters()">
+                                    <select class="form-select" [(ngModel)]="filters.commune"
+                                        (ngModelChange)="applyFilters()">
                                         <option value="">Toutes les communes</option>
-                                        <option *ngFor="let commune of uniqueCommunes" [value]="commune">{{commune}}</option>
+                                        <option *ngFor="let commune of uniqueCommunes" [value]="commune">{{commune}}
+                                        </option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="col-md-3">
                                     <label class="form-label">💰 Coût de visite</label>
-                                    <select class="form-select" [(ngModel)]="filters.price" (ngModelChange)="applyFilters()">
+                                    <select class="form-select" [(ngModel)]="filters.price"
+                                        (ngModelChange)="applyFilters()">
                                         <option value="">Tous les coûts</option>
                                         <option *ngFor="let price of uniquePrices" [value]="price">{{price}} FC</option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="col-md-3">
                                     <label class="form-label">📊 Statut du rapport</label>
-                                    <select class="form-select" [(ngModel)]="filters.status" (ngModelChange)="applyFilters()">
+                                    <select class="form-select" [(ngModel)]="filters.status"
+                                        (ngModelChange)="applyFilters()">
                                         <option value="">Tous les statuts</option>
                                         <option value="complete">✅ Complets (avec POS)</option>
                                         <option value="incomplete">⚠️ Incomplets (sans POS)</option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="col-md-3">
                                     <label class="form-label">🏷️ Nombre de marques</label>
-                                    <select class="form-select" [(ngModel)]="filters.brandCount" (ngModelChange)="applyFilters()">
+                                    <select class="form-select" [(ngModel)]="filters.brandCount"
+                                        (ngModelChange)="applyFilters()">
                                         <option value="">Tous</option>
                                         <option value="0">Aucune marque</option>
                                         <option value="1">1 marque</option>
@@ -184,30 +192,29 @@
                                         <option value="6+">6+ marques</option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="col-md-3">
                                     <label class="form-label">🏪 Type de point de vente</label>
-                                    <select class="form-select" [(ngModel)]="filters.posType" (ngModelChange)="applyFilters()">
+                                    <select class="form-select" [(ngModel)]="filters.posType"
+                                        (ngModelChange)="applyFilters()">
                                         <option value="">Tous les types</option>
                                         <option *ngFor="let type of uniquePosTypes" [value]="type">{{type}}</option>
                                     </select>
                                 </div>
                             </div>
-                            
+
                             <!-- Troisième ligne de filtres -->
                             <div class="row g-3 mt-1">
                                 <div class="col-md-4">
                                     <label class="form-label">🔍 Recherche par point de vente</label>
-                                    <input type="text" 
-                                           class="form-control" 
-                                           [(ngModel)]="filters.posSearch" 
-                                           (ngModelChange)="applyFilters()"
-                                           placeholder="Nom du magasin...">
+                                    <input type="text" class="form-control" [(ngModel)]="filters.posSearch"
+                                        (ngModelChange)="applyFilters()" placeholder="Nom du magasin...">
                                 </div>
-                                
+
                                 <div class="col-md-4">
                                     <label class="form-label">📅 Filtre rapide par date</label>
-                                    <select class="form-select" [(ngModel)]="filters.quickDate" (ngModelChange)="applyQuickDateFilter($event)">
+                                    <select class="form-select" [(ngModel)]="filters.quickDate"
+                                        (ngModelChange)="applyQuickDateFilter($event)">
                                         <option value="">Toutes les dates</option>
                                         <option value="today">Aujourd'hui</option>
                                         <option value="yesterday">Hier</option>
@@ -215,99 +222,93 @@
                                         <option value="last30days">30 derniers jours</option>
                                     </select>
                                 </div>
-                                
+
                                 <div class="col-md-4">
                                     <label class="form-label">📊 Export et actions</label>
                                     <div class="d-flex gap-2">
-                                        <button type="button" class="btn btn-outline-success btn-sm" 
-                                                (click)="exportToExcel()"
-                                                data-bs-toggle="tooltip" 
-                                                title="Exporter les données filtrées vers Excel">
+                                        <button type="button" class="btn btn-outline-success btn-sm"
+                                            (click)="exportToExcel()" data-bs-toggle="tooltip"
+                                            title="Exporter les données filtrées vers Excel">
                                             <i class="ti ti-file-spreadsheet me-1"></i>Excel
                                         </button>
-                                        <button type="button" class="btn btn-outline-info btn-sm" 
-                                                (click)="exportToPDF()"
-                                                data-bs-toggle="tooltip" 
-                                                title="Exporter les données filtrées vers PDF">
+                                        <button type="button" class="btn btn-outline-info btn-sm"
+                                            (click)="exportToPDF()" data-bs-toggle="tooltip"
+                                            title="Exporter les données filtrées vers PDF">
                                             <i class="ti ti-file-text me-1"></i>PDF
                                         </button>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Filtres hiérarchie commerciale avec recherche intégrée -->
                             <div class="row g-3 mt-2">
                                 <div class="col-12">
                                     <h6 class="mb-2"><i class="ti ti-users me-2"></i>Hiérarchie commerciale</h6>
                                 </div>
-                                
+
                                 <div class="col-md-3">
                                     <label class="form-label">👔 ASM</label>
                                     <div class="dropdown-with-search">
-                                        <input type="text" 
-                                               class="form-control mb-1" 
-                                               [(ngModel)]="filters.asmSearch" 
-                                               (ngModelChange)="filterAsmOptions($event)"
-                                               placeholder="� Rechercher un ASM...">
-                                        <select class="form-select" [(ngModel)]="filters.asm" (ngModelChange)="applyFilters()">
+                                        <input type="text" class="form-control mb-1" [(ngModel)]="filters.asmSearch"
+                                            (ngModelChange)="applyFilters()" placeholder="� Rechercher un ASM...">
+                                        <select class="form-select" [(ngModel)]="filters.asm"
+                                            (ngModelChange)="applyFilters()">
                                             <option value="">Tous les ASM</option>
-                                            <option *ngFor="let asm of getFilteredAsms()" [value]="asm">{{asm}}</option>
+                                            <option *ngFor="let asm of filteredAsms" [value]="asm">{{asm}}</option>
                                         </select>
                                     </div>
                                 </div>
-                                
+
                                 <div class="col-md-3">
                                     <label class="form-label">👨‍💼 Supervisor</label>
                                     <div class="dropdown-with-search">
-                                        <input type="text" 
-                                               class="form-control mb-1" 
-                                               [(ngModel)]="filters.supervisorSearch" 
-                                               (ngModelChange)="filterSupervisorOptions($event)"
-                                               placeholder="🔍 Rechercher un supervisor...">
-                                        <select class="form-select" [(ngModel)]="filters.supervisor" (ngModelChange)="applyFilters()">
+                                        <input type="text" class="form-control mb-1"
+                                            [(ngModel)]="filters.supervisorSearch" (ngModelChange)="applyFilters()"
+                                            placeholder="🔍 Rechercher un supervisor...">
+                                        <select class="form-select" [(ngModel)]="filters.supervisor"
+                                            (ngModelChange)="applyFilters()">
                                             <option value="">Tous les supervisors</option>
-                                            <option *ngFor="let sup of getFilteredSupervisors()" [value]="sup">{{sup}}</option>
+                                            <option *ngFor="let sup of filteredSupervisors" [value]="sup">{{sup}}
+                                            </option>
                                         </select>
                                     </div>
                                 </div>
-                                
+
                                 <div class="col-md-3">
                                     <label class="form-label">🏢 DR</label>
                                     <div class="dropdown-with-search">
-                                        <input type="text" 
-                                               class="form-control mb-1" 
-                                               [(ngModel)]="filters.drSearch" 
-                                               (ngModelChange)="filterDrOptions($event)"
-                                               placeholder="🔍 Rechercher un DR...">
-                                        <select class="form-select" [(ngModel)]="filters.dr" (ngModelChange)="applyFilters()">
+                                        <input type="text" class="form-control mb-1" [(ngModel)]="filters.drSearch"
+                                            (ngModelChange)="applyFilters()" placeholder="🔍 Rechercher un DR...">
+                                        <select class="form-select" [(ngModel)]="filters.dr"
+                                            (ngModelChange)="applyFilters()">
                                             <option value="">Tous les DR</option>
-                                            <option *ngFor="let dr of getFilteredDrs()" [value]="dr">{{dr}}</option>
+                                            <option *ngFor="let dr of filteredDrs" [value]="dr">{{dr}}</option>
                                         </select>
                                     </div>
                                 </div>
-                                
+
                                 <div class="col-md-3">
                                     <label class="form-label">� Cyclo</label>
                                     <div class="dropdown-with-search">
-                                        <input type="text" 
-                                               class="form-control mb-1" 
-                                               [(ngModel)]="filters.cycloSearch" 
-                                               (ngModelChange)="filterCycloOptions($event)"
-                                               placeholder="🔍 Rechercher un cyclo...">
-                                        <select class="form-select" [(ngModel)]="filters.cyclo" (ngModelChange)="applyFilters()">
+                                        <input type="text" class="form-control mb-1" [(ngModel)]="filters.cycloSearch"
+                                            (ngModelChange)="applyFilters()" placeholder="🔍 Rechercher un cyclo...">
+                                        <select class="form-select" [(ngModel)]="filters.cyclo"
+                                            (ngModelChange)="applyFilters()">
                                             <option value="">Tous les cyclos</option>
-                                            <option *ngFor="let cyclo of getFilteredCyclos()" [value]="cyclo">{{cyclo}}</option>
+                                            <option *ngFor="let cyclo of filteredCyclos" [value]="cyclo">{{cyclo}}
+                                            </option>
                                         </select>
                                     </div>
                                 </div>
                             </div>
-                            
+
                             <!-- Résumé des filtres actifs -->
                             @if (hasActiveFilters()) {
                             <div class="mt-3 p-2 bg-primary bg-opacity-10 rounded">
                                 <small class="text-primary">
                                     <i class="ti ti-info-circle me-1"></i>
-                                    <strong>{{getFilteredCount()}}</strong> rapport(s) trouvé(s) sur {{total_records}} total
+                                    <strong>{{getFilteredCount()}}</strong> rapport(s) trouvé(s) sur {{total_records}}
+                                    total
                                     @if (getActiveFiltersCount() > 0) {
                                     • {{getActiveFiltersCount()}} filtre(s) actif(s)
                                     }
@@ -317,7 +318,7 @@
                         </div>
                         }
                         <!-- /Filtres avancés -->
-                        
+
                         <!-- /Search -->
                     </div>
                     <div class="card-body">
@@ -331,7 +332,7 @@
                                     <td mat-cell *matCellDef="let data">
                                         @if (data.pos_uuid != '') {
                                         <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']"
-                                           class="text-decoration-none">
+                                            class="text-decoration-none">
                                             {{ data.CreatedAt | date: 'dd/MM/yyyy HH:mm' }}
                                         </a>
                                         } @else {
@@ -346,81 +347,11 @@
                                     <td mat-cell *matCellDef="let data">
                                         @if (data.pos_uuid != '') {
                                         <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']"
-                                           class="text-decoration-none">
+                                            class="text-decoration-none">
                                             <strong>{{ data.Pos?.name || '--' }}</strong>
                                         </a>
                                         } @else {
                                         <span class="text-muted">{{ data.Pos?.name || 'Non renseigné' }}</span>
-                                        }
-                                    </td>
-                                </ng-container>
-
-                                <!-- Country Column -->
-                                <ng-container matColumnDef="country">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Pays</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        @if (data.pos_uuid != '') {
-                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
-                                            {{ data.Country?.name || '--' }}
-                                        </a>
-                                        } @else {
-                                        {{ data.Country?.name || '--' }}
-                                        }
-                                    </td>
-                                </ng-container>
-
-                                <!-- Province Column -->
-                                <ng-container matColumnDef="province">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Province</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        @if (data.pos_uuid != '') {
-                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
-                                            {{ data.Province?.name || '--' }}
-                                        </a>
-                                        } @else {
-                                        {{ data.Province?.name || '--' }}
-                                        }
-                                    </td>
-                                </ng-container>
-
-                                <!-- Area Column -->
-                                <ng-container matColumnDef="area">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Area</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        @if (data.pos_uuid != '') {
-                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
-                                            {{ data.Area?.name || '--' }}
-                                        </a>
-                                        } @else {
-                                        {{ data.Area?.name || '--' }}
-                                        }
-                                    </td>
-                                </ng-container>
-
-                                <!-- Subarea Column -->
-                                <ng-container matColumnDef="subarea">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Subarea</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        @if (data.pos_uuid != '') {
-                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
-                                            {{ data.SubArea?.name || '--' }}
-                                        </a>
-                                        } @else {
-                                        {{ data.SubArea?.name || '--' }}
-                                        }
-                                    </td>
-                                </ng-container>
-
-                                <!-- Commune Column -->
-                                <ng-container matColumnDef="commune">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Commune</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        @if (data.pos_uuid != '') {
-                                        <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
-                                            {{ data.Commune?.name || '--' }}
-                                        </a>
-                                        } @else {
-                                        {{ data.Commune?.name || '--' }}
                                         }
                                     </td>
                                 </ng-container>
@@ -501,15 +432,17 @@
                                     <td mat-cell *matCellDef="let data">
                                         @if (data.pos_uuid != '') {
                                         <a [routerLink]="['/web/pos/pos-view', data.pos_uuid, 'posforms']">
-                                            <span class="badge" 
-                                                  [class.bg-danger]="(data.PosFormItems?.length || 0) === 0"
-                                                  [class.bg-info]="(data.PosFormItems?.length || 0) > 0">
-                                                {{ data.PosFormItems?.length || '0' }} marque{{ (data.PosFormItems?.length || 0) > 1 ? 's' : '' }}
+                                            <span class="badge"
+                                                [class.bg-danger]="(data.PosFormItems?.length || 0) === 0"
+                                                [class.bg-info]="(data.PosFormItems?.length || 0) > 0">
+                                                {{ data.PosFormItems?.length || '0' }} marque{{
+                                                (data.PosFormItems?.length || 0) > 1 ? 's' : '' }}
                                             </span>
                                         </a>
                                         } @else {
                                         <span class="badge bg-secondary">
-                                            {{ data.PosFormItems?.length || '0' }} marque{{ (data.PosFormItems?.length || 0) > 1 ? 's' : '' }}
+                                            {{ data.PosFormItems?.length || '0' }} marque{{ (data.PosFormItems?.length
+                                            || 0) > 1 ? 's' : '' }}
                                         </span>
                                         }
                                     </td>
@@ -528,40 +461,48 @@
                                 <ng-container matColumnDef="action">
                                     <th mat-header-cell *matHeaderCellDef> Action </th>
                                     <td mat-cell *matCellDef="let element" class="d-flex align-items-center">
-                                        @if(element.pos_uuid == '') {
-                                        <button mat-icon-button (click)="findValue(element.uuid)"
-                                            data-bs-toggle="offcanvas" data-bs-target="#offcanvas_add"
-                                            class="text-success" 
-                                            title="Compléter ce rapport en sélectionnant un point de vente">
-                                            <mat-icon>add_circle</mat-icon>
-                                        </button>
-                                        }
 
-                                        <button mat-icon-button 
-                                                (click)="findValue(element.uuid)"
-                                                data-bs-toggle="offcanvas" data-bs-target="#offcanvas_visibility"
-                                                title="Voir les détails du rapport">
+                                        <ng-container *ngIf="element.pos_uuid == '' && 
+                                            isLessThan24HoursOld(element.CreatedAt) && 
+                                            isCurrentUserCreator(element)">
+                                            <button mat-icon-button (click)="findValue(element.uuid)"
+                                                data-bs-toggle="offcanvas" data-bs-target="#offcanvas_add"
+                                                class="text-success"
+                                                title="Compléter ce rapport en sélectionnant un point de vente">
+                                                <mat-icon>add_circle</mat-icon>
+                                            </button>
+                                        </ng-container>
+
+                                        <button mat-icon-button (click)="findValue(element.uuid)"
+                                            data-bs-toggle="offcanvas" data-bs-target="#offcanvas_visibility"
+                                            title="Voir les détails du rapport">
                                             <mat-icon class="text-blue">visibility</mat-icon>
                                         </button>
 
-                                        @if(element.pos_uuid != '' && currentUser.permission === 'ALL' ||
+                                        @if(element.pos_uuid != '' &&
+                                        !(element.pos_uuid == '' && isLessThan24HoursOld(element.CreatedAt) &&
+                                        isCurrentUserCreator(element)) &&
+                                        (currentUser.permission === 'ALL' ||
                                         currentUser.permission === 'VAE' ||
                                         currentUser.permission === 'VED' ||
-                                        currentUser.permission === 'VE' &&
+                                        currentUser.permission === 'VE') &&
                                         isLessThan24HoursOld(element.CreatedAt)) {
                                         <button mat-icon-button (click)="findValue(element.uuid)"
                                             data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit">
                                             <mat-icon class="text-blue">edit</mat-icon>
                                         </button>
                                         }
-                                        @if(currentUser.permission === 'ALL' ||
-                                        currentUser.permission === 'VED' &&
+                                        @if(!(element.pos_uuid == '' && isLessThan24HoursOld(element.CreatedAt) &&
+                                        isCurrentUserCreator(element)) &&
+                                        (currentUser.permission === 'ALL' ||
+                                        currentUser.permission === 'VED') &&
                                         isLessThan24HoursOld(element.CreatedAt)) {
                                         <button mat-icon-button (click)="findValue(element.uuid)" data-bs-toggle="modal"
                                             data-bs-target="#delete_contact">
                                             <mat-icon class="text-danger">delete</mat-icon>
                                         </button>
                                         }
+
                                     </td>
                                 </ng-container>
 
@@ -625,18 +566,20 @@
         <!-- Instructions d'aide -->
         <div class="alert alert-info mb-4">
             <h6><i class="ti ti-info-circle me-2"></i>Instructions</h6>
-            <p class="mb-0">Remplissez ce formulaire pour enregistrer votre visite chez un point de vente. Tous les champs marqués d'une étoile rouge (*) sont obligatoires.</p>
+            <p class="mb-0">Remplissez ce formulaire pour enregistrer votre visite chez un point de vente. Tous les
+                champs marqués d'une étoile rouge (*) sont obligatoires.</p>
         </div>
 
         <form [formGroup]="formGroup" (ngSubmit)="dataItem && dataItem.pos_uuid === '' ? completeReport() : onSubmit()">
-           <div class="row">
+            <div class="row">
                 <!-- Alerte pour rapport incomplet -->
                 @if (dataItem && dataItem.pos_uuid === '') {
                 <div class="col-12 mb-4">
                     <div class="alert alert-warning">
                         <h6><i class="ti ti-alert-triangle me-2"></i>Complétion du rapport de visite</h6>
                         <p class="mb-0">
-                            Vous complétez un rapport existant créé le {{ dataItem.CreatedAt | date: 'dd/MM/yyyy à HH:mm' }}.
+                            Vous complétez un rapport existant créé le {{ dataItem.CreatedAt | date: 'dd/MM/yyyy à
+                            HH:mm' }}.
                             Sélectionnez le point de vente visité pour finaliser ce rapport.
                         </p>
                     </div>
@@ -656,16 +599,15 @@
                                         <div class="mb-3">
                                             <label class="col-form-label d-flex align-items-center" for="text">
                                                 Marque visitée <span class="text-danger">*</span>
-                                                <button type="button" class="btn btn-link btn-sm p-0 ms-2" 
-                                                        data-bs-toggle="tooltip" 
-                                                        title="Sélectionnez la marque de produits que vous avez observée dans ce point de vente">
+                                                <button type="button" class="btn btn-link btn-sm p-0 ms-2"
+                                                    data-bs-toggle="tooltip"
+                                                    title="Sélectionnez la marque de produits que vous avez observée dans ce point de vente">
                                                     <i class="ti ti-help-circle text-primary"></i>
                                                 </button>
                                             </label>
                                             <input #brand_uuid type="text" matInput [matAutocomplete]="autopos3"
-                                                placeholder="🔍 Recherchez et sélectionnez une marque..." 
-                                                class="form-control" (input)="getAllBrand()"
-                                                (focus)="getAllBrand()">
+                                                placeholder="🔍 Recherchez et sélectionnez une marque..."
+                                                class="form-control" (input)="getAllBrand()" (focus)="getAllBrand()">
                                             @if (isloadBrand) {
                                             <div class="d-flex align-items-center mt-2">
                                                 <strong role="status">Chargement des marques...</strong>
@@ -673,7 +615,8 @@
                                             </div>
                                             }
                                             <mat-autocomplete requireSelection #autopos3="matAutocomplete"
-                                                (optionSelected)="optionSelectedBrand($event)" [displayWith]="displayFnBrand">
+                                                (optionSelected)="optionSelectedBrand($event)"
+                                                [displayWith]="displayFnBrand">
                                                 @for (item of filteredOptionBrand; track item.uuid) {
                                                 <mat-option [value]="item">{{item.name}}</mat-option>
                                                 }
@@ -684,17 +627,19 @@
                                         <div class="mb-3">
                                             <label class="col-form-label d-flex align-items-center" for="text">
                                                 Nombre de cartons/fardes présents <span class="text-danger">*</span>
-                                                <button type="button" class="btn btn-link btn-sm p-0 ms-2" 
-                                                        data-bs-toggle="tooltip" 
-                                                        title="Comptez le nombre de cartons ou fardes de cette marque visibles dans le magasin">
+                                                <button type="button" class="btn btn-link btn-sm p-0 ms-2"
+                                                    data-bs-toggle="tooltip"
+                                                    title="Comptez le nombre de cartons ou fardes de cette marque visibles dans le magasin">
                                                     <i class="ti ti-help-circle text-primary"></i>
                                                 </button>
                                             </label>
-                                            <input type="number" class="form-control" formControlName="number_farde" 
-                                                   placeholder="Ex: 5" min="0" required />
+                                            <input type="number" class="form-control" formControlName="number_farde"
+                                                placeholder="Ex: 5" min="0" required />
                                             <small class="text-muted">Indiquez 0 si aucun produit n'est visible</small>
-                                            <mat-error *ngIf="formGroupPosFormItem.controls['number_farde'].hasError('required')">
-                                                <i class="ti ti-alert-circle me-1"></i>Veuillez indiquer le nombre de fardes présents
+                                            <mat-error
+                                                *ngIf="formGroupPosFormItem.controls['number_farde'].hasError('required')">
+                                                <i class="ti ti-alert-circle me-1"></i>Veuillez indiquer le nombre de
+                                                fardes présents
                                             </mat-error>
                                         </div>
                                     </div>
@@ -702,17 +647,19 @@
                                         <div class="mb-3">
                                             <label class="col-form-label d-flex align-items-center" for="text">
                                                 Nombre de ventes réalisées <span class="text-danger">*</span>
-                                                <button type="button" class="btn btn-link btn-sm p-0 ms-2" 
-                                                        data-bs-toggle="tooltip" 
-                                                        title="Demandez au vendeur combien d'unités de cette marque ont été vendues aujourd'hui">
+                                                <button type="button" class="btn btn-link btn-sm p-0 ms-2"
+                                                    data-bs-toggle="tooltip"
+                                                    title="Demandez au vendeur combien d'unités de cette marque ont été vendues aujourd'hui">
                                                     <i class="ti ti-help-circle text-primary"></i>
                                                 </button>
                                             </label>
-                                            <input type="number" class="form-control" formControlName="sold" 
-                                                   placeholder="Ex: 3" required />
+                                            <input type="number" class="form-control" formControlName="sold"
+                                                placeholder="Ex: 3" required />
                                             <small class="text-muted">Indiquez 0 si aucune vente aujourd'hui</small>
-                                            <mat-error *ngIf="formGroupPosFormItem.controls['sold'].hasError('required')">
-                                                <i class="ti ti-alert-circle me-1"></i>Veuillez indiquer le nombre de ventes réalisées
+                                            <mat-error
+                                                *ngIf="formGroupPosFormItem.controls['sold'].hasError('required')">
+                                                <i class="ti ti-alert-circle me-1"></i>Veuillez indiquer le nombre de
+                                                ventes réalisées
                                             </mat-error>
                                         </div>
                                     </div>
@@ -748,12 +695,16 @@
                                     <div class="col-md-4 mb-3">
                                         <div class="card task-card border-success">
                                             <div class="card-body">
-                                                <div class="task-info d-flex align-items-center justify-content-between">
+                                                <div
+                                                    class="task-info d-flex align-items-center justify-content-between">
                                                     <div>
-                                                        <p class="mb-1"><strong>🏷️ Marque:</strong> {{ item.Brand!.name }}</p>
-                                                        <p class="mb-1"><strong>📦 Fardes:</strong> {{ item.number_farde }}</p>
+                                                        <p class="mb-1"><strong>🏷️ Marque:</strong> {{ item.Brand!.name
+                                                            }}</p>
+                                                        <p class="mb-1"><strong>📦 Fardes:</strong> {{ item.number_farde
+                                                            }}</p>
                                                         <p *ngIf="item.sold > 0" class="mb-1 text-success">
-                                                            <strong>💰 {{ item.sold > 1 ? 'Ventes:' : 'Vente:' }}</strong>
+                                                            <strong>💰 {{ item.sold > 1 ? 'Ventes:' : 'Vente:'
+                                                                }}</strong>
                                                             {{ item.sold }}
                                                         </p>
                                                         <p *ngIf="item.sold == 0" class="mb-1 text-muted">
@@ -762,9 +713,9 @@
                                                     </div>
                                                 </div>
                                                 <div class="task-actions mt-3 text-end">
-                                                    <a href="javascript:void(0);" (click)="deletePosFormItem(item.uuid!)"
-                                                        class="text-danger" 
-                                                        data-bs-toggle="tooltip" 
+                                                    <a href="javascript:void(0);"
+                                                        (click)="deletePosFormItem(item.uuid!)" class="text-danger"
+                                                        data-bs-toggle="tooltip"
                                                         title="Supprimer cette marque de la liste">
                                                         <i class="ti ti-trash"></i> Supprimer
                                                     </a>
@@ -785,15 +736,14 @@
                     <div class="mb-3">
                         <label class="col-form-label d-flex align-items-center" for="text">
                             Point de vente visité <span class="text-danger">*</span>
-                            <button type="button" class="btn btn-link btn-sm p-0 ms-2" 
-                                    data-bs-toggle="tooltip" 
-                                    title="Sélectionnez le magasin ou point de vente que vous visitez dans votre liste de tâches">
+                            <button type="button" class="btn btn-link btn-sm p-0 ms-2" data-bs-toggle="tooltip"
+                                title="Sélectionnez le magasin ou point de vente que vous visitez dans votre liste de tâches">
                                 <i class="ti ti-help-circle text-primary"></i>
                             </button>
                         </label>
                         <input #pos_uuid type="text" matInput formControlName="pos_uuid" [matAutocomplete]="autopos1"
-                            placeholder="🏪 Recherchez le nom du magasin..." class="form-control" (input)="getAllRoutePlans()"
-                            (focus)="getAllRoutePlans()">
+                            placeholder="🏪 Recherchez le nom du magasin..." class="form-control"
+                            (input)="getAllRoutePlans()" (focus)="getAllRoutePlans()">
                         @if (isload) {
                         <div class="d-flex align-items-center mt-2">
                             <strong role="status">Chargement des points de vente...</strong>
@@ -808,7 +758,8 @@
                         </mat-autocomplete>
                         <small class="text-muted">Choisissez dans votre liste de points de vente à visiter</small>
                         <mat-error *ngIf="formGroup.controls['pos_uuid'].hasError('required')">
-                            <i class="ti ti-alert-circle me-1"></i>Veuillez sélectionner le point de vente que vous visitez
+                            <i class="ti ti-alert-circle me-1"></i>Veuillez sélectionner le point de vente que vous
+                            visitez
                         </mat-error>
                     </div>
                 </div>
@@ -816,9 +767,8 @@
                     <div class="mb-3">
                         <label class="col-form-label d-flex align-items-center" for="price">
                             Coût de la visite <span class="text-danger">*</span>
-                            <button type="button" class="btn btn-link btn-sm p-0 ms-2" 
-                                    data-bs-toggle="tooltip" 
-                                    title="Sélectionnez le montant correspondant au type de visite effectuée">
+                            <button type="button" class="btn btn-link btn-sm p-0 ms-2" data-bs-toggle="tooltip"
+                                title="Sélectionnez le montant correspondant au type de visite effectuée">
                                 <i class="ti ti-help-circle text-primary"></i>
                             </button>
                         </label>
@@ -836,16 +786,17 @@
                     <div class="mb-3">
                         <label class="col-form-label d-flex align-items-center" for="text">
                             Commentaires et observations <span class="text-danger">*</span>
-                            <button type="button" class="btn btn-link btn-sm p-0 ms-2" 
-                                    data-bs-toggle="tooltip" 
-                                    title="Décrivez ce que vous avez observé : état du magasin, accueil, problèmes rencontrés, suggestions...">
+                            <button type="button" class="btn btn-link btn-sm p-0 ms-2" data-bs-toggle="tooltip"
+                                title="Décrivez ce que vous avez observé : état du magasin, accueil, problèmes rencontrés, suggestions...">
                                 <i class="ti ti-help-circle text-primary"></i>
                             </button>
                         </label>
-                        <textarea class="form-control" formControlName="comment" rows="4" 
-                                placeholder="💬 Décrivez votre visite : état du magasin, accueil du vendeur, produits manquants, suggestions d'amélioration, problèmes rencontrés..." required></textarea>
+                        <textarea class="form-control" formControlName="comment" rows="4"
+                            placeholder="💬 Décrivez votre visite : état du magasin, accueil du vendeur, produits manquants, suggestions d'amélioration, problèmes rencontrés..."
+                            required></textarea>
                         <small class="text-muted">
-                            💡 Exemples : "Bon accueil, manque de produits XYZ", "Magasin bien rangé", "Vendeur demande plus de formation"
+                            💡 Exemples : "Bon accueil, manque de produits XYZ", "Magasin bien rangé", "Vendeur demande
+                            plus de formation"
                         </small>
                         <mat-error *ngIf="formGroup.controls['comment'].hasError('required')">
                             <i class="ti ti-alert-circle me-1"></i>Veuillez ajouter vos commentaires sur cette visite
@@ -853,7 +804,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Section de résumé -->
             <div class="alert alert-warning">
                 <h6><i class="ti ti-check-circle me-2"></i>Avant de soumettre</h6>
@@ -909,102 +860,109 @@
         <!-- Instructions d'aide pour modification -->
         <div class="alert alert-warning mb-4">
             <h6><i class="ti ti-edit-circle me-2"></i>Modification du rapport</h6>
-            <p class="mb-0">Vous pouvez modifier les détails de votre visite. Attention : certaines modifications peuvent nécessiter une validation.</p>
+            <p class="mb-0">Vous pouvez modifier les détails de votre visite. Attention : certaines modifications
+                peuvent nécessiter une validation.</p>
         </div>
-    <div class="offcanvas-body">
-        <form [formGroup]="formGroup" (ngSubmit)="onSubmitUpdate()">
-           <div class="row">
-                <form [formGroup]="formGroupPosFormItem" (ngSubmit)="onSubmitItem()"
-                    style="background-color: rgba(10, 128, 179, 0.045);">
-                    <div class="row align-items-center">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="col-form-label" for="text">Brand <span
-                                        class="text-danger">*</span></label>
-                                <input #brand_uuid type="text" matInput [matAutocomplete]="autopos3"
-                                    placeholder="Selectionner le brand" class="form-control" (input)="getAllBrand()"
-                                    (focus)="getAllBrand()">
-                                @if (isloadBrand) {
-                                <div class="d-flex align-items-center">
-                                    <strong role="status">Loading...</strong>
-                                    <div class="spinner-border ms-auto" aria-hidden="true"></div>
-                                </div>
-                                }
-                                <mat-autocomplete requireSelection #autopos3="matAutocomplete"
-                                    (optionSelected)="optionSelectedBrand($event)" [displayWith]="displayFnBrand">
-                                    @for (item of filteredOptionBrand; track item.uuid) {
-                                    <mat-option [value]="item">{{item.name}}</mat-option>
-                                    }
-                                </mat-autocomplete>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="col-form-label" for="text">Présence des fardes <span
-                                        class="text-danger">*</span></label>
-                                <input type="number" class="form-control" formControlName="number_farde" required />
-                                <mat-error *ngIf="formGroupPosFormItem.controls['number_farde'].hasError('required')">
-                                    Ce champs est obligatoire
-                                </mat-error>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="col-form-label" for="text">Ventes <span
-                                        class="text-danger">*</span></label>
-                                <input type="number" class="form-control" formControlName="sold" required />
-                                <mat-error *ngIf="formGroupPosFormItem.controls['sold'].hasError('required')">
-                                    Ce champs est obligatoire
-                                </mat-error>
-                            </div>
-                        </div>
-                        <div class="col-md-6 d-flex align-items-end mb-3">
-                            <button type="submit" class="btn btn-success">
-                                <i class="ti ti-check me-2"></i>
-                                Ajouter
-                            </button>
-                        </div>
-                    </div>
-                </form>
 
-                <!-- Pos List -->
-                <div class="task-wrapper">
-                    <div class="row">
-                        @if (isLoadingPosFormItem) {
-                        <div class="d-flex align-items-center justify-content-center w-100">
-                            <strong role="status">Loading...</strong>
-                            <div class="spinner-border ms-2" aria-hidden="true"></div>
+        <form [formGroup]="formGroup" (ngSubmit)="onSubmitUpdate()">
+            <div class="row">
+                <!-- Section d'ajout des marques -->
+                <div class="col-12 mb-4">
+                    <form [formGroup]="formGroupPosFormItem" (ngSubmit)="onSubmitItem()"
+                        style="background-color: rgba(10, 128, 179, 0.045);">
+                        <div class="row align-items-center">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="col-form-label" for="text">Brand <span
+                                            class="text-danger">*</span></label>
+                                    <input #brand_uuid type="text" matInput [matAutocomplete]="autopos3"
+                                        placeholder="Selectionner le brand" class="form-control" (input)="getAllBrand()"
+                                        (focus)="getAllBrand()">
+                                    @if (isloadBrand) {
+                                    <div class="d-flex align-items-center">
+                                        <strong role="status">Loading...</strong>
+                                        <div class="spinner-border ms-auto" aria-hidden="true"></div>
+                                    </div>
+                                    }
+                                    <mat-autocomplete requireSelection #autopos3="matAutocomplete"
+                                        (optionSelected)="optionSelectedBrand($event)" [displayWith]="displayFnBrand">
+                                        @for (item of filteredOptionBrand; track item.uuid) {
+                                        <mat-option [value]="item">{{item.name}}</mat-option>
+                                        }
+                                    </mat-autocomplete>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="col-form-label" for="text">Présence des fardes <span
+                                            class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" formControlName="number_farde" required />
+                                    <mat-error
+                                        *ngIf="formGroupPosFormItem.controls['number_farde'].hasError('required')">
+                                        Ce champs est obligatoire
+                                    </mat-error>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="col-form-label" for="text">Ventes <span
+                                            class="text-danger">*</span></label>
+                                    <input type="number" class="form-control" formControlName="sold" required />
+                                    <mat-error *ngIf="formGroupPosFormItem.controls['sold'].hasError('required')">
+                                        Ce champs est obligatoire
+                                    </mat-error>
+                                </div>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end mb-3">
+                                <button type="submit" class="btn btn-success">
+                                    <i class="ti ti-check me-2"></i>
+                                    Ajouter
+                                </button>
+                            </div>
                         </div>
-                        } @else {
-                        @for (item of dataListPosFormItem; track $index) {
-                        <div class="col-md-4 mb-3">
-                            <div class="card task-card">
-                                <div class="card-body">
-                                    <div class="task-info d-flex align-items-center justify-content-between">
-                                        <div>
-                                            <p class="mb-1"><strong>
-                                                    Brand:</strong> {{ item.Brand!.name }}
-                                            </p>
-                                            <p class="mb-1"><strong>
-                                                    Nombre de Farde:</strong> {{ item.number_farde }}
-                                            </p>
-                                            <p *ngIf="item.sold > 0" class="mb-1">
-                                                <strong>{{ item.sold > 1 ? 'Ventes:' : 'Vente:' }}</strong>
-                                                {{ item.sold }}
-                                            </p>
+                    </form>
+                </div>
+
+                <!-- Liste des marques ajoutées -->
+                <div class="col-12 mb-4">
+                    <div class="task-wrapper">
+                        <div class="row">
+                            @if (isLoadingPosFormItem) {
+                            <div class="d-flex align-items-center justify-content-center w-100">
+                                <strong role="status">Loading...</strong>
+                                <div class="spinner-border ms-2" aria-hidden="true"></div>
+                            </div>
+                            } @else {
+                            @for (item of dataListPosFormItem; track $index) {
+                            <div class="col-md-4 mb-3">
+                                <div class="card task-card">
+                                    <div class="card-body">
+                                        <div class="task-info d-flex align-items-center justify-content-between">
+                                            <div>
+                                                <p class="mb-1"><strong>
+                                                        Brand:</strong> {{ item.Brand!.name }}
+                                                </p>
+                                                <p class="mb-1"><strong>
+                                                        Nombre de Farde:</strong> {{ item.number_farde }}
+                                                </p>
+                                                <p *ngIf="item.sold > 0" class="mb-1">
+                                                    <strong>{{ item.sold > 1 ? 'Ventes:' : 'Vente:' }}</strong>
+                                                    {{ item.sold }}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div class="task-actions mt-3 text-end">
+                                            <a href="javascript:void(0);" (click)="deletePosFormItem(item.uuid!)"
+                                                class="text-danger">
+                                                <i class="ti ti-trash"></i> Delete
+                                            </a>
                                         </div>
                                     </div>
-                                    <div class="task-actions mt-3 text-end">
-                                        <a href="javascript:void(0);" (click)="deletePosFormItem(item.uuid!)"
-                                            class="text-danger">
-                                            <i class="ti ti-trash"></i> Delete
-                                        </a>
-                                    </div>
                                 </div>
                             </div>
+                            }
+                            }
                         </div>
-                        }
-                        }
                     </div>
                 </div>
 
@@ -1032,9 +990,8 @@
                     <div class="mb-3">
                         <label class="col-form-label d-flex align-items-center" for="price">
                             Coût de la visite <span class="text-danger">*</span>
-                            <button type="button" class="btn btn-link btn-sm p-0 ms-2" 
-                                    data-bs-toggle="tooltip" 
-                                    title="Modifiez le coût si le type de visite a changé">
+                            <button type="button" class="btn btn-link btn-sm p-0 ms-2" data-bs-toggle="tooltip"
+                                title="Modifiez le coût si le type de visite a changé">
                                 <i class="ti ti-help-circle text-primary"></i>
                             </button>
                         </label>
@@ -1051,16 +1008,17 @@
                     <div class="mb-3">
                         <label class="col-form-label d-flex align-items-center" for="text">
                             Commentaires et observations <span class="text-danger">*</span>
-                            <button type="button" class="btn btn-link btn-sm p-0 ms-2" 
-                                    data-bs-toggle="tooltip" 
-                                    title="Mettez à jour vos observations sur cette visite">
+                            <button type="button" class="btn btn-link btn-sm p-0 ms-2" data-bs-toggle="tooltip"
+                                title="Mettez à jour vos observations sur cette visite">
                                 <i class="ti ti-help-circle text-primary"></i>
                             </button>
                         </label>
-                        <textarea class="form-control" formControlName="comment" rows="4" 
-                                placeholder="💬 Mettez à jour vos observations : nouvelles informations, changements observés..." required></textarea>
+                        <textarea class="form-control" formControlName="comment" rows="4"
+                            placeholder="💬 Mettez à jour vos observations : nouvelles informations, changements observés..."
+                            required></textarea>
                         <small class="text-muted">
-                            💡 Ajoutez toute nouvelle information ou modification observée depuis votre première visite
+                            💡 Ajoutez toute nouvelle information ou modification observée depuis votre première
+                            visite
                         </small>
                         <mat-error *ngIf="formGroup.controls['comment'].hasError('required')">
                             <i class="ti ti-alert-circle me-1"></i>Veuillez ajouter vos commentaires
@@ -1068,10 +1026,12 @@
                     </div>
                 </div>
             </div>
+
             <!-- Alerte de modification -->
             <div class="alert alert-info">
                 <h6><i class="ti ti-info-circle me-2"></i>Note importante</h6>
-                <p class="mb-0">Les modifications apportées seront sauvegardées et pourront être consultées dans l'historique des rapports.</p>
+                <p class="mb-0">Les modifications apportées seront sauvegardées et pourront être consultées dans
+                    l'historique des rapports.</p>
             </div>
 
             <div class="d-flex align-items-center justify-content-end">
@@ -1095,7 +1055,6 @@
             </div>
         </form>
     </div>
-
 </div>
 <!-- /Edit Contracts -->
 
@@ -1124,9 +1083,79 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <p>
+                                        <strong>Pays :</strong><br>
+                                        <span *ngIf="dataItem.Country?.name; else noCountry">
+                                            {{dataItem.Country?.name}}
+                                        </span>
+                                        <ng-template #noCountry>
+                                            <small>Pas disponible</small>
+                                        </ng-template>
+                                    </p>
+                                </div>
+                                <div class="mb-3">
+                                    <p>
+                                        <strong>Area :</strong><br>
+                                        <span *ngIf="dataItem.Area?.name; else noArea">
+                                            {{dataItem.Area?.name}}
+                                        </span>
+                                        <ng-template #noArea>
+                                            <small>Pas disponible</small>
+                                        </ng-template>
+                                    </p>
+                                </div>
+                                <div class="mb-3">
+                                    <p>
+                                        <strong>Commune(Quartier) :</strong><br>
+                                        <span *ngIf="dataItem.Commune?.name; else noCommune">
+                                            {{ dataItem.Commune?.name }}
+                                        </span>
+                                        <ng-template #noCommune>
+                                            <small>Pas disponible</small>
+                                        </ng-template>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <p>
+                                        <strong>Province :</strong><br>
+                                        <span *ngIf="dataItem.Province?.name; else noProvince">
+                                            {{dataItem.Province?.name}}
+                                        </span>
+                                        <ng-template #noProvince>
+                                            <small>Pas disponible</small>
+                                        </ng-template>
+                                    </p>
+                                </div>
+                                <div class="mb-3">
+                                    <p>
+                                        <strong>Sous Area :</strong><br>
+                                        <span *ngIf="dataItem.SubArea?.name; else noSubArea">
+                                            {{dataItem.SubArea?.name}}
+                                        </span>
+                                        <ng-template #noSubArea>
+                                            <small>Pas disponible</small>
+                                        </ng-template>
+                                    </p>
+                                </div>
+                                <div class="mb-3">
+                                    <p>
+                                        <strong>Date de soumition :</strong><br>
+                                        <span>
+                                            {{ dataItem.CreatedAt | date: 'dd/MM/yyyy HH:mm' }}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <p>
                                         <strong>🏪 Point de vente visité :</strong><br>
-                                        <span class="text-primary">{{dataItem.Pos?.name || 'Non renseigné'}} 
-                                        <span *ngIf="dataItem.Pos?.shop">| {{dataItem.Pos?.shop}}</span></span>
+                                        <span class="text-primary">{{dataItem.Pos?.name || 'Non renseigné'}}
+                                            <span *ngIf="dataItem.Pos?.shop">| {{dataItem.Pos?.shop}}</span></span>
                                     </p>
                                 </div>
                             </div>
@@ -1134,7 +1163,7 @@
                                 <div class="mb-3">
                                     <p>
                                         <strong>💰 Coût de la visite :</strong><br>
-                                        <span class="badge bg-success fs-6">{{ dataItem.price || '--' }} FC</span>
+                                        <span class="badge bg-success fs-6">{{ dataItem.price || '0' }} FC</span>
                                     </p>
                                 </div>
                             </div>
@@ -1152,7 +1181,8 @@
                     <div class="card-body">
                         <div class="task-wrapper">
                             <div class="row">
-                                <div *ngIf="isLoadingPosFormItem" class="d-flex align-items-center justify-content-center w-100">
+                                <div *ngIf="isLoadingPosFormItem"
+                                    class="d-flex align-items-center justify-content-center w-100">
                                     <strong role="status">Chargement...</strong>
                                     <div class="spinner-border ms-2" aria-hidden="true"></div>
                                 </div>
@@ -1161,14 +1191,19 @@
                                         <div class="card task-card border-success">
                                             <div class="card-body">
                                                 <div class="task-info">
-                                                    <p class="mb-2"><strong>🏷️ Marque :</strong> {{ item.Brand?.name }}</p>
-                                                    <p class="mb-2"><strong>📦 Cartons/Fardes présents :</strong> {{ item.number_farde }}</p>
+                                                    <p class="mb-2"><strong>🏷️ Marque :</strong>
+                                                        {{ item.Brand?.name }}
+                                                    </p>
+                                                    <p class="mb-2"><strong>📦 Fardes :</strong>
+                                                        {{ item.number_farde }}
+                                                    </p>
                                                     <p *ngIf="item.sold > 0" class="mb-0 text-success">
-                                                        <strong>💰 {{ item.sold > 1 ? 'Ventes réalisées :' : 'Vente réalisée :' }}</strong>
+                                                        <strong>💰 {{ item.sold > 1 ? 'Ventes :' : 'Vente :' }}
+                                                        </strong>
                                                         {{ item.sold }}
                                                     </p>
                                                     <p *ngIf="item.sold === 0" class="mb-0 text-muted">
-                                                        <strong>Aucune vente aujourd'hui</strong>
+                                                        <strong>Aucune vente</strong>
                                                     </p>
                                                 </div>
                                             </div>
@@ -1194,12 +1229,13 @@
                         <h6 class="mb-0">💬 Commentaires et observations</h6>
                     </div>
                     <div class="card-body">
-                        <p class="mb-0" style="white-space: pre-wrap;">{{ dataItem.comment || 'Aucun commentaire ajouté.' }}</p>
+                        <p class="mb-0" style="white-space: pre-wrap;">{{ dataItem.comment || 'Aucun commentaire
+                            ajouté.' }}</p>
                     </div>
                 </div>
             </div>
         </div>
-        
+
         <ng-template #noDataTemplate>
             <div class="alert alert-warning">
                 <h6><i class="ti ti-alert-triangle me-2"></i>Aucune donnée disponible</h6>

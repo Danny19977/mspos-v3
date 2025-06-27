@@ -1,0 +1,69 @@
+// Optimisation mobile pour l'offcanvas
+.offcanvas-large {
+  @media (max-width: 768px) {
+    width: 100% !important;
+    
+    .offcanvas-body {
+      padding: 1rem 0.75rem;
+      
+      .form-control, .form-select {
+        font-size: 16px; // Évite le zoom automatique sur iOS
+        padding: 0.5rem 0.75rem;
+      }
+      
+      .col-md-6 {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
+      
+      .mb-3 {
+        margin-bottom: 1rem;
+      }
+      
+      .col-form-label {
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+      }
+    }
+    
+    .offcanvas-header {
+      padding: 1rem 0.75rem;
+      
+      h4 {
+        font-size: 1.1rem;
+      }
+    }
+    
+    .d-flex.justify-content-end {
+      padding: 0.75rem;
+      
+      .btn {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+      }
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .offcanvas-body {
+      .row {
+        margin-left: -0.25rem;
+        margin-right: -0.25rem;
+      }
+      
+      .col-md-6 {
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+      }
+    }
+  }
+}
+
+// Éviter le zoom sur les inputs iOS
+input[type="text"],
+input[type="tel"],
+input[type="email"],
+select,
+textarea {
+  font-size: 16px !important;
+}

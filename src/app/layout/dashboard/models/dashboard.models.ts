@@ -37,6 +37,13 @@ export interface GoogleMapModel {
     latitude: number;
     longitude: number;
     signature: string;
+    pos_name: string;
+    postype: string;
+    asm: string;
+    sup: string;
+    dr: string;
+    cyclo: string;
+    created_at: string;
 }
 
 

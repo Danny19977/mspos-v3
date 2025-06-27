@@ -1,0 +1,44 @@
+@if (isLoading) {
+<div class="text-center d-flex justify-content-center align-items-center">
+    <div class="spinner-border bs-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+</div>
+} @else {
+<google-map [height]="mapHeight" [width]="mapWidth" [center]="center" [zoom]="zoom">
+    <map-marker *ngFor="let marker of markers" #markerRef="mapMarker" [position]="marker.position" [title]="marker.name"
+        [label]="marker.label" (mapClick)="openInfoWindow(marker, markerRef)"></map-marker>
+
+    <map-info-window #infoWindow>
+        <div *ngIf="selectedMarker" class="info-window-content">
+            <button (click)="closeInfoWindowManual()" class="info-window-close-btn" aria-label="Fermer">&times;</button>
+            <h4>{{ selectedMarker.name }}</h4>
+
+            <p><strong>Categorie:</strong> {{ selectedMarker.category }}</p>
+
+            <p>
+                <strong>ASM:</strong> {{ selectedMarker.asm }}
+            </p>
+            <p>
+                <strong>Sup:</strong> {{ selectedMarker.sup }}
+            </p>
+            <p>
+                <strong>DR:</strong> {{ selectedMarker.dr }}
+            </p>
+            <p>
+                <strong>Cyclo:</strong> {{ selectedMarker.cyclo }}
+            </p>
+            <p>
+                <strong>Date:</strong> {{ selectedMarker.date }}
+            </p>
+            <p>
+                <strong>Fait par:</strong> {{ selectedMarker.signature }}
+            </p>
+            <!-- <img *ngIf="selectedMarker.image_url" [src]="selectedMarker.image_url" alt="Image du lieu" style="max-width: 100%; height: auto; margin-top: 10px;"> -->
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4cd.png" alt="Lieu"
+                style="width: 32px; height: 32px; margin-top: 10px;">
+            <br>
+        </div>
+    </map-info-window>
+</google-map>
+}

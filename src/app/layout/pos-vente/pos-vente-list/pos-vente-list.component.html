@@ -22,302 +22,616 @@
                 <!-- /Page Header -->
 
 
-                @if (currentUser) {
-                <div class="card">
-                    <div class="card-header">
-                        <!-- Search -->
-                        <div class="row align-items-center">
-                            <div class="col-sm-4">
-                                <div class="icon-form mb-3 mb-sm-0">
-                                    <span class="form-icon"><i class="ti ti-search"></i></span>
-                                    <!-- <input type="text" (keyup)="applyFilter($event)" class="form-control"
+            @if (currentUser) {
+            <div class="card">
+                <div class="card-header">
+                    <!-- Search -->
+                    <div class="row align-items-center">
+                        <div class="col-sm-4">
+                            <div class="icon-form mb-3 mb-sm-0">
+                                <span class="form-icon"><i class="ti ti-search"></i></span>
+                                <!-- <input type="text" (keyup)="applyFilter($event)" class="form-control"
                                             placeholder="Ex. jean kasongo" #input /> -->
-                                    <input type="text" #input [(ngModel)]="search"
-                                        (ngModelChange)="onSearchChange($event)" class="form-control"
-                                        placeholder="Ex. Jean paul, Shop, ...">
-                                </div>
+                                <input type="text" #input [(ngModel)]="search" (ngModelChange)="onSearchChange($event)"
+                                    class="form-control" placeholder="Ex. Jean paul, Shop, ...">
                             </div>
-                            <div class="col-sm-8">
-                                <div class="d-flex align-items-center flex-wrap row-gap-2 justify-content-sm-end">
-                                    <div class="dropdown me-2">
-                                        <a href="javascript:void(0);" class="dropdown-toggle"
-                                            data-bs-toggle="dropdown"><i
-                                                class="ti ti-package-export me-2"></i>Export</a>
-                                        <div class="dropdown-menu  dropdown-menu-end">
-                                            <ul>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item"><i
-                                                            class="ti ti-file-type-pdf text-danger me-1"></i>Export as
-                                                        PDF</a>
-                                                </li>
-                                                <li>
-                                                    <a href="javascript:void(0);" class="dropdown-item"><i
-                                                            class="ti ti-file-type-xls text-green me-1"></i>Export as
-                                                        Excel </a>
-                                                </li>
-                                            </ul>
+                        </div>
+                        <div class="col-sm-8">
+                            <div class="d-flex align-items-center flex-wrap row-gap-2 justify-content-sm-end">
+                                <div class="dropdown me-2">
+                                    <a href="javascript:void(0);" class="dropdown-toggle" data-bs-toggle="dropdown"><i
+                                            class="ti ti-package-export me-2"></i>Export</a>
+                                    <div class="dropdown-menu  dropdown-menu-end">
+                                        <ul>
+                                            <li>
+                                                <a href="javascript:void(0);" class="dropdown-item"><i
+                                                        class="ti ti-file-type-xls text-green me-1"></i>Export as
+                                                    Excel </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+
+                                @if(currentUser.permission === 'ALL' ||
+                                currentUser.permission === 'VAE' ||
+                                currentUser.permission === 'VA') {
+                                <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="offcanvas"
+                                    data-bs-target="#offcanvas_add">
+                                    <i class="ti ti-square-rounded-plus me-2"></i>
+                                    Add New POS
+                                </a>
+                                }
+                            </div>
+
+                        </div>
+                    </div>
+                    <!-- /Search -->
+
+                    <!-- Filtres avancés -->
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <button type="button" class="btn btn-outline-primary btn-sm"
+                                    (click)="toggleAdvancedFilters()">
+                                    <i class="ti ti-filter me-2"></i>
+                                    {{ showAdvancedFilters ? 'Masquer' : 'Afficher' }} les filtres avancés
+                                </button>
+                                @if (showAdvancedFilters) {
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                    (click)="clearAllFilters()">
+                                    <i class="ti ti-x me-2"></i>
+                                    Effacer tous les filtres
+                                </button>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (showAdvancedFilters) {
+                    <div class="advanced-filters-panel mt-3">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">
+                                    <i class="ti ti-filter me-2"></i>
+                                    Filtres avancés
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row g-3">
+                                    <!-- Filtres géographiques -->
+                                    <div class="col-md-12">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="ti ti-map me-2"></i>
+                                            Filtres géographiques
+                                        </h6>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label class="form-label">Pays</label>
+                                        <select class="form-select" [(ngModel)]="filters.country"
+                                            (ngModelChange)="applyFilters()">
+                                            <option value="">Tous les pays</option>
+                                            @for (country of uniqueCountries; track country) {
+                                            <option [value]="country">{{ country }}</option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label class="form-label">Province</label>
+                                        <select class="form-select" [(ngModel)]="filters.province"
+                                            (ngModelChange)="applyFilters()">
+                                            <option value="">Toutes les provinces</option>
+                                            @for (province of uniqueProvinces; track province) {
+                                            <option [value]="province">{{ province }}</option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label class="form-label">Area</label>
+                                        <select class="form-select" [(ngModel)]="filters.area"
+                                            (ngModelChange)="applyFilters()">
+                                            <option value="">Toutes les areas</option>
+                                            @for (area of uniqueAreas; track area) {
+                                            <option [value]="area">{{ area }}</option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Sub-area</label>
+                                        <select class="form-select" [(ngModel)]="filters.subarea"
+                                            (ngModelChange)="applyFilters()">
+                                            <option value="">Toutes les sub-areas</option>
+                                            @for (subarea of uniqueSubAreas; track subarea) {
+                                            <option [value]="subarea">{{ subarea }}</option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Commune</label>
+                                        <select class="form-select" [(ngModel)]="filters.commune"
+                                            (ngModelChange)="applyFilters()">
+                                            <option value="">Toutes les communes</option>
+                                            @for (commune of uniqueCommunes; track commune) {
+                                            <option [value]="commune">{{ commune }}</option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <!-- Filtres spécifiques POS -->
+                                    <div class="col-md-12 mt-4">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="ti ti-building-store me-2"></i>
+                                            Filtres POS
+                                        </h6>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label class="form-label">Type POS</label>
+                                        <select class="form-select" [(ngModel)]="filters.postype"
+                                            (ngModelChange)="applyFilters()">
+                                            <option value="">Tous les types</option>
+                                            @for (type of uniquePosTypes; track type) {
+                                            <option [value]="type">{{ type }}</option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label class="form-label">Statut</label>
+                                        <select class="form-select" [(ngModel)]="filters.status"
+                                            (ngModelChange)="applyFilters()">
+                                            <option value="">Tous les statuts</option>
+                                            <option value="true">Actif</option>
+                                            <option value="false">Inactif</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label class="form-label">Shop</label>
+                                        <select class="form-select" [(ngModel)]="filters.shop"
+                                            (ngModelChange)="applyFilters()">
+                                            <option value="">Tous les shops</option>
+                                            @for (shop of uniqueShops; track shop) {
+                                            <option [value]="shop">{{ shop }}</option>
+                                            }
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label class="form-label">Synchronisation</label>
+                                        <select class="form-select" [(ngModel)]="filters.sync"
+                                            (ngModelChange)="applyFilters()">
+                                            <option value="">Tous</option>
+                                            <option value="true">Synchronisé</option>
+                                            <option value="false">Non synchronisé</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label class="form-label">Nb PosForm</label>
+                                        <select class="form-select" [(ngModel)]="filters.posformsCount"
+                                            (ngModelChange)="applyFilters()">
+                                            <option value="">Tous</option>
+                                            <option value="0">0 PosForm</option>
+                                            <option value="1-5">1-5 PosForm</option>
+                                            <option value="6-10">6-10 PosForm</option>
+                                            <option value="11+">11+ PosForm</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label class="form-label">Nom POS</label>
+                                        <input type="text" class="form-control" [(ngModel)]="filters.name"
+                                            (ngModelChange)="applyFilters()" placeholder="Rechercher par nom...">
+                                    </div>
+
+                                    <!-- Filtres hiérarchie commerciale -->
+                                    <div class="col-md-12 mt-4">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="ti ti-users me-2"></i>
+                                            Hiérarchie commerciale
+                                        </h6>
+                                    </div>
+
+                                    <!-- ASM -->
+                                    <div class="col-md-3">
+                                        <label class="form-label">ASM</label>
+                                        <div class="row g-2">
+                                            <div class="col-7">
+                                                <select class="form-select" [(ngModel)]="filters.asm"
+                                                    (ngModelChange)="applyFilters()">
+                                                    <option value="">Tous les ASM</option>
+                                                    @for (asm of filteredAsms; track asm) {
+                                                    <option [value]="asm">{{ asm }}</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                            <div class="col-5">
+                                                <input type="text" class="form-control form-control-sm"
+                                                    [(ngModel)]="filters.asmSearch" (ngModelChange)="filterAsms()"
+                                                    placeholder="Rechercher ASM...">
+                                            </div>
                                         </div>
                                     </div>
 
-                                    @if(currentUser.permission === 'ALL' ||
-                                    currentUser.permission === 'VAE' ||
-                                    currentUser.permission === 'VA') {
-                                    <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="offcanvas"
-                                        data-bs-target="#offcanvas_add">
-                                        <i class="ti ti-square-rounded-plus me-2"></i>
-                                        Add New POS
-                                    </a>
-                                    }
-                                </div>
+                                    <!-- Supervisor -->
+                                    <div class="col-md-3">
+                                        <label class="form-label">Supervisor</label>
+                                        <div class="row g-2">
+                                            <div class="col-7">
+                                                <select class="form-select" [(ngModel)]="filters.supervisor"
+                                                    (ngModelChange)="applyFilters()">
+                                                    <option value="">Tous les Supervisors</option>
+                                                    @for (sup of filteredSupervisors; track sup) {
+                                                    <option [value]="sup">{{ sup }}</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                            <div class="col-5">
+                                                <input type="text" class="form-control form-control-sm"
+                                                    [(ngModel)]="filters.supervisorSearch"
+                                                    (ngModelChange)="filterSupervisors()"
+                                                    placeholder="Rechercher Sup...">
+                                            </div>
+                                        </div>
+                                    </div>
 
+                                    <!-- DR -->
+                                    <div class="col-md-3">
+                                        <label class="form-label">DR</label>
+                                        <div class="row g-2">
+                                            <div class="col-7">
+                                                <select class="form-select" [(ngModel)]="filters.dr"
+                                                    (ngModelChange)="applyFilters()">
+                                                    <option value="">Tous les DR</option>
+                                                    @for (dr of filteredDrs; track dr) {
+                                                    <option [value]="dr">{{ dr }}</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                            <div class="col-5">
+                                                <input type="text" class="form-control form-control-sm"
+                                                    [(ngModel)]="filters.drSearch" (ngModelChange)="filterDrs()"
+                                                    placeholder="Rechercher DR...">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Cyclo -->
+                                    <div class="col-md-3">
+                                        <label class="form-label">Cyclo</label>
+                                        <div class="row g-2">
+                                            <div class="col-7">
+                                                <select class="form-select" [(ngModel)]="filters.cyclo"
+                                                    (ngModelChange)="applyFilters()">
+                                                    <option value="">Tous les Cyclos</option>
+                                                    @for (cyclo of filteredCyclos; track cyclo) {
+                                                    <option [value]="cyclo">{{ cyclo }}</option>
+                                                    }
+                                                </select>
+                                            </div>
+                                            <div class="col-5">
+                                                <input type="text" class="form-control form-control-sm"
+                                                    [(ngModel)]="filters.cycloSearch" (ngModelChange)="filterCyclos()"
+                                                    placeholder="Rechercher Cyclo...">
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Filtres texte additionnels -->
+                                    <div class="col-md-12 mt-4">
+                                        <h6 class="text-primary mb-3">
+                                            <i class="ti ti-search me-2"></i>
+                                            Recherche spécifique
+                                        </h6>
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label class="form-label">Gérant</label>
+                                        <input type="text" class="form-control" [(ngModel)]="filters.gerant"
+                                            (ngModelChange)="applyFilters()" placeholder="Rechercher gérant...">
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label class="form-label">Téléphone</label>
+                                        <input type="text" class="form-control" [(ngModel)]="filters.telephone"
+                                            (ngModelChange)="applyFilters()" placeholder="Rechercher téléphone...">
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label class="form-label">Quartier</label>
+                                        <input type="text" class="form-control" [(ngModel)]="filters.quartier"
+                                            (ngModelChange)="applyFilters()" placeholder="Rechercher quartier...">
+                                    </div>
+
+                                    <div class="col-md-2">
+                                        <label class="form-label">Avenue</label>
+                                        <input type="text" class="form-control" [(ngModel)]="filters.avenue"
+                                            (ngModelChange)="applyFilters()" placeholder="Rechercher avenue...">
+                                    </div>
+
+                                    <div class="col-md-4">
+                                        <label class="form-label">Référence</label>
+                                        <input type="text" class="form-control" [(ngModel)]="filters.reference"
+                                            (ngModelChange)="applyFilters()" placeholder="Rechercher référence...">
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label class="form-label">Créé par (Nom complet)</label>
+                                        <input type="text" class="form-control" [(ngModel)]="filters.signature"
+                                            (ngModelChange)="applyFilters()" placeholder="Rechercher par nom complet..."
+                                            list="signatureList">
+                                        <datalist id="signatureList">
+                                            @for (signature of uniqueSignatures; track signature) {
+                                            <option [value]="signature">{{ signature }}</option>
+                                            }
+                                        </datalist>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <!-- /Search -->
                     </div>
-                    <div class="card-body">
-                        <div class="table-responsive custom-table">
-                            <table mat-table [dataSource]="dataSource" matSort (matSortChange)="sortData($event)"
-                                class="mat-elevation-z8">
+                    }
+                    <!-- /Filtres avancés -->
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive custom-table">
+                        <table mat-table [dataSource]="dataSource" matSort (matSortChange)="sortData($event)"
+                            class="mat-elevation-z8">
 
-                                <!-- Status Column -->
-                                <ng-container matColumnDef="status">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        <span class="badge badge-pill badge-status" [ngClass]="{
+                            <!-- Status Column -->
+                            <ng-container matColumnDef="status">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+                                <td mat-cell *matCellDef="let data">
+                                    <span class="badge badge-pill badge-status" [ngClass]="{
                                         'bg-success': data.status,
                                         'bg-danger': !data.status
                                       }">
-                                            {{ data.status ? 'Active' : 'Inactive' }}
-                                        </span>
-                                    </td>
-                                </ng-container>
+                                        {{ data.status ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </td>
+                            </ng-container>
 
-                                <!-- Postype Column -->
-                                <ng-container matColumnDef="postype">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Postype</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
-                                            {{ data.postype }}
-                                        </a>
-                                    </td>
-                                </ng-container>
+                            <!-- Postype Column -->
+                            <ng-container matColumnDef="postype">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Postype</th>
+                                <td mat-cell *matCellDef="let data">
+                                    <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                        {{ data.postype }}
+                                    </a>
+                                </td>
+                            </ng-container>
 
-                                <!-- Country Column -->
-                                <ng-container matColumnDef="country">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Pays</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
-                                            {{ data.Country?.name }}
-                                        </a>
-                                    </td>
-                                </ng-container>
+                            <!-- Country Column -->
+                            <ng-container matColumnDef="country">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Pays</th>
+                                <td mat-cell *matCellDef="let data">
+                                    <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                        {{ data.Country?.name }}
+                                    </a>
+                                </td>
+                            </ng-container>
 
-                                <!-- Province Column -->
-                                <ng-container matColumnDef="province">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Province</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
-                                            {{ data.Province?.name }}
-                                        </a>
-                                    </td>
-                                </ng-container>
+                            <!-- Province Column -->
+                            <ng-container matColumnDef="province">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Province</th>
+                                <td mat-cell *matCellDef="let data">
+                                    <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                        {{ data.Province?.name }}
+                                    </a>
+                                </td>
+                            </ng-container>
 
-                                <!-- Area Column -->
-                                <ng-container matColumnDef="area">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Area</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
-                                            {{ data.Area?.name }}
-                                        </a>
-                                    </td>
-                                </ng-container>
+                            <!-- Area Column -->
+                            <ng-container matColumnDef="area">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Area</th>
+                                <td mat-cell *matCellDef="let data">
+                                    <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                        {{ data.Area?.name }}
+                                    </a>
+                                </td>
+                            </ng-container>
 
-                                <!-- Subarea Column -->
-                                <ng-container matColumnDef="subarea">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Subarea</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
-                                            {{ data.SubArea?.name }}
-                                        </a>
-                                    </td>
-                                </ng-container>
+                            <!-- Subarea Column -->
+                            <ng-container matColumnDef="subarea">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Subarea</th>
+                                <td mat-cell *matCellDef="let data">
+                                    <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                        {{ data.SubArea?.name }}
+                                    </a>
+                                </td>
+                            </ng-container>
 
-                                <!-- Commune Column -->
-                                <ng-container matColumnDef="commune">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Commune</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
-                                            {{ data.Commune?.name }}
-                                        </a>
-                                    </td>
-                                </ng-container>
+                            <!-- Commune Column -->
+                            <ng-container matColumnDef="commune">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Commune</th>
+                                <td mat-cell *matCellDef="let data">
+                                    <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                        {{ data.Commune?.name }}
+                                    </a>
+                                </td>
+                            </ng-container>
 
-                                <!-- Name Column -->
-                                <ng-container matColumnDef="name">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Nom</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
-                                            {{ data.name }}
-                                        </a>
-                                    </td>
-                                </ng-container>
+                            <!-- Name Column -->
+                            <ng-container matColumnDef="name">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Nom</th>
+                                <td mat-cell *matCellDef="let data">
+                                    <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                        {{ data.name }}
+                                    </a>
+                                </td>
+                            </ng-container>
 
-                                <!-- Shop Column -->
-                                <ng-container matColumnDef="shop">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Shop</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
-                                            {{ data.shop }}
-                                        </a>
-                                    </td>
-                                </ng-container>
+                            <!-- Shop Column -->
+                            <ng-container matColumnDef="shop">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Shop</th>
+                                <td mat-cell *matCellDef="let data">
+                                    <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                        {{ data.shop }}
+                                    </a>
+                                </td>
+                            </ng-container>
 
-                                <!-- Gérant Column -->
-                                <ng-container matColumnDef="gerant">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Gérant</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
-                                            {{ data.gerant }}
-                                        </a>
-                                    </td>
-                                </ng-container>
+                            <!-- Gérant Column -->
+                            <ng-container matColumnDef="gerant">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Gérant</th>
+                                <td mat-cell *matCellDef="let data">
+                                    <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                        {{ data.gerant }}
+                                    </a>
+                                </td>
+                            </ng-container>
 
-                                <!-- Quartier Column -->
-                                <ng-container matColumnDef="quartier">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Quartier</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
-                                            {{ data.quartier }}
-                                        </a>
-                                    </td>
-                                </ng-container>
+                            <!-- Quartier Column -->
+                            <ng-container matColumnDef="quartier">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Quartier</th>
+                                <td mat-cell *matCellDef="let data">
+                                    <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                        {{ data.quartier }}
+                                    </a>
+                                </td>
+                            </ng-container>
 
-                                <!-- Avenue Column -->
-                                <ng-container matColumnDef="avenue">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Avenue</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
-                                            {{ data.avenue }}
-                                        </a>
-                                    </td>
-                                </ng-container>
+                            <!-- Avenue Column -->
+                            <ng-container matColumnDef="avenue">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Avenue</th>
+                                <td mat-cell *matCellDef="let data">
+                                    <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                        {{ data.avenue }}
+                                    </a>
+                                </td>
+                            </ng-container>
 
-                                <!-- Reference Column -->
-                                <ng-container matColumnDef="reference">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Reference</th>
-                                    <td mat-cell *matCellDef="let data">{{ data.reference }}</td>
-                                </ng-container>
+                            <!-- Reference Column -->
+                            <ng-container matColumnDef="reference">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Reference</th>
+                                <td mat-cell *matCellDef="let data">{{ data.reference }}</td>
+                            </ng-container>
 
-                                <!-- Téléphone Column -->
-                                <ng-container matColumnDef="telephone">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Téléphone</th>
-                                    <td mat-cell *matCellDef="let data">{{ data.telephone }}</td>
-                                </ng-container>
+                            <!-- Téléphone Column -->
+                            <ng-container matColumnDef="telephone">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Téléphone</th>
+                                <td mat-cell *matCellDef="let data">{{ data.telephone }}</td>
+                            </ng-container>
 
-                                <!-- ASM Column -->
-                                <ng-container matColumnDef="asm">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>ASM</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        {{ data.asm || '--' }}
-                                    </td>
-                                </ng-container>
+                            <!-- ASM Column -->
+                            <ng-container matColumnDef="asm">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>ASM</th>
+                                <td mat-cell *matCellDef="let data">
+                                    {{ data.asm || '--' }}
+                                </td>
+                            </ng-container>
 
-                                <!-- Supervisor Column -->
-                                <ng-container matColumnDef="sup">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Supervisor</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        {{ data.sup || '--' }}
-                                    </td>
-                                </ng-container>
+                            <!-- Supervisor Column -->
+                            <ng-container matColumnDef="sup">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Supervisor</th>
+                                <td mat-cell *matCellDef="let data">
+                                    {{ data.sup || '--' }}
+                                </td>
+                            </ng-container>
 
-                                <!-- DR Column -->
-                                <ng-container matColumnDef="dr">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>DR</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        {{ data.dr || '--' }}
-                                    </td>
-                                </ng-container>
+                            <!-- DR Column -->
+                            <ng-container matColumnDef="dr">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>DR</th>
+                                <td mat-cell *matCellDef="let data">
+                                    {{ data.dr || '--' }}
+                                </td>
+                            </ng-container>
 
-                                <!-- Cyclo Column -->
-                                <ng-container matColumnDef="cyclo">
-                                    <th mat-header-cell *matHeaderCellDef mat-sort-header>Cyclo</th>
-                                    <td mat-cell *matCellDef="let data">
-                                        {{ data.cyclo || '--' }}
-                                    </td>
-                                </ng-container>
+                            <!-- Cyclo Column -->
+                            <ng-container matColumnDef="cyclo">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Cyclo</th>
+                                <td mat-cell *matCellDef="let data">
+                                    {{ data.cyclo || '--' }}
+                                </td>
+                            </ng-container>
 
-                                <!-- posforms Column -->
-                                <ng-container matColumnDef="posforms">
-                                    <th mat-header-cell *matHeaderCellDef> Total Visites </th>
-                                    <td mat-cell *matCellDef="let element"
-                                        style="background-color: rgba(0, 255, 166, 0.31); font-size: larger; text-align: center;">
-                                        {{ getPosFormCount(element.PosForms) }}
-                                    </td>
-                                </ng-container>
+                            <!-- Fullname Column -->
+                            <ng-container matColumnDef="fullname">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>Créé par</th>
+                                <td mat-cell *matCellDef="let data">
+                                    <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
+                                        {{ data.signature || '--' }}
+                                    </a>
+                                </td>
+                            </ng-container>
 
-                                <!-- Action Column -->
-                                <ng-container matColumnDef="action">
-                                    <th mat-header-cell *matHeaderCellDef> Action </th>
-                                    <td mat-cell *matCellDef="let element" class="d-flex align-items-center">
-                                        @if(currentUser.permission === 'ALL' ||
-                                        currentUser.permission === 'VAE' ||
-                                        currentUser.permission === 'VED' ||
-                                        currentUser.permission === 'VE') {
-                                        <button mat-icon-button (click)="findValue(element.uuid)"
-                                            data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit">
-                                            <mat-icon class="text-blue">edit</mat-icon>
-                                        </button>
-                                        }
-                                        @if(currentUser.permission === 'ALL' ||
-                                        currentUser.permission === 'VED') {
-                                        <button mat-icon-button (click)="findValue(element.uuid)" data-bs-toggle="modal"
-                                            data-bs-target="#delete_contact">
-                                            <mat-icon class="text-danger">delete</mat-icon>
-                                        </button>
-                                        }
-                                    </td>
-                                </ng-container>
+                            <!-- posforms Column -->
+                            <ng-container matColumnDef="posforms">
+                                <th mat-header-cell *matHeaderCellDef> Total Visites </th>
+                                <td mat-cell *matCellDef="let element"
+                                    style="background-color: rgba(0, 255, 166, 0.31); font-size: larger; text-align: center;">
+                                    {{ getPosFormCount(element.PosForms) }}
+                                </td>
+                            </ng-container>
 
-                                <!-- Table Header and Rows -->
-                                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-
-                                <!-- Row shown when there is no matching data. -->
-                                <tr class="mat-row" *matNoDataRow>
-                                    @if (isLoadingData){
-                                    <button disabled class="btn btn-primary">
-                                        <div class="spinner-border" role="status">
-                                            <span class="visually-hidden">Loading...</span>
-                                        </div>
+                            <!-- Action Column -->
+                            <ng-container matColumnDef="action">
+                                <th mat-header-cell *matHeaderCellDef> Action </th>
+                                <td mat-cell *matCellDef="let element" class="d-flex align-items-center">
+                                    @if(currentUser.permission === 'ALL' ||
+                                    currentUser.permission === 'VAE' ||
+                                    currentUser.permission === 'VED' ||
+                                    currentUser.permission === 'VE') {
+                                    <button mat-icon-button (click)="findValue(element.uuid)" data-bs-toggle="offcanvas"
+                                        data-bs-target="#offcanvas_edit">
+                                        <mat-icon class="text-blue">edit</mat-icon>
                                     </button>
-                                    } @else {
-                                    <td class="mat-cell" colspan="4">Aucune donnée correspondante au filtre
-                                        "{{input.value}}"</td>
                                     }
-                                </tr>
-                            </table>
-                        </div>
+                                    @if(currentUser.permission === 'ALL' ||
+                                    currentUser.permission === 'VED') {
+                                    <button mat-icon-button (click)="findValue(element.uuid)" data-bs-toggle="modal"
+                                        data-bs-target="#delete_contact">
+                                        <mat-icon class="text-danger">delete</mat-icon>
+                                    </button>
+                                    }
+                                </td>
+                            </ng-container>
 
-                        <mat-paginator [length]="total_records" [pageSize]="page_size"
-                            [pageSizeOptions]="[15, 20, 30, 40, 50, 80, 100]" showFirstLastButtons
-                            (page)="onPageChange($event)" aria-label="Select page">
-                        </mat-paginator>
-                        <div class="row align-items-center">
-                            <div class="col-md-6">
-                                <div class="datatable-length"></div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="datatable-paginate"></div>
-                            </div>
-                        </div>
-                        <!-- /Projects List -->
+                            <!-- Table Header and Rows -->
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+                            <!-- Row shown when there is no matching data. -->
+                            <tr class="mat-row" *matNoDataRow>
+                                @if (isLoadingData){
+                                <button disabled class="btn btn-primary">
+                                    <div class="spinner-border" role="status">
+                                        <span class="visually-hidden">Loading...</span>
+                                    </div>
+                                </button>
+                                } @else {
+                                <td class="mat-cell" colspan="4">Aucune donnée correspondante au filtre
+                                    "{{input.value}}"</td>
+                                }
+                            </tr>
+                        </table>
                     </div>
+
+                    <mat-paginator [length]="total_records" [pageSize]="page_size"
+                        [pageSizeOptions]="[15, 20, 30, 40, 50, 80, 100]" showFirstLastButtons
+                        (page)="onPageChange($event)" aria-label="Select page">
+                    </mat-paginator>
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <div class="datatable-length"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="datatable-paginate"></div>
+                        </div>
+                    </div>
+                    <!-- /Projects List -->
                 </div>
-                }
             </div>
+            }
         </div>
     </div>
 </div>
+
 <!-- /Page Wrapper -->
 <!-- Add New Contracts -->
 <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add">

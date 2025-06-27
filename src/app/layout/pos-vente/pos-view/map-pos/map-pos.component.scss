@@ -1,0 +1,19 @@
+.map-pos-container {
+    padding: 20px;
+    height: 100vh; // Utilise toute la hauteur disponible
+    display: flex;
+    flex-direction: column;
+    
+    // S'assurer que le contenu de la carte peut grandir
+    .row {
+        flex-shrink: 0; // Les en-têtes ne rétrécissent pas
+    }
+    
+    // Le conteneur de la carte peut grandir pour occuper l'espace restant
+    app-map-pos-card {
+        flex: 1;
+        display: block;
+        width: 100%;
+        min-height: 0; // Permet au flex item de rétrécir
+    }
+}
