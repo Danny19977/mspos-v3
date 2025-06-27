@@ -1,0 +1,178 @@
+<!-- Page Wrapper -->
+<div class="page-wrapper">
+    @if (isLoadingData) {
+    <div class="text-center d-flex justify-content-center align-items-center">
+        <div class="spinner-border bs-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+    } @else {
+    @if (currentUser && user) {
+    <div class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <!-- Page Header -->
+                <div class="page-header">
+                    <div class="row align-items-center">
+                        <div class="col-sm-4">
+                            <h4 class="page-title">Détails Utilisateur</h4>
+                        </div>
+                        <div class="col-sm-8 text-sm-end">
+                            <div class="head-icons">
+                                <app-reload></app-reload>
+                                <app-collapse-header></app-collapse-header>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /Page Header -->
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <!-- user Header -->
+                <div class="contact-head">
+                    <div class="row align-items-center">
+                        <div class="col-sm-6">
+                            <ul class="contact-breadcrumb">
+                                <li><a href="javascript:void(0);">Utilisateur</a></li>
+                                <li>{{ user.fullname }}</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body pb-2">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap">
+                            <div class="d-flex align-items-center mb-2">
+                                <div class="avatar avatar-xxl bg-primary-light me-3 flex-shrink-0">
+                                    <i class="ti ti-building-store fs-36 text-primary"></i>
+                                </div>
+                                <div>
+                                    <h5 class="mb-1">{{ user.fullname.toLocaleUpperCase() }}</h5>
+                                    <p class="mb-2">{{ user.role }}</p>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge badge-light bg-light-600 text-default me-3">
+                                            <a [href]="'tel:' + user.phone" class="text-default text-decoration-none">
+                                                <i class="ti ti-phone me-1"></i>
+                                                {{ user.phone }}
+                                            </a>
+                                        </span>
+                                        <span class="badge badge-success" *ngIf="user.status">
+                                            <i class="ti ti-check me-1"></i>
+                                            Active
+                                        </span>
+                                        <span class="badge badge-danger" *ngIf="!user.status">
+                                            <i class="ti ti-x me-1"></i>
+                                            Inactive
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /user Header -->
+            </div>
+
+            <!-- user Sidebar -->
+            <div class="col-xl-3 theiaStickySidebar">
+                <div class="card">
+                    <div class="card-body p-3">
+                        <h6 class="mb-3 fw-semibold">Informations de base</h6>
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-3">
+                                <span
+                                    class="avatar avatar-xs bg-light-300 p-0 flex-shrink-0 rounded-circle text-dark me-2">
+                                    <i class="ti ti-building-store"></i>
+                                </span>
+                                <p><strong>Email:</strong> {{ user.email || 'Pas de email' }}</p>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <span
+                                    class="avatar avatar-xs bg-light-300 p-0 flex-shrink-0 rounded-circle text-dark me-2">
+                                    <i class="ti ti-category"></i>
+                                </span>
+                                <p><strong>Grade:</strong> {{ user.title }}</p>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <span
+                                    class="avatar avatar-xs bg-light-300 p-0 flex-shrink-0 rounded-circle text-dark me-2">
+                                    <i class="ti ti-map-pin"></i>
+                                </span>
+                                <p><strong>Permission:</strong> {{ user.permission || 'Pas de reference' }}</p>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <span
+                                    class="avatar avatar-xs bg-light-300 p-0 flex-shrink-0 rounded-circle text-dark me-2">
+                                    <i class="ti ti-calendar-exclamation"></i>
+                                </span>
+                                <p><strong>Créé le: </strong> {{ user.CreatedAt | date: 'dd/MM/yyyy' }}</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <h6 class="mb-3 fw-semibold">Statistiques</h6>
+                        <ul>
+                            <li class="row mb-3">
+                                <span class="col-6"><strong>Total Visites</strong> </span>
+                                <span class="col-6">
+                                    <span class="badge badge-primary">{{ user.Pos?.length || 0 }}</span>
+                                </span>
+                            </li>
+                            <li class="row mb-3">
+                                <span class="col-6"><strong>Total PosForms </strong> </span>
+                                <span class="col-6">
+                                    <span class="badge badge-primary">{{ user.PosForms?.length || 0 }}</span>
+                                </span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <!-- /user Sidebar -->
+
+            <!-- user Details -->
+            <div class="col-xl-9">
+                <div class="card mb-3">
+                    <div class="card-body pb-0 pt-2">
+                        <ul class="nav nav-tabs nav-tabs-bottom" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <a href="javascript:void(0);" data-bs-toggle="tab" data-bs-target="#pos-tab"
+                                    class="nav-link">
+                                    <i class="ti ti-building-store me-1"></i>Points de ventes
+                                </a>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <a href="javascript:void(0);" data-bs-toggle="tab" data-bs-target="#posform-tab"
+                                    class="nav-link">
+                                    <i class="ti ti-report me-1"></i>Rapports de Visites
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="tab-content pt-0">
+                    <!-- Forms Tab -->
+                    <div class="tab-pane fade show active" id="pos-tab" role="tabpanel">
+                        <app-pos-user-list [userUuid]="user.uuid || ''"></app-pos-user-list>
+                    </div>
+                    <!-- Equipment Tab -->
+                    <div class="tab-pane fade" id="posform-tab" role="tabpanel">
+                        <app-posform-user-list [userUuid]="user.uuid || ''"></app-posform-user-list>
+                    </div>
+                </div>
+                <!-- /Tab Content -->
+            </div>
+            <!-- /user Details -->
+        </div>
+    </div>
+    }
+}
+
+</div>
+<!-- /Page Wrapper -->

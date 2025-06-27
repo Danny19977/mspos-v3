@@ -92,7 +92,7 @@ export class PosformsComponent implements OnInit, AfterViewInit {
   filteredDataList: IPosForm[] = [];
 
   // Table 
-  displayedColumns: string[] = ['createdat', 'country', 'province', 'area', 'subarea', 'commune', 'price', 'asm', 'sup', 'dr', 'cyclo', 'brand', 'comment', 'id'];
+  displayedColumns: string[] = ['createdat', 'price', 'asm', 'sup', 'dr', 'cyclo', 'brand', 'comment', 'action'];
   dataSource = new MatTableDataSource<IPosForm>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;

@@ -10,9 +10,7 @@ import { IPosForm } from '../../posform/models/posform.model';
 import { IUser } from '../../user/models/user.model';
 import { IPos } from '../models/pos.model';
 import { AuthService } from '../../../auth/auth.service';
-import { PosVenteService } from '../pos-vente.service';
-import { PosformService } from '../../posform/posform.service';
-import { formatDate } from '@angular/common';
+import { PosVenteService } from '../pos-vente.service'; 
 import { LogsService } from '../../user-logs/logs.service';
 
 
@@ -26,27 +24,6 @@ export class PosViewComponent implements OnInit {
   isLoadingData = false;
   public routes = routes;
 
-  // Table 
-  dataList: IPosForm[] = [];
-  total_pages: number = 0;
-  page_size: number = 15;
-  current_page: number = 1;
-  total_records: number = 0;
-
-  dateRange!: FormGroup;
-  start_date!: string;
-  end_date!: string;
-  rangeDate: any[] = [];
-
-  // Table 
-  displayedColumns: string[] = ['country', 'province', 'area', 'subarea', 'commune', 'price', 'asm', 'sup', 'dr', 'cyclo', 'brand', 'comment', 'id'];
-  dataSource = new MatTableDataSource<IPosForm>(this.dataList);
-
-  @ViewChild(MatSort) sort!: MatSort;
-  @ViewChild(MatPaginator) paginator!: MatPaginator;
-
-  public search = '';
-
   // Forms  
   idItem!: string;
   dataItem!: IPosForm; // Single data 
@@ -56,11 +33,7 @@ export class PosViewComponent implements OnInit {
   isLoading = false;
 
   posUUID!: string;
-  pos!: IPos;
-
-  // Propriétés pour la modification du POS
-  uuidItem!: string;
-  posDataItem!: IPos; // Single POS data for editing
+  pos!: IPos; 
   
   posTypes: string[] = [
     'Gros',
@@ -96,26 +69,24 @@ export class PosViewComponent implements OnInit {
     });
 
     this.route.params.subscribe(params => {
-      this.posUUID = params['uuid'];
-      this.uuidItem = this.posUUID; // Assigner l'UUID pour la modification
+      this.posUUID = params['uuid']; 
       this.posService.get(this.posUUID).subscribe(item => {
         this.authService.user().subscribe({
           next: (user) => {
             this.currentUser = user;
             this.pos = item.data; // Assign the fetched POS data to the pos property
-            this.posDataItem = item.data; // Assign also to posDataItem for editing
             console.log("Pos view", this.pos);
             
             // Pré-remplir le formulaire avec les données du POS
             this.formGroup.patchValue({
-              name: this.posDataItem.name,
-              shop: this.posDataItem.shop,
-              postype: this.posDataItem.postype,
-              gerant: this.posDataItem.gerant,
-              avenue: this.posDataItem.avenue,
-              quartier: this.posDataItem.quartier,
-              reference: this.posDataItem.reference,
-              telephone: this.posDataItem.telephone,
+              name: this.pos.name,
+              shop: this.pos.shop,
+              postype: this.pos.postype,
+              gerant: this.pos.gerant,
+              avenue: this.pos.avenue,
+              quartier: this.pos.quartier,
+              reference: this.pos.reference,
+              telephone: this.pos.telephone,
             });
           },
           error: (error) => {
@@ -155,12 +126,12 @@ export class PosViewComponent implements OnInit {
         cyclo_uuid: this.currentUser.cyclo_uuid,
         cyclo: this.currentUser.cyclo,
         user_uuid: this.currentUser.uuid,
-        status: this.posDataItem.status, // Conserver le statut actuel
+        status: this.pos.status, // Conserver le statut actuel
         signature: this.currentUser.fullname,
         sync: false // Indique que le POS n'est pas encore synchronisé
       };
       
-      this.posService.update(this.uuidItem, body)
+      this.posService.update(this.posUUID, body)
         .subscribe({
           next: (res) => {
             this.logActivity.activity(
@@ -205,18 +176,17 @@ export class PosViewComponent implements OnInit {
   // Méthode pour recharger les données du POS après modification
   private loadPosData() {
     this.posService.get(this.posUUID).subscribe(item => {
-      this.pos = item.data;
-      this.posDataItem = item.data;
+      this.pos = item.data; 
       // Mettre à jour le formulaire avec les nouvelles données
       this.formGroup.patchValue({
-        name: this.posDataItem.name,
-        shop: this.posDataItem.shop,
-        postype: this.posDataItem.postype,
-        gerant: this.posDataItem.gerant,
-        avenue: this.posDataItem.avenue,
-        quartier: this.posDataItem.quartier,
-        reference: this.posDataItem.reference,
-        telephone: this.posDataItem.telephone,
+        name: this.pos.name,
+        shop: this.pos.shop,
+        postype: this.pos.postype,
+        gerant: this.pos.gerant,
+        avenue: this.pos.avenue,
+        quartier: this.pos.quartier,
+        reference: this.pos.reference,
+        telephone: this.pos.telephone,
       });
     });
   }

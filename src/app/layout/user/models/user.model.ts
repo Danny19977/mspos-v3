@@ -5,6 +5,8 @@ import { ICountry } from "../../country/models/country.model";
 import { ICyclo } from "../../cyclo/models/cyclo.model";
 import { IDr } from "../../dr/models/dr.model";
 import { IManager } from "../../managers/models/manager.model";
+import { IPos } from "../../pos-vente/models/pos.model";
+import { IPosForm } from "../../posform/models/posform.model";
 import { IProvince } from "../../province/models/province.model";
 import { IRoutePlan } from "../../routeplan/models/routeplan.model";
 import { ISubArea } from "../../subarea/models/subarea.model";
@@ -60,10 +62,10 @@ export interface IUser {
     total_cyclo: number;
     total_pos: number;
     total_posforms: number;
-
-    Manager?: IManager[];
+ 
     UserLogs?: UserLogsModel[];
     RoutePlan?: IRoutePlan[];
-
+    PosForms?: IPosForm[]; // Assuming PosForms is an array of any type, adjust as necessary
+    Pos?: IPos[]; // Assuming Pos is an array of any type, adjust as necessary
 
 }

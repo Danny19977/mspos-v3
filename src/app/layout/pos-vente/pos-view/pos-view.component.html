@@ -1,6 +1,6 @@
 <!-- Page Wrapper -->
 <div class="page-wrapper">
-    @if (isLoading) {
+    @if (isLoadingData) {
     <div class="text-center d-flex justify-content-center align-items-center">
         <div class="spinner-border bs-primary" role="status">
             <span class="visually-hidden">Loading...</span>
@@ -176,14 +176,13 @@
                             <li class="nav-item" role="presentation">
                                 <a href="javascript:void(0);" data-bs-toggle="tab" data-bs-target="#map-tab"
                                     class="nav-link active">
-                                    <i class="ti ti-map me-1"></i>Carte POS
+                                    <i class="ti ti-map me-1"></i>Visites MAP POS
                                 </a>
                             </li>
                             <li class="nav-item" role="presentation">
                                 <a href="javascript:void(0);" data-bs-toggle="tab" data-bs-target="#forms-tab"
                                     class="nav-link">
-                                    <i class="ti ti-file-text me-1"></i>Visites <span
-                                        class="badge badge-primary ms-1">{{ total_records }}</span>
+                                    <i class="ti ti-file-text me-1"></i>Rapports Visites POS 
                                 </a>
                             </li>
                             <li class="nav-item" role="presentation">
