@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 import { UserService } from '../user.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { routes } from '../../../shared/routes/routes';
@@ -11,13 +11,14 @@ import { AuthService } from '../../../auth/auth.service';
     templateUrl: './user-view.component.html',
     styleUrls: ['./user-view.component.scss']
 })
-export class UserViewComponent implements OnInit {
+export class UserViewComponent implements OnInit, AfterViewInit {
     isLoadingData = false;
     public routes = routes;
     currentUser!: IUser;
 
     userUUID!: string;
     user!: IUser;
+    activeTab: string = 'pos-tab';
 
     constructor(
         private route: ActivatedRoute,
@@ -48,5 +49,33 @@ export class UserViewComponent implements OnInit {
             });
 
         });
+    }
+
+    ngAfterViewInit(): void {
+        // Initialiser les événements des onglets Bootstrap
+        this.initializeTabs();
+    }
+
+    private initializeTabs(): void {
+        // S'assurer que Bootstrap est disponible
+        if (typeof (window as any).bootstrap !== 'undefined') {
+            const tabElements = document.querySelectorAll('#userDetailsTabs button[data-bs-toggle="tab"]');
+            tabElements.forEach(tabElement => {
+                tabElement.addEventListener('shown.bs.tab', (event) => {
+                    const target = (event.target as HTMLElement).getAttribute('data-bs-target');
+                    if (target) {
+                        this.activeTab = target.replace('#', '');
+                    }
+                });
+            });
+        }
+    }
+
+    onTabClick(tabId: string): void {
+        this.activeTab = tabId;
+    }
+
+    isTabActive(tabId: string): boolean {
+        return this.activeTab === tabId;
     }
 }

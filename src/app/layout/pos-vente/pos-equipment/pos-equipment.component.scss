@@ -1,0 +1,338 @@
+// Styles pour le composant POS Equipment - Fix z-index issues
+
+// Modal avec z-index élevé pour s'afficher par-dessus la page
+.modal {
+  z-index: 9999 !important;
+  
+  &.show {
+    z-index: 9999 !important;
+  }
+}
+
+// Modal backdrop avec z-index approprié
+.modal-backdrop {
+  z-index: 9998 !important;
+  
+  &.show {
+    z-index: 9998 !important;
+  }
+}
+
+// Spécifique pour le modal d'équipement
+#equipmentModal {
+  z-index: 10000 !important;
+  
+  .modal-dialog {
+    margin: 1.75rem auto;
+    z-index: 10001 !important;
+    
+    &.modal-lg {
+      max-width: 800px;
+    }
+  }
+  
+  .modal-content {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    z-index: 10002 !important;
+    position: relative;
+    
+    .modal-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 12px 12px 0 0;
+      padding: 1.25rem 1.5rem;
+      
+      .modal-title {
+        font-weight: 600;
+        font-size: 1.125rem;
+      }
+      
+      .btn-close {
+        background: transparent;
+        border: none;
+        color: white;
+        opacity: 0.8;
+        font-size: 1.2rem;
+        
+        &:hover {
+          opacity: 1;
+        }
+      }
+    }
+    
+    .modal-body {
+      padding: 2rem 1.5rem;
+      
+      .form-label {
+        font-weight: 500;
+        color: #495057;
+        margin-bottom: 0.5rem;
+        
+        i {
+          color: #6c757d;
+        }
+      }
+      
+      .form-select {
+        border: 2px solid #e9ecef;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+        
+        &:focus {
+          border-color: #667eea;
+          box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        &.is-invalid {
+          border-color: #dc3545;
+        }
+      }
+      
+      .invalid-feedback {
+        display: block;
+        font-size: 0.85rem;
+        margin-top: 0.25rem;
+      }
+    }
+    
+    .modal-footer {
+      padding: 1.25rem 1.5rem;
+      background-color: #f8f9fa;
+      border-radius: 0 0 12px 12px;
+      
+      .btn {
+        border-radius: 8px;
+        padding: 0.75rem 1.5rem;
+        font-weight: 500;
+        font-size: 0.9rem;
+        
+        &.btn-primary {
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border: none;
+          
+          &:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            transform: translateY(-1px);
+          }
+          
+          &:disabled {
+            background: #6c757d;
+            transform: none;
+          }
+        }
+        
+        &.btn-light {
+          background-color: #e9ecef;
+          border-color: #dee2e6;
+          color: #495057;
+          
+          &:hover {
+            background-color: #dee2e6;
+            border-color: #d0d4d8;
+          }
+        }
+        
+        &.btn-danger {
+          background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+          border: none;
+          
+          &:hover {
+            background: linear-gradient(135deg, #c82333 0%, #bd2130 100%);
+            transform: translateY(-1px);
+          }
+        }
+      }
+      
+      .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
+      }
+    }
+  }
+}
+
+// Spécifique pour le modal de confirmation de suppression
+#deleteConfirmModal {
+  z-index: 10000 !important;
+  
+  .modal-dialog {
+    z-index: 10001 !important;
+  }
+  
+  .modal-content {
+    z-index: 10002 !important;
+  }
+  
+  .modal-header {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+  }
+  
+  .avatar {
+    &.avatar-xl {
+      width: 4rem;
+      height: 4rem;
+      
+      &.bg-danger-light {
+        background-color: rgba(220, 53, 69, 0.1);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+  }
+}
+
+// Table improvements
+.table {
+  .btn {
+    border-radius: 6px;
+    padding: 0.5rem 0.75rem;
+    
+    &.btn-info {
+      background-color: #17a2b8;
+      border-color: #17a2b8;
+      
+      &:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+      }
+    }
+    
+    &.btn-danger {
+      &:hover {
+        transform: translateY(-1px);
+      }
+    }
+  }
+}
+
+// Search and filter section
+.card-header {
+  background-color: #f8f9fa;
+  border-bottom: 2px solid #e9ecef;
+  
+  .btn-success {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    border: none;
+    border-radius: 8px;
+    
+    &:hover {
+      background: linear-gradient(135deg, #20c997 0%, #28a745 100%);
+      transform: translateY(-1px);
+    }
+  }
+  
+  .btn-outline-primary {
+    border-radius: 8px;
+    border-width: 2px;
+    
+    &:hover {
+      background-color: #667eea;
+      border-color: #667eea;
+    }
+  }
+  
+  .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    
+    &:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+  }
+}
+
+// Responsive improvements
+@media (max-width: 768px) {
+  .modal-dialog {
+    margin: 1rem;
+    
+    &.modal-lg {
+      max-width: none;
+    }
+  }
+  
+  .modal-body {
+    padding: 1.5rem 1rem;
+    
+    .row {
+      .col-md-6 {
+        margin-bottom: 1rem;
+      }
+    }
+  }
+  
+  .modal-footer {
+    padding: 1rem;
+    
+    .btn {
+      width: 100%;
+      margin-bottom: 0.5rem;
+      
+      &:last-child {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+// Animation improvements
+@keyframes modalSlideIn {
+  from {
+    transform: translate(0, -50px);
+    opacity: 0;
+  }
+  to {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+}
+
+.modal.show .modal-dialog {
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+// Loading state improvements
+.spinner-border {
+  &.bs-primary {
+    color: #667eea;
+  }
+}
+
+// Badge improvements
+.badge {
+  &.badge-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+  }
+}
+
+// Force modal to appear above everything
+:host ::ng-deep {
+  .modal {
+    z-index: 9999 !important;
+  }
+  
+  .modal-backdrop {
+    z-index: 9998 !important;
+  }
+  
+  #equipmentModal,
+  #deleteConfirmModal {
+    z-index: 10000 !important;
+    
+    .modal-dialog {
+      z-index: 10001 !important;
+    }
+    
+    .modal-content {
+      z-index: 10002 !important;
+    }
+  }
+}

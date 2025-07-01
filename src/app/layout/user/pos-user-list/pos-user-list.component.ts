@@ -40,9 +40,6 @@ export class PosUserListComponent implements OnInit {
     'quartier',
     'avenue',
     'telephone',
-    'commune',
-    'posforms',
-    'action'
   ];
   dataSource = new MatTableDataSource<IPos>(this.dataList);
 
@@ -71,6 +68,10 @@ export class PosUserListComponent implements OnInit {
         this.dataSource.sort = this.sort;
         this.cdr.detectChanges();
 
+        // Subscribe to refresh data when needed
+        this.posVenteService.refreshDataList$.subscribe(() => {
+          this.fetchUserPos();
+        });
         this.fetchUserPos();
       },
       error: (error) => {
@@ -83,16 +84,25 @@ export class PosUserListComponent implements OnInit {
 
   fetchUserPos() {
     this.isLoadingData = true;
-    this.posVenteService.getPaginatedByCommuneId(this.userUuid, this.current_page, this.page_size, this.search).subscribe((res: any) => {
-      // Filtrer les POS par utilisateur
-      this.dataList = res.data.data; 
-      
-      this.total_records = this.dataList.length;
-      this.total_pages = Math.ceil(this.total_records / this.page_size);
-      
-      this.dataSource.data = this.dataList;
-      this.isLoadingData = false;
-      this.cdr.detectChanges();
+    this.posVenteService.getPaginatedByCommuneId(
+      this.userUuid, 
+      this.current_page, 
+      this.page_size, 
+      this.search
+    ).subscribe({
+      next: (res) => {
+        this.dataList = res.data;
+        this.total_pages = res.pagination.total_pages;
+        this.total_records = res.pagination.total_records;
+        this.dataSource.data = this.dataList;
+        this.isLoadingData = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.log('Erreur lors de la récupération des données:', err);
+        this.isLoadingData = false;
+        this.toastr.error('Erreur lors du chargement des données');
+      }
     });
   }
 
@@ -101,7 +111,8 @@ export class PosUserListComponent implements OnInit {
   }
 
   onPageChange(event: PageEvent): void {
-    this.current_page = event.pageIndex + 1;
+    this.isLoadingData = true;
+    this.current_page = event.pageIndex + 1; // Adjust for 1-based page index
     this.page_size = event.pageSize;
     this.fetchUserPos();
   }
@@ -110,8 +121,16 @@ export class PosUserListComponent implements OnInit {
     this.router.navigate(['/pos-vente', id, 'view']);
   }
 
+  onSearchChange(search: string) {
+    this.search = search;
+    this.current_page = 1; // Reset à la première page lors de la recherche
+    this.fetchUserPos();
+  }
+
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.search = filterValue.trim();
+    this.current_page = 1; // Reset à la première page lors de la recherche
+    this.fetchUserPos();
   }
 }

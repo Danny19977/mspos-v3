@@ -67,3 +67,172 @@ select,
 textarea {
   font-size: 16px !important;
 }
+
+/* Styles spécifiques pour pos-view */
+
+// Améliorations pour les onglets
+.nav-tabs {
+  border-bottom: 1px solid #dee2e6;
+  position: relative;
+  z-index: 10; // S'assurer que les onglets sont au-dessus des autres éléments
+  
+  .nav-item {
+    margin-bottom: -1px;
+  }
+  
+  .nav-link {
+    color: #6c757d;
+    border: 1px solid transparent;
+    border-top-left-radius: 0.375rem;
+    border-top-right-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    padding: 0.75rem 1rem;
+    margin-right: 2px;
+    background: none;
+    text-decoration: none;
+    position: relative;
+    z-index: 1;
+    
+    // Éviter les conflits avec d'autres gestionnaires d'événements
+    pointer-events: auto !important;
+    
+    &:hover:not(.active) {
+      color: #495057;
+      background-color: #f8f9fa;
+      border-color: #dee2e6 #dee2e6 transparent;
+      isolation: isolate;
+    }
+    
+    &.active {
+      color: #dc3545 !important;  // Rouge Bootstrap
+      background-color: #fff !important;
+      border-color: #dee2e6 #dee2e6 #fff !important;
+      font-weight: 500;
+      position: relative;
+      z-index: 2;
+    }
+    
+    &:focus {
+      outline: none;
+      box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);  // Rouge focus
+    }
+    
+    // Éviter les conflits avec le sidebar
+    &:not([data-bs-toggle]) {
+      // Styles spécifiques pour les onglets qui n'utilisent pas data-bs-toggle
+      cursor: pointer;
+    }
+    
+    i {
+      font-size: 1rem;
+      margin-right: 0.25rem;
+      pointer-events: none; // Les icônes ne doivent pas intercepter les événements
+    }
+  }
+}
+
+// Contenu des onglets avec isolation
+.tab-content {
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  border-top: none;
+  border-radius: 0 0 0.375rem 0.375rem;
+  position: relative;
+  z-index: 1;
+  
+  .tab-pane {
+    min-height: 200px;
+    padding: 1rem;
+    
+    &.active {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// Améliorations pour la sidebar
+.avatar {
+  &.avatar-xs {
+    width: 1.5rem;
+    height: 1.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    
+    i {
+      font-size: 0.75rem;
+    }
+  }
+  
+  &.avatar-xxl {
+    width: 4rem;
+    height: 4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
+  }
+}
+
+// Corrections pour les classes Bootstrap
+.bg-light-200 {
+  background-color: #f8f9fa !important;
+}
+
+.bg-light-300 {
+  background-color: #e9ecef !important;
+}
+
+.bg-light-600 {
+  background-color: #6c757d !important;
+}
+
+// Badge téléphone plus lisible
+.badge {
+  &.badge-light {
+    &.bg-light-200 {
+      background-color: #f8f9fa !important;
+      border: 1px solid #dee2e6;
+      
+      a {
+        color: #495057 !important;
+        
+        &:hover {
+          color: #007bff !important;
+        }
+      }
+    }
+  }
+}
+
+// Responsive pour les onglets
+@media (max-width: 768px) {
+  .nav-tabs {
+    .nav-link {
+      font-size: 0.875rem;
+      padding: 0.5rem 0.75rem;
+      
+      i {
+        font-size: 0.875rem;
+      }
+    }
+  }
+  
+  .tab-content {
+    .tab-pane {
+      padding: 0.75rem;
+    }
+  }
+}

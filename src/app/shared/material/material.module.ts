@@ -15,13 +15,14 @@ import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { STEPPER_GLOBAL_OPTIONS } from '@angular/cdk/stepper';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatSelectModule } from '@angular/material/select';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatCardModule } from '@angular/material/card';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatSliderModule } from '@angular/material/slider';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatPaginatorModule } from '@angular/material/paginator';
 
 @NgModule({
   imports: [
@@ -39,6 +40,7 @@ import { MatPaginator } from '@angular/material/paginator';
     MatCheckboxModule,
     MatInputModule,
     MatProgressBarModule,
+    MatProgressSpinnerModule,
     MatChipsModule,
     CdkStepperModule,
     MatSelectModule,
@@ -46,7 +48,7 @@ import { MatPaginator } from '@angular/material/paginator';
     MatCardModule,
     MatTooltipModule,
     MatSliderModule,
-    MatPaginator,
+    MatPaginatorModule,
   ],
   exports: [
     MatButtonModule,
@@ -63,6 +65,7 @@ import { MatPaginator } from '@angular/material/paginator';
     MatCheckboxModule,
     MatInputModule,
     MatProgressBarModule,
+    MatProgressSpinnerModule,
     MatChipsModule,
     CdkStepperModule,
     MatSelectModule,
@@ -70,7 +73,7 @@ import { MatPaginator } from '@angular/material/paginator';
     MatCardModule,
     MatTooltipModule,
     MatSliderModule,
-    MatPaginator,
+    MatPaginatorModule,
   ],
   providers: [
     {

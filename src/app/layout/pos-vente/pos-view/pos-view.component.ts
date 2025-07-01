@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
@@ -20,7 +20,7 @@ import { LogsService } from '../../user-logs/logs.service';
   templateUrl: './pos-view.component.html',
   styleUrl: './pos-view.component.scss'
 })
-export class PosViewComponent implements OnInit {
+export class PosViewComponent implements OnInit, AfterViewInit {
   isLoadingData = false;
   public routes = routes;
 
@@ -34,6 +34,7 @@ export class PosViewComponent implements OnInit {
 
   posUUID!: string;
   pos!: IPos; 
+  activeTab: string = 'map-tab';
   
   posTypes: string[] = [
     'Gros',
@@ -99,6 +100,29 @@ export class PosViewComponent implements OnInit {
       });
     });
 
+  }
+
+  ngAfterViewInit(): void {
+    // Pas besoin d'initialiser les événements Bootstrap car on gère tout avec Angular
+    // this.initializeTabs();
+  }
+
+  private initializeTabs(): void {
+    // Méthode gardée pour référence future si nécessaire
+    // Actuellement désactivée pour éviter les conflits
+  }
+
+  onTabClick(tabId: string, event?: Event): void {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    this.activeTab = tabId;
+    console.log('Tab clicked:', tabId); // Debug log
+  }
+
+  isTabActive(tabId: string): boolean {
+    return this.activeTab === tabId;
   }
 
   onSubmitUpdate() {

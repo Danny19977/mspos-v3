@@ -55,7 +55,7 @@
                                     <h5 class="mb-1">{{ user.fullname.toLocaleUpperCase() }}</h5>
                                     <p class="mb-2">{{ user.role }}</p>
                                     <div class="d-flex align-items-center">
-                                        <span class="badge badge-light bg-light-600 text-default me-3">
+                                        <span class="badge badge-light text-default me-3">
                                             <a [href]="'tel:' + user.phone" class="text-default text-decoration-none">
                                                 <i class="ti ti-phone me-1"></i>
                                                 {{ user.phone }}
@@ -114,10 +114,44 @@
                             </div>
                         </div>
                         <hr>
+                        <h6 class="mb-3 fw-semibold">Territoire</h6>
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center mb-3" *ngIf="user.country_uuid && user.Country">
+                                <span class="avatar avatar-xs bg-light-300 p-0 flex-shrink-0 rounded-circle text-dark me-2">
+                                    <i class="ti ti-flag"></i>
+                                </span>
+                                <p><strong>Pays:</strong> {{ user.Country.name }}</p>
+                            </div>
+                            <div class="d-flex align-items-center mb-3" *ngIf="user.province_uuid && user.Province">
+                                <span class="avatar avatar-xs bg-light-300 p-0 flex-shrink-0 rounded-circle text-dark me-2">
+                                    <i class="ti ti-map"></i>
+                                </span>
+                                <p><strong>Province:</strong> {{ user.Province.name }}</p>
+                            </div>
+                            <div class="d-flex align-items-center mb-3" *ngIf="user.area_uuid && user.Area">
+                                <span class="avatar avatar-xs bg-light-300 p-0 flex-shrink-0 rounded-circle text-dark me-2">
+                                    <i class="ti ti-map-pin"></i>
+                                </span>
+                                <p><strong>Area:</strong> {{ user.Area.name }}</p>
+                            </div>
+                            <div class="d-flex align-items-center mb-3" *ngIf="user.sub_area_uuid && user.SubArea">
+                                <span class="avatar avatar-xs bg-light-300 p-0 flex-shrink-0 rounded-circle text-dark me-2">
+                                    <i class="ti ti-pin"></i>
+                                </span>
+                                <p><strong>SubArea:</strong> {{ user.SubArea.name }}</p>
+                            </div>
+                            <div class="d-flex align-items-center mb-3" *ngIf="user.commune_uuid && user.Commune">
+                                <span class="avatar avatar-xs bg-light-300 p-0 flex-shrink-0 rounded-circle text-dark me-2">
+                                    <i class="ti ti-building"></i>
+                                </span>
+                                <p><strong>Commune:</strong> {{ user.Commune.name }}</p>
+                            </div>
+                        </div>
+                        <hr>
                         <h6 class="mb-3 fw-semibold">Statistiques</h6>
                         <ul>
                             <li class="row mb-3">
-                                <span class="col-6"><strong>Total Visites</strong> </span>
+                                <span class="col-6"><strong>Total Points de ventes</strong> </span>
                                 <span class="col-6">
                                     <span class="badge badge-primary">{{ user.Pos?.length || 0 }}</span>
                                 </span>
@@ -128,8 +162,8 @@
                                     <span class="badge badge-primary">{{ user.PosForms?.length || 0 }}</span>
                                 </span>
                             </li>
-                             <li class="row mb-3">
-                                <span class="col-6"><strong>Total Router plan </strong> </span>
+                            <li class="row mb-3">
+                                <span class="col-6"><strong>Total Router plans </strong> </span>
                                 <span class="col-6">
                                     <span class="badge badge-primary">{{ user.RoutePlan?.length || 0 }}</span>
                                 </span>
@@ -144,38 +178,59 @@
             <div class="col-xl-9">
                 <div class="card mb-3">
                     <div class="card-body pb-0 pt-2">
-                        <ul class="nav nav-tabs nav-tabs-bottom" role="tablist">
+                        <ul class="nav nav-tabs nav-tabs-bottom" id="userDetailsTabs" role="tablist">
                             <li class="nav-item" role="presentation">
-                                <a href="javascript:void(0);" data-bs-toggle="tab" data-bs-target="#pos-tab"
-                                    class="nav-link">
-                                    <i class="ti ti-building-store me-1"></i>Points de ventes
-                                </a>
+                                <button class="nav-link" [class.active]="isTabActive('pos-tab')" id="pos-tab-btn"
+                                    data-bs-toggle="tab" data-bs-target="#pos-tab" type="button" role="tab"
+                                    aria-controls="pos-tab" [attr.aria-selected]="isTabActive('pos-tab')"
+                                    (click)="onTabClick('pos-tab')">
+                                    <i class="ti ti-building-store me-1"></i>
+                                    Points de ventes
+                                </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <a href="javascript:void(0);" data-bs-toggle="tab" data-bs-target="#posform-tab"
-                                    class="nav-link">
-                                    <i class="ti ti-report me-1"></i>Rapports de Visites
-                                </a>
+                                <button class="nav-link" [class.active]="isTabActive('posform-tab')"
+                                    id="posform-tab-btn" data-bs-toggle="tab" data-bs-target="#posform-tab"
+                                    type="button" role="tab" aria-controls="posform-tab"
+                                    [attr.aria-selected]="isTabActive('posform-tab')"
+                                    (click)="onTabClick('posform-tab')">
+                                    <i class="ti ti-file-text me-1"></i>
+                                    Rapports de Visites
+                                </button>
                             </li>
                             <li class="nav-item" role="presentation">
-                                <a href="javascript:void(0);" data-bs-toggle="tab" data-bs-target="#posform-tab"
-                                    class="nav-link">
-                                    <i class="ti ti-report me-1"></i>Liste des Routes plans
-                                </a>
+                                <button class="nav-link" [class.active]="isTabActive('routeplan-tab')"
+                                    id="routeplan-tab-btn" data-bs-toggle="tab" data-bs-target="#routeplan-tab"
+                                    type="button" role="tab" aria-controls="routeplan-tab"
+                                    [attr.aria-selected]="isTabActive('routeplan-tab')"
+                                    (click)="onTabClick('routeplan-tab')">
+                                    <i class="ti ti-route me-1"></i>
+                                    Plans de Route
+                                </button>
                             </li>
                         </ul>
                     </div>
                 </div>
 
                 <!-- Tab Content -->
-                <div class="tab-content pt-0">
-                    <!-- Forms Tab -->
-                    <div class="tab-pane fade show active" id="pos-tab" role="tabpanel">
+                <div class="tab-content pt-0" id="userDetailsTabContent">
+                    <!-- POS Tab -->
+                    <div class="tab-pane fade" [class.show]="isTabActive('pos-tab')"
+                        [class.active]="isTabActive('pos-tab')" id="pos-tab" role="tabpanel"
+                        aria-labelledby="pos-tab-btn" tabindex="0">
                         <app-pos-user-list [userUuid]="user.uuid || ''"></app-pos-user-list>
                     </div>
-                    <!-- Equipment Tab -->
-                    <div class="tab-pane fade" id="posform-tab" role="tabpanel">
+                    <!-- PosForm Tab -->
+                    <div class="tab-pane fade" [class.show]="isTabActive('posform-tab')"
+                        [class.active]="isTabActive('posform-tab')" id="posform-tab" role="tabpanel"
+                        aria-labelledby="posform-tab-btn" tabindex="0">
                         <app-posform-user-list [userUuid]="user.uuid || ''"></app-posform-user-list>
+                    </div>
+                    <!-- Routeplan Tab -->
+                    <div class="tab-pane fade" [class.show]="isTabActive('routeplan-tab')"
+                        [class.active]="isTabActive('routeplan-tab')" id="routeplan-tab" role="tabpanel"
+                        aria-labelledby="routeplan-tab-btn" tabindex="0">
+                        <app-routeplan-user-list [userUuid]="user.uuid || ''"></app-routeplan-user-list>
                     </div>
                 </div>
                 <!-- /Tab Content -->
@@ -184,7 +239,7 @@
         </div>
     </div>
     }
-}
+    }
 
 </div>
 <!-- /Page Wrapper -->

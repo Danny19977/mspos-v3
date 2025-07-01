@@ -73,91 +73,193 @@
 </div>
 
 <!-- Modal Ajout/Édition Équipement POS -->
-<div class="modal fade" id="equipmentModal" tabindex="-1" aria-labelledby="equipmentModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+<div class="modal fade" id="equipmentModal" tabindex="-1" aria-labelledby="equipmentModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
             <form [formGroup]="equipmentForm" (ngSubmit)="onSubmitEquipment()">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="equipmentModalLabel">{{ isEditMode ? 'Modifier' : 'Ajouter' }} un
-                        équipement</h5>
+                <div class="modal-header border-bottom">
+                    <h5 class="modal-title fw-semibold" id="equipmentModalLabel">
+                        <i class="ti ti-tools me-2"></i>
+                        {{ isEditMode ? 'Modifier' : 'Ajouter' }} un équipement
+                    </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <!-- Parasol -->
-                    <div class="mb-3">
-                        <label class="form-label">Parasol</label>
-                        <select class="form-select" formControlName="parasol">
-                            <option *ngFor="let brand of brandList" [value]="brand.name">{{ brand.name }}</option>
-                            <option value="Autres">Autres</option>
-                        </select>
+                <div class="modal-body p-4">
+                    <div class="row">
+                        <!-- Parasol -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="ti ti-umbrella me-1"></i>
+                                    Parasol <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" formControlName="parasol" required>
+                                    <option value="" disabled selected>Sélectionner un parasol</option>
+                                    <option *ngFor="let brand of brandList" [value]="brand.name">{{ brand.name }}</option>
+                                    <option value="Autres">Autres</option>
+                                </select>
+                                <div class="invalid-feedback" *ngIf="equipmentForm.get('parasol')?.touched && equipmentForm.get('parasol')?.invalid">
+                                    Veuillez sélectionner un parasol
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Statut Parasol -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="ti ti-flag me-1"></i>
+                                    Statut Parasol <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" formControlName="parasol_status" required>
+                                    <option value="" disabled selected>Sélectionner un statut</option>
+                                    <option value="Bien">Bien</option>
+                                    <option value="Vieux">Vieux</option>
+                                    <option value="Cassé">Cassé</option>
+                                </select>
+                                <div class="invalid-feedback" *ngIf="equipmentForm.get('parasol_status')?.touched && equipmentForm.get('parasol_status')?.invalid">
+                                    Veuillez sélectionner un statut
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <!-- Statut Parasol -->
-                    <div class="mb-3">
-                        <label class="form-label">Statut Parasol</label>
-                        <select class="form-select" formControlName="parasol_status">
-                            <option value="Bien">Bien</option>
-                            <option value="Vieux">Vieux</option>
-                            <option value="Cassé">Cassé</option>
-                        </select>
+                    
+                    <div class="row">
+                        <!-- Stand -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="ti ti-rectangle me-1"></i>
+                                    Stand <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" formControlName="stand" required>
+                                    <option value="" disabled selected>Sélectionner un stand</option>
+                                    <option *ngFor="let brand of brandList" [value]="brand.name">{{ brand.name }}</option>
+                                    <option value="Autres">Autres</option>
+                                </select>
+                                <div class="invalid-feedback" *ngIf="equipmentForm.get('stand')?.touched && equipmentForm.get('stand')?.invalid">
+                                    Veuillez sélectionner un stand
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Statut Stand -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="ti ti-flag me-1"></i>
+                                    Statut Stand <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" formControlName="stand_status" required>
+                                    <option value="" disabled selected>Sélectionner un statut</option>
+                                    <option value="Bien">Bien</option>
+                                    <option value="Vieux">Vieux</option>
+                                    <option value="Cassé">Cassé</option>
+                                </select>
+                                <div class="invalid-feedback" *ngIf="equipmentForm.get('stand_status')?.touched && equipmentForm.get('stand_status')?.invalid">
+                                    Veuillez sélectionner un statut
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <!-- Stand -->
-                    <div class="mb-3">
-                        <label class="form-label">Stand</label>
-                        <select class="form-select" formControlName="stand">
-                            <option *ngFor="let brand of brandList" [value]="brand.name">{{ brand.name }}</option>
-                            <option value="Autres">Autres</option>
-                        </select>
-                    </div>
-                    <!-- Statut Stand -->
-                    <div class="mb-3">
-                        <label class="form-label">Statut Stand</label>
-                        <select class="form-select" formControlName="stand_status">
-                            <option value="Bien">Bien</option>
-                            <option value="Vieux">Vieux</option>
-                            <option value="Cassé">Cassé</option>
-                        </select>
-                    </div>
-                    <!-- Kiosque -->
-                    <div class="mb-3">
-                        <label class="form-label">Kiosque</label>
-                        <select class="form-select" formControlName="kiosk">
-                            <option *ngFor="let brand of brandList" [value]="brand.name">{{ brand.name }}</option>
-                            <option value="Autres">Autres</option>
-                        </select>
-                    </div>
-                    <!-- Statut Kiosque -->
-                    <div class="mb-3">
-                        <label class="form-label">Statut Kiosque</label>
-                        <select class="form-select" formControlName="kiosk_status">
-                            <option value="Bien">Bien</option>
-                            <option value="Vieux">Vieux</option>
-                            <option value="Cassé">Cassé</option>
-                        </select>
+                    
+                    <div class="row">
+                        <!-- Kiosque -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="ti ti-building-store me-1"></i>
+                                    Kiosque <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" formControlName="kiosk" required>
+                                    <option value="" disabled selected>Sélectionner un kiosque</option>
+                                    <option *ngFor="let brand of brandList" [value]="brand.name">{{ brand.name }}</option>
+                                    <option value="Autres">Autres</option>
+                                </select>
+                                <div class="invalid-feedback" *ngIf="equipmentForm.get('kiosk')?.touched && equipmentForm.get('kiosk')?.invalid">
+                                    Veuillez sélectionner un kiosque
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Statut Kiosque -->
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label fw-semibold">
+                                    <i class="ti ti-flag me-1"></i>
+                                    Statut Kiosque <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" formControlName="kiosk_status" required>
+                                    <option value="" disabled selected>Sélectionner un statut</option>
+                                    <option value="Bien">Bien</option>
+                                    <option value="Vieux">Vieux</option>
+                                    <option value="Cassé">Cassé</option>
+                                </select>
+                                <div class="invalid-feedback" *ngIf="equipmentForm.get('kiosk_status')?.touched && equipmentForm.get('kiosk_status')?.invalid">
+                                    Veuillez sélectionner un statut
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary" [disabled]="equipmentForm.invalid || isLoading">{{
-                        isEditMode ? 'Enregistrer' : 'Ajouter' }}</button>
+                <div class="modal-footer border-top">
+                    <button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">
+                        <i class="ti ti-x me-1"></i>
+                        Annuler
+                    </button>
+                    @if (isLoading) {
+                        <button type="button" class="btn btn-primary" disabled>
+                            <div class="spinner-border spinner-border-sm me-2" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            Traitement...
+                        </button>
+                    } @else {
+                        <button type="submit" class="btn btn-primary" [disabled]="equipmentForm.invalid">
+                            <i class="ti ti-check me-1"></i>
+                            {{ isEditMode ? 'Enregistrer' : 'Ajouter' }}
+                        </button>
+                    }
                 </div>
             </form>
         </div>
     </div>
 </div>
 <!-- Confirmation Suppression -->
-<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true">
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmLabel" aria-hidden="true" data-bs-backdrop="static">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="deleteConfirmLabel">Confirmer la suppression</h5>
+            <div class="modal-header border-bottom">
+                <h5 class="modal-title fw-semibold text-danger" id="deleteConfirmLabel">
+                    <i class="ti ti-alert-triangle me-2"></i>
+                    Confirmer la suppression
+                </h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                Voulez-vous vraiment supprimer cet équipement ?
+            <div class="modal-body p-4">
+                <div class="text-center">
+                    <div class="avatar avatar-xl bg-danger-light mb-3 mx-auto">
+                        <i class="ti ti-trash fs-24 text-danger"></i>
+                    </div>
+                    <h6 class="mb-2">Êtes-vous sûr ?</h6>
+                    <p class="text-muted mb-0">Voulez-vous vraiment supprimer cet équipement ? Cette action est irréversible.</p>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Annuler</button>
-                <button type="button" class="btn btn-danger" (click)="confirmDelete()">Supprimer</button>
+            <div class="modal-footer border-top">
+                <button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">
+                    <i class="ti ti-x me-1"></i>
+                    Annuler
+                </button>
+                @if (isLoading) {
+                    <button type="button" class="btn btn-danger" disabled>
+                        <div class="spinner-border spinner-border-sm me-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        Suppression...
+                    </button>
+                } @else {
+                    <button type="button" class="btn btn-danger" (click)="confirmDelete()">
+                        <i class="ti ti-trash me-1"></i>
+                        Supprimer
+                    </button>
+                }
             </div>
         </div>
     </div>

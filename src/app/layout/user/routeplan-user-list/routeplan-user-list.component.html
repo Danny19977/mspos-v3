@@ -1,0 +1,119 @@
+<div class="card">
+  <div class="card-header">
+    <h5 class="card-title">Plans de Route</h5>
+    <div class="card-tools">
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Rechercher...</mat-label>
+        <input 
+          matInput 
+          (keyup)="applyFilter($event)" 
+          placeholder="Rechercher un plan de route"
+          #input>
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+    </div>
+  </div>
+
+  <div class="card-body">
+    <div class="table-responsive">
+      <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z2">
+        
+        <!-- Date de création -->
+        <ng-container matColumnDef="created">
+          <th mat-header-cell *matHeaderCellDef mat-sort-header>Date de création</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.CreatedAt | date:'dd/MM/yyyy HH:mm' }}
+          </td>
+        </ng-container>
+
+        <!-- Pays -->
+        <ng-container matColumnDef="country">
+          <th mat-header-cell *matHeaderCellDef>Pays</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.Country?.name || 'N/A' }}
+          </td>
+        </ng-container>
+
+        <!-- Province -->
+        <ng-container matColumnDef="province">
+          <th mat-header-cell *matHeaderCellDef>Province</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.Province?.name || 'N/A' }}
+          </td>
+        </ng-container>
+
+        <!-- Zone -->
+        <ng-container matColumnDef="area">
+          <th mat-header-cell *matHeaderCellDef>Area</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.Area?.name || 'N/A' }}
+          </td>
+        </ng-container>
+
+        <!-- Sous-zone -->
+        <ng-container matColumnDef="subarea">
+          <th mat-header-cell *matHeaderCellDef>Sous Area</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.Subarea?.name || 'N/A' }}
+          </td>
+        </ng-container>
+
+        <!-- Commune -->
+        <ng-container matColumnDef="commune">
+          <th mat-header-cell *matHeaderCellDef>Commune</th>
+          <td mat-cell *matCellDef="let element">
+            {{ element.Commune?.name || 'N/A' }}
+          </td>
+        </ng-container>
+
+        <!-- Nombre total de POS -->
+        <ng-container matColumnDef="total_pos">
+          <th mat-header-cell *matHeaderCellDef>POS</th>
+          <td mat-cell *matCellDef="let element">
+            <div class="pos-count">
+              <span class="active">{{ element.total_route_plan_item_active || 0 }}</span>
+              <span class="separator">/</span>
+              <span class="total">{{ element.total_route_plan_item || 0 }}</span>
+            </div>
+          </td>
+        </ng-container>
+
+        <!-- Statut -->
+        <ng-container matColumnDef="status">
+          <th mat-header-cell *matHeaderCellDef>Statut</th>
+          <td mat-cell *matCellDef="let element">
+            <span class="status-badge" [ngClass]="getStatusClass(element)">
+              {{ getStatusText(element) }}
+            </span>
+          </td>
+        </ng-container>
+
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+      </table>
+
+      <!-- Loading spinner -->
+      <div *ngIf="isLoadingData" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+        <p>Chargement des plans de route...</p>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="!isLoadingData && dataList.length === 0" class="empty-state">
+        <mat-icon>route</mat-icon>
+        <h3>Aucun plan de route trouvé</h3>
+        <p>Cet utilisateur n'a pas encore de plans de route assignés.</p>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <mat-paginator 
+      [length]="total_records"
+      [pageSize]="page_size"
+      [pageSizeOptions]="[5, 10, 25, 50]"
+      [pageIndex]="current_page - 1"
+      (page)="onPageChange($event)"
+      showFirstLastButtons>
+    </mat-paginator>
+  </div>
+</div>

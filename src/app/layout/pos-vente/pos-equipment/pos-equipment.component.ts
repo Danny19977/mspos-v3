@@ -51,14 +51,7 @@ export class PosEquipmentComponent implements OnInit {
     if (this.posUUId) {
       this.loadEquipments();
     }
-    this.equipmentForm = this.fb.group({
-      parasol: ['', Validators.required],
-      parasol_status: ['', Validators.required],
-      stand: ['', Validators.required],
-      stand_status: ['', Validators.required],
-      kiosk: ['', Validators.required],
-      kiosk_status: ['', Validators.required],
-    });
+    this.initializeForm();
     this.authService.user().subscribe({
       next: (user) => {
         this.currentUser = user;
@@ -74,6 +67,17 @@ export class PosEquipmentComponent implements OnInit {
         this.current_page = 1;
         this.loadEquipments();
       }
+    });
+  }
+
+  private initializeForm() {
+    this.equipmentForm = this.fb.group({
+      parasol: ['', [Validators.required]],
+      parasol_status: ['', [Validators.required]],
+      stand: ['', [Validators.required]],
+      stand_status: ['', [Validators.required]],
+      kiosk: ['', [Validators.required]],
+      kiosk_status: ['', [Validators.required]],
     });
   }
 
@@ -116,13 +120,29 @@ export class PosEquipmentComponent implements OnInit {
     this.isEditMode = false;
     this.selectedEquipment = null;
     this.equipmentForm.reset();
+    // Set default values for required fields
+    this.equipmentForm.patchValue({
+      parasol: '',
+      parasol_status: '',
+      stand: '',
+      stand_status: '',
+      kiosk: '',
+      kiosk_status: ''
+    });
     this.openModal('equipmentModal');
   }
 
   editEquipment(eq: IPosEquipment) {
     this.isEditMode = true;
     this.selectedEquipment = eq;
-    this.equipmentForm.patchValue(eq);
+    this.equipmentForm.patchValue({
+      parasol: eq.parasol || '',
+      parasol_status: eq.parasol_status || '',
+      stand: eq.stand || '',
+      stand_status: eq.stand_status || '',
+      kiosk: eq.kiosk || '',
+      kiosk_status: eq.kiosk_status || ''
+    });
     this.openModal('equipmentModal');
   }
 
@@ -151,13 +171,20 @@ export class PosEquipmentComponent implements OnInit {
   }
 
   onSubmitEquipment() {
-    if (this.equipmentForm.invalid) return;
+    if (this.equipmentForm.invalid) {
+      // Mark all fields as touched to show validation errors
+      this.equipmentForm.markAllAsTouched();
+      this.toastr.warning('Veuillez remplir tous les champs obligatoires.');
+      return;
+    }
+    
     this.isLoading = true;
     const formValue = this.equipmentForm.value;
     const payload: IPosEquipment = {
       ...formValue,
       pos_uuid: this.posUUId,
     };
+    
     if (this.isEditMode && this.selectedEquipment) {
       this.equipmentService.update(this.selectedEquipment.uuid!, payload).subscribe({
         next: () => {
@@ -166,8 +193,9 @@ export class PosEquipmentComponent implements OnInit {
           this.closeModal('equipmentModal');
           this.toastr.success('Équipement modifié avec succès !');
         },
-        error: () => {
+        error: (error) => {
           this.isLoading = false;
+          console.error('Error updating equipment:', error);
           this.toastr.error('Erreur lors de la modification de l\'équipement.');
         }
       });
@@ -179,8 +207,9 @@ export class PosEquipmentComponent implements OnInit {
           this.closeModal('equipmentModal');
           this.toastr.success('Équipement ajouté avec succès !');
         },
-        error: () => {
+        error: (error) => {
           this.isLoading = false;
+          console.error('Error creating equipment:', error);
           this.toastr.error('Erreur lors de l\'ajout de l\'équipement.');
         }
       });
@@ -203,15 +232,50 @@ export class PosEquipmentComponent implements OnInit {
   }
 
   openModal(id: string) {
-    const modal = new bootstrap.Modal(document.getElementById(id));
-    modal.show();
+    try {
+      const modalElement = document.getElementById(id);
+      if (modalElement) {
+        // S'assurer que le modal est attaché au body pour éviter les problèmes de z-index
+        if (modalElement.parentNode !== document.body) {
+          document.body.appendChild(modalElement);
+        }
+        
+        const modal = new bootstrap.Modal(modalElement, {
+          backdrop: 'static',
+          keyboard: false
+        });
+        
+        // Forcer le z-index après l'ouverture
+        modalElement.style.zIndex = '10000';
+        
+        modal.show();
+        
+        // S'assurer que le backdrop a le bon z-index
+        setTimeout(() => {
+          const backdrop = document.querySelector('.modal-backdrop');
+          if (backdrop) {
+            (backdrop as HTMLElement).style.zIndex = '9998';
+          }
+        }, 100);
+      } else {
+        console.error(`Modal element with id '${id}' not found`);
+      }
+    } catch (error) {
+      console.error('Error opening modal:', error);
+    }
   }
 
   closeModal(id: string) {
-    const modalEl = document.getElementById(id);
-    if (modalEl) {
-      const modal = bootstrap.Modal.getInstance(modalEl);
-      if (modal) modal.hide();
+    try {
+      const modalEl = document.getElementById(id);
+      if (modalEl) {
+        const modal = bootstrap.Modal.getInstance(modalEl);
+        if (modal) {
+          modal.hide();
+        }
+      }
+    } catch (error) {
+      console.error('Error closing modal:', error);
     }
   }
 }

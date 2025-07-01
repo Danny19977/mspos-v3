@@ -9,6 +9,7 @@ import {NgxPaginationModule} from 'ngx-pagination';
 import { UserViewComponent } from './user-view/user-view.component';
 import { PosUserListComponent } from './pos-user-list/pos-user-list.component';
 import { PosformUserListComponent } from './posform-user-list/posform-user-list.component';
+import { RouteplanUserListComponent } from './routeplan-user-list/routeplan-user-list.component';
 
 
 @NgModule({
@@ -18,6 +19,7 @@ import { PosformUserListComponent } from './posform-user-list/posform-user-list.
     UserViewComponent,
     PosUserListComponent,
     PosformUserListComponent,
+    RouteplanUserListComponent,
   ],
   imports: [
     CommonModule,
