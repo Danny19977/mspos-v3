@@ -1,116 +1,155 @@
 import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
-import { Router } from '@angular/router';
+
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatSort, Sort } from '@angular/material/sort';
 import { routes } from '../../../shared/routes/routes';
+import { IProvince } from '../models/province.model';
+import { ProvinceService } from '../province.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { AuthService } from '../../../auth/auth.service';
 import { ToastrService } from 'ngx-toastr';
-import { IArea } from '../models/area.model';
-import { AreaService } from '../area.service';
-import { IProvince } from '../../province/models/province.model';
-import { ProvinceService } from '../../province/province.service';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { LogsService } from '../../user-logs/logs.service';
-import { CountryService } from '../../country/country.service';
 import { ICountry } from '../../country/models/country.model';
-import { IUser } from '../../user/models/user.model';
+import { CountryService } from '../../country/country.service';
+import { IArea } from '../../areas/models/area.model';
 import { IAsm } from '../../asm/models/asm.model';
+import { IBrand } from '../../brand/models/brand.model';
 import { ICyclo } from '../../cyclo/models/cyclo.model';
 import { IDr } from '../../dr/models/dr.model';
 import { IPos } from '../../pos-vente/models/pos.model';
 import { ISubArea } from '../../subarea/models/subarea.model';
 import { ISup } from '../../sups/models/sup.model';
+import { IUser } from '../../user/models/user.model';
 import { ICommune } from '../../commune/models/commune.model';
+import { IPosForm } from '../../posform/models/posform.model';
+
 
 @Component({
-  selector: 'app-area-list',
+  selector: 'app-province-view',
   standalone: false,
-  templateUrl: './area-list.component.html',
-  styleUrl: './area-list.component.scss'
+  templateUrl: './province-view.component.html',
+  styleUrl: './province-view.component.scss'
 })
-export class AreaListComponent implements OnInit {
+export class ProvinceViewComponent implements OnInit {
   isLoadingData = false;
   public routes = routes;
   // Table 
-  dataList: IArea[] = [];
+  dataList: IProvince[] = [];
   total_pages: number = 0;
   page_size: number = 15;
   current_page: number = 1;
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'province', 'name', 'subarea', 'commune', 'pos', 'posforms', 'users', 'uuid'];
-  dataSource = new MatTableDataSource<IArea>(this.dataList);
+  displayedColumns: string[] = ['country', 'name', 'area', 'subarea', 'commune', 'brand', 'pos', 'posforms', 'users', 'uuid'];
+  dataSource = new MatTableDataSource<IProvince>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
   public search = '';
 
+
   // Forms  
   idItem!: string;
-  dataItem!: IArea; // Single data 
+  dataItem!: IProvince; // Single data 
 
   formGroup!: FormGroup;
   currentUser!: IUser;
   isLoading = false;
 
   countryList: ICountry[] = [];
-  provinceList: IProvince[] = [];
-  provinceFilterList: IProvince[] = [];
+
+  countryUUID!: string;
+  country!: ICountry;
 
   constructor(
+    private route: ActivatedRoute,
     private router: Router,
     private _formBuilder: FormBuilder,
     private authService: AuthService,
-    private areaService: AreaService,
-    private provinceService: ProvinceService,
     private countryService: CountryService,
+    private provinceService: ProvinceService,
     private logActivity: LogsService,
     private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
     private toastr: ToastrService
   ) {
   }
 
-
   ngAfterViewInit(): void {
-    this.authService.user().subscribe({
-      next: (user) => {
-        this.currentUser = user;
-        this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
-        this.dataSource.sort = this.sort; // Bind sort to dataSource
-        this.cdr.detectChanges(); // Trigger change detection
+    this.route.params.subscribe(params => {
+      this.countryUUID = params['uuid'];
+      this.countryService.get(this.countryUUID).subscribe(item => {
+        this.country = item.data;
+        this.authService.user().subscribe({
+          next: (user) => {
+            this.currentUser = user;
+            this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
+            this.dataSource.sort = this.sort; // Bind sort to dataSource
+            this.cdr.detectChanges();
 
-        this.countryService.getAll().subscribe(res => {
-          this.countryList = res.data;
-        });
-        this.provinceService.getAll().subscribe(res => {
-          this.provinceList = res.data;
-        });
+            this.countryService.getAll().subscribe(res => {
+              this.countryList = res.data;
+            });
+            this.provinceService.refreshDataList$.subscribe(() => {
+              this.fetchProducts(this.countryUUID);
+            });
+            this.fetchProducts(this.countryUUID);
 
-        this.areaService.refreshDataList$.subscribe(() => {
-          this.fetchProducts(this.currentUser);
+            this.isLoadingData = false;
+          },
+          error: (error) => {
+            this.isLoadingData = false;
+            this.router.navigate(['/auth/login']);
+            console.log(error);
+          }
         });
-        this.fetchProducts(this.currentUser);
-
-      },
-      error: (error) => {
-        this.isLoadingData = false;
-        this.router.navigate(['/auth/login']);
-        console.log(error);
-      }
+      });
     });
   }
-
 
   ngOnInit() {
     this.isLoadingData = true;
     this.formGroup = this._formBuilder.group({
-      name: ['', Validators.required],
       country_uuid: ['', Validators.required],
-      province_uuid: ['', Validators.required],
+      name: ['', Validators.required],
     });
+  }
+
+  getAreaCount(area: IArea[]): string {
+    return area ? area.length > 0 ? area.length.toString() : '0' : '0';
+  }
+  getSubareaCount(subarea: ISubArea[]): string {
+    return subarea ? subarea.length > 0 ? subarea.length.toString() : '0' : '0';
+  }
+  getCommuneCount(commune: ICommune[]): string {
+    return commune ? commune.length > 0 ? commune.length.toString() : '0' : '0';
+  }
+  getAsmCount(asm: IAsm[]): string {
+    return asm ? asm.length > 0 ? asm.length.toString() : '0' : '0';
+  }
+  getSupCount(sup: ISup[]): string {
+    return sup ? sup.length > 0 ? sup.length.toString() : '0' : '0';
+  }
+  getDrCount(dr: IDr[]): string {
+    return dr ? dr.length > 0 ? dr.length.toString() : '0' : '0';
+  }
+  getCycloCount(cyclo: ICyclo[]): string {
+    return cyclo ? cyclo.length > 0 ? cyclo.length.toString() : '0' : '0';
+  }
+  getBrandCount(brand: IBrand[]): string {
+    return brand ? brand.length > 0 ? brand.length.toString() : '0' : '0';
+  }
+  getPosCount(pos: IPos[]): string {
+    return pos ? pos.length > 0 ? pos.length.toString() : '0' : '0';
+  }
+  getPosFormCount(posForm: IPosForm[]): string {
+    return posForm ? posForm.length > 0 ? posForm.length.toString() : '0' : '0';
+  }
+  getUserCount(user: IUser[]): string {
+    return user ? user.length > 0 ? user.length.toString() : '0' : '0';
   }
 
 
@@ -118,50 +157,24 @@ export class AreaListComponent implements OnInit {
     this.isLoadingData = true;
     this.current_page = event.pageIndex + 1; // Adjust for 1-based page index
     this.page_size = event.pageSize;
-    this.fetchProducts(this.currentUser);
+    this.fetchProducts(this.countryUUID);
   }
 
-  fetchProducts(currentUser: IUser) {
-    if (currentUser.role == 'Manager') {
-      this.areaService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
-        this.dataList = res.data;
-        this.total_pages = res.pagination.total_pages;
-        this.total_records = res.pagination.total_records;
-        this.dataSource.data = this.dataList; // Update dataSource data
-        this.isLoadingData = false;
-      });
-    } else if (currentUser.role == 'ASM') {
-      this.areaService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
-        this.dataList = res.data;
-        this.total_pages = res.pagination.total_pages;
-        this.total_records = res.pagination.total_records;
-        this.dataSource.data = this.dataList; // Update dataSource data
-        this.isLoadingData = false;
-      });
-    } else if (currentUser.role == 'Supervisor') {
-      this.areaService.getPaginatedByAreaId(currentUser.area_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
-        this.dataList = res.data;
-        this.total_pages = res.pagination.total_pages;
-        this.total_records = res.pagination.total_records;
-        this.dataSource.data = this.dataList; // Update dataSource data
-        this.isLoadingData = false;
-      });
-    } else {
-      this.areaService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
-        this.dataList = res.data;
-        this.total_pages = res.pagination.total_pages;
-        this.total_records = res.pagination.total_records;
-        this.dataSource.data = this.dataList; // Update dataSource data
-        this.isLoadingData = false;
-      });
-    }
+  fetchProducts(country_uuid: string) {
+    this.provinceService.getPaginatedByCountryUUId(country_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+      this.dataList = res.data;
+      this.total_pages = res.pagination.total_pages;
+      this.total_records = res.pagination.total_records;
+      this.dataSource.data = this.dataList; // Update dataSource data
+      this.isLoadingData = false;
+    });
   }
+
 
   onSearchChange(search: string) {
     this.search = search;
-    this.fetchProducts(this.currentUser);
+    this.fetchProducts(this.countryUUID);
   }
-
 
   public sortData(sort: Sort) {
     const data = this.dataList.slice();
@@ -182,59 +195,23 @@ export class AreaListComponent implements OnInit {
   }
 
 
-  getSubareaCount(subarea: ISubArea[]): string {
-    return subarea ? subarea.length > 0 ? subarea.length.toString() : '0' : '0';
-  }
-  getCommuneCount(commune: ICommune[]): string {
-    return commune ? commune.length > 0 ? commune.length.toString() : '0' : '0';
-  }
-  getAsmCount(asm: IAsm[]): string {
-    return asm ? asm.length > 0 ? asm.length.toString() : '0' : '0';
-  }
-  getSupCount(sup: ISup[]): string {
-    return sup ? sup.length > 0 ? sup.length.toString() : '0' : '0';
-  }
-  getDrCount(dr: IDr[]): string {
-    return dr ? dr.length > 0 ? dr.length.toString() : '0' : '0';
-  }
-  getCycloCount(cyclo: ICyclo[]): string {
-    return cyclo ? cyclo.length > 0 ? cyclo.length.toString() : '0' : '0';
-  }
-  getPosCount(pos: IPos[]): string {
-    return pos ? pos.length > 0 ? pos.length.toString() : '0' : '0';
-  }
-  getPosFormCount(posForm: IPos[]): string {
-    return posForm ? posForm.length > 0 ? posForm.length.toString() : '0' : '0';
-  }
-  getUserCount(user: IUser[]): string {
-    return user ? user.length > 0 ? user.length.toString() : '0' : '0';
-  }
-
-
-  onCountryChange(event: any) {
-    console.log(event.value);
-    const provinceArray = this.provinceList.filter((v) => v.country_uuid == event.value);
-    this.provinceFilterList = provinceArray;
-  }
-
-
   onSubmit() {
     try {
       if (this.formGroup.valid) {
         this.isLoading = true;
         var body = {
-          name: this.formGroup.value.name,
           country_uuid: this.formGroup.value.country_uuid,
-          province_uuid: this.formGroup.value.province_uuid,
+          name: this.formGroup.value.name.toLowerCase(),
           signature: this.currentUser.fullname,
         };
-        this.areaService.create(body).subscribe({
+        console.log(body);
+        this.provinceService.create(body).subscribe({
           next: (res) => {
             this.logActivity.activity(
-              'AREA',
+              'Province',
               this.currentUser.uuid,
               'created',
-              `Created new AREA uuid: ${res.data.uuid}`,
+              `Created new province uuid: ${res.data.uuid}`,
               this.currentUser.fullname
             ).subscribe({
               next: () => {
@@ -266,19 +243,18 @@ export class AreaListComponent implements OnInit {
     try {
       this.isLoading = true;
       var body = {
-        name: this.formGroup.value.name,
         country_uuid: this.formGroup.value.country_uuid,
-        province_uuid: this.formGroup.value.province_uuid,
+        name: this.formGroup.value.name.toLowerCase(),
         signature: this.currentUser.fullname,
       };
-      this.areaService.update(this.idItem, body)
+      this.provinceService.update(this.idItem, body)
         .subscribe({
           next: (res) => {
             this.logActivity.activity(
-              'AREA',
+              'Province',
               this.currentUser.uuid,
               'updated',
-              `Updated AREA uuid: ${res.data.uuid}`,
+              `Updated province uuid: ${res.data.uuid}`,
               this.currentUser.fullname
             ).subscribe({
               next: () => {
@@ -307,28 +283,28 @@ export class AreaListComponent implements OnInit {
 
   findValue(value: string) {
     this.idItem = value;
-    this.areaService.get(this.idItem).subscribe(item => {
+    this.provinceService.get(this.idItem).subscribe(item => {
       this.dataItem = item.data;
       this.formGroup.patchValue({
-        name: this.dataItem.name,
         country_uuid: this.dataItem.country_uuid,
-        province_uuid: this.dataItem.province_uuid,
+        name: this.dataItem.name,
       });
-    });
+    }
+    );
   }
 
 
 
   delete(): void {
-    this.areaService
+    this.provinceService
       .delete(this.idItem)
       .subscribe({
         next: () => {
           this.logActivity.activity(
-            'AREA',
+            'Province',
             this.currentUser.uuid,
             'deleted',
-            `Delete AREA id: ${this.idItem}`,
+            `Delete province id: ${this.idItem}`,
             this.currentUser.fullname
           ).subscribe({
             next: () => {
@@ -354,4 +330,5 @@ export class AreaListComponent implements OnInit {
   compareFn(c1: IProvince, c2: IProvince): boolean {
     return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
   }
+
 }

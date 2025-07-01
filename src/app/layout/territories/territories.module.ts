@@ -13,6 +13,9 @@ import { AreaListComponent } from '../areas/area-list/area-list.component';
 import { CountryService } from '../country/country.service';
 import { SubareaService } from '../subarea/subarea.service';
 import { CommuneService } from '../commune/commune.service';
+import { SubareaViewComponent } from '../subarea/subarea-view/subarea-view.component';
+import { AreaViewComponent } from '../areas/area-view/area-view.component';
+import { CommuneViewComponent } from '../commune/commune-view/commune-view.component';
 
 const routes: Routes = [
   {
@@ -29,15 +32,39 @@ const routes: Routes = [
   {
     path: 'areas/area-list',
     component: AreaListComponent,
+    data: {
+      breadcrumb: 'Area List'
+    }
+  },
+  {
+    path: 'areas/area-list/:name/:uuid',
+    component: AreaViewComponent,
+    data: {
+      breadcrumb: 'Area List by UUID'
+    }
   },
   {
     path: 'subareas/subarea-list',
     component: SubareaComponent,
   },
   {
+    path: 'subareas/subarea-list/:name/:uuid',
+    component: SubareaViewComponent,
+    data: {
+      breadcrumb: 'Subarea List by UUID'
+    }
+  },
+  {
     path: 'communes/commune-list',
     component: CommuneComponent,
   },
+  {
+    path: 'communes/commune-list/:name/:uuid',
+    component: CommuneViewComponent,
+    data: {
+      breadcrumb: 'Commune List by UUID'
+    }
+  }
 ];
 
 @NgModule({
@@ -46,6 +73,9 @@ const routes: Routes = [
     SubareaComponent,
     CommuneComponent,
     AreaListComponent,
+    AreaViewComponent,
+    SubareaViewComponent,
+    CommuneViewComponent,
   ],
   imports: [
     CommonModule,

@@ -20,7 +20,7 @@ import { LogsService } from '../../user-logs/logs.service';
   templateUrl: './pos-view.component.html',
   styleUrl: './pos-view.component.scss'
 })
-export class PosViewComponent implements OnInit, AfterViewInit {
+export class PosViewComponent implements OnInit {
   isLoadingData = false;
   public routes = routes;
 
@@ -100,17 +100,7 @@ export class PosViewComponent implements OnInit, AfterViewInit {
       });
     });
 
-  }
-
-  ngAfterViewInit(): void {
-    // Pas besoin d'initialiser les événements Bootstrap car on gère tout avec Angular
-    // this.initializeTabs();
-  }
-
-  private initializeTabs(): void {
-    // Méthode gardée pour référence future si nécessaire
-    // Actuellement désactivée pour éviter les conflits
-  }
+  } 
 
   onTabClick(tabId: string, event?: Event): void {
     if (event) {

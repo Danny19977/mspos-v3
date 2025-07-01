@@ -17,6 +17,13 @@ const routes: Routes = [
         path: 'province-list',
         component: ProvinceListComponent,
       },
+      {
+        path: 'province-list/:name/:uuid',
+        component: ProvinceListComponent,
+        data: {
+          breadcrumb: 'Province List by UUID'
+        }
+      }
     ]
   }
 ];

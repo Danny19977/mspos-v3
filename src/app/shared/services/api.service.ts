@@ -71,7 +71,15 @@ export abstract class ApiService {
     return this.http.get<any>(`${this.endpoint}/all/paginate/${uuid}`, { params });
   }
 
-  getPaginatedByProvinceId(province_uuid: string, page: number, pageSize: number, search: string): Observable<any> {
+  getPaginatedByCountryUUId(country_uuid: string, page: number, pageSize: number, search: string): Observable<any> {
+    let params = new HttpParams()
+      .set("page", page.toString())
+      .set("page_size", pageSize.toString())
+      .set("search", search)
+    return this.http.get<any>(`${this.endpoint}/all/paginate/country/${country_uuid}`, { params });
+  }
+
+   getPaginatedByProvinceId(province_uuid: string, page: number, pageSize: number, search: string): Observable<any> {
     let params = new HttpParams()
       .set("page", page.toString())
       .set("page_size", pageSize.toString())

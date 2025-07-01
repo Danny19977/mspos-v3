@@ -1,6 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatSort, Sort } from '@angular/material/sort';
 import { routes } from '../../../shared/routes/routes';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -24,12 +24,12 @@ import { ISup } from '../../sups/models/sup.model';
 import { ICommune } from '../../commune/models/commune.model';
 
 @Component({
-  selector: 'app-area-list',
+  selector: 'app-area-view',
   standalone: false,
-  templateUrl: './area-list.component.html',
-  styleUrl: './area-list.component.scss'
+  templateUrl: './area-view.component.html',
+  styleUrl: './area-view.component.scss'
 })
-export class AreaListComponent implements OnInit {
+export class AreaViewComponent implements OnInit {
   isLoadingData = false;
   public routes = routes;
   // Table 
@@ -60,7 +60,12 @@ export class AreaListComponent implements OnInit {
   provinceList: IProvince[] = [];
   provinceFilterList: IProvince[] = [];
 
+  name!: string;
+  territoire_uuid!: string;
+  territoire!: any;
+
   constructor(
+    private route: ActivatedRoute,
     private router: Router,
     private _formBuilder: FormBuilder,
     private authService: AuthService,
@@ -73,34 +78,39 @@ export class AreaListComponent implements OnInit {
   ) {
   }
 
-
   ngAfterViewInit(): void {
-    this.authService.user().subscribe({
-      next: (user) => {
-        this.currentUser = user;
-        this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
-        this.dataSource.sort = this.sort; // Bind sort to dataSource
-        this.cdr.detectChanges(); // Trigger change detection
+    this.route.params.subscribe(params => {
+      this.name = params['name'];
+      this.territoire_uuid = params['uuid'];
+      this.authService.user().subscribe({
+        next: (user) => {
+          this.currentUser = user;
+          this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
+          this.dataSource.sort = this.sort; // Bind sort to dataSource
+          this.cdr.detectChanges();
 
-        this.countryService.getAll().subscribe(res => {
-          this.countryList = res.data;
-        });
-        this.provinceService.getAll().subscribe(res => {
-          this.provinceList = res.data;
-        });
+          this.areaService.refreshDataList$.subscribe(() => {
+            this.fetchProducts(this.name, this.territoire_uuid);
+          });
+          this.fetchProducts(this.name, this.territoire_uuid);
 
-        this.areaService.refreshDataList$.subscribe(() => {
-          this.fetchProducts(this.currentUser);
-        });
-        this.fetchProducts(this.currentUser);
+          this.countryService.getAll().subscribe(res => {
+            this.countryList = res.data;
+          });
+          this.provinceService.getAll().subscribe(res => {
+            this.provinceList = res.data;
+          });
 
-      },
-      error: (error) => {
-        this.isLoadingData = false;
-        this.router.navigate(['/auth/login']);
-        console.log(error);
-      }
+          this.isLoadingData = false;
+        },
+        error: (error) => {
+          this.isLoadingData = false;
+          this.router.navigate(['/auth/login']);
+          console.log(error);
+        }
+      });
     });
+
   }
 
 
@@ -118,48 +128,39 @@ export class AreaListComponent implements OnInit {
     this.isLoadingData = true;
     this.current_page = event.pageIndex + 1; // Adjust for 1-based page index
     this.page_size = event.pageSize;
-    this.fetchProducts(this.currentUser);
+    this.fetchProducts(this.name, this.territoire_uuid);
   }
 
-  fetchProducts(currentUser: IUser) {
-    if (currentUser.role == 'Manager') {
-      this.areaService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
-        this.dataList = res.data;
-        this.total_pages = res.pagination.total_pages;
-        this.total_records = res.pagination.total_records;
-        this.dataSource.data = this.dataList; // Update dataSource data
-        this.isLoadingData = false;
+  fetchProducts(name: string, territoire_uuid: string) {
+    if (name == "country") {
+      this.countryService.get(territoire_uuid).subscribe(item => {
+        this.territoire = item.data;
+        this.areaService.getPaginatedByCountryUUId(territoire_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+          this.dataList = res.data;
+          this.total_pages = res.pagination.total_pages;
+          this.total_records = res.pagination.total_records;
+          this.dataSource.data = this.dataList; // Update dataSource data
+          this.isLoadingData = false;
+        });
       });
-    } else if (currentUser.role == 'ASM') {
-      this.areaService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
-        this.dataList = res.data;
-        this.total_pages = res.pagination.total_pages;
-        this.total_records = res.pagination.total_records;
-        this.dataSource.data = this.dataList; // Update dataSource data
-        this.isLoadingData = false;
-      });
-    } else if (currentUser.role == 'Supervisor') {
-      this.areaService.getPaginatedByAreaId(currentUser.area_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
-        this.dataList = res.data;
-        this.total_pages = res.pagination.total_pages;
-        this.total_records = res.pagination.total_records;
-        this.dataSource.data = this.dataList; // Update dataSource data
-        this.isLoadingData = false;
-      });
-    } else {
-      this.areaService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
-        this.dataList = res.data;
-        this.total_pages = res.pagination.total_pages;
-        this.total_records = res.pagination.total_records;
-        this.dataSource.data = this.dataList; // Update dataSource data
-        this.isLoadingData = false;
+    } else if (name == "province") {
+      this.provinceService.get(territoire_uuid).subscribe(item => {
+        this.territoire = item.data;
+        this.areaService.getPaginatedByProvinceId(territoire_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+          this.dataList = res.data;
+          this.total_pages = res.pagination.total_pages;
+          this.total_records = res.pagination.total_records;
+          this.dataSource.data = this.dataList; // Update dataSource data
+          this.isLoadingData = false;
+        });
       });
     }
+
   }
 
   onSearchChange(search: string) {
     this.search = search;
-    this.fetchProducts(this.currentUser);
+    this.fetchProducts(this.name, this.territoire_uuid);
   }
 
 
