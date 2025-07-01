@@ -331,154 +331,40 @@
 </head>
 
 <body>
-    <div id="splash-screen">
+    <div class="site-preloader" id="splash-screen">
         <div class="splash-content">
-            <div class="splash-logo">
-                <img src="img/logo.svg" alt="MSPOS Logo" />
+            <img src="img/logo.svg" alt="Logo" class="splash-logo animated-logo" />
+            <div class="splash-bounce-loader">
+                <div class="bounce-dot"></div>
+                <div class="bounce-dot"></div>
+                <div class="bounce-dot"></div>
             </div>
-            
-            <h1 class="splash-title">MSPOS V3</h1>
-            <p class="splash-subtitle">Système de Gestion Moderne</p>
-            
-            <div class="modern-loader">
-                <div class="loader-ring"></div>
+            <div class="splash-message">Bienvenue sur MSPOS !<br>
+                <span class="splash-quote">« Gagner du temps avec MSPOS. »</span>
             </div>
-            
-            <div class="loading-dots">
-                <div class="dot"></div>
-                <div class="dot"></div>
-                <div class="dot"></div>
-            </div>
-            
-            <div class="progress-container">
-                <div class="progress-bar"></div>
-            </div>
-            
-            <p class="loading-message">Chargement en cours...</p>
-            <p class="loading-quote">"Optimiser votre gestion avec MSPOS"</p>
         </div>
-        
-        <div class="version-info">v3.0.0</div>
     </div>
-    
     <app-root></app-root>
-    
     <script>
-        // Messages de chargement dynamiques
-        const loadingMessages = [
-            "Initialisation de l'application...",
-            "Chargement des modules...",
-            "Configuration en cours...",
-            "Préparation de l'interface...",
-            "Finalisation du démarrage..."
-        ];
-        
-        const quotes = [
-            "Optimiser votre gestion avec MSPOS",
-            "La performance au service de votre entreprise",
-            "Simplifiez vos processus métier",
-            "Innovation et efficacité réunies",
-            "Votre partenaire technologique de confiance"
-        ];
-
-        let messageIndex = 0;
-        let quoteIndex = 0;
-
-        function updateLoadingText() {
-            const messageEl = document.querySelector('.loading-message');
-            const quoteEl = document.querySelector('.loading-quote');
-            
-            if (messageEl) {
-                messageEl.textContent = loadingMessages[messageIndex];
-                messageIndex = (messageIndex + 1) % loadingMessages.length;
-            }
-            
-            if (quoteEl) {
-                quoteEl.textContent = `"${quotes[quoteIndex]}"`;
-                quoteIndex = (quoteIndex + 1) % quotes.length;
-            }
-        }
-
-        // Changer les messages toutes les 800ms
-        const messageInterval = setInterval(updateLoadingText, 800);
-
-        // Gestion du splash screen améliorée
+        // Hide splash when Angular is ready
         window.addEventListener('DOMContentLoaded', function () {
-            const appRoot = document.querySelector('app-root');
-            const splashScreen = document.getElementById('splash-screen');
-            
-            if (!appRoot || !splashScreen) return;
-
-            // Timeout de sécurité pour masquer le splash après 10 secondes max
-            const fallbackTimeout = setTimeout(() => {
-                console.log('Timeout: masquage forcé du splash screen');
-                hideSplashScreen();
-            }, 10000);
-
-            // Observer pour détecter quand Angular est prêt
-            const observer = new MutationObserver(function(mutations) {
-                // Vérifier si l'app-root a du contenu
-                if (appRoot.children.length > 0) {
-                    clearTimeout(fallbackTimeout);
-                    clearInterval(messageInterval);
-                    
-                    // Petit délai pour que l'utilisateur voie l'animation complète
-                    setTimeout(() => {
-                        hideSplashScreen();
-                    }, 500);
-                    
-                    observer.disconnect();
-                }
-            });
-
-            observer.observe(appRoot, { 
-                childList: true, 
-                subtree: true 
-            });
-
-            function hideSplashScreen() {
-                if (splashScreen) {
-                    splashScreen.classList.add('fade-out');
-                    setTimeout(() => {
-                        splashScreen.remove();
-                        // Nettoyage des styles du preloader
-                        const preloaderStyle = document.querySelector('.site-preloader-style');
-                        if (preloaderStyle) {
-                            preloaderStyle.remove();
-                        }
-                    }, 500);
-                }
-            }
-        });
-
-        // Gestion des erreurs de chargement
-        window.addEventListener('error', function(e) {
-            console.error('Erreur détectée:', e);
-            const splashScreen = document.getElementById('splash-screen');
-            if (splashScreen) {
-                clearInterval(messageInterval);
-                splashScreen.innerHTML = `
-                    <div class="splash-content">
-                        <div class="error-message">
-                            <h3>⚠️ Erreur de chargement</h3>
-                            <p>Une erreur s'est produite lors du démarrage</p>
-                            <p style="font-size: 12px; color: #666;">${e.message || 'Erreur inconnue'}</p>
-                            <button onclick="window.location.reload()" class="retry-btn">
-                                🔄 Recharger l'application
-                            </button>
-                        </div>
-                    </div>
-                `;
+            var appRoot = document.querySelector('app-root');
+            if (appRoot) {
+                var observer = new MutationObserver(function () {
+                    var splash = document.getElementById('splash-screen');
+                    if (splash && appRoot.childNodes.length > 0) {
+                        splash.classList.add('site-preloader__fade');
+                        setTimeout(function () {
+                            splash.style.display = 'none';
+                        }, 400);
+                        observer.disconnect();
+                    }
+                });
+                observer.observe(appRoot, { childList: true });
             }
         });
     </script>
-    
-    <noscript>
-        <div style="text-align: center; padding: 50px; font-family: Arial, sans-serif;">
-            <h2>JavaScript requis</h2>
-            <p>Veuillez activer JavaScript pour utiliser cette application.</p>
-        </div>
-    </noscript>
+    <noscript>Please enable JavaScript to continue using this application.</noscript>
 </body>
 
 </html>

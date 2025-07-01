@@ -3,10 +3,16 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
-    "build": "ng build",
+    "start": "ng serve --host 0.0.0.0 --port 4200 --open",
+    "start:prod": "ng serve --configuration production --host 0.0.0.0 --port 4200",
+    "start:fast": "ng serve --host 0.0.0.0 --port 4200 --open --poll=2000 --live-reload=false",
+    "build": "ng build --configuration production",
+    "build:analyze": "ng build --configuration production --stats-json && npx webpack-bundle-analyzer dist/mspos-v3/stats.json",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "lint": "ng lint",
+    "prestart": "echo '🚀 Démarrage de MSPOS V3...'",
+    "poststart": "echo '✅ MSPOS V3 démarré avec succès!'"
   },
   "private": true,
   "dependencies": {
