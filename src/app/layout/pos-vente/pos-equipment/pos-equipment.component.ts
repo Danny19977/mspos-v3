@@ -32,7 +32,6 @@ export class PosEquipmentComponent implements OnInit {
 
   equipmentForm!: FormGroup;
   isEditMode = false;
-  brands: string[] = ['Brand1', 'Brand2', 'Brand3']; // À adapter selon la source réelle
   selectedEquipment: IPosEquipment | null = null;
   equipmentToDelete: IPosEquipment | null = null;
   brandList: IBrand[] = [];
@@ -97,7 +96,19 @@ export class PosEquipmentComponent implements OnInit {
   loadBrandsByRole() {
     if (!this.currentUser) return;
      this.brandService.getAllByASM(this.currentUser.province_uuid).subscribe({
-        next: (res: any) => this.brandList = res.data || [],
+        next: (res: any) => {
+          this.brandList = res.data || [];
+          // Ajouter l'option "Pas d'équipement" au début de la liste
+          this.brandList.unshift({
+            uuid: 'no-equipment',
+            name: "Pas d'équipement",
+            country_uuid: '',
+            province_uuid: '',
+            signature: '',
+            CreatedAt: new Date(),
+            UpdatedAt: new Date()
+          });
+        },
       });
   }
 

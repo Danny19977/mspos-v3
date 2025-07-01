@@ -20,6 +20,14 @@
         </div>
     </div>
     <div class=" ">
+        @if (hasMapError) {
+        <div class="alert alert-danger" role="alert">
+            <h4 class="alert-heading">Google Maps Error</h4>
+            <p>{{ mapErrorMessage }}</p>
+            <p class="mb-0">Please check your Google Maps API key configuration and ensure it has the necessary permissions.</p>
+        </div>
+        } @else {
         <app-map-pos-card [isLoading]="isLoading" [googleMapList]="googleMapList"></app-map-pos-card>
+        }
     </div>
 </div>

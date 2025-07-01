@@ -311,7 +311,8 @@ export class PostformListComponent implements OnInit, AfterViewInit {
               this.toastr.info('Veuillez créer un plan de route.', 'Plan de route inexistant');
             }
           });
-        }
+        };
+        this.isload = false;
       },
       error: (error) => {
         this.isload = false;

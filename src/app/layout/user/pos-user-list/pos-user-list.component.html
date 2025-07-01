@@ -1,4 +1,157 @@
-<!-- Liste des utilisateurs POS -->
-<div>
-  <p>Liste des utilisateurs POS (à personnaliser)</p>
+@if (isLoadingData) {
+<div class="text-center d-flex justify-content-center align-items-center">
+    <div class="spinner-border bs-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
 </div>
+} @else {
+<div class="card">
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap">
+        <h5 class="mb-0">Points de Vente</h5>
+        <div class="d-flex align-items-center">
+            <div class="input-icon-end position-relative me-3">
+                <input type="text" class="form-control" placeholder="Rechercher..." 
+                       (keyup)="applyFilter($event)" [(ngModel)]="search">
+                <span class="input-icon-addon">
+                    <i class="ti ti-search"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table mat-table [dataSource]="dataSource" class="table table-nowrap mb-0" matSort>
+                
+                <!-- Status Column -->
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap">Statut</th>
+                    <td mat-cell *matCellDef="let element">
+                        <span class="badge" [ngClass]="{
+                            'badge-success': element.status,
+                            'badge-danger': !element.status
+                        }">
+                            <i class="ti" [ngClass]="{
+                                'ti-check': element.status,
+                                'ti-x': !element.status
+                            }" class="me-1"></i>
+                            {{ element.status ? 'Actif' : 'Inactif' }}
+                        </span>
+                    </td>
+                </ng-container>
+
+                <!-- POS Type Column -->
+                <ng-container matColumnDef="postype">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap">Type</th>
+                    <td mat-cell *matCellDef="let element">
+                        <span class="badge badge-light bg-light-600 text-default">
+                            {{ element.postype }}
+                        </span>
+                    </td>
+                </ng-container>
+
+                <!-- Name Column -->
+                <ng-container matColumnDef="name">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap">Nom POS</th>
+                    <td mat-cell *matCellDef="let element">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar avatar-sm bg-primary-light me-2 flex-shrink-0">
+                                <i class="ti ti-building-store text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ element.name }}</h6>
+                            </div>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <!-- Shop Column -->
+                <ng-container matColumnDef="shop">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap">Magasin</th>
+                    <td mat-cell *matCellDef="let element">{{ element.shop }}</td>
+                </ng-container>
+
+                <!-- Gerant Column -->
+                <ng-container matColumnDef="gerant">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap">Gérant</th>
+                    <td mat-cell *matCellDef="let element">{{ element.gerant }}</td>
+                </ng-container>
+
+                <!-- Quartier Column -->
+                <ng-container matColumnDef="quartier">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap">Quartier</th>
+                    <td mat-cell *matCellDef="let element">{{ element.quartier }}</td>
+                </ng-container>
+
+                <!-- Avenue Column -->
+                <ng-container matColumnDef="avenue">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap">Avenue</th>
+                    <td mat-cell *matCellDef="let element">{{ element.avenue }}</td>
+                </ng-container>
+
+                <!-- Telephone Column -->
+                <ng-container matColumnDef="telephone">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap">Téléphone</th>
+                    <td mat-cell *matCellDef="let element">
+                        <a [href]="'tel:' + element.telephone" class="text-primary text-decoration-none">
+                            {{ element.telephone }}
+                        </a>
+                    </td>
+                </ng-container>
+
+                <!-- Commune Column -->
+                <ng-container matColumnDef="commune">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap">Commune</th>
+                    <td mat-cell *matCellDef="let element">{{ element.commune_name }}</td>
+                </ng-container>
+
+                <!-- POS Forms Count Column -->
+                <ng-container matColumnDef="posforms">
+                    <th mat-header-cell *matHeaderCellDef class="no-wrap">Rapports</th>
+                    <td mat-cell *matCellDef="let element">
+                        <span class="badge badge-primary">
+                            {{ getPosFormCount(element.PosForms) }}
+                        </span>
+                    </td>
+                </ng-container>
+
+                <!-- Action Column -->
+                <ng-container matColumnDef="action">
+                    <th mat-header-cell *matHeaderCellDef class="no-wrap">Actions</th>
+                    <td mat-cell *matCellDef="let element">
+                        <div class="d-flex align-items-center">
+                            <button type="button" class="btn btn-sm btn-icon btn-primary me-1"
+                                    (click)="onView(element.uuid || '')" title="Voir les détails">
+                                <i class="ti ti-eye"></i>
+                            </button>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+        </div>
+    </div>
+
+    @if (dataList.length === 0 && !isLoadingData) {
+    <div class="card-body text-center py-5">
+        <div class="empty-state">
+            <div class="avatar avatar-xl bg-light-600 mx-auto mb-3">
+                <i class="ti ti-building-store fs-36 text-muted"></i>
+            </div>
+            <h5 class="mb-2">Aucun point de vente</h5>
+            <p class="text-muted">Cet utilisateur n'a pas encore de points de vente assignés.</p>
+        </div>
+    </div>
+    }
+
+    @if (total_records > page_size) {
+    <div class="card-footer">
+        <mat-paginator [length]="total_records" [pageSize]="page_size" [pageSizeOptions]="[15, 25, 50, 100]"
+                       (page)="onPageChange($event)" showFirstLastButtons>
+        </mat-paginator>
+    </div>
+    }
+</div>
+}

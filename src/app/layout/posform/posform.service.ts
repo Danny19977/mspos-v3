@@ -3,12 +3,25 @@ import { ApiService } from '../../shared/services/api.service';
 import { environment } from '../../../environments/environment';
 import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { ApiResponse2 } from '../../shared/model/api-response.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class PosformService extends ApiService {
-  endpoint: string = `${environment.apiUrl}/posforms`; 
+  endpoint: string = `${environment.apiUrl}/posforms`;
+
+  getPaginatedRangeDateByUserUUID(uuid: string, page: number, pageSize: number, search: string,
+    startDateStr: string, endDateStr: string
+  ): Observable<ApiResponse2> {
+    let params = new HttpParams()
+      .set("page", page.toString())
+      .set("limit", pageSize.toString())
+      .set("search", search)
+      .set("start_date", startDateStr)
+      .set("end_date", endDateStr)
+    return this.http.get<ApiResponse2>(`${this.endpoint}/all/paginate/user/${uuid}`, { params });
+  }
 
   /**
    * Récupère les posforms avec filtres avancés

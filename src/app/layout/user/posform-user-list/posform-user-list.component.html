@@ -1,4 +1,162 @@
-<!-- Liste des formulaires utilisateurs POS -->
-<div>
-  <p>Liste des formulaires utilisateurs POS (à personnaliser)</p>
+@if (isLoadingData) {
+<div class="text-center d-flex justify-content-center align-items-center">
+    <div class="spinner-border bs-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+    </div>
 </div>
+} @else {
+<div class="card">
+    <div class="card-header d-flex align-items-center justify-content-between flex-wrap">
+        <h5 class="mb-0">Rapports de Visites</h5>
+        <div class="d-flex align-items-center gap-3">
+            <!-- Date Range Picker -->
+            <div class="d-flex align-items-center gap-2">
+                <label class="me-2">Période:</label>
+                <input type="date" class="form-control form-control-sm" 
+                       [value]="start_date" 
+                       (change)="onStartDateChange($event)"
+                       style="width: 150px;">
+                <span class="mx-1">à</span>
+                <input type="date" class="form-control form-control-sm" 
+                       [value]="end_date" 
+                       (change)="onEndDateChange($event)"
+                       style="width: 150px;">
+            </div>
+            
+            <!-- Search -->
+            <div class="input-icon-end position-relative">
+                <input type="text" class="form-control" placeholder="Rechercher..." 
+                       (keyup)="applyFilter($event)" [(ngModel)]="search">
+                <span class="input-icon-addon">
+                    <i class="ti ti-search"></i>
+                </span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table mat-table [dataSource]="dataSource" class="table table-nowrap mb-0" matSort>
+                
+                <!-- Created At Column -->
+                <ng-container matColumnDef="createdat">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap">Date</th>
+                    <td mat-cell *matCellDef="let element">
+                        <span class="badge badge-light bg-light-600 text-default">
+                            <i class="ti ti-calendar me-1"></i>
+                            {{ element.CreatedAt | date: 'dd/MM/yyyy HH:mm' }}
+                        </span>
+                    </td>
+                </ng-container>
+
+                <!-- POS Column -->
+                <ng-container matColumnDef="pos">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap">Point de Vente</th>
+                    <td mat-cell *matCellDef="let element">
+                        <div class="d-flex align-items-center">
+                            <div class="avatar avatar-sm bg-primary-light me-2 flex-shrink-0">
+                                <i class="ti ti-building-store text-primary"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-0">{{ element.Pos?.name || 'N/R' }}</h6>
+                                <small class="text-muted">{{ element.Pos?.shop || '' }}</small>
+                            </div>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <!-- Price Column -->
+                <ng-container matColumnDef="price">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap">Prix Total</th>
+                    <td mat-cell *matCellDef="let element">
+                        <span class="badge badge-success fw-bold">
+                            {{ getTotalPrice(element) | currency:'USD':'symbol':'1.0-0' }}
+                        </span>
+                    </td>
+                </ng-container>
+
+                <!-- ASM Column -->
+                <ng-container matColumnDef="asm">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap">ASM</th>
+                    <td mat-cell *matCellDef="let element">
+                        <span class="text-truncate">{{ element.asm || 'N/R' }}</span>
+                    </td>
+                </ng-container>
+
+                <!-- Supervisor Column -->
+                <ng-container matColumnDef="sup">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap">Superviseur</th>
+                    <td mat-cell *matCellDef="let element">
+                        <span class="text-truncate">{{ element.sup || 'N/R' }}</span>
+                    </td>
+                </ng-container>
+
+                <!-- DR Column -->
+                <ng-container matColumnDef="dr">
+                    <th mat-header-cell *matHeaderCellDef mat-sort-header class="no-wrap">DR</th>
+                    <td mat-cell *matCellDef="let element">
+                        <span class="text-truncate">{{ element.dr || 'N/R' }}</span>
+                    </td>
+                </ng-container>
+
+                <!-- Brand Column -->
+                <ng-container matColumnDef="brand">
+                    <th mat-header-cell *matHeaderCellDef class="no-wrap">Marques</th>
+                    <td mat-cell *matCellDef="let element">
+                        <span class="badge badge-primary">
+                            {{ getBrandCount(element.PosFormItems) }} marque(s)
+                        </span>
+                    </td>
+                </ng-container>
+
+                <!-- Comment Column -->
+                <ng-container matColumnDef="comment">
+                    <th mat-header-cell *matHeaderCellDef class="no-wrap">Commentaire</th>
+                    <td mat-cell *matCellDef="let element">
+                        <span class="text-truncate d-inline-block" style="max-width: 150px;" 
+                              [title]="element.comment">
+                            {{ element.comment || 'Aucun commentaire' }}
+                        </span>
+                    </td>
+                </ng-container>
+
+                <!-- Action Column -->
+                <ng-container matColumnDef="action">
+                    <th mat-header-cell *matHeaderCellDef class="no-wrap">Actions</th>
+                    <td mat-cell *matCellDef="let element">
+                        <div class="d-flex align-items-center">
+                            <button type="button" class="btn btn-sm btn-icon btn-primary me-1"
+                                    (click)="onView(element.uuid || '')" title="Voir les détails">
+                                <i class="ti ti-eye"></i>
+                            </button>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+        </div>
+    </div>
+
+    @if (dataList.length === 0 && !isLoadingData) {
+    <div class="card-body text-center py-5">
+        <div class="empty-state">
+            <div class="avatar avatar-xl bg-light-600 mx-auto mb-3">
+                <i class="ti ti-report fs-36 text-muted"></i>
+            </div>
+            <h5 class="mb-2">Aucun rapport de visite</h5>
+            <p class="text-muted">Cet utilisateur n'a pas encore de rapports de visites pour la période sélectionnée.</p>
+        </div>
+    </div>
+    }
+
+    @if (total_records > page_size) {
+    <div class="card-footer">
+        <mat-paginator [length]="total_records" [pageSize]="page_size" [pageSizeOptions]="[15, 25, 50, 100]"
+                       (page)="onPageChange($event)" showFirstLastButtons>
+        </mat-paginator>
+    </div>
+    }
+</div>
+}

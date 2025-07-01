@@ -2,6 +2,7 @@ import { Component, Input, OnChanges, SimpleChanges, ViewChild, AfterViewInit, E
 import { _isNumberValue } from '@angular/cdk/coercion';
 import { MapInfoWindow, MapMarker } from '@angular/google-maps';
 import { GoogleMapModel } from '../../../../dashboard/models/dashboard.models';
+import { GoogleMapsLoaderService } from '../../../../../services/google-maps-loader.service';
 
 interface Marker {
   position: google.maps.LatLngLiteral;
@@ -33,14 +34,26 @@ export class MapPosCardComponent implements OnInit {
   // Propriétés pour les dimensions dynamiques de la carte
   mapHeight = '800px';
   mapWidth = '1100px';
+  hasMapError = false;
+  mapErrorMessage = '';
 
   selectedMarker: Marker | null = null; // Propriété pour le marqueur sélectionné
   center: google.maps.LatLngLiteral = { lat: -4.4419, lng: 15.2663 }; // Centre par défaut (République Démocratique du Congo)
   zoom = 6; // Propriété pour le niveau de zoom
   markers: Marker[] = []; // Propriété pour la liste des marqueurs
 
+  constructor(private googleMapsLoader: GoogleMapsLoaderService) {}
+
   ngOnInit(): void {
-    this.calculateMapDimensions();
+    // Ensure Google Maps is loaded before initializing
+    this.googleMapsLoader.loadGoogleMaps().then(() => {
+      this.calculateMapDimensions();
+      this.hasMapError = false;
+    }).catch((error) => {
+      console.error('Failed to load Google Maps:', error);
+      this.hasMapError = true;
+      this.mapErrorMessage = 'Failed to load Google Maps. Please check your API key configuration.';
+    });
   }
 
   @HostListener('window:resize', ['$event'])

@@ -3,6 +3,7 @@ import { GoogleMapModel } from '../../../dashboard/models/dashboard.models';
 import { PosVenteService } from '../../pos-vente.service';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { formatDate } from '@angular/common';
+import { GoogleMapsLoaderService } from '../../../../services/google-maps-loader.service';
 
 @Component({
     selector: 'app-map-pos',
@@ -13,6 +14,8 @@ import { formatDate } from '@angular/common';
 export class MapPosComponent implements OnInit {
     @Input() posUUId!: string;
     isLoading = false;
+    hasMapError = false;
+    mapErrorMessage = '';
 
     dateRange!: FormGroup;
     start_date!: string;
@@ -27,11 +30,26 @@ export class MapPosComponent implements OnInit {
     constructor(
         private _formBuilder: FormBuilder,
         private posService: PosVenteService,
+        private googleMapsLoader: GoogleMapsLoaderService
     ) { }
 
 
     ngOnInit() {
         this.isLoading = true;
+        this.hasMapError = false;
+        
+        // Load Google Maps first
+        this.googleMapsLoader.loadGoogleMaps().then(() => {
+            this.initializeComponent();
+        }).catch((error) => {
+            console.error('Failed to load Google Maps:', error);
+            this.hasMapError = true;
+            this.mapErrorMessage = 'Failed to load Google Maps. Please check your API key and internet connection.';
+            this.isLoading = false;
+        });
+    }
+
+    private initializeComponent() {
         const date = new Date();
         const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
         const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);

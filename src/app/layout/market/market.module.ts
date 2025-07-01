@@ -19,6 +19,7 @@ import { RouteplanItemService } from '../routeplan/routeplanitem.service';
 import { BrandService } from '../brand/brand.service';
 import { MapPosCardComponent } from '../pos-vente/pos-view/map-pos/map-pos-card/map-pos-card.component';
 import { GoogleMapsModule } from '@angular/google-maps';
+import { GoogleMapsLoaderService } from '../../services/google-maps-loader.service';
 
 const routes: Routes = [
   {
@@ -72,6 +73,7 @@ const routes: Routes = [
     RouteplanService,
     RouteplanItemService,
     BrandService,
+    GoogleMapsLoaderService,
   ]
 })
 export class MarketModule { }

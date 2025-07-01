@@ -4,6 +4,13 @@
         <span class="visually-hidden">Loading...</span>
     </div>
 </div>
+} @else if (hasMapError) {
+<div class="alert alert-warning" role="alert">
+    <h5 class="alert-heading">Map Loading Error</h5>
+    <p>{{ mapErrorMessage }}</p>
+    <hr>
+    <p class="mb-0">Please check your Google Maps API key and try refreshing the page.</p>
+</div>
 } @else {
 <google-map [height]="mapHeight" [width]="mapWidth" [center]="center" [zoom]="zoom">
     <map-marker *ngFor="let marker of markers" #markerRef="mapMarker" [position]="marker.position" [title]="marker.name"
