@@ -26,7 +26,7 @@ export class AppComponent implements OnInit, OnDestroy {
   ) {
     // Marquer le début du bootstrap Angular
     this.performanceService.mark('angular-constructor-start');
-    
+
     // Optimisation: utiliser takeUntil pour éviter les fuites mémoire
     this.router.events
       .pipe(takeUntil(this.destroy$))
@@ -36,18 +36,18 @@ export class AppComponent implements OnInit, OnDestroy {
           this.page = URL[1];
         }
       });
-      
+
     this.performanceService.mark('angular-constructor-end');
   }
 
   ngOnInit(): void {
     this.performanceService.mark('angular-init-start');
-    
+
     if (isPlatformBrowser(this.platformId)) {
       // Démarrage optimisé
       this.initializeApp();
     }
-    
+
     this.performanceService.markAppBootstrap();
     this.performanceService.mark('angular-init-end');
   }
@@ -60,7 +60,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private initializeApp(): void {
     // Mesure de performance
     const startTime = performance.now();
-    
+
     console.group('🚀 Initialisation de MSPOS V3');
     console.log('⏱️ Démarrage de l\'initialisation...');
 
@@ -87,7 +87,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private handleSplashScreen(startTime: number): void {
     this.performanceService.mark('splash-screen-handling-start');
-    
+
     this.zone.runOutsideAngular(() => {
       this.router.events
         .pipe(
@@ -98,9 +98,9 @@ export class AppComponent implements OnInit, OnDestroy {
         .subscribe(() => {
           const loadTime = performance.now() - startTime;
           console.log(`✅ Application prête en ${Math.round(loadTime)}ms`);
-          
+
           this.performanceService.mark('first-route-loaded');
-          
+
           // Masquer le preloader avec délai minimal pour la fluidité
           setTimeout(() => {
             this.hideSplashScreen();
@@ -111,9 +111,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private hideSplashScreen(): void {
     this.performanceService.mark('splash-screen-hide-start');
-    
+
     const preloader = document.querySelector('#splash-screen');
-    
+
     if (!preloader) {
       console.log('ℹ️ Splash screen déjà masqué');
       return;
@@ -128,7 +128,7 @@ export class AppComponent implements OnInit, OnDestroy {
         preloader.remove();
         document.querySelector('.site-preloader-style')?.remove();
         console.log('✨ Splash screen masqué avec succès');
-        
+
         // Marquer la fin du chargement complet
         this.performanceService.markLoadComplete();
         this.performanceService.mark('splash-screen-removed');
@@ -152,7 +152,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private clearCacheOptimized(): void {
     this.performanceService.mark('cache-clear-start');
-    
+
     if (!('caches' in window)) {
       console.log('ℹ️ Cache API non supporté');
       return;
@@ -189,7 +189,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private setupServiceWorkerUpdates(): void {
     this.performanceService.mark('service-worker-setup-start');
-    
+
     if (!this.swUpdate.isEnabled) {
       console.log('ℹ️ Service Worker désactivé');
       return;
@@ -230,14 +230,14 @@ export class AppComponent implements OnInit, OnDestroy {
         console.error('❌ Erreur lors de la vérification des mises à jour:', error);
         this.performanceService.mark('sw-check-error');
       });
-      
+
     this.performanceService.mark('service-worker-setup-complete');
   }
 
   private promptForUpdate(): void {
     // Notification non-intrusive pour la mise à jour
     const updateMessage = 'Une nouvelle version de MSPOS est disponible. Voulez-vous mettre à jour maintenant ?';
-    
+
     if (confirm(updateMessage)) {
       console.log('🔄 Rechargement pour mise à jour...');
       this.performanceService.mark('sw-update-accepted');
