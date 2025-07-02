@@ -126,18 +126,18 @@ export class PosVenteService extends ApiService {
     } else if (currentUser.role == 'DR') {
       return this.http.get<any>(`${this.endpoint}/all/paginate/subarea/${currentUser.sub_area_uuid}`, { params });
 
-    }  else if (currentUser.role == 'Cyclo') {
+    } else if (currentUser.role == 'Cyclo') {
       return this.http.get<any>(`${this.endpoint}/all/paginate/commune/${currentUser.uuid}`, { params });
     } else {
       return this.http.get<any>(`${this.endpoint}/all/paginate`, { params });
-    } 
+    }
 
   }
 
 
   getPaginatedWithAdvancedFilters2(
-   name: string, 
-   territoire_uuid: string,
+    name: string,
+    territoire_uuid: string,
     page: number,
     pageSize: number,
     filters: any = {}
@@ -234,17 +234,19 @@ export class PosVenteService extends ApiService {
       params = params.set('posformsCount', filters.posformsCount);
     }
 
-     if (name == "country") {
+    if (name == "country" || name == 'Manager' || name == 'Support') {
       return this.http.get<any>(`${this.endpoint}/all/paginate/country/${territoire_uuid}`, { params });
-    } else if (name == 'province') {
-       return this.http.get<any>(`${this.endpoint}/all/paginate/province/${territoire_uuid}`, { params });
-    } else if (name == 'area') {
-        return this.http.get<any>(`${this.endpoint}/all/paginate/subarea/${territoire_uuid}`, { params });
-    } else if (name == 'subarea') {
-       return this.http.get<any>(`${this.endpoint}/all/paginate/commune/${territoire_uuid}`, { params });
+    } else if (name == 'province' || name == 'ASM') {
+      return this.http.get<any>(`${this.endpoint}/all/paginate/province/${territoire_uuid}`, { params });
+    } else if (name == 'area' || name == 'Supervisor') {
+      return this.http.get<any>(`${this.endpoint}/all/paginate/area/${territoire_uuid}`, { params });
+    } else if (name == 'subarea' || name == 'DR') {
+      return this.http.get<any>(`${this.endpoint}/all/paginate/subarea/${territoire_uuid}`, { params });
+    } else if (name == 'commune' || name == 'Cyclo') {
+      return this.http.get<any>(`${this.endpoint}/all/paginate/commune-filter/${territoire_uuid}`, { params });
     } else {
       return this.http.get<any>(`${this.endpoint}/all/paginate`, { params });
-    } 
+    }
 
   }
 

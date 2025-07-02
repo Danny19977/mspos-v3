@@ -29,8 +29,13 @@
                             <div class="col-12">
                                 <div class="alert alert-info border-0 shadow-sm d-flex align-items-center">
                                     <i class="ti ti-filter me-2 text-primary"></i>
-                                    <span class="fw-medium">Filtre actif pour : 
-                                        <strong class="text-primary">{{ territoire.name }}</strong></span>
+                                    <span class="fw-medium">
+                                        Affichage des points de vente pour : 
+                                        <strong class="text-primary">{{ territoire.name }}</strong>
+                                        <span class="text-muted" *ngIf="name == 'ASM' || name == 'Supervisor' || name == 'DR' || name == 'Cyclo'">
+                                            (filtré par {{ name }})
+                                        </span>
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -914,4 +919,4 @@
             </div>
         </div>
     </div>
-    <!-- /Delete User --> 
+    <!-- /Delete User -->

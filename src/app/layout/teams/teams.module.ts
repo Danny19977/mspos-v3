@@ -14,6 +14,9 @@ import { AsmService } from './asm/asm.service';
 import { SupService } from './sups/sup.service';
 import { DrService } from './dr/dr.service';
 import { CycloService } from './cyclo/cyclo.service';
+import { SupFilterComponent } from './sups/sup-filter/sup-filter.component';
+import { DrFilterComponent } from './dr/dr-filter/dr-filter.component';
+import { CycloFilterComponent } from './cyclo/cyclo-filter/cyclo-filter.component';
 
 const routes: Routes = [
   {
@@ -40,6 +43,9 @@ const routes: Routes = [
     SupListComponent,
     DrComponent,
     CycloComponent,
+    SupFilterComponent,
+    DrFilterComponent,
+    CycloFilterComponent,
   ],
   imports: [
     CommonModule,

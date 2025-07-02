@@ -108,7 +108,7 @@
                                     <th mat-header-cell *matHeaderCellDef> Total POS </th>
                                     <td mat-cell *matCellDef="let element"
                                         style="background-color: rgba(255, 0, 0, 0.173); font-size: larger; text-align: center;">
-                                        <a [routerLink]="['/web/pos/pos-list']">
+                                        <a [routerLink]="['/web/pos/pos-filter', 'DR', element.sub_area_uuid]">
                                             {{ element.total_pos }}
                                         </a>
                                     </td>
@@ -119,7 +119,7 @@
                                     <th mat-header-cell *matHeaderCellDef> PosForms </th>
                                     <td mat-cell *matCellDef="let element"
                                         style="background-color: rgba(255, 140, 0, 0.506); font-size: larger; text-align: center;">
-                                        <a [routerLink]="['/web/posforms/pos-form-list']">
+                                        <a [routerLink]="['/web/posforms/pos-form-list', 'DR', element.sub_area_uuid]">
                                             {{ element.total_posforms }}
                                         </a>
                                     </td>

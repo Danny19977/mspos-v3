@@ -16,6 +16,8 @@ import { AreaService } from '../../../territories/areas/area.service';
 import { SubareaService } from '../../../territories/subarea/subarea.service';
 import { LogsService } from '../../../management/user-logs/logs.service';
 import { IPosForm } from '../../posform/models/posform.model';
+import { UserService } from '../../../management/user/user.service';
+import { CommuneService } from '../../../territories/commune/commune.service';
 
 @Component({
   selector: 'app-pos-filter-list',
@@ -153,6 +155,8 @@ export class PosFilterListComponent implements OnInit {
     private provinceService: ProvinceService,
     private areaService: AreaService,
     private subAreaService: SubareaService,
+    private communeService: CommuneService,
+    private userService: UserService,
     private logActivity: LogsService,
     private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
     private toastr: ToastrService
@@ -216,7 +220,7 @@ export class PosFilterListComponent implements OnInit {
 
 
   fetchProducts(name: string, territoire_uuid: string) {
-    if (name == "country") {
+    if (name == "country" || name == 'Manager' || name == 'Support') {
       this.countryService.get(this.territoire_uuid).subscribe(res => {
         this.territoire = res.data;
         // Préparer les filtres pour l'envoi au backend
@@ -249,7 +253,7 @@ export class PosFilterListComponent implements OnInit {
           }
         });
       });
-    } else if (name == 'province') {
+    } else if (name == 'province' || name == 'ASM') {
       this.provinceService.get(this.territoire_uuid).subscribe(res => {
         this.territoire = res.data;
         // Préparer les filtres pour l'envoi au backend
@@ -282,7 +286,7 @@ export class PosFilterListComponent implements OnInit {
           }
         });
       });
-    } else if (name == 'area') {
+    } else if (name == 'area' || name == 'Supervisor') {
       this.areaService.get(this.territoire_uuid).subscribe(res => {
         this.territoire = res.data;
         // Préparer les filtres pour l'envoi au backend
@@ -315,8 +319,41 @@ export class PosFilterListComponent implements OnInit {
           }
         });
       });
-    } else if (name == 'subarea') {
+    } else if (name == 'subarea' || name == 'DR') {
       this.subAreaService.get(this.territoire_uuid).subscribe(res => {
+        this.territoire = res.data;
+        // Préparer les filtres pour l'envoi au backend
+        const filterParams = {
+          search: this.search,
+          ...this.filters
+        };
+
+        // Utiliser la nouvelle méthode avec filtres avancés
+        this.posVenteService.getPaginatedWithAdvancedFilters2(
+          name,
+          territoire_uuid,
+          this.current_page,
+          this.page_size,
+          filterParams
+        ).subscribe({
+          next: (res) => {
+            this.dataList = res.data;
+            this.originalDataList = [...res.data]; // Conserver une copie des données originales
+            this.total_pages = res.pagination.total_pages;
+            this.total_records = res.pagination.total_records;
+            this.dataSource.data = this.dataList;
+            this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
+            this.isLoadingData = false;
+          },
+          error: (err) => {
+            console.log('Erreur lors de la récupération des données:', err);
+            // Fallback vers les anciennes méthodes en cas d'erreur
+            this.fetchProductsOldMethod(name, territoire_uuid);
+          }
+        });
+      });
+    } else if (name == 'commune' || name == 'Cyclo') {
+      this.communeService.get(this.territoire_uuid).subscribe(res => {
         this.territoire = res.data;
         // Préparer les filtres pour l'envoi au backend
         const filterParams = {

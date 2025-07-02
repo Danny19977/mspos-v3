@@ -55,7 +55,7 @@
                                 <ng-container matColumnDef="province">
                                     <th mat-header-cell *matHeaderCellDef> Province </th>
                                     <td mat-cell *matCellDef="let element"> {{ element.Province.name || '--' }} </td>
-                                </ng-container> 
+                                </ng-container>
 
                                 <!-- user Column -->
                                 <ng-container matColumnDef="user">
@@ -69,7 +69,7 @@
                                 <ng-container matColumnDef="sups">
                                     <th mat-header-cell *matHeaderCellDef> Total Sup </th>
                                     <td mat-cell *matCellDef="let element">
-                                        <a [routerLink]="['/web/supervisors/sup-list']"> 
+                                        <a [routerLink]="['/web/supervisors/sup-list']">
                                             {{ element.total_sup }}
                                         </a>
                                     </td>
@@ -80,7 +80,7 @@
                                     <th mat-header-cell *matHeaderCellDef> Total Drs </th>
                                     <td mat-cell *matCellDef="let element">
                                         <a [routerLink]="['/web/drs/dr-list']">
-                                            {{  element.total_dr }}
+                                            {{ element.total_dr }}
                                         </a>
                                     </td>
                                 </ng-container>
@@ -89,7 +89,7 @@
                                 <ng-container matColumnDef="cyclos">
                                     <th mat-header-cell *matHeaderCellDef> Total Cyclo </th>
                                     <td mat-cell *matCellDef="let element">
-                                        <a [routerLink]="['/web/cyclos/cyclo-list']"> 
+                                        <a [routerLink]="['/web/cyclos/cyclo-list']">
                                             {{ element.total_cyclo }}
                                         </a>
                                     </td>
@@ -101,7 +101,7 @@
                                     <th mat-header-cell *matHeaderCellDef> Total POS </th>
                                     <td mat-cell *matCellDef="let element"
                                         style="background-color: rgba(255, 0, 0, 0.173); font-size: larger; text-align: center;">
-                                        <a [routerLink]="['/web/pos/pos-list']">
+                                        <a [routerLink]="['/web/pos/pos-filter', 'ASM', element.province_uuid]">
                                             {{ element.total_pos }}
                                         </a>
                                     </td>
@@ -112,12 +112,12 @@
                                     <th mat-header-cell *matHeaderCellDef> PosForms </th>
                                     <td mat-cell *matCellDef="let element"
                                         style="background-color: rgba(255, 140, 0, 0.506); font-size: larger; text-align: center;">
-                                        <a [routerLink]="['/web/posforms/pos-form-list']">
+                                        <a [routerLink]="['/web/posforms/pos-form-list', 'ASM', element.province_uuid]">
                                             {{ element.total_posforms }}
                                         </a>
                                     </td>
                                 </ng-container>
- 
+
 
                                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
                                 <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
@@ -158,4 +158,3 @@
     </div>
 </div>
 <!-- /Page Wrapper -->
- 
