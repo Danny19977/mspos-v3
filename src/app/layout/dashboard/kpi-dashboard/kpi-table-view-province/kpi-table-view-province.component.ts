@@ -1,14 +1,14 @@
 import { Component, computed, OnInit, signal } from '@angular/core';
-import { IUser } from '../../../user/models/user.model';
+import { IUser } from '../../../management/user/models/user.model';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { IProvince } from '../../../province/models/province.model';
-import { KPITableViewPriceModel } from '../../models/dashboard.models';
-import { ICountry } from '../../../country/models/country.model';
-import { CountryService } from '../../../country/country.service';
-import { ProvinceService } from '../../../province/province.service';
+import { IProvince } from '../../../territories/province/models/province.model';
+import { KPITableViewPriceModel } from '../../models/dashboard.models'; 
+import { ProvinceService } from '../../../territories/province/province.service';
 import { AuthService } from '../../../../auth/auth.service';
 import { KpiService } from '../../services/kpi.service';
 import { formatDate } from '@angular/common';
+import { ICountry } from '../../../territories/country/models/country.model';
+import { CountryService } from '../../../territories/country/country.service';
 
 @Component({
   selector: 'app-kpi-table-view-province',

@@ -1,6 +1,6 @@
 import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { TableViewModel } from '../../../models/dashboard.models';
-import { IProvince } from '../../../../province/models/province.model';
+import { IProvince } from '../../../../territories/province/models/province.model';
 
 @Component({
   selector: 'app-nd-table-view',

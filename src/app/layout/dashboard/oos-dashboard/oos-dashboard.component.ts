@@ -1,11 +1,11 @@
 import { Component, computed, OnChanges, OnInit, Renderer2, signal, SimpleChanges, ViewChild } from '@angular/core';
 import { routes } from '../../../shared/routes/routes';
-import { IUser } from '../../user/models/user.model';
-import { ICountry } from '../../country/models/country.model';
+import { IUser } from '../../management/user/models/user.model'; 
 import { CommonService } from '../../../shared/common/common.service';
-import { NdService } from '../services/nd.service';
-import { CountryService } from '../../country/country.service';
+import { NdService } from '../services/nd.service'; 
 import { AuthService } from '../../../auth/auth.service';
+import { ICountry } from '../../territories/country/models/country.model';
+import { CountryService } from '../../territories/country/country.service';
 
 
 @Component({

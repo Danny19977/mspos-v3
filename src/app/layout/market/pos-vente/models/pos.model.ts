@@ -1,0 +1,62 @@
+import { IUser } from "../../../management/user/models/user.model";
+import { IPosForm } from "../../posform/models/posform.model";
+import { IArea } from "../../../territories/areas/models/area.model";
+import { ICommune } from "../../../territories/commune/models/commune.model";
+import { ICountry } from "../../../territories/country/models/country.model";
+import { IProvince } from "../../../territories/province/models/province.model";
+import { ISubArea } from "../../../territories/subarea/models/subarea.model";
+import { IPosEquipment } from "./pos-equipment.model";
+
+export interface IPos {
+    uuid?: string;
+
+    name: string;
+    shop: string;
+    postype: string;  // Gros, Detail, Mixte
+    gerant: string; // Gerant du point de vente
+    avenue: string;
+    quartier: string;
+    reference: string;
+    telephone: string;
+
+    country_uuid: string;
+    country_name?: string;
+    province_uuid: string;
+    province_name?: string;
+    area_uuid: string;
+    area_name?: string;
+    sub_area_uuid: string;
+    subarea_name?: string;
+    commune_uuid: string;
+    commune_name?: string;
+
+    user_uuid: string;
+    User?: IUser;
+
+    asm_uuid: string;
+    asm: string;
+    sup_uuid: string;
+    sup: string;
+    dr_uuid: string;
+    dr: string;
+    cyclo_uuid: string;
+    cyclo: string;
+
+    status: boolean;
+    signature: string;
+    CreatedAt?: Date;
+    UpdatedAt?: Date;
+
+    sync: boolean;
+
+    Country?: ICountry;
+    Province?: IProvince;
+    Area?: IArea;
+    SubArea?: ISubArea;
+    Commune?: ICommune;
+
+
+
+    PosEquipments?: IPosEquipment[];
+    PosForms?: IPosForm[];
+}   

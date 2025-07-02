@@ -48,7 +48,7 @@ import { SeTableViewCommuneComponent } from './se-dashboard/se-table-view-commun
 import { KpiTableViewAreaComponent } from './kpi-dashboard/kpi-table-view-area/kpi-table-view-area.component';
 import { KpiTableViewCommuneComponent } from './kpi-dashboard/kpi-table-view-commune/kpi-table-view-commune.component';
 import { KpiTableViewProvinceComponent } from './kpi-dashboard/kpi-table-view-province/kpi-table-view-province.component';
-import { KpiTableViewSubareaComponent } from './kpi-dashboard/kpi-table-view-subarea/kpi-table-view-subarea.component'; 
+import { KpiTableViewSubareaComponent } from './kpi-dashboard/kpi-table-view-subarea/kpi-table-view-subarea.component';
 // Dashboard Services - Lazy loaded only when dashboard module is loaded
 import { GoogleMapService } from './services/google-map.service';
 import { KpiService } from './services/kpi.service';

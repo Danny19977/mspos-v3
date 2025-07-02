@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { SubareaService } from '../../../subarea/subarea.service';
 import { formatDate } from '@angular/common';
 
 import {
@@ -10,10 +9,11 @@ import {
   ApexXAxis,
   ApexPlotOptions,
 } from 'ng-apexcharts';
-import { ISubArea } from '../../../subarea/models/subarea.model';
 import { SETableViewModel, SETableViewPriceModel } from '../../models/dashboard.models';
 import { ActivatedRoute } from '@angular/router';
 import { SaleEvolutionService } from '../../services/sale-evolution.service';
+import { SubareaService } from '../../../territories/subarea/subarea.service';
+import { ISubArea } from '../../../territories/subarea/models/subarea.model';
 
 export interface ChartOptions {
   series: ApexAxisChartSeries | any;

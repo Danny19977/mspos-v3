@@ -4,24 +4,24 @@ import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 
 // Components
-import { PosVenteListComponent } from '../pos-vente/pos-vente-list/pos-vente-list.component';
-import { PosViewComponent } from '../pos-vente/pos-view/pos-view.component';
-import { PosEquipmentComponent } from '../pos-vente/pos-equipment/pos-equipment.component';
-import { RouteplanComponent } from '../routeplan/routeplan.component';
-import { BrandComponent } from '../brand/brand.component';
-import { MapPosComponent } from '../pos-vente/pos-view/map-pos/map-pos.component';
-import { PosformsComponent } from '../pos-vente/pos-view/posforms/posforms.component';
+import { PosVenteListComponent } from './pos-vente/pos-vente-list/pos-vente-list.component';
+import { PosViewComponent } from './pos-vente/pos-view/pos-view.component';
+import { PosEquipmentComponent } from './pos-vente/pos-equipment/pos-equipment.component';
+import { RouteplanComponent } from './routeplan/routeplan.component';
+import { BrandComponent } from './brand/brand.component';
+import { MapPosComponent } from './pos-vente/pos-view/map-pos/map-pos.component';
+import { PosformsComponent } from './pos-vente/pos-view/posforms/posforms.component';
 
 // Services - Lazy loaded only when module is loaded
-import { PosVenteService } from '../pos-vente/pos-vente.service';
-import { RouteplanService } from '../routeplan/routeplan.service';
-import { RouteplanItemService } from '../routeplan/routeplanitem.service';
-import { BrandService } from '../brand/brand.service';
-import { MapPosCardComponent } from '../pos-vente/pos-view/map-pos/map-pos-card/map-pos-card.component';
+import { PosVenteService } from './pos-vente/pos-vente.service';
+import { RouteplanService } from './routeplan/routeplan.service';
+import { RouteplanItemService } from './routeplan/routeplanitem.service';
+import { BrandService } from './brand/brand.service';
+import { MapPosCardComponent } from './pos-vente/pos-view/map-pos/map-pos-card/map-pos-card.component';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { GoogleMapsLoaderService } from '../../services/google-maps-loader.service';
-import { PosFilterListComponent } from '../pos-vente/pos-filter-list/pos-filter-list.component';
-import { BrandFilterListComponent } from '../brand/brand-filter-list/brand-filter-list.component';
+import { PosFilterListComponent } from './pos-vente/pos-filter-list/pos-filter-list.component';
+import { BrandFilterListComponent } from './brand/brand-filter-list/brand-filter-list.component';
 
 const routes: Routes = [
   {
@@ -43,7 +43,7 @@ const routes: Routes = [
   {
     path: 'posforms',
     loadChildren: () =>
-      import('../posform/pos.module').then(
+      import('./posform/pos.module').then(
         (m) => m.PosModule
       ),
   },

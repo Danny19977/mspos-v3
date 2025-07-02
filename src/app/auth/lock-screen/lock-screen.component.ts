@@ -3,7 +3,7 @@ import { CommonService } from '../../shared/common/common.service';
 import { Router } from '@angular/router';
 import { routes } from '../../shared/routes/routes';
 import { AuthService } from '../auth.service';
-import { IUser } from '../../layout/user/models/user.model';
+import { IUser } from '../../layout/management/user/models/user.model';
 
 @Component({
   selector: 'app-lock-screen',

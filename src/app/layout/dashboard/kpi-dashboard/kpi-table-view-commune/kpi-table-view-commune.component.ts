@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { ISubArea } from '../../../subarea/models/subarea.model';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms'; 
 import { KPITableViewPriceModel } from '../../models/dashboard.models';
-import { ActivatedRoute } from '@angular/router';
-import { SubareaService } from '../../../subarea/subarea.service';
+import { ActivatedRoute } from '@angular/router'; 
 import { formatDate } from '@angular/common';
 import { KpiService } from '../../services/kpi.service';
+import { ISubArea } from '../../../territories/subarea/models/subarea.model';
+import { SubareaService } from '../../../territories/subarea/subarea.service';
 
 @Component({
   selector: 'app-kpi-table-view-commune',

@@ -1,12 +1,12 @@
 import Dexie, { Table } from 'dexie';
-import { IBrand } from '../../layout/brand/models/brand.model';
-import { IPos } from '../../layout/pos-vente/models/pos.model';
-import { IPosForm } from '../../layout/posform/models/posform.model';
-import { IPosFormItem } from '../../layout/posform/models/posform_item.model';
-import { IRoutePlan } from '../../layout/routeplan/models/routeplan.model';
-import { IPosEquipment } from '../../layout/pos-vente/models/pos-equipment.model';
-import { UserLogsModel } from '../../layout/user-logs/models/user-logs.model';
-import { IRoutePlanItem } from '../../layout/routeplan/models/routeplanItem.model';
+import { IPosForm } from '../../layout/market/posform/models/posform.model';
+import { IPosFormItem } from '../../layout/market/posform/models/posform_item.model';
+import { UserLogsModel } from '../../layout/management/user-logs/models/user-logs.model';
+import { IBrand } from '../../layout/market/brand/models/brand.model';
+import { IPos } from '../../layout/market/pos-vente/models/pos.model';
+import { IRoutePlan } from '../../layout/market/routeplan/models/routeplan.model';
+import { IRoutePlanItem } from '../../layout/market/routeplan/models/routeplanItem.model';
+import { IPosEquipment } from '../../layout/market/pos-vente/models/pos-equipment.model';
 
 export class AppDB extends Dexie {
   brands!: Table<IBrand, number>;

@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
-import { IUser } from '../../../layout/user/models/user.model';
-import { UserService } from '../../../layout/user/user.service';
+import { IUser } from '../../../layout/management/user/models/user.model';
+import { UserService } from '../../../layout/management/user/user.service';
 
 @Component({
   selector: 'app-user-get',

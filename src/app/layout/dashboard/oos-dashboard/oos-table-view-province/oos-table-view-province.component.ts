@@ -1,14 +1,14 @@
 import { formatDate } from '@angular/common';
-import { Component, computed, OnInit, Renderer2, signal } from '@angular/core';
-import { ICountry } from '../../../country/models/country.model';
+import { Component, computed, OnInit, Renderer2, signal } from '@angular/core'; 
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { AuthService } from '../../../../auth/auth.service';
-import { ProvinceService } from '../../../province/province.service';
-import { CountryService } from '../../../country/country.service';
+import { ProvinceService } from '../../../territories/province/province.service'; 
 import { NdService } from '../../services/nd.service';
 import { TableViewModel } from '../../models/dashboard.models';
-import { IProvince } from '../../../province/models/province.model';
-import { IUser } from '../../../user/models/user.model';
+import { IProvince } from '../../../territories/province/models/province.model';
+import { IUser } from '../../../management/user/models/user.model';
+import { ICountry } from '../../../territories/country/models/country.model';
+import { CountryService } from '../../../territories/country/country.service';
 
 
 @Component({

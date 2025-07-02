@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { IArea } from '../../../areas/models/area.model';
 import { SOSTableViewModel } from '../../models/dashboard.models';
 import { ActivatedRoute } from '@angular/router';
-import { AreaService } from '../../../areas/area.service';
 import { SosService } from '../../services/sos.service';
 import { formatDate } from '@angular/common';
+import { IArea } from '../../../territories/areas/models/area.model';
+import { AreaService } from '../../../territories/areas/area.service';
 
 @Component({
   selector: 'app-sos-table-view-subarea',

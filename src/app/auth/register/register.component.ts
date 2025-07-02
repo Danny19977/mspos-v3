@@ -5,14 +5,14 @@ import { Router } from '@angular/router';
 import { AuthService } from '../auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { formatDate } from '@angular/common';
-import { IProvince } from '../../layout/province/models/province.model';
-import { IArea } from '../../layout/areas/models/area.model';
-import { ISup } from '../../layout/sups/models/sup.model';
-import { IPos } from '../../layout/pos-vente/models/pos.model';
-import { ProvinceService } from '../../layout/province/province.service';
-import { AreaService } from '../../layout/areas/area.service';
-import { SupService } from '../../layout/sups/sup.service';
-import { PosVenteService } from '../../layout/pos-vente/pos-vente.service';
+import { IProvince } from '../../layout/territories/province/models/province.model';
+import { ProvinceService } from '../../layout/territories/province/province.service';
+import { IArea } from '../../layout/territories/areas/models/area.model';
+import { ISup } from '../../layout/teams/sups/models/sup.model';
+import { IPos } from '../../layout/market/pos-vente/models/pos.model';
+import { AreaService } from '../../layout/territories/areas/area.service';
+import { SupService } from '../../layout/teams/sups/sup.service';
+import { PosVenteService } from '../../layout/market/pos-vente/pos-vente.service';
 
 @Component({
   selector: 'app-register',
@@ -62,13 +62,10 @@ export class RegisterComponent implements OnInit {
       password_confirm: ['', Validators.required],  
     }); 
   }
- 
 
   public togglePassword(index: number) {
     this.password[index] = !this.password[index]
   }
-
- 
 
   onSubmit() {
     try {

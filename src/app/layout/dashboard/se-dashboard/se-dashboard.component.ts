@@ -1,8 +1,8 @@
 import { Component, computed, OnInit, Renderer2, signal } from '@angular/core';
 import { routes } from '../../../shared/routes/routes';
-import { IUser } from '../../user/models/user.model';
-import { ICountry } from '../../country/models/country.model';
+import { IUser } from '../../management/user/models/user.model';
 import { CommonService } from '../../../shared/common/common.service';
+import { ICountry } from '../../territories/country/models/country.model';
 
 @Component({
   selector: 'app-se-dashboard',

@@ -1,14 +1,14 @@
 import { formatDate } from '@angular/common';
 import { Component, computed, OnInit, Renderer2, signal } from '@angular/core';
-import { ICountry } from '../../../country/models/country.model';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { AuthService } from '../../../../auth/auth.service';
-import { ProvinceService } from '../../../province/province.service';
-import { CountryService } from '../../../country/country.service';
+import { ProvinceService } from '../../../territories/province/province.service';
 import { NdService } from '../../services/nd.service';
 import { TableViewModel } from '../../models/dashboard.models';
-import { IProvince } from '../../../province/models/province.model';
-import { IUser } from '../../../user/models/user.model';
+import { IProvince } from '../../../territories/province/models/province.model';
+import { IUser } from '../../../management/user/models/user.model';
+import { ICountry } from '../../../territories/country/models/country.model';
+import { CountryService } from '../../../territories/country/country.service';
 
 @Component({
   selector: 'app-nd-table-view-province',
@@ -44,13 +44,13 @@ export class NdTableViewProvinceComponent implements OnInit {
     )
   );
 
-  constructor( 
-    private _formBuilder: FormBuilder, 
+  constructor(
+    private _formBuilder: FormBuilder,
     private ndService: NdService,
     private countryService: CountryService,
     private provinceService: ProvinceService,
     private authService: AuthService,
-  ) { 
+  ) {
   }
 
 
@@ -74,18 +74,18 @@ export class NdTableViewProvinceComponent implements OnInit {
         this.currentUser = user;
 
         this.countryService.getAll().subscribe((res) => {
-          this.countryList.set(res.data); 
+          this.countryList.set(res.data);
           this.provinceService.getAll().subscribe((pr) => {
-            this.provinceList = pr.data; 
+            this.provinceList = pr.data;
             if (this.currentUser.role != 'Managers' && this.currentUser.role != 'Support') {
               this.getTableView(this.countryList()[0].uuid, this.provinceList[0].uuid, this.start_date, this.end_date);
-              
+
             } else {
               this.getTableView(this.currentUser.country_uuid, this.currentUser.province_uuid, this.start_date, this.end_date);
-              
+
             }
           });
-        }); 
+        });
 
       },
       error: (error) => {
@@ -121,8 +121,8 @@ export class NdTableViewProvinceComponent implements OnInit {
         this.getTableView(this.countryList()[0].uuid, this.provinceList[0].uuid, this.start_date, this.end_date);
       } else {
         this.getTableView(this.currentUser.country_uuid, this.currentUser.province_uuid, this.start_date, this.end_date);
-      } 
-    }); 
+      }
+    });
   }
 
 
@@ -140,5 +140,5 @@ export class NdTableViewProvinceComponent implements OnInit {
       console.log('tableViewList:', this.tableViewList);
       this.isLoading = false;
     });
-  } 
+  }
 }

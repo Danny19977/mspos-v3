@@ -4,13 +4,13 @@ import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 
 // Components
-import { ManagerListComponent } from '../managers/manager-list/manager-list.component';
-import { ProfileComponent } from '../profile/profile.component';
+import { ManagerListComponent } from './managers/manager-list/manager-list.component';
+import { ProfileComponent } from './profile/profile.component';
 
 // Services - Lazy loaded only when module is loaded
-import { ManagerService } from '../managers/manager.service';
-import { UserService } from '../user/user.service';
-import { LogsService } from '../user-logs/logs.service';
+import { ManagerService } from './managers/manager.service';
+import { UserService } from './user/user.service';
+import { LogsService } from './user-logs/logs.service';
 
 const routes: Routes = [
   {
@@ -20,7 +20,7 @@ const routes: Routes = [
   {
     path: 'users',
     loadChildren: () =>
-      import('../user/user.module').then(
+      import('./user/user.module').then(
         (m) => m.UserModule
       ),
   },
@@ -31,7 +31,7 @@ const routes: Routes = [
   {
     path: 'users-logs/activity',
     loadChildren: () =>
-      import('../user-logs/user-logs.module').then(
+      import('./user-logs/user-logs.module').then(
         (m) => m.UserLogsModule
       ),
   },

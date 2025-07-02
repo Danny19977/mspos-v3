@@ -4,8 +4,8 @@ import { TableViewModel } from '../../models/dashboard.models';
 import { ActivatedRoute } from '@angular/router';
 import { NdService } from '../../services/nd.service';
 import { formatDate } from '@angular/common';
-import { AreaService } from '../../../areas/area.service';
-import { IArea } from '../../../areas/models/area.model';
+import { IArea } from '../../../territories/areas/models/area.model';
+import { AreaService } from '../../../territories/areas/area.service';
 
 @Component({
   selector: 'app-nd-table-view-subarea',

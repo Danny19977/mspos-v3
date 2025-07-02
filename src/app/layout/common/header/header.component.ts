@@ -6,8 +6,8 @@ import { routes } from '../../../shared/routes/routes';
 import { SettingsService } from '../../../shared/settings/settings.service'; 
 import { AuthService } from '../../../auth/auth.service';
 import { Router } from '@angular/router';
-import { LogsService } from '../../user-logs/logs.service';
-import { IUser } from '../../user/models/user.model';
+import { LogsService } from '../../management/user-logs/logs.service';
+import { IUser } from '../../management/user/models/user.model';
 
 @Component({
   selector: 'app-header',

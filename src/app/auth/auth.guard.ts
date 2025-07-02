@@ -1,6 +1,6 @@
 import { CanActivateFn } from '@angular/router';  
 import { Auth } from './classes/auth';
-import { IUser } from '../layout/user/models/user.model';
+import { IUser } from '../layout/management/user/models/user.model';
 
 
 export const authGuard: CanActivateFn = (route, state) => {

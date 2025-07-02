@@ -1,15 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { ISubArea } from '../../../subarea/models/subarea.model';
 import { SOSTableViewModel } from '../../models/dashboard.models';
 import { SosService } from '../../services/sos.service';
-import { CountryService } from '../../../country/country.service';
 import { AuthService } from '../../../../auth/auth.service';
 import { formatDate } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { AreaService } from '../../../areas/area.service';
-import { IArea } from '../../../areas/models/area.model';
-import { SubareaService } from '../../../subarea/subarea.service';
+import { ISubArea } from '../../../territories/subarea/models/subarea.model';
+import { SubareaService } from '../../../territories/subarea/subarea.service';
 
 @Component({
   selector: 'app-sos-table-view-commune',

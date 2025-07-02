@@ -7,7 +7,7 @@ import { SidebarService } from '../../../shared/sidebar/sidebar.service';
 import { DataService } from '../../../shared/data/data.service';
 import { CommonService } from '../../../shared/common/common.service'; 
 import { Auth } from '../../../auth/classes/auth';
-import { IUser } from '../../user/models/user.model';
+import { IUser } from '../../management/user/models/user.model';
 import { AuthService } from '../../../auth/auth.service';
 
 

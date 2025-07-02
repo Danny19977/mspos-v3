@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ProvinceService } from '../../../province/province.service';
+import { ProvinceService } from '../../../territories/province/province.service';
 import { NdService } from '../../services/nd.service';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { formatDate } from '@angular/common';
-import { IProvince } from '../../../province/models/province.model';
+import { IProvince } from '../../../territories/province/models/province.model';
 import { TableViewModel } from '../../models/dashboard.models';
 
 @Component({

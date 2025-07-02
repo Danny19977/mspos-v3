@@ -2,12 +2,12 @@ import { Component, computed, OnInit, Renderer2, signal } from '@angular/core';
 import { routes } from '../../../shared/routes/routes'; 
 import { CommonService } from '../../../shared/common/common.service'; 
 import { AuthService } from '../../../auth/auth.service'; 
-import { IUser } from '../../user/models/user.model';
-import { ICountry } from '../../country/models/country.model';
-import { CountryService } from '../../country/country.service';
+import { IUser } from '../../management/user/models/user.model';
 import { NdService } from '../services/nd.service';
 import { SosService } from '../services/sos.service';
 import { SOSYearModel } from '../models/dashboard.models';
+import { ICountry } from '../../territories/country/models/country.model';
+import { CountryService } from '../../territories/country/country.service';
 
 @Component({
   selector: 'app-sos-dashboard',
@@ -73,7 +73,6 @@ export class SosDashboardComponent implements OnInit {
             this.getChartLineYear(this.currentUser.country_uuid);
           }
         }); 
-
       },
       error: (error) => {
         console.log(error);

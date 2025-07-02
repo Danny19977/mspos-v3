@@ -1,10 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { IProvince } from '../../../province/models/province.model';
+import { IProvince } from '../../../territories/province/models/province.model';
 import { SETableViewModel, SETableViewPriceModel } from '../../models/dashboard.models';
 import { ActivatedRoute } from '@angular/router';
 import { SaleEvolutionService } from '../../services/sale-evolution.service';
-import { ProvinceService } from '../../../province/province.service';
+import { ProvinceService } from '../../../territories/province/province.service';
 import { formatDate } from '@angular/common';
 import {
   ApexAxisChartSeries,

@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { IProvince } from '../../../province/models/province.model';
+import { IProvince } from '../../../territories/province/models/province.model';
 import { KPITableViewPriceModel } from '../../models/dashboard.models';
 import { ActivatedRoute } from '@angular/router';
-import { ProvinceService } from '../../../province/province.service';
+import { ProvinceService } from '../../../territories/province/province.service';
 import { KpiService } from '../../services/kpi.service';
 import { formatDate } from '@angular/common';
 

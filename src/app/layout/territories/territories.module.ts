@@ -4,18 +4,18 @@ import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 
 // Components
-import { CountryComponent } from '../country/country.component';
-import { SubareaComponent } from '../subarea/subarea.component';
-import { CommuneComponent } from '../commune/commune.component';
-import { AreaListComponent } from '../areas/area-list/area-list.component';
+import { CountryComponent } from './country/country.component';
+import { SubareaComponent } from './subarea/subarea.component';
+import { CommuneComponent } from './commune/commune.component';
+import { AreaListComponent } from './areas/area-list/area-list.component';
 
 // Services - Lazy loaded only when module is loaded
-import { CountryService } from '../country/country.service';
-import { SubareaService } from '../subarea/subarea.service';
-import { CommuneService } from '../commune/commune.service';
-import { SubareaViewComponent } from '../subarea/subarea-view/subarea-view.component';
-import { AreaViewComponent } from '../areas/area-view/area-view.component';
-import { CommuneViewComponent } from '../commune/commune-view/commune-view.component';
+import { CountryService } from './country/country.service';
+import { SubareaService } from './subarea/subarea.service';
+import { CommuneService } from './commune/commune.service';
+import { SubareaViewComponent } from './subarea/subarea-view/subarea-view.component';
+import { AreaViewComponent } from './areas/area-view/area-view.component';
+import { CommuneViewComponent } from './commune/commune-view/commune-view.component';
 
 const routes: Routes = [
   {
@@ -25,7 +25,7 @@ const routes: Routes = [
   {
     path: 'provinces',
     loadChildren: () =>
-      import('../province/province.module').then(
+      import('./province/province.module').then(
         (m) => m.ProvinceModule,
       ),
   },

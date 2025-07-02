@@ -3,9 +3,9 @@ import { routes } from '../../../shared/routes/routes';
 import { CommonService } from '../../../shared/common/common.service'; 
 import { NdService } from '../services/nd.service'; 
 import { AuthService } from '../../../auth/auth.service';
-import { IUser } from '../../user/models/user.model';
-import { CountryService } from '../../country/country.service'; 
-import { ICountry } from '../../country/models/country.model';
+import { IUser } from '../../management/user/models/user.model'; 
+import { ICountry } from '../../territories/country/models/country.model';
+import { CountryService } from '../../territories/country/country.service';
 
 
 @Component({

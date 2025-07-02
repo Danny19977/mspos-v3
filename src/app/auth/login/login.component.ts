@@ -5,7 +5,7 @@ import { formatDate } from '@angular/common';
 import { AuthService } from '../auth.service';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { LogsService } from '../../layout/user-logs/logs.service';
+import { LogsService } from '../../layout/management/user-logs/logs.service';
 
 @Component({
   selector: 'app-login',

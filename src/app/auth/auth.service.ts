@@ -2,7 +2,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { IUser } from '../layout/user/models/user.model';
+import { IUser } from '../layout/management/user/models/user.model';
 import { Router } from '@angular/router';
 
 @Injectable({

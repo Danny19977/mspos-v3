@@ -1,11 +1,11 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { ISubArea } from '../../../subarea/models/subarea.model';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms'; 
 import { TableViewModel } from '../../models/dashboard.models';
 import { ActivatedRoute } from '@angular/router';
-import { NdService } from '../../services/nd.service';
-import { SubareaService } from '../../../subarea/subarea.service';
+import { NdService } from '../../services/nd.service'; 
 import { formatDate } from '@angular/common';
+import { ISubArea } from '../../../territories/subarea/models/subarea.model';
+import { SubareaService } from '../../../territories/subarea/subarea.service';
 
 @Component({
   selector: 'app-oos-table-view-commune',

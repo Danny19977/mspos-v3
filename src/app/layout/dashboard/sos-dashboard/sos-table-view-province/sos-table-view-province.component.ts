@@ -1,14 +1,14 @@
 import { Component, computed, OnInit, signal } from '@angular/core';
 import { SosService } from '../../services/sos.service';
-import { CountryService } from '../../../country/country.service';
-import { ProvinceService } from '../../../province/province.service';
+import { ProvinceService } from '../../../territories/province/province.service';
 import { AuthService } from '../../../../auth/auth.service';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { ICountry } from '../../../country/models/country.model';
-import { IProvince } from '../../../province/models/province.model';
-import { IUser } from '../../../user/models/user.model';
+import { IProvince } from '../../../territories/province/models/province.model';
+import { IUser } from '../../../management/user/models/user.model';
 import { formatDate } from '@angular/common';
 import { SOSTableViewModel } from '../../models/dashboard.models';
+import { ICountry } from '../../../territories/country/models/country.model';
+import { CountryService } from '../../../territories/country/country.service';
 
 @Component({
   selector: 'app-sos-table-view-province',

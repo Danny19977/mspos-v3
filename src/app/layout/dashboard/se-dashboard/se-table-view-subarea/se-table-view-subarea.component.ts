@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { IArea } from '../../../areas/models/area.model';
 import {
   ApexAxisChartSeries,
   ApexChart,
@@ -11,8 +10,9 @@ import {
 import { SETableViewModel, SETableViewPriceModel } from '../../models/dashboard.models';
 import { ActivatedRoute } from '@angular/router';
 import { SaleEvolutionService } from '../../services/sale-evolution.service';
-import { AreaService } from '../../../areas/area.service';
 import { formatDate } from '@angular/common';
+import { IArea } from '../../../territories/areas/models/area.model';
+import { AreaService } from '../../../territories/areas/area.service';
 
 
 export interface ChartOptions {

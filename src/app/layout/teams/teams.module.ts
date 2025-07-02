@@ -4,16 +4,16 @@ import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 
 // Components
-import { AsmListComponent } from '../asm/asm-list/asm-list.component';
-import { SupListComponent } from '../sups/sup-list/sup-list.component';
-import { DrComponent } from '../dr/dr.component';
-import { CycloComponent } from '../cyclo/cyclo.component';
+import { AsmListComponent } from './asm/asm-list/asm-list.component';
+import { SupListComponent } from './sups/sup-list/sup-list.component';
+import { DrComponent } from './dr/dr.component';
+import { CycloComponent } from './cyclo/cyclo.component';
 
 // Services - Lazy loaded only when module is loaded
-import { AsmService } from '../asm/asm.service';
-import { SupService } from '../sups/sup.service';
-import { DrService } from '../dr/dr.service';
-import { CycloService } from '../cyclo/cyclo.service';
+import { AsmService } from './asm/asm.service';
+import { SupService } from './sups/sup.service';
+import { DrService } from './dr/dr.service';
+import { CycloService } from './cyclo/cyclo.service';
 
 const routes: Routes = [
   {
