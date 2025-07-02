@@ -20,11 +20,17 @@ import { BrandService } from '../brand/brand.service';
 import { MapPosCardComponent } from '../pos-vente/pos-view/map-pos/map-pos-card/map-pos-card.component';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { GoogleMapsLoaderService } from '../../services/google-maps-loader.service';
+import { PosFilterListComponent } from '../pos-vente/pos-filter-list/pos-filter-list.component';
+import { BrandFilterListComponent } from '../brand/brand-filter-list/brand-filter-list.component';
 
 const routes: Routes = [
   {
     path: 'pos/pos-list',
     component: PosVenteListComponent,
+  },
+  {
+    path: 'pos/pos-filter/:name/:uuid',
+    component: PosFilterListComponent,
   },
   {
     path: 'pos/pos-view/:uuid/posforms',
@@ -49,6 +55,10 @@ const routes: Routes = [
     path: 'brands/list',
     component: BrandComponent,
   },
+  {
+    path: 'brands/:name/:uuid',
+    component: BrandFilterListComponent,
+  }
 ];
 
 @NgModule({
@@ -61,6 +71,8 @@ const routes: Routes = [
     MapPosComponent,
     PosformsComponent,
     MapPosCardComponent,
+    PosFilterListComponent,
+    BrandFilterListComponent, 
   ],
   imports: [
     CommonModule,

@@ -1,3 +1,6 @@
+// Import color module
+@use "sass:color";
+
 .btn-primary {
     color: $white;
     background-color: $primary;
@@ -206,8 +209,8 @@ button {
             &.focus,
             &:active,
             &.active {
-                background-color: #{darken($value, 7%)};
-                border:1px solid #{darken($value, 7%)};
+                background-color: #{color.adjust($value, $lightness: -7%)};
+                border:1px solid #{color.adjust($value, $lightness: -7%)};
                 color: $white;
             }
         }
@@ -221,7 +224,7 @@ button {
         &.focus,
         &:active,
         &.active {
-            background-color: darken($light-400, 3%);
+            background-color: color.adjust($light-400, $lightness: -3%);
             border: 1px solid $light-900;
             color: $gray-900;
         }
@@ -710,7 +713,7 @@ button {
       @include margin-padding(null, 9px 14px);
   }
 }
-$green-hover:  darken($green, 10%);
+$green-hover: color.adjust($green, $lightness: -10%);
 .btn-primary {
   background: $green;
   border: 1px solid $green;

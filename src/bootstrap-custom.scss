@@ -1,0 +1,10 @@
+// Custom Bootstrap import with reduced deprecation warnings
+// Import necessary Sass modules first
+@use "sass:color";
+@use "sass:math";
+@use "sass:string";
+@use "sass:list";
+@use "sass:map";
+
+// Use Bootstrap with forward compatibility
+@use "bootstrap/scss/bootstrap";

@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router'; 
 import { ProvinceListComponent } from './province-list/province-list.component';
 import { ProvinceComponent } from './province.component';
+import { ProvinceViewComponent } from './province-view/province-view.component';
 
 const routes: Routes = [
   {
@@ -19,7 +20,7 @@ const routes: Routes = [
       },
       {
         path: 'province-list/:name/:uuid',
-        component: ProvinceListComponent,
+        component: ProvinceViewComponent,
         data: {
           breadcrumb: 'Province List by UUID'
         }

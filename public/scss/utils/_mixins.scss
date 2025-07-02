@@ -1,3 +1,6 @@
+// Import Sass map module first
+@use "sass:map";
+
 $breakpoints: (
   custom575: 575.98px,
   custom767: 767.98px,
@@ -14,10 +17,10 @@ $breakpoints: (
 @mixin respond-above($breakpoint) {
 
   // If the breakpoint exists in the map.
-  @if map-has-key($breakpoints, $breakpoint) {
+  @if map.has-key($breakpoints, $breakpoint) {
 
     // Get the breakpoint value.
-    $breakpoint-value: map-get($breakpoints, $breakpoint);
+    $breakpoint-value: map.get($breakpoints, $breakpoint);
 
     // Write the media query.
     @media (min-width: $breakpoint-value) {
@@ -32,15 +35,15 @@ $breakpoints: (
   }
 }
 
-// Respond Above
+// Respond Below
 
 @mixin respond-below($breakpoint) {
 
   // If the breakpoint exists in the map.
-  @if map-has-key($breakpoints, $breakpoint) {
+  @if map.has-key($breakpoints, $breakpoint) {
 
     // Get the breakpoint value.
-    $breakpoint-value: map-get($breakpoints, $breakpoint);
+    $breakpoint-value: map.get($breakpoints, $breakpoint);
 
     // Write the media query.
     @media (max-width: $breakpoint-value) {

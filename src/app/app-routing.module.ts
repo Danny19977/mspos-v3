@@ -1,7 +1,5 @@
 import { NgModule } from '@angular/core';
-import { PreloadAllModules, RouterModule, Routes, NoPreloading } from '@angular/router';
-import { onlineGuard } from './auth/guard/online.guard';
-import { AuthGuard } from './auth/guard/auth.guard';
+import { RouterModule, Routes } from '@angular/router'; 
 import { SelectivePreloadingStrategy } from './utils/selective-preloading-strategy';
 
 const routes: Routes = [

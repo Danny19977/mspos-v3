@@ -98,7 +98,7 @@
                                 <ng-container matColumnDef="subarea">
                                     <th mat-header-cell *matHeaderCellDef> Total Subarea </th>
                                     <td mat-cell *matCellDef="let element">
-                                        <a [routerLink]="['/web/subareas/subarea-list']">
+                                       <a [routerLink]="['/web/subareas/subarea-list', 'area', element.uuid]">
                                             {{getSubareaCount(element.SubAreas) }}
                                         </a>
                                     </td>
@@ -108,7 +108,7 @@
                                 <ng-container matColumnDef="commune">
                                     <th mat-header-cell *matHeaderCellDef> Total Commune </th>
                                     <td mat-cell *matCellDef="let element">
-                                        <a [routerLink]="['/web/communes/commune-list']">
+                                       <a [routerLink]="['/web/communes/commune-list', 'area', element.uuid]">
                                             {{getCommuneCount(element.Communes) }}
                                         </a>
                                     </td>

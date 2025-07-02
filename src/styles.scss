@@ -1,19 +1,27 @@
 /* You can add global styles to this file, and also import other style files */
 
+// Import main SCSS files to have access to variables and mixins
+@import "./../public/scss/main.scss";
+
 // @import 'primeicons/primeicons.css';
 // @import "primeng/resources/themes/saga-blue/theme.css";
 // @import "primeng/resources/primeng.min.css";
 
+// Note: These external library imports still use @import as they are from external packages
+// Angular Material must be imported with @import
+@import "@angular/material/prebuilt-themes/indigo-pink.css";
+
+// Third-party library styles - using exported SCSS files
 @import "ngx-owl-carousel-o/lib/styles/scss/owl.carousel"; 
 @import "ngx-owl-carousel-o/lib/styles/scss/owl.theme.default";
 
+// Local application styles
+@import "./app/shared/styles/user-friendly.css";
+
+// External CDN imports
 @import url("https://cdn.jsdelivr.net/npm/lightgallery@2.0.0-beta.4/css/lightgallery.css");
 @import url("https://cdn.jsdelivr.net/npm/lightgallery@2.0.0-beta.4/css/lg-zoom.css");
 @import url("https://cdn.jsdelivr.net/npm/lightgallery@2.0.0-beta.4/css/lg-video.css");
-@import "@angular/material/prebuilt-themes/indigo-pink.css";
-
-@import "./../public/scss/main.scss";
-@import "./app/shared/styles/user-friendly.css";
 
 
 // mat sorter

@@ -1,3 +1,6 @@
+// Import Sass modules first
+@use "sass:color";
+
 // Font import
 @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,100..900;1,100..900&display=swap');
 
@@ -19,28 +22,28 @@ $font-awesome: "Fontawesome";
 	
 // Theme Colors Variables
 $primary: #E41F07;
-$primary-hover: darken($primary, 10%);
+$primary-hover: color.adjust($primary, $lightness: -10%);
 $secondary: #FFA201;
-$secondary-hover: darken($secondary, 10%);
+$secondary-hover: color.adjust($secondary, $lightness: -10%);
 $success: #5CB85C;
-$success-hover: darken($success, 10%);
+$success-hover: color.adjust($success, $lightness: -10%);
 $info: #1ECBE2;
-$info-hover: darken($info, 10%);
+$info-hover: color.adjust($info, $lightness: -10%);
 $warning: #FDA700;
-$warning-hover: darken($warning, 10%);
+$warning-hover: color.adjust($warning, $lightness: -10%);
 $danger: #FC0027;
-$danger-hover: darken($danger, 10%);
+$danger-hover: color.adjust($danger, $lightness: -10%);
 $dark: #171724;
 $dark-border: #393947;
 $dark-text: #a3a6a6;
 $dark-textcolor: #B5B5B5;
-$dark-hover: darken($dark, 10%);
+$dark-hover: color.adjust($dark, $lightness: -10%);
 $darkmode-hover: #28283D;
 $dark-input: #1A1A25;
 $dark-bg: #1E1E2D;
 $gray-bg: #28283E;
 $light: #FDFDFE;
-$light-hover: darken($light, 10%);
+$light-hover: color.adjust($light, $lightness: -10%);
 $white: #FFF;
 $black: #000;
 $purple: #4A00E5;
@@ -52,7 +55,7 @@ $cyan: #299cdb;
 $green: #00918E;
 $orange: #FF9D0A;
 $indigo: #0092E4;
-$indigo-hover: darken($indigo, 10%);
+$indigo-hover: color.adjust($indigo, $lightness: -10%);
 $tertiary: #3C2371;
 $yellow: #ffff00;
 
@@ -323,7 +326,7 @@ $dark-gradient: linear-gradient(to right, $dark 0%, #54505D 100%);
 $link-color: $primary;
 $link-decoration: none;
 $link-shade-percentage: 20%;
-$link-hover-color: darken($link-color, 10%);
+$link-hover-color: color.adjust($link-color, $lightness: -10%);
 $link-hover-decoration: null;
 $spacer: 1rem;
 

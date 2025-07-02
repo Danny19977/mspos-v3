@@ -23,6 +23,14 @@
                 @if (currentUser) {
                 <div class="card">
                     <div class="card-header">
+                        <div class="row align-items-center mb-3" *ngIf="territoire">
+                            <div class="col-12">
+                                <div class="alert alert-info border-0 shadow-sm d-flex align-items-center">
+                                    <i class="ti ti-filter me-2 text-primary"></i>
+                                    <span class="fw-medium">Filtre actif pour : <strong class="text-primary">{{ territoire.name }}</strong></span>
+                                </div>
+                            </div>
+                        </div>
                         <!-- Search -->
                         <div class="row align-items-center">
                             <div class="col-sm-4">
@@ -35,7 +43,7 @@
                             </div>
                             <div class="col-sm-8">
                                 <div class="d-flex align-items-center flex-wrap row-gap-2 justify-content-sm-end">
-                                    <div class="dropdown me-2">
+                                    <!-- <div class="dropdown me-2">
                                         <a href="javascript:void(0);" class="dropdown-toggle"
                                             data-bs-toggle="dropdown"><i
                                                 class="ti ti-package-export me-2"></i>Export</a>
@@ -53,7 +61,7 @@
                                                 </li>
                                             </ul>
                                         </div>
-                                    </div>
+                                    </div> -->
                                     @if(currentUser.role == 'Manager' ||
                                     currentUser.role == 'ASM' ||
                                     currentUser.role == 'Support' &&

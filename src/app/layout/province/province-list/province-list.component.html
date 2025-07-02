@@ -96,7 +96,8 @@
                                     <ng-container matColumnDef="area">
                                         <th mat-header-cell *matHeaderCellDef> Total Area </th>
                                         <td mat-cell *matCellDef="let element">
-                                            <a [routerLink]="['/web/areas/area-list']">{{ getAreaCount(element.Areas) }}
+                                            <a [routerLink]="['/web/areas/area-list', 'province', element.uuid]">
+                                                {{ getAreaCount(element.Areas) }}
                                             </a>
                                         </td>
                                     </ng-container>
@@ -105,8 +106,9 @@
                                     <ng-container matColumnDef="subarea">
                                         <th mat-header-cell *matHeaderCellDef> Total Subarea </th>
                                         <td mat-cell *matCellDef="let element">
-                                            <a [routerLink]="['/web/subareas/subarea-list']">{{
-                                                getSubareaCount(element.SubAreas) }} </a>
+                                            <a [routerLink]="['/web/subareas/subarea-list', 'province', element.uuid]">
+                                                {{ getSubareaCount(element.SubAreas) }} 
+                                            </a>
                                         </td>
                                     </ng-container>
 
@@ -114,8 +116,9 @@
                                     <ng-container matColumnDef="commune">
                                         <th mat-header-cell *matHeaderCellDef> Total Commune </th>
                                         <td mat-cell *matCellDef="let element">
-                                            <a [routerLink]="['/web/communes/commune-list']">{{
-                                                getCommuneCount(element.Communes) }} </a>
+                                            <a [routerLink]="['/web/communes/commune-list', 'province', element.uuid]">
+                                                {{ getCommuneCount(element.Communes) }} 
+                                            </a>
                                         </td>
                                     </ng-container>
 
@@ -130,13 +133,13 @@
                                         </td>
                                     </ng-container>
 
-                                   <!-- pos Column -->
+                                    <!-- pos Column -->
                                     <ng-container matColumnDef="pos">
                                         <th mat-header-cell *matHeaderCellDef> Total POS </th>
                                         <td mat-cell *matCellDef="let element"
                                             style="background-color: rgba(255, 0, 0, 0.173); font-size: larger; text-align: center;">
                                             <a [routerLink]="['/web/pos/pos-list']">
-                                               {{ element.total_pos }}
+                                                {{ element.total_pos }}
                                             </a>
                                         </td>
                                     </ng-container>
@@ -158,7 +161,7 @@
                                         <th mat-header-cell *matHeaderCellDef> Total users</th>
                                         <td mat-cell *matCellDef="let element"
                                             style="background-color: rgba(255, 140, 0, 0.506); font-size: larger; text-align: center;">
-                                           {{ element.total_users }}
+                                            {{ element.total_users }}
                                         </td>
                                     </ng-container>
 
@@ -167,7 +170,7 @@
                                         <th mat-header-cell *matHeaderCellDef> Action </th>
                                         <td mat-cell *matCellDef="let element">
                                             @if(currentUser.role == 'Manager' ||
-                                            currentUser.role == 'Support' && 
+                                            currentUser.role == 'Support' &&
                                             currentUser.permission === 'ALL' ||
                                             currentUser.permission === 'VAE' ||
                                             currentUser.permission === 'VED' ||
@@ -178,7 +181,7 @@
                                             </button>
                                             }
                                             @if(currentUser.role == 'Manager' ||
-                                            currentUser.role == 'Support' && 
+                                            currentUser.role == 'Support' &&
                                             currentUser.permission === 'ALL' ||
                                             currentUser.permission === 'VED') {
                                             <button mat-icon-button (click)="findValue(element.uuid)"

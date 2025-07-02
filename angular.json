@@ -50,6 +50,9 @@
             ],
             "tsConfig": "tsconfig.app.json",
             "inlineStyleLanguage": "scss",
+            "stylePreprocessorOptions": {
+              "includePaths": ["src", "public/scss"]
+            },
             "assets": [
               {
                 "glob": "**/*",
@@ -75,7 +78,7 @@
               "node_modules/plyr/dist/plyr.css", 
               "./node_modules/ngx-lightbox/lightbox.css",
               "public/icons/feather/css/iconfont.css",
-              "node_modules/bootstrap/scss/bootstrap.scss",
+              "src/bootstrap-optimized.scss",
               "node_modules/ngx-toastr/toastr.css",
               "src/styles.scss"
             ],
@@ -109,7 +112,9 @@
                   "minify": false,
                   "inlineCritical": false
                 },
-                "fonts": true
+                "fonts": {
+                  "inline": false
+                }
               },
               "extractLicenses": false,
               "sourceMap": true,

@@ -10,6 +10,11 @@ const routes: Routes = [
     component: ErrorPagesComponent,
     children: [
       {
+        path: '',
+        redirectTo: 'error-404',
+        pathMatch: 'full',
+      },
+      {
         path: 'error-404',
         component: Error404Component,
       },

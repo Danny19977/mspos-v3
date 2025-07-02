@@ -1,3 +1,6 @@
+// Import color module  
+@use "sass:color";
+
 .bootstrap-datetimepicker-widget table td.active,
 .bootstrap-datetimepicker-widget table td.active:hover {
 	background-color: $warning;
@@ -16,7 +19,7 @@
 .link-purple {
 	color: $purple;
 	&:hover {
-	  color: darken($purple, 2);
+	  color: color.adjust($purple, $lightness: -2%);
 	}
 }
 hr {

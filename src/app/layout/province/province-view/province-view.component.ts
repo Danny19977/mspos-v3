@@ -80,6 +80,7 @@ export class ProvinceViewComponent implements OnInit {
 
   ngAfterViewInit(): void {
     this.route.params.subscribe(params => {
+      const name = params['name'];
       this.countryUUID = params['uuid'];
       this.countryService.get(this.countryUUID).subscribe(item => {
         this.country = item.data;

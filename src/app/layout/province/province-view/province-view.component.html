@@ -23,6 +23,14 @@
                 @if (currentUser) {
                 <div class="card">
                     <div class="card-header">
+                        <div class="row align-items-center mb-3" *ngIf="country">
+                            <div class="col-12">
+                                <div class="alert alert-info border-0 shadow-sm d-flex align-items-center">
+                                    <i class="ti ti-filter me-2 text-primary"></i>
+                                    <span class="fw-medium">Filtre actif pour : <strong class="text-primary">{{ country.name }}</strong></span>
+                                </div>
+                            </div>
+                        </div>
                         <!-- Search -->
                         <div class="row align-items-center">
                             <div class="col-sm-4">
