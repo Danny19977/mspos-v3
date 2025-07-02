@@ -7,8 +7,7 @@ import { AuthService } from '../../../auth/auth.service';
 import { routes } from '../../../shared/routes/routes'; 
 import { IPos } from '../../market/pos-vente/models/pos.model';
 import { IPosForm } from '../../market/posform/models/posform.model'; 
-import { IUser } from '../../management/user/models/user.model';
-import { UserService } from '../../management/user/user.service'; 
+import { IUser } from '../../management/user/models/user.model'; 
 import { CycloService } from './cyclo.service';
 
 @Component({

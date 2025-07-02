@@ -96,7 +96,7 @@
                                 <ng-container matColumnDef="cyclos">
                                     <th mat-header-cell *matHeaderCellDef> Total Cyclo </th>
                                     <td mat-cell *matCellDef="let element">
-                                        <a [routerLink]="['/web/cyclos/cyclo-list']"> 
+                                        <a [routerLink]="['/web/cyclos/cyclo-list', 'DR', element.dr_uuid]"> 
                                             {{ element.total_cyclo }}
                                         </a>
                                     </td>

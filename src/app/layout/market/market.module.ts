@@ -23,45 +23,7 @@ import { GoogleMapsLoaderService } from '../../services/google-maps-loader.servi
 import { PosFilterListComponent } from './pos-vente/pos-filter-list/pos-filter-list.component';
 import { BrandFilterListComponent } from './brand/brand-filter-list/brand-filter-list.component';
 import { MarketRoutingModule } from './market-routing.module';
-
-const routes: Routes = [
-  {
-    path: 'pos/pos-list',
-    component: PosVenteListComponent,
-  },
-  {
-    path: 'pos/pos-filter/:name/:uuid',
-    component: PosFilterListComponent,
-  },
-  {
-    path: 'pos/pos-view/:uuid/posforms',
-    component: PosViewComponent,
-  },
-  {
-    path: 'pos/equipement/:uuid',
-    component: PosEquipmentComponent,
-  },
-  {
-    path: 'posforms',
-    loadChildren: () =>
-      import('./posform/pos.module').then(
-        (m) => m.PosModule
-      ),
-  },
-  {
-    path: 'route-plans/list',
-    component: RouteplanComponent
-  },
-  {
-    path: 'brands/list',
-    component: BrandComponent,
-  },
-  {
-    path: 'brands/:name/:uuid',
-    component: BrandFilterListComponent,
-  }
-];
-
+ 
 @NgModule({
   declarations: [
     PosVenteListComponent,
@@ -79,7 +41,7 @@ const routes: Routes = [
     CommonModule,
     MarketRoutingModule,
     SharedModule,
-    RouterModule.forChild(routes),
+    // RouterModule.forChild(routes),
     GoogleMapsModule,
   ],
   providers: [

@@ -28,13 +28,25 @@ const routes: Routes = [
     component: SupListComponent,
   },
   {
+    path: 'supervisors/sup-list/:name/:uuid',
+    component: SupFilterComponent,
+  },
+  {
     path: 'drs/dr-list',
     component: DrComponent,
+  },
+  {
+    path: 'drs/dr-list/:name/:uuid',
+    component: DrFilterComponent,
   },
   {
     path: 'cyclos/cyclo-list',
     component: CycloComponent,
   },
+  {
+    path: 'cyclos/cyclo-list/:name/:uuid',
+    component: CycloFilterComponent,
+  }
 ];
 
 @NgModule({

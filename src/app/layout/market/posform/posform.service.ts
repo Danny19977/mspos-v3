@@ -110,7 +110,22 @@ export class PosformService extends ApiService {
       params = params.set('quickDate', filters.quickDate);
     }
 
-    return this.http.get<any>(`${this.endpoint}/all/paginate`, { params });
+     if (currentUser.role == 'ASM') {
+      return this.http.get<any>(`${this.endpoint}/all/paginate/province/${currentUser.province_uuid}`, { params });
+
+    } else if (currentUser.role == 'Supervisor') {
+      return this.http.get<any>(`${this.endpoint}/all/paginate/area/${currentUser.area_uuid}`, { params });
+
+    } else if (currentUser.role == 'DR') {
+      return this.http.get<any>(`${this.endpoint}/all/paginate/subarea/${currentUser.sub_area_uuid}`, { params });
+
+    } else if (currentUser.role == 'Cyclo') {
+      return this.http.get<any>(`${this.endpoint}/all/paginate/commune/${currentUser.uuid}`, { params });
+    } else {
+      return this.http.get<any>(`${this.endpoint}/all/paginate`, { params });
+    }
+
+    return this.http.get<any>(`${this.endpoint}/all/paginate`, { params }); 
   }
 
   /**

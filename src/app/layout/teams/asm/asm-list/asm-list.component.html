@@ -69,8 +69,8 @@
                                 <ng-container matColumnDef="sups">
                                     <th mat-header-cell *matHeaderCellDef> Total Sup </th>
                                     <td mat-cell *matCellDef="let element">
-                                        <a [routerLink]="['/web/supervisors/sup-list']">
-                                            {{ element.total_sup }}
+                                        <a [routerLink]="['/web/supervisors/sup-list', 'ASM', element.asm_uuid]">
+                                            {{ element.total_sup || 0 }} 
                                         </a>
                                     </td>
                                 </ng-container>
@@ -79,7 +79,7 @@
                                 <ng-container matColumnDef="drs">
                                     <th mat-header-cell *matHeaderCellDef> Total Drs </th>
                                     <td mat-cell *matCellDef="let element">
-                                        <a [routerLink]="['/web/drs/dr-list']">
+                                        <a [routerLink]="['/web/drs/dr-list', 'ASM', element.asm_uuid]">
                                             {{ element.total_dr }}
                                         </a>
                                     </td>
@@ -89,7 +89,7 @@
                                 <ng-container matColumnDef="cyclos">
                                     <th mat-header-cell *matHeaderCellDef> Total Cyclo </th>
                                     <td mat-cell *matCellDef="let element">
-                                        <a [routerLink]="['/web/cyclos/cyclo-list']">
+                                        <a [routerLink]="['/web/cyclos/cyclo-list', 'ASM', element.asm_uuid]">
                                             {{ element.total_cyclo }}
                                         </a>
                                     </td>

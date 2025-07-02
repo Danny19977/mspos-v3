@@ -87,7 +87,6 @@ export class AreaViewComponent implements OnInit {
           console.log("name: ", this.name);
           console.log("territoire_uuid: ", this.territoire_uuid);
 
-          
           this.currentUser = user;
           this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
           this.dataSource.sort = this.sort; // Bind sort to dataSource

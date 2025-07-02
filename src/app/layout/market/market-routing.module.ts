@@ -50,7 +50,7 @@ const routes: Routes = [
     component: BrandComponent,
   },
   {
-    path: 'brands/:name/:uuid',
+    path: 'brands/list/:name/:uuid',
     component: BrandFilterListComponent,
   }
 ];
