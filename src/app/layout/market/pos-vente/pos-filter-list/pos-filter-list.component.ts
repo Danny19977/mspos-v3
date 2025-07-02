@@ -1,12 +1,12 @@
 import { ChangeDetectorRef, Component, computed, OnInit, signal, ViewChild } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MatSort, Sort } from '@angular/material/sort'; 
-import { FormBuilder, FormGroup, Validators } from '@angular/forms'; 
+import { MatSort, Sort } from '@angular/material/sort';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { IPos } from '../models/pos.model';
 import { PosVenteService } from '../pos-vente.service';
-import { MatPaginator, PageEvent } from '@angular/material/paginator'; 
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { routes } from '../../../../shared/routes/routes';
 import { IUser } from '../../../management/user/models/user.model';
 import { AuthService } from '../../../../auth/auth.service';
@@ -160,7 +160,7 @@ export class PosFilterListComponent implements OnInit {
   }
 
 
-  ngOnInit() { 
+  ngOnInit() {
     this.formGroup = this._formBuilder.group({
       name: ['', Validators.required],
       shop: ['', Validators.required],
@@ -177,7 +177,6 @@ export class PosFilterListComponent implements OnInit {
     this.route.params.subscribe(params => {
       this.name = params['name'];
       this.territoire_uuid = params['uuid'];
-
       this.authService.user().subscribe({
         next: (user) => {
           this.currentUser = user;
@@ -217,40 +216,148 @@ export class PosFilterListComponent implements OnInit {
 
 
   fetchProducts(name: string, territoire_uuid: string) {
-    // Préparer les filtres pour l'envoi au backend
-    const filterParams = {
-      search: this.search,
-      ...this.filters
-    };
+    if (name == "country") {
+      this.countryService.get(this.territoire_uuid).subscribe(res => {
+        this.territoire = res.data;
+        // Préparer les filtres pour l'envoi au backend
+        const filterParams = {
+          search: this.search,
+          ...this.filters
+        };
 
-    // Utiliser la nouvelle méthode avec filtres avancés
-    this.posVenteService.getPaginatedWithAdvancedFilters(
-      this.current_page,
-      this.page_size,
-      filterParams
-    ).subscribe({
-      next: (res) => {
-        this.dataList = res.data;
-        this.originalDataList = [...res.data]; // Conserver une copie des données originales
-        this.total_pages = res.pagination.total_pages;
-        this.total_records = res.pagination.total_records;
-        this.dataSource.data = this.dataList;
-        this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
-        this.isLoadingData = false;
-      },
-      error: (err) => {
-        console.log('Erreur lors de la récupération des données:', err);
-        // Fallback vers les anciennes méthodes en cas d'erreur
-        this.fetchProductsOldMethod(name, territoire_uuid);
-      }
-    });
+        // Utiliser la nouvelle méthode avec filtres avancés
+        this.posVenteService.getPaginatedWithAdvancedFilters2(
+          name,
+          territoire_uuid,
+          this.current_page,
+          this.page_size,
+          filterParams
+        ).subscribe({
+          next: (res) => {
+            this.dataList = res.data;
+            this.originalDataList = [...res.data]; // Conserver une copie des données originales
+            this.total_pages = res.pagination.total_pages;
+            this.total_records = res.pagination.total_records;
+            this.dataSource.data = this.dataList;
+            this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
+            this.isLoadingData = false;
+          },
+          error: (err) => {
+            console.log('Erreur lors de la récupération des données:', err);
+            // Fallback vers les anciennes méthodes en cas d'erreur
+            this.fetchProductsOldMethod(name, territoire_uuid);
+          }
+        });
+      });
+    } else if (name == 'province') {
+      this.provinceService.get(this.territoire_uuid).subscribe(res => {
+        this.territoire = res.data;
+        // Préparer les filtres pour l'envoi au backend
+        const filterParams = {
+          search: this.search,
+          ...this.filters
+        };
+
+        // Utiliser la nouvelle méthode avec filtres avancés
+        this.posVenteService.getPaginatedWithAdvancedFilters2(
+          name,
+          territoire_uuid,
+          this.current_page,
+          this.page_size,
+          filterParams
+        ).subscribe({
+          next: (res) => {
+            this.dataList = res.data;
+            this.originalDataList = [...res.data]; // Conserver une copie des données originales
+            this.total_pages = res.pagination.total_pages;
+            this.total_records = res.pagination.total_records;
+            this.dataSource.data = this.dataList;
+            this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
+            this.isLoadingData = false;
+          },
+          error: (err) => {
+            console.log('Erreur lors de la récupération des données:', err);
+            // Fallback vers les anciennes méthodes en cas d'erreur
+            this.fetchProductsOldMethod(name, territoire_uuid);
+          }
+        });
+      });
+    } else if (name == 'area') {
+      this.areaService.get(this.territoire_uuid).subscribe(res => {
+        this.territoire = res.data;
+        // Préparer les filtres pour l'envoi au backend
+        const filterParams = {
+          search: this.search,
+          ...this.filters
+        };
+
+        // Utiliser la nouvelle méthode avec filtres avancés
+        this.posVenteService.getPaginatedWithAdvancedFilters2(
+          name,
+          territoire_uuid,
+          this.current_page,
+          this.page_size,
+          filterParams
+        ).subscribe({
+          next: (res) => {
+            this.dataList = res.data;
+            this.originalDataList = [...res.data]; // Conserver une copie des données originales
+            this.total_pages = res.pagination.total_pages;
+            this.total_records = res.pagination.total_records;
+            this.dataSource.data = this.dataList;
+            this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
+            this.isLoadingData = false;
+          },
+          error: (err) => {
+            console.log('Erreur lors de la récupération des données:', err);
+            // Fallback vers les anciennes méthodes en cas d'erreur
+            this.fetchProductsOldMethod(name, territoire_uuid);
+          }
+        });
+      });
+    } else if (name == 'subarea') {
+      this.subAreaService.get(this.territoire_uuid).subscribe(res => {
+        this.territoire = res.data;
+        // Préparer les filtres pour l'envoi au backend
+        const filterParams = {
+          search: this.search,
+          ...this.filters
+        };
+
+        // Utiliser la nouvelle méthode avec filtres avancés
+        this.posVenteService.getPaginatedWithAdvancedFilters2(
+          name,
+          territoire_uuid,
+          this.current_page,
+          this.page_size,
+          filterParams
+        ).subscribe({
+          next: (res) => {
+            this.dataList = res.data;
+            this.originalDataList = [...res.data]; // Conserver une copie des données originales
+            this.total_pages = res.pagination.total_pages;
+            this.total_records = res.pagination.total_records;
+            this.dataSource.data = this.dataList;
+            this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
+            this.isLoadingData = false;
+          },
+          error: (err) => {
+            console.log('Erreur lors de la récupération des données:', err);
+            // Fallback vers les anciennes méthodes en cas d'erreur
+            this.fetchProductsOldMethod(name, territoire_uuid);
+          }
+        });
+      });
+    }
   }
 
   // Méthode de fallback avec l'ancienne logique
   fetchProductsOldMethod(name: string, territoire_uuid: string) {
-    if (name == 'country') {
+    if (name == "country") {
+      this.isLoadingData = true;
       this.countryService.get(this.territoire_uuid).subscribe(res => {
         this.territoire = res.data;
+        console.log("territoire", this.territoire);
         this.posVenteService.getPaginatedByCountryUUId(territoire_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
           this.dataList = res.data;
           this.originalDataList = [...res.data];
@@ -262,12 +369,11 @@ export class PosFilterListComponent implements OnInit {
           this.isLoadingData = false;
         });
       });
-
     } else if (name == 'province') {
+      this.isLoadingData = true;
       this.provinceService.get(this.territoire_uuid).subscribe(res => {
         this.territoire = res.data;
-        console.log("territoire", this.territoire);
-        this.isLoadingData = true;
+
         // Récupérer les données paginées par province
         this.posVenteService.getPaginatedByAreaId(territoire_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
           this.dataList = res.data;
@@ -280,10 +386,9 @@ export class PosFilterListComponent implements OnInit {
         });
       });
     } else if (name == 'area') {
+      this.isLoadingData = true;
       this.areaService.get(this.territoire_uuid).subscribe(res => {
         this.territoire = res.data;
-        console.log("territoire", this.territoire);
-        this.isLoadingData = true;
         // Récupérer les données paginées par area
         this.posVenteService.getPaginatedBySubAreaId(territoire_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
           this.dataList = res.data;
@@ -390,12 +495,6 @@ export class PosFilterListComponent implements OnInit {
     this.filteredSupervisors = [...this.uniqueSupervisors];
     this.filteredDrs = [...this.uniqueDrs];
     this.filteredCyclos = [...this.uniqueCyclos];
-
-    console.log('🔍 Filtres hiérarchie commerciale mis à jour pour POS:');
-    console.log('  - ASMs:', this.uniqueAsms);
-    console.log('  - Supervisors:', this.uniqueSupervisors);
-    console.log('  - DRs:', this.uniqueDrs);
-    console.log('  - Cyclos:', this.uniqueCyclos);
   }
 
   /**

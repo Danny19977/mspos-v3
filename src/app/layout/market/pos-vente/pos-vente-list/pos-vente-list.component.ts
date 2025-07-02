@@ -208,6 +208,7 @@ export class PosVenteListComponent implements OnInit {
 
     // Utiliser la nouvelle méthode avec filtres avancés
     this.posVenteService.getPaginatedWithAdvancedFilters(
+      currentUser,
       this.current_page,
       this.page_size,
       filterParams
