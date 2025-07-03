@@ -15,8 +15,7 @@ import { ISubArea } from '../../subarea/models/subarea.model';
 import { AuthService } from '../../../../auth/auth.service';
 import { ProvinceService } from '../../province/province.service';
 import { AreaService } from '../../areas/area.service';
-import { CountryService } from '../../country/country.service';
-import { ICyclo } from '../../../teams/cyclo/models/cyclo.model';
+import { CountryService } from '../../country/country.service'; 
 import { IPos } from '../../../market/pos-vente/models/pos.model';
 import { IPosForm } from '../../../market/posform/models/posform.model';
 import { SubareaService } from '../../subarea/subarea.service';
@@ -219,9 +218,7 @@ export class CommuneViewComponent implements OnInit {
   }
 
 
-  getCycloCount(cyclo: ICyclo[]): string {
-    return cyclo ? cyclo.length > 0 ? cyclo.length.toString() : '0' : '0';
-  }
+ 
   getPosCount(pos: IPos[]): string {
     return pos ? pos.length > 0 ? pos.length.toString() : '0' : '0';
   }

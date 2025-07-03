@@ -12,4 +12,6 @@ export class SupService extends ApiService {
   GetSupASMByID(uuid: string): Observable<any> {
     return this.http.get(`${this.endpoint}/all-asm/${uuid}`);
   }
+
+  
 }

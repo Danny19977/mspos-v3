@@ -8,9 +8,7 @@ import { ToastrService } from 'ngx-toastr';
 import { AuthService } from '../../../auth/auth.service';
 import { routes } from '../../../shared/routes/routes';
 import { CountryService } from '../country/country.service';
-import { ICountry } from '../country/models/country.model';
-import { ICyclo } from '../../teams/cyclo/models/cyclo.model';
-import { IDr } from '../../teams/dr/models/dr.model';
+import { ICountry } from '../country/models/country.model'; 
 import { IPos } from '../../market/pos-vente/models/pos.model';
 import { IProvince } from '../province/models/province.model';
 import { ProvinceService } from '../province/province.service';
@@ -198,13 +196,7 @@ export class SubareaComponent implements OnInit {
 
   getCommuneCount(commune: ICommune[]): string {
     return commune ? commune.length > 0 ? commune.length.toString() : '0' : '0';
-  }
-  getDrCount(dr: IDr[]): string {
-    return dr ? dr.length > 0 ? dr.length.toString() : '0' : '0';
-  }
-  getCycloCount(cyclo: ICyclo[]): string {
-    return cyclo ? cyclo.length > 0 ? cyclo.length.toString() : '0' : '0';
-  }
+  } 
   getPosCount(pos: IPos[]): string {
     return pos ? pos.length > 0 ? pos.length.toString() : '0' : '0';
   }

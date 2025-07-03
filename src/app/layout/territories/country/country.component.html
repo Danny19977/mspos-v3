@@ -69,7 +69,7 @@
                                     <ng-container matColumnDef="province">
                                         <th mat-header-cell *matHeaderCellDef> Total Province </th>
                                         <td mat-cell *matCellDef="let element">
-                                            <a [routerLink]="['/web/provinces/province-list', 'country', element.uuid]">
+                                            <a [routerLink]="['/web/provinces/province-filter', 'country', element.uuid]">
                                                 {{ getProvinceCount(element.Provinces) }}
                                             </a>
                                         </td>
@@ -79,7 +79,7 @@
                                     <ng-container matColumnDef="area">
                                         <th mat-header-cell *matHeaderCellDef> Total Area </th>
                                         <td mat-cell *matCellDef="let element">
-                                            <a [routerLink]="['/web/areas/area-list', 'country', element.uuid]">
+                                            <a [routerLink]="['/web/areas/area-filter', 'country', element.uuid]">
                                                 {{ getAreaCount(element.Areas) }}
                                             </a>
                                         </td>
@@ -89,7 +89,7 @@
                                     <ng-container matColumnDef="subarea">
                                         <th mat-header-cell *matHeaderCellDef> Total Subarea </th>
                                         <td mat-cell *matCellDef="let element">
-                                            <a [routerLink]="['/web/subareas/subarea-list', 'country', element.uuid]">
+                                            <a [routerLink]="['/web/subareas/subarea-filter', 'country', element.uuid]">
                                                 {{ getSubareaCount(element.SubAreas) }}
                                             </a>
                                         </td>
@@ -99,7 +99,7 @@
                                     <ng-container matColumnDef="commune">
                                         <th mat-header-cell *matHeaderCellDef> Total Commune </th>
                                         <td mat-cell *matCellDef="let element">
-                                            <a [routerLink]="['/web/communes/commune-list', 'country', element.uuid]">
+                                            <a [routerLink]="['/web/communes/commune-filter', 'country', element.uuid]">
                                                 {{ getCommuneCount(element.Communes) }}
                                             </a>
                                         </td>
@@ -110,7 +110,7 @@
                                         <th mat-header-cell *matHeaderCellDef> Total Brands </th>
                                         <td mat-cell *matCellDef="let element"
                                             style="background-color: rgba(128, 128, 128, 0.177); font-size: larger; text-align: center;">
-                                            <a [routerLink]="['/web/brands/list', 'country', element.uuid]">
+                                            <a [routerLink]="['/web/brands/filter', 'country', element.uuid]">
                                                 {{ getBrandCount(element.Brands) }}
                                             </a>
                                         </td>
@@ -132,8 +132,8 @@
                                         <th mat-header-cell *matHeaderCellDef> Total Visites </th>
                                         <td mat-cell *matCellDef="let element"
                                             style="background-color: rgba(0, 255, 166, 0.31); font-size: larger; text-align: center;">
-                                            <a [routerLink]="['/web/posforms/pos-form-list', 'country', element.uuid]">
-                                                {{ element.total_posforms }}
+                                            <a [routerLink]="['/web/posforms/pos-form-filter', 'country', element.uuid]">
+                                                {{ element.visites }}
                                             </a>
                                         </td>
                                     </ng-container>

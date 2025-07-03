@@ -28,7 +28,7 @@ export class DrFilterComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'province', 'area', 'subarea', 'asm', 'sup', 'user', 'cyclos', 'pos', 'postforms'];
+  displayedColumns: string[] = ['country', 'province', 'area', 'subarea', 'asm', 'sup', 'user', 'cyclos', 'pos', 'visites'];
   dataSource = new MatTableDataSource<IUser>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -103,7 +103,7 @@ export class DrFilterComponent implements OnInit {
 
 
 
-  fetchProducts(name: string, territoire_uuid: string) {
+  fetchProducts(name: string, team_uuid: string) {
     if (name == 'Manager') {
       this.drService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
@@ -113,9 +113,9 @@ export class DrFilterComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (name == 'ASM') {
-      this.userService.get(territoire_uuid).subscribe(item => {
+      this.userService.get(team_uuid).subscribe(item => {
         this.team = item.data;
-        this.drService.getPaginatedByProvinceId(territoire_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+        this.drService.getPaginatedByProvinceId(team_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
@@ -124,9 +124,9 @@ export class DrFilterComponent implements OnInit {
         });
       });
     } else if (name == 'Supervisor') {
-      this.userService.get(territoire_uuid).subscribe(item => {
+      this.userService.get(team_uuid).subscribe(item => {
         this.team = item.data;
-        this.drService.getPaginatedByAreaId(territoire_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+        this.drService.getPaginatedByAreaId(team_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
@@ -135,9 +135,9 @@ export class DrFilterComponent implements OnInit {
         });
       });
     } else if (name == 'DR') {
-      this.userService.get(territoire_uuid).subscribe(item => {
+      this.userService.get(team_uuid).subscribe(item => {
         this.team = item.data;
-        this.drService.getPaginatedBySubAreaId(territoire_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+        this.drService.getPaginatedBySubAreaId(team_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;

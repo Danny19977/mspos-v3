@@ -8,38 +8,44 @@ import { AsmListComponent } from './asm/asm-list/asm-list.component';
 import { SupListComponent } from './sups/sup-list/sup-list.component';
 import { DrComponent } from './dr/dr.component';
 import { CycloComponent } from './cyclo/cyclo.component';
-
-// Services - Lazy loaded only when module is loaded
-import { AsmService } from './asm/asm.service';
-import { SupService } from './sups/sup.service';
-import { DrService } from './dr/dr.service';
-import { CycloService } from './cyclo/cyclo.service';
+ 
 import { SupFilterComponent } from './sups/sup-filter/sup-filter.component';
 import { DrFilterComponent } from './dr/dr-filter/dr-filter.component';
 import { CycloFilterComponent } from './cyclo/cyclo-filter/cyclo-filter.component';
-import { TeamsRoutingModule } from './teams-routing.module';
 
+const routes: Routes = [
+  {
+    path: 'asm/asm-list',
+    component: AsmListComponent,
+  },
+  {
+    path: 'supervisors/sup-list',
+    component: SupListComponent,
+  },
+  {
+    path: 'supervisors/sup-filter/:name/:uuid',
+    component: SupFilterComponent,
+  },
+  {
+    path: 'drs/dr-list',
+    component: DrComponent,
+  },
+  {
+    path: 'drs/dr-filter/:name/:uuid',
+    component: DrFilterComponent,
+  },
+  {
+    path: 'cyclos/cyclo-list',
+    component: CycloComponent,
+  },
+  {
+    path: 'cyclos/cyclo-filter/:name/:uuid',
+    component: CycloFilterComponent,
+  }
+];
 
 @NgModule({
-  declarations: [
-    AsmListComponent,
-    SupListComponent,
-    DrComponent,
-    CycloComponent,
-    SupFilterComponent,
-    DrFilterComponent,
-    CycloFilterComponent,
-  ],
-  imports: [
-    CommonModule,
-    TeamsRoutingModule,
-    SharedModule,
-  ],
-  providers: [
-    AsmService,
-    SupService,
-    DrService,
-    CycloService,
-  ]
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
 })
-export class TeamsModule { }
+export class TeamsRoutingModule { }

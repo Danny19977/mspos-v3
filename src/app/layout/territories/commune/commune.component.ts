@@ -10,8 +10,7 @@ import { routes } from '../../../shared/routes/routes';
 import { AreaService } from '../areas/area.service';
 import { IArea } from '../areas/models/area.model';
 import { CountryService } from '../country/country.service';
-import { ICountry } from '../country/models/country.model';
-import { ICyclo } from '../../teams/cyclo/models/cyclo.model'; 
+import { ICountry } from '../country/models/country.model'; 
 import { IPos } from '../../market/pos-vente/models/pos.model';
 import { IProvince } from '../province/models/province.model';
 import { ProvinceService } from '../province/province.service';
@@ -211,10 +210,7 @@ export class CommuneComponent implements OnInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-
-  getCycloCount(cyclo: ICyclo[]): string {
-    return cyclo ? cyclo.length > 0 ? cyclo.length.toString() : '0' : '0';
-  }
+ 
   getPosCount(pos: IPos[]): string {
     return pos ? pos.length > 0 ? pos.length.toString() : '0' : '0';
   }

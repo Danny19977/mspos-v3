@@ -28,7 +28,7 @@ export class CycloFilterComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'province', 'area', 'subarea', 'commune', 'asm', 'sup', 'dr', 'user', 'pos', 'postforms'];
+  displayedColumns: string[] = ['country', 'province', 'area', 'subarea', 'commune', 'asm', 'sup', 'dr', 'user', 'pos', 'visites'];
   dataSource = new MatTableDataSource<IUser>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -101,7 +101,7 @@ export class CycloFilterComponent implements OnInit {
 
 
 
-  fetchProducts(name: string, territoire_uuid: string) {
+  fetchProducts(name: string, team_uuid: string) {
     if (name == 'Manager') {
       this.cycloService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
@@ -111,9 +111,9 @@ export class CycloFilterComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (name == 'ASM') {
-      this.userService.get(territoire_uuid).subscribe(item => {
+      this.userService.get(team_uuid).subscribe(item => {
         this.team = item.data;
-        this.cycloService.getPaginatedByProvinceId(territoire_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+        this.cycloService.getPaginatedByProvinceId(team_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
@@ -122,9 +122,9 @@ export class CycloFilterComponent implements OnInit {
         });
       });
     } else if (name == 'Supervisor') {
-      this.userService.get(territoire_uuid).subscribe(item => {
+      this.userService.get(team_uuid).subscribe(item => {
         this.team = item.data;
-        this.cycloService.getPaginatedByAreaId(territoire_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+        this.cycloService.getPaginatedByAreaId(team_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
@@ -133,9 +133,9 @@ export class CycloFilterComponent implements OnInit {
         });
       });
     } else if (name == 'DR') {
-      this.userService.get(territoire_uuid).subscribe(item => {
+      this.userService.get(team_uuid).subscribe(item => {
         this.team = item.data;
-        this.cycloService.getPaginatedBySubAreaId(territoire_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+        this.cycloService.getPaginatedBySubAreaId(team_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
@@ -143,10 +143,10 @@ export class CycloFilterComponent implements OnInit {
           this.isLoadingData = false;
         });
       });
-    } else if (name == 'Cyclo') {
-      this.userService.get(territoire_uuid).subscribe(item => {
+    } else if (name == 'Cyclo') { 
+      this.userService.get(team_uuid).subscribe(item => {
         this.team = item.data;
-        this.cycloService.getPaginatedByCommuneId(territoire_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+        this.cycloService.getPaginatedByCommuneId(team_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;

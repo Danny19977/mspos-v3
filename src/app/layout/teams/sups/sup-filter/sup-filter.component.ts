@@ -28,7 +28,7 @@ export class SupFilterComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'province', 'area', 'asm', 'user', 'drs', 'cyclos', 'pos', 'postforms'];
+  displayedColumns: string[] = ['country', 'province', 'area', 'asm', 'user', 'drs', 'cyclos', 'pos', 'visites'];
   dataSource = new MatTableDataSource<IUser>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;
@@ -110,7 +110,7 @@ export class SupFilterComponent implements OnInit {
   }
 
 
-  fetchProducts(name: string, territoire_uuid: string) {
+  fetchProducts(name: string, team_uuid: string) {
     if (name == 'Manager') {
       this.supService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
@@ -120,9 +120,9 @@ export class SupFilterComponent implements OnInit {
         this.isLoadingData = false;
       });
     } else if (name == 'ASM') {
-      this.userService.get(territoire_uuid).subscribe(item => {
+      this.userService.get(team_uuid).subscribe(item => {
         this.team = item.data;
-        this.supService.getPaginatedByProvinceId(territoire_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+        this.supService.getPaginatedByProvinceId(team_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
@@ -131,9 +131,9 @@ export class SupFilterComponent implements OnInit {
         });
       });
     } else if (name == 'Supervisor') {
-      this.userService.get(territoire_uuid).subscribe(item => {
+      this.userService.get(team_uuid).subscribe(item => {
         this.team = item.data;
-        this.supService.getPaginatedByAreaId(territoire_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
+        this.supService.getPaginatedByAreaId(team_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
           this.dataList = res.data;
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;

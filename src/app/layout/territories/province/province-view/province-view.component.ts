@@ -17,11 +17,7 @@ import { IArea } from '../../areas/models/area.model';
 import { IUser } from '../../../management/user/models/user.model';
 import { ICommune } from '../../commune/models/commune.model';
 import { IPosForm } from '../../../market/posform/models/posform.model';
-import { ISubArea } from '../../subarea/models/subarea.model';
-import { IAsm } from '../../../teams/asm/models/asm.model';
-import { ISup } from '../../../teams/sups/models/sup.model';
-import { IDr } from '../../../teams/dr/models/dr.model';
-import { ICyclo } from '../../../teams/cyclo/models/cyclo.model';
+import { ISubArea } from '../../subarea/models/subarea.model'; 
 import { IBrand } from '../../../market/brand/models/brand.model';
 import { IPos } from '../../../market/pos-vente/models/pos.model';
 
@@ -127,19 +123,7 @@ export class ProvinceViewComponent implements OnInit {
   }
   getCommuneCount(commune: ICommune[]): string {
     return commune ? commune.length > 0 ? commune.length.toString() : '0' : '0';
-  }
-  getAsmCount(asm: IAsm[]): string {
-    return asm ? asm.length > 0 ? asm.length.toString() : '0' : '0';
-  }
-  getSupCount(sup: ISup[]): string {
-    return sup ? sup.length > 0 ? sup.length.toString() : '0' : '0';
-  }
-  getDrCount(dr: IDr[]): string {
-    return dr ? dr.length > 0 ? dr.length.toString() : '0' : '0';
-  }
-  getCycloCount(cyclo: ICyclo[]): string {
-    return cyclo ? cyclo.length > 0 ? cyclo.length.toString() : '0' : '0';
-  }
+  } 
   getBrandCount(brand: IBrand[]): string {
     return brand ? brand.length > 0 ? brand.length.toString() : '0' : '0';
   }

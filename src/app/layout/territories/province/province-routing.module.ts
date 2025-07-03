@@ -19,7 +19,7 @@ const routes: Routes = [
         component: ProvinceListComponent,
       },
       {
-        path: 'province-list/:name/:uuid',
+        path: 'province-filter/:name/:uuid',
         component: ProvinceViewComponent,
         data: {
           breadcrumb: 'Province List by UUID'

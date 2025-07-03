@@ -11,12 +11,8 @@ import { LogsService } from '../../management/user-logs/logs.service';
 import { CountryService } from './country.service';
 import { ICountry } from './models/country.model';
 import { IProvince } from '../province/models/province.model';
-import { IArea } from '../areas/models/area.model';
-import { IAsm } from '../../teams/asm/models/asm.model';
-import { ISubArea } from '../subarea/models/subarea.model';
-import { ISup } from '../../teams/sups/models/sup.model';
-import { IDr } from '../../teams/dr/models/dr.model';
-import { ICyclo } from '../../teams/cyclo/models/cyclo.model';
+import { IArea } from '../areas/models/area.model'; 
+import { ISubArea } from '../subarea/models/subarea.model'; 
 import { IPos } from '../../market/pos-vente/models/pos.model';
 import { IBrand } from '../../market/brand/models/brand.model';
 import { countryList } from '../../../utils/country';
@@ -111,19 +107,7 @@ export class CountryComponent implements OnInit {
   }
   getCommuneCount(commune: ICommune[]): string {
     return commune ? commune.length > 0 ? commune.length.toString() : '0' : '0';
-  }
-  getAsmCount(asm: IAsm[]): string {
-    return asm ? asm.length > 0 ? asm.length.toString() : '0' : '0';
-  }
-  getSupCount(sup: ISup[]): string {
-    return sup ? sup.length > 0 ? sup.length.toString() : '0' : '0';
-  }
-  getDrCount(dr: IDr[]): string {
-    return dr ? dr.length > 0 ? dr.length.toString() : '0' : '0';
-  }
-  getCycloCount(cyclo: ICyclo[]): string {
-    return cyclo ? cyclo.length > 0 ? cyclo.length.toString() : '0' : '0';
-  }
+  } 
   getBrandCount(brand: IBrand[]): string {
     return brand ? brand.length > 0 ? brand.length.toString() : '0' : '0';
   }

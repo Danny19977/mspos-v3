@@ -27,7 +27,7 @@ export class CycloComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'province', 'area', 'subarea', 'commune', 'asm', 'sup', 'dr', 'user', 'pos', 'postforms'];
+  displayedColumns: string[] = ['country', 'province', 'area', 'subarea', 'commune', 'asm', 'sup', 'dr', 'user', 'pos', 'visites'];
   dataSource = new MatTableDataSource<IUser>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;

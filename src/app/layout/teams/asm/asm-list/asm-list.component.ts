@@ -29,7 +29,7 @@ export class AsmListComponent implements OnInit {
   total_records: number = 0;
 
   // Table 
-  displayedColumns: string[] = ['country', 'province', 'user', 'sups', 'drs', 'cyclos', 'pos', 'postforms'];
+  displayedColumns: string[] = ['country', 'province', 'user', 'sups', 'drs', 'cyclos', 'pos', 'visites'];
   dataSource = new MatTableDataSource<IUser>(this.dataList);
 
   @ViewChild(MatSort) sort!: MatSort;

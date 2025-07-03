@@ -14,13 +14,9 @@ import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { LogsService } from '../../../management/user-logs/logs.service';
 import { CountryService } from '../../country/country.service';
 import { ICountry } from '../../country/models/country.model';
-import { IUser } from '../../../management/user/models/user.model';
-import { IAsm } from '../../../teams/asm/models/asm.model';
-import { ICyclo } from '../../../teams/cyclo/models/cyclo.model';
-import { IDr } from '../../../teams/dr/models/dr.model';
+import { IUser } from '../../../management/user/models/user.model'; 
 import { IPos } from '../../../market/pos-vente/models/pos.model';
-import { ISubArea } from '../../subarea/models/subarea.model';
-import { ISup } from '../../../teams/sups/models/sup.model';
+import { ISubArea } from '../../subarea/models/subarea.model'; 
 import { ICommune } from '../../commune/models/commune.model';
 
 @Component({
@@ -149,6 +145,7 @@ export class AreaListComponent implements OnInit {
     } else {
       this.areaService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
         this.dataList = res.data;
+        console.log("dataList", this.dataList);
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
         this.dataSource.data = this.dataList; // Update dataSource data
@@ -188,18 +185,7 @@ export class AreaListComponent implements OnInit {
   getCommuneCount(commune: ICommune[]): string {
     return commune ? commune.length > 0 ? commune.length.toString() : '0' : '0';
   }
-  getAsmCount(asm: IAsm[]): string {
-    return asm ? asm.length > 0 ? asm.length.toString() : '0' : '0';
-  }
-  getSupCount(sup: ISup[]): string {
-    return sup ? sup.length > 0 ? sup.length.toString() : '0' : '0';
-  }
-  getDrCount(dr: IDr[]): string {
-    return dr ? dr.length > 0 ? dr.length.toString() : '0' : '0';
-  }
-  getCycloCount(cyclo: ICyclo[]): string {
-    return cyclo ? cyclo.length > 0 ? cyclo.length.toString() : '0' : '0';
-  }
+ 
   getPosCount(pos: IPos[]): string {
     return pos ? pos.length > 0 ? pos.length.toString() : '0' : '0';
   }

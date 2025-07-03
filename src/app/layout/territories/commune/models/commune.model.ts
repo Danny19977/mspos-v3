@@ -29,5 +29,5 @@ export interface ICommune {
 
     total_users: number;
     total_pos: number;
-    total_posforms: number;
+    visites: number;
 }

@@ -56,7 +56,7 @@ export interface IUser {
     total_dr: number;
     total_cyclo: number;
     total_pos: number;
-    total_posforms: number;
+    visites: number;
  
     UserLogs?: UserLogsModel[];
     RoutePlan?: IRoutePlan[];

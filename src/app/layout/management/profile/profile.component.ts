@@ -12,8 +12,7 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { PosformService } from '../../market/posform/posform.service';
 import { IPosForm } from '../../market/posform/models/posform.model';
-import { IUser } from '../user/models/user.model';
-import { IAsm } from '../../teams/asm/models/asm.model';
+import { IUser } from '../user/models/user.model'; 
 
 @Component({
   selector: 'app-profile',
@@ -63,9 +62,7 @@ export class ProfileComponent implements OnInit {
 
   public password: boolean[] = [false];
 
-  onLine = navigator.onLine;
-
-  asmInfo!: IAsm;
+  onLine = navigator.onLine; 
 
   constructor(
     private router: Router,
