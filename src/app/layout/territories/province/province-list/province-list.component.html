@@ -127,7 +127,7 @@
                                         <th mat-header-cell *matHeaderCellDef> Total Brands </th>
                                         <td mat-cell *matCellDef="let element"
                                             style="background-color: rgba(128, 128, 128, 0.177); font-size: larger; text-align: center;">
-                                            <a [routerLink]="['/web/brands/filter', 'province', element.uuid]">
+                                            <a [routerLink]="['/web/brands-filter', 'province', element.uuid]">
                                                 {{ getBrandCount(element.Brands) }}
                                             </a>
                                         </td>
