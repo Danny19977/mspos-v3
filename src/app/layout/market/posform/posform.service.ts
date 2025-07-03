@@ -4,6 +4,7 @@ import { environment } from '../../../../environments/environment';
 import { HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { ApiResponse2 } from '../../../shared/model/api-response.model';
+import { IUser } from '../../management/user/models/user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -28,6 +29,7 @@ export class PosformService extends ApiService {
    * Utilise l'endpoint optimisé du backend Go Fiber avec tous les filtres disponibles
    */
   getPaginatedWithAdvancedFilters(
+    currentUser: IUser,
     page: number,
     pageSize: number,
     startDate: string,
@@ -123,9 +125,7 @@ export class PosformService extends ApiService {
       return this.http.get<any>(`${this.endpoint}/all/paginate/commune/${currentUser.uuid}`, { params });
     } else {
       return this.http.get<any>(`${this.endpoint}/all/paginate`, { params });
-    }
-
-    return this.http.get<any>(`${this.endpoint}/all/paginate`, { params }); 
+    } 
   }
 
   /**

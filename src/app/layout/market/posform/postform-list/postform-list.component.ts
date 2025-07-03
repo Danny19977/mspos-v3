@@ -437,6 +437,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     // Utiliser la nouvelle méthode avec filtres avancés pour tous les rôles
     // Les filtres côté serveur sont appliqués selon le rôle dans le backend
     this.posformService.getPaginatedWithAdvancedFilters(
+      currentUser,
       this.current_page,
       this.page_size,
       start_date,
@@ -1516,13 +1517,19 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       return true; // Si la liste est vide, permettre l'ajout
     }
 
-    // Récupérer le dernier élément de la liste (plus récent)
-    const lastItem = this.dataList[0]; // Assumant que la liste est triée par date décroissante
+    // Filtrer les rapports créés par l'utilisateur connecté
+    const currentUserReports = this.dataList.filter(item => item.user_uuid === this.currentUser.uuid);
+    
+    if (currentUserReports.length === 0) {
+      return true; // Si l'utilisateur n'a pas encore de rapport, permettre l'ajout
+    }
 
-    // Vérifier si le dernier élément a un pos_uuid valide (non vide)
-    return !!(lastItem.pos_uuid && typeof lastItem.pos_uuid === 'string' && lastItem.pos_uuid.trim() !== '');
+    // Récupérer le dernier rapport de l'utilisateur connecté (plus récent)
+    const lastUserReport = currentUserReports[0]; // Assumant que la liste est triée par date décroissante
+
+    // Vérifier si le dernier rapport de l'utilisateur a un pos_uuid valide (non vide)
+    return !!(lastUserReport.pos_uuid && typeof lastUserReport.pos_uuid === 'string' && lastUserReport.pos_uuid.trim() !== '');
   }
-
 
 
   delete(): void {
