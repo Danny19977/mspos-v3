@@ -126,7 +126,7 @@
                                 <ng-container matColumnDef="pourcent">
                                     <th mat-header-cell *matHeaderCellDef> Progression </th>
                                     <td mat-cell *matCellDef="let element">
-                                        {{ element.total_item_active * 100 / element.total_item }}
+                                        {{ element.total_item_active * 100 / element.total_item }} %
                                         <!-- {{ getProgressionPercentage(element.RoutePlanItems || []) }}% -->
                                     </td>
                                 </ng-container>
