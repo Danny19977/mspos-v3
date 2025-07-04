@@ -28,8 +28,8 @@ export interface IRoutePlan {
     CreatedAt?: Date;
     UpdatedAt?: Date;
 
-    total_route_plan_item_active?: number;
-    total_route_plan_item?: number;
+    // total_route_plan_item_active?: number;
+    // total_route_plan_item?: number;
 
     RoutePlanItems?: IRoutePlanItem[];
 

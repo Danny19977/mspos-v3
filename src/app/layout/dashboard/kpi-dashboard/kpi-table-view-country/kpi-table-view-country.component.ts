@@ -10,6 +10,7 @@ import { formatDate } from '@angular/common';
 import { ICountry } from '../../../territories/country/models/country.model';
 import { CountryService } from '../../../territories/country/country.service';
 
+
 @Component({
   selector: 'app-kpi-table-view-country',
   standalone: false,
@@ -29,7 +30,7 @@ export class KpiTableViewCountryComponent implements OnInit {
 
 
 
-  countryList: IProvince[] = [];
+  countryList: ICountry[] = [];
   country!: ICountry;
 
   tableViewList: KPITableViewPriceModel[] = [];
@@ -65,6 +66,14 @@ export class KpiTableViewCountryComponent implements OnInit {
 
         this.countryService.getAll().subscribe((res) => {
           this.countryList = res.data;
+          console.log('countryList:', this.countryList);
+          if (this.currentUser.role != 'Managers' && this.currentUser.role != 'Support') {
+            this.getTableView(this.countryList[0].uuid, this.start_date, this.end_date);
+
+          } else {
+            this.getTableView(this.currentUser.country_uuid, this.start_date, this.end_date);
+
+          }
         });
 
       },
@@ -75,7 +84,6 @@ export class KpiTableViewCountryComponent implements OnInit {
 
     this.onChanges();
   }
-
 
   onCheckboxCountryChange(event: any, item: ICountry) {
     if (event.target.checked) {
@@ -95,7 +103,7 @@ export class KpiTableViewCountryComponent implements OnInit {
       if (this.currentUser.role != 'Managers' && this.currentUser.role != 'Support') {
         this.getTableView(this.countryList[0].uuid, this.start_date, this.end_date);
       } else {
-        this.getTableView(this.currentUser.country_uuid, this.start_date, this.end_date);
+        this.getTableView(this.currentUser.country_uuid,this.start_date, this.end_date);
       }
     });
   }

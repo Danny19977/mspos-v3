@@ -117,8 +117,8 @@
                                 <ng-container matColumnDef="total_pos">
                                     <th mat-header-cell *matHeaderCellDef> Total_Pos </th>
                                     <td mat-cell *matCellDef="let element">
-                                        {{ element.total_item_active }} / {{ element.total_item }} 
-                                        <!-- {{ getRoutePlanItemTrueCount(element.RoutePlanItems || []) }}/{{ getRoutePlanItemCount(element.RoutePlanItems || []) }} -->
+                                        <!-- {{ element.total_item_active }} / {{ element.RoutePlanItems }}  -->
+                                        {{ getRoutePlanItemTrueCount(element.RoutePlanItems || []) }}/{{ getRoutePlanItemCount(element.RoutePlanItems || []) }}
                                     </td>
                                 </ng-container>
 
@@ -126,8 +126,8 @@
                                 <ng-container matColumnDef="pourcent">
                                     <th mat-header-cell *matHeaderCellDef> Progression </th>
                                     <td mat-cell *matCellDef="let element">
-                                        {{ element.total_item_active * 100 / element.total_item }} %
-                                        <!-- {{ getProgressionPercentage(element.RoutePlanItems || []) }}% -->
+                                        <!-- {{ element.total_item_active * 100 / element.total_item }} % -->
+                                        {{ getProgressionPercentage(element.RoutePlanItems || []) }}%
                                     </td>
                                 </ng-container>
 

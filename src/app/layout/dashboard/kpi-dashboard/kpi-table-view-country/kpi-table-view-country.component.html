@@ -8,7 +8,7 @@
                     <div class="d-flex align-items-center justify-content-center flex-wrap row-gap-2">
 
                         <mat-form-field appearance="fill" class="me-2">
-                            <mat-label>Select province</mat-label>
+                            <mat-label>Select Pays</mat-label>
                             <mat-select (selectionChange)="onProvinceChange($event)">
                                 <mat-option *ngFor="let item of countryList" [value]="item">
                                     {{ item.name }}
@@ -26,7 +26,8 @@
                                         <div class="filter-set-view">
                                             <div class="filter-set-head">
                                                 <h4><i class="ti ti-filter-share"></i>Filter</h4>
-                                            </div>
+                                            </div> 
+
                                             <div class="filter-set-head">
                                                 <div class="form-sort me-2">
                                                     <i class="ti ti-calendar"></i>
@@ -57,7 +58,7 @@
                     <table class="table dataTable" id="deals-project">
                         <thead class="thead-light">
                             <tr>
-                                <th>Province</th>
+                                <th>Pays</th>
                                 <th>Fullname</th>
                                 <th>Titre</th> 
                                 <th>Objectifs</th>

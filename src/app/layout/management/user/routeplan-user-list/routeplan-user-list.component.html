@@ -71,9 +71,9 @@
           <th mat-header-cell *matHeaderCellDef>POS</th>
           <td mat-cell *matCellDef="let element">
             <div class="pos-count">
-              <span class="active">{{ element.total_item_active || 0 }}</span>
+              <!-- <span class="active">{{ element.RoutePlanItems || 0 }}</span> -->
               <span class="separator">/</span>  
-              <span class="total">{{ element.total_item || 0 }}</span>
+              <span class="total">{{ element.RoutePlanItems || 0 }}</span>
             </div>
           </td>
         </ng-container>

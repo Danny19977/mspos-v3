@@ -86,26 +86,27 @@ export class RouteplanUserListComponent implements OnInit, OnChanges {
   }
 
   getTotalPosCount(routePlan: IRoutePlan): number {
-    return routePlan.total_route_plan_item_active || 0;
+    const total_route_plan_item_active = routePlan.RoutePlanItems?.filter(item => item.status).length || 0;
+    return total_route_plan_item_active || 0;
   }
 
   getStatusText(routePlan: IRoutePlan): string {
-    const totalActive = routePlan.total_route_plan_item_active || 0;
-    const totalItems = routePlan.total_route_plan_item || 0;
+    const totalActive = routePlan.RoutePlanItems || 0;
+    const totalItems = routePlan.RoutePlanItems || 0;
     
     if (totalItems === 0) return 'Aucun POS';
     if (totalActive === totalItems) return 'Terminé';
-    if (totalActive > 0) return 'En cours';
+    // if (totalActive > 0) return 'En cours';
     return 'Non commencé';
   }
 
   getStatusClass(routePlan: IRoutePlan): string {
-    const totalActive = routePlan.total_route_plan_item_active || 0;
-    const totalItems = routePlan.total_route_plan_item || 0;
+    const totalActive = routePlan.RoutePlanItems || 0;
+    const totalItems = routePlan.RoutePlanItems || 0;
     
     if (totalItems === 0) return 'status-empty';
     if (totalActive === totalItems) return 'status-completed';
-    if (totalActive > 0) return 'status-in-progress';
+    // if (totalActive > 0) return 'status-in-progress';
     return 'status-not-started';
   }
 }
