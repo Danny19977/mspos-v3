@@ -6,12 +6,14 @@ import { PosComponent } from './pos.component';
 import { PostformListComponent } from './postform-list/postform-list.component';
 import { SharedModule } from '../../../shared/shared.module';
 import { PosformService } from './posform.service';
+import { PosformFilterComponent } from './posform-filter/posform-filter.component';
 
 
 @NgModule({
   declarations: [
     PosComponent,
-    PostformListComponent, 
+    PostformListComponent,
+    PosformFilterComponent, 
   ],
   imports: [
     CommonModule,

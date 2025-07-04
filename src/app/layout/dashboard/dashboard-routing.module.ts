@@ -32,6 +32,7 @@ import { KpiTableViewProvinceComponent } from './kpi-dashboard/kpi-table-view-pr
 import { KpiTableViewAreaComponent } from './kpi-dashboard/kpi-table-view-area/kpi-table-view-area.component';
 import { KpiTableViewCommuneComponent } from './kpi-dashboard/kpi-table-view-commune/kpi-table-view-commune.component';
 import { KpiTableViewSubareaComponent } from './kpi-dashboard/kpi-table-view-subarea/kpi-table-view-subarea.component';
+import { KpiTableViewCountryComponent } from './kpi-dashboard/kpi-table-view-country/kpi-table-view-country.component';
 
 const routes: Routes = [
   {
@@ -160,6 +161,10 @@ const routes: Routes = [
         component: KpiDashboardComponent,
         children: [
           {
+            path: 'country/:country',
+            component: KpiTableViewCountryComponent,
+          },
+          {
             path: 'province/:country',
             component: KpiTableViewProvinceComponent,
           },
@@ -177,7 +182,7 @@ const routes: Routes = [
           },
           {
             path: '',
-            component: KpiTableViewProvinceComponent
+            component: KpiTableViewCountryComponent
           }
         ]
       },

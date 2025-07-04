@@ -15,8 +15,7 @@ import { ProvinceService } from '../../../territories/province/province.service'
 import { AreaService } from '../../../territories/areas/area.service';
 import { SubareaService } from '../../../territories/subarea/subarea.service';
 import { LogsService } from '../../../management/user-logs/logs.service';
-import { IPosForm } from '../../posform/models/posform.model';
-import { UserService } from '../../../management/user/user.service';
+import { IPosForm } from '../../posform/models/posform.model'; 
 import { CommuneService } from '../../../territories/commune/commune.service';
 
 @Component({
@@ -155,8 +154,7 @@ export class PosFilterListComponent implements OnInit {
     private provinceService: ProvinceService,
     private areaService: AreaService,
     private subAreaService: SubareaService,
-    private communeService: CommuneService,
-    private userService: UserService,
+    private communeService: CommuneService, 
     private logActivity: LogsService,
     private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
     private toastr: ToastrService
@@ -390,7 +388,7 @@ export class PosFilterListComponent implements OnInit {
 
   // Méthode de fallback avec l'ancienne logique
   fetchProductsOldMethod(name: string, territoire_uuid: string) {
-    if (name == "country") {
+    if (name == "country" || name == 'Manager' || name == 'Support') {
       this.isLoadingData = true;
       this.countryService.get(this.territoire_uuid).subscribe(res => {
         this.territoire = res.data;
@@ -406,7 +404,7 @@ export class PosFilterListComponent implements OnInit {
           this.isLoadingData = false;
         });
       });
-    } else if (name == 'province') {
+    } else if (name == 'province' || name == 'ASM') {
       this.isLoadingData = true;
       this.provinceService.get(this.territoire_uuid).subscribe(res => {
         this.territoire = res.data;
@@ -422,7 +420,7 @@ export class PosFilterListComponent implements OnInit {
           this.isLoadingData = false;
         });
       });
-    } else if (name == 'area') {
+    } else if (name == 'area' || name == 'Supervisor') {
       this.isLoadingData = true;
       this.areaService.get(this.territoire_uuid).subscribe(res => {
         this.territoire = res.data;
@@ -437,7 +435,7 @@ export class PosFilterListComponent implements OnInit {
           this.isLoadingData = false;
         });
       });
-    } else if (name == 'subarea') {
+    } else if (name == 'subarea' || name == 'DR') {
       this.subAreaService.get(this.territoire_uuid).subscribe(res => {
         this.territoire = res.data;
         console.log("territoire", this.territoire);

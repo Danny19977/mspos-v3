@@ -23,7 +23,7 @@ import { GoogleMapsLoaderService } from '../../services/google-maps-loader.servi
 import { PosFilterListComponent } from './pos-vente/pos-filter-list/pos-filter-list.component';
 import { BrandFilterListComponent } from './brand/brand-filter-list/brand-filter-list.component';
 import { MarketRoutingModule } from './market-routing.module';
- 
+
 @NgModule({
   declarations: [
     PosVenteListComponent,
@@ -35,7 +35,7 @@ import { MarketRoutingModule } from './market-routing.module';
     PosformsComponent,
     MapPosCardComponent,
     PosFilterListComponent,
-    BrandFilterListComponent, 
+    BrandFilterListComponent,
   ],
   imports: [
     CommonModule,

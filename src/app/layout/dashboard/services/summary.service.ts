@@ -7,7 +7,7 @@ import { Observable } from 'rxjs/internal/Observable';
   providedIn: 'root'
 })
 export class SummaryService extends ApiService {
-  endpoint: string = `${environment.apiUrl}/dashboard/sammury`;
+  endpoint: string = `${environment.apiUrl}/dashboard/summary`;
  
 
   DrCount(): Observable<any> {
