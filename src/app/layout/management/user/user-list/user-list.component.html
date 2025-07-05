@@ -415,7 +415,7 @@
           <div class="mb-3">
             <label class="col-form-label" for="user_asm_uuid">ASM <span class="text-danger">*</span></label>
             <input #user_asm_uuid type="text" matInput [matAutocomplete]="autopos3" placeholder="Selectionner le user"
-              class="form-control" (input)="getAllASM()" (focus)="getAllASM()">
+              class="form-control" (input)="onASMInputChange()" (focus)="onASMInputChange()">
             @if (isloadASM) {
             <div class="d-flex align-items-center">
               <strong role="status">Loading...</strong>
@@ -450,7 +450,7 @@
               Supervisor
               <span class="text-danger">*</span></label>
             <input #user_sup_uuid type="text" matInput [matAutocomplete]="autopos4" placeholder="Selectionner le user"
-              class="form-control" (input)="getAllSup()" (focus)="getAllSup()">
+              class="form-control" (input)="onSupInputChange()" (focus)="onSupInputChange()">
             @if (isloadSup) {
             <div class="d-flex align-items-center">
               <strong role="status">Loading...</strong>
@@ -483,7 +483,7 @@
           <div class="mb-3">
             <label class="col-form-label" for="user_dr_uuid">DR <span class="text-danger">*</span></label>
             <input #user_dr_uuid type="text" matInput [matAutocomplete]="autopos5" placeholder="Selectionner le user"
-              class="form-control" (input)="getAllDr()" (focus)="getAllDr()">
+              class="form-control" (input)="onDrInputChange()" (focus)="onDrInputChange()">
             @if (isloadDr) {
             <div class="d-flex align-items-center">
               <strong role="status">Loading...</strong>
@@ -505,7 +505,7 @@
               <span class="text-danger">*</span>
             </label>
             <mat-select [compareWith]="compareFnCommune" class="select custom-mat-select" formControlName="commune_uuid"
-              placeholder="Choose commune">
+              placeholder="Choose commune" (selectionChange)="onCommuneChange($event)">
               @for (item of communeListFilter; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
               }
@@ -518,7 +518,7 @@
               Cyclos
               <span class="text-danger">*</span></label>
             <input #user_cyclo_uuid type="text" matInput [matAutocomplete]="autopos6" placeholder="Selectionner le user"
-              class="form-control" (input)="getAllCyclo()" (focus)="getAllCyclo()">
+              class="form-control" (input)="onCycloInputChange()" (focus)="onCycloInputChange()">
             @if (isloadCyclo) {
             <div class="d-flex align-items-center">
               <strong role="status">Loading...</strong>
@@ -660,7 +660,7 @@
           <div class="mb-3">
             <label class="col-form-label" for="user_asm_uuid">ASM <span class="text-danger">*</span></label>
             <input #user_asm_uuid type="text" matInput [matAutocomplete]="autopos3" placeholder="Selectionner le user"
-              class="form-control" (input)="getAllASM()" (focus)="getAllASM()">
+              class="form-control" (input)="onASMInputChange()" (focus)="onASMInputChange()">
             @if (isloadASM) {
             <div class="d-flex align-items-center">
               <strong role="status">Loading...</strong>
@@ -695,7 +695,7 @@
               Supervisor
               <span class="text-danger">*</span></label>
             <input #user_sup_uuid type="text" matInput [matAutocomplete]="autopos4" placeholder="Selectionner le user"
-              class="form-control" (input)="getAllSup()" (focus)="getAllSup()">
+              class="form-control" (input)="onSupInputChange()" (focus)="onSupInputChange()">
             @if (isloadSup) {
             <div class="d-flex align-items-center">
               <strong role="status">Loading...</strong>
@@ -728,7 +728,7 @@
           <div class="mb-3">
             <label class="col-form-label" for="user_dr_uuid">DR <span class="text-danger">*</span></label>
             <input #user_dr_uuid type="text" matInput [matAutocomplete]="autopos5" placeholder="Selectionner le user"
-              class="form-control" (input)="getAllDr()" (focus)="getAllDr()">
+              class="form-control" (input)="onDrInputChange()" (focus)="onDrInputChange()">
             @if (isloadDr) {
             <div class="d-flex align-items-center">
               <strong role="status">Loading...</strong>
@@ -750,7 +750,7 @@
               <span class="text-danger">*</span>
             </label>
             <mat-select [compareWith]="compareFnCommune" class="select custom-mat-select" formControlName="commune_uuid"
-              placeholder="Choose commune">
+              placeholder="Choose commune" (selectionChange)="onCommuneChange($event)">
               @for (item of communeListFilter; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
               }
@@ -763,7 +763,7 @@
               Cyclos
               <span class="text-danger">*</span></label>
             <input #user_cyclo_uuid type="text" matInput [matAutocomplete]="autopos6" placeholder="Selectionner le user"
-              class="form-control" (input)="getAllCyclo()" (focus)="getAllCyclo()">
+              class="form-control" (input)="onCycloInputChange()" (focus)="onCycloInputChange()">
             @if (isloadCyclo) {
             <div class="d-flex align-items-center">
               <strong role="status">Loading...</strong>

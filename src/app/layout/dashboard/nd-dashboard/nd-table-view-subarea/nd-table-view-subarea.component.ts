@@ -7,6 +7,11 @@ import { formatDate } from '@angular/common';
 import { IArea } from '../../../territories/areas/models/area.model';
 import { AreaService } from '../../../territories/areas/area.service';
 
+interface SubareaGroup {
+  name: string;
+  data: TableViewModel[];
+}
+
 @Component({
   selector: 'app-nd-table-view-subarea',
   standalone: false,
@@ -82,6 +87,55 @@ export class NdTableViewSubareaComponent implements OnInit {
       this.tableViewList = res.data;
       this.isLoading = false;
     });
+  }
+
+  /**
+   * Groupe les données par subarea
+   */
+  getGroupedData(): SubareaGroup[] {
+    const grouped = this.tableViewList.reduce((acc, item) => {
+      const subareaName = item.name;
+      if (!acc[subareaName]) {
+        acc[subareaName] = [];
+      }
+      acc[subareaName].push(item);
+      return acc;
+    }, {} as { [key: string]: TableViewModel[] });
+
+    return Object.keys(grouped).map(name => ({
+      name,
+      data: grouped[name]
+    }));
+  }
+
+  /**
+   * Calcule le total farde pour une subarea
+   */
+  getTotalPresence(data: TableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.presence, 0);
+  }
+
+  /**
+   * Calcule le total pos pour une subarea
+   */
+  getTotalVisits(data: TableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.visits, 0);
+  }
+
+  /**
+   * Trouve le pourcentage maximum pour une subarea
+   */
+  getMaxPercentage(data: TableViewModel[]): number {
+    if (data.length === 0) return 0;
+    return Math.max(...data.map(item => item.pourcent));
+  }
+
+  /**
+   * Compte le nombre de brands uniques pour une subarea
+   */
+  getUniqueBrands(data: TableViewModel[]): number {
+    const uniqueBrands = new Set(data.map(item => item.brand));
+    return uniqueBrands.size;
   }
 
 }

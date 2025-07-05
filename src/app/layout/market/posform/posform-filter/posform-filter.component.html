@@ -36,6 +36,20 @@
                 @if (currentUser) {
                 <div class="card">
                     <div class="card-header">
+                        <div class="row align-items-center mb-3" *ngIf="territoire">
+                            <div class="col-12">
+                                <div class="alert alert-info border-0 shadow-sm d-flex align-items-center">
+                                    <i class="ti ti-filter me-2 text-primary"></i>
+                                    <span class="fw-medium">
+                                        Affichage des points de vente pour : 
+                                        <strong class="text-primary">{{ territoire.name }}</strong>
+                                        <span class="text-muted" *ngIf="name == 'ASM' || name == 'Supervisor' || name == 'DR' || name == 'Cyclo'">
+                                            (filtré depuis {{ name }})
+                                        </span>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
                         <!-- Search -->
                         <div class="row align-items-center">
                             <div class="col-sm-4">

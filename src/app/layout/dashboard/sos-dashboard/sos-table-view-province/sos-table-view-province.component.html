@@ -7,6 +7,15 @@
           <h4><i class="ti ti-grip-vertical me-1"></i>Table SOS Province</h4>
           <div class="d-flex align-items-center justify-content-center flex-wrap row-gap-2">
 
+            <mat-form-field appearance="fill" class="me-2">
+              <mat-label>Select Province</mat-label>
+              <mat-select (selectionChange)="onProvinceChange($event)">
+                <mat-option *ngFor="let item of provinceList" [value]="item">
+                  {{ item.name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
             <div class="daterange-picker mb-3">
 
               <form [formGroup]="dateRange">

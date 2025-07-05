@@ -65,46 +65,111 @@
           </div>
         </div>
         } @else {
-        <div class="table-responsive custom-table">
-          <table class="table dataTable" id="deals-project">
-            <thead class="thead-light">
-              <tr>
-                <th>SubArea</th>
-                <th>Brand</th>
-                <th>Pourcentage</th>
-                <th>Total farde</th>
-                <th>Total Pos</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (item of tableViewList; track $index) {
-              <tr class="odd">
-                <td>
-                  <a [routerLink]="['/web/dashboard/numeric-distribution/commune', item.name]">{{ item.name }}</a>
-                </td>
-                <td>{{ item.brand }}</td>
-                @if (item.brand === 'Equateur') {
-                <td>
-                  @if (item.pourcent >= 95) {
-                  <span class="badge badge-pill bg-success" style="font-size: 16px;">{{item.pourcent}} %</span>
-                  }
-                  @else if (item.pourcent < 95 && item.pourcent>= 80) {
-                    <span class="badge badge-pill bg-warning" style="font-size: 16px;">{{item.pourcent}} %</span>
-                    }
-                    @else if (item.pourcent < 80) { <span class="badge badge-pill bg-danger" style="font-size: 16px;">
-                      {{item.pourcent}} %</span>
-                      }
-                </td>
-                }@else {
-                <td>{{ item.pourcent }} %</td>
-                }
-                <td>{{ item.presence }}</td>
-                <td>{{ item.visits }}</td>
-              </tr>
-              }
-
-            </tbody>
-          </table>
+        <div class="accordion" id="subareaAccordion">
+          @for (subarea of getGroupedData(); track subarea.name) {
+            <div class="accordion-item">
+              <!-- Header avec le nom de la subarea -->
+              <h2 class="accordion-header" [id]="'heading-' + $index">
+                <button 
+                  class="accordion-button collapsed" 
+                  type="button" 
+                  data-bs-toggle="collapse" 
+                  [attr.data-bs-target]="'#collapse-' + $index" 
+                  [attr.aria-expanded]="false" 
+                  [attr.aria-controls]="'collapse-' + $index">
+                  <div class="d-flex align-items-center justify-content-between w-100">
+                    <div class="d-flex align-items-center">
+                      <span class="fw-bold">{{ subarea.name }}</span>
+                      <span class="text-muted ms-2">({{ subarea.data.length }} marque(s))</span>
+                    </div>
+                  </div>
+                </button>
+              </h2>
+              
+              <!-- Body avec les données de la subarea -->
+              <div 
+                [id]="'collapse-' + $index" 
+                class="accordion-collapse collapse" 
+                [attr.aria-labelledby]="'heading-' + $index" 
+                data-bs-parent="#subareaAccordion">
+                <div class="accordion-body">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>Brand</th>
+                          <th>Pourcentage</th>
+                          <th>Total farde</th>
+                          <th>Total Pos</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of subarea.data; track $index) {
+                          <tr>
+                            <td>{{ item.brand }}</td>
+                            <td>
+                              @if (item.brand === 'Equateur') {
+                                @if (item.pourcent >= 95) { 
+                                  <span class="text-success fw-bold">{{item.pourcent}}%</span>
+                                }
+                                @else if (item.pourcent < 95 && item.pourcent >= 80) {
+                                  <span class="text-warning fw-bold">{{item.pourcent}}%</span>
+                                }
+                                @else if (item.pourcent < 80) {
+                                  <span class="text-danger fw-bold">{{item.pourcent}}%</span>
+                                }
+                              } @else {
+                                <span>{{item.pourcent}}%</span>
+                              }
+                            </td>
+                            <td>{{ item.presence }}</td>
+                            <td>{{ item.visits }}</td>
+                            <td>
+                              <a 
+                                [routerLink]="['/web/dashboard/numeric-distribution/commune', item.name]" 
+                                class="btn btn-sm btn-link"
+                                title="Voir les détails">
+                                Voir commune(s)
+                              </a>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <!-- Statistiques résumées pour cette subarea -->
+                  <div class="row mt-3">
+                    <div class="col-md-3">
+                      <div class="text-center">
+                        <small class="text-muted">Total Farde</small>
+                        <div class="fw-bold">{{ getTotalPresence(subarea.data) }}</div>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="text-center">
+                        <small class="text-muted">Total Pos</small>
+                        <div class="fw-bold">{{ getTotalVisits(subarea.data) }}</div>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="text-center">
+                        <small class="text-muted">Meilleur %</small>
+                        <div class="fw-bold">{{ getMaxPercentage(subarea.data) }}%</div>
+                      </div>
+                    </div>
+                    <div class="col-md-3">
+                      <div class="text-center">
+                        <small class="text-muted">Brands</small>
+                        <div class="fw-bold">{{ getUniqueBrands(subarea.data) }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
         </div>
         }
 

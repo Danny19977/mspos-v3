@@ -132,6 +132,7 @@ export class SosTableViewProvinceComponent implements OnInit {
   getTableView(country_uuid: string, province_uuid: string, start_date: string, end_date: string) {
     this.sosService.SosTableViewProvince(country_uuid, province_uuid, start_date, end_date).subscribe((res) => {
       this.tableViewList = res.data;
+      console.log('tableViewList:', this.tableViewList);
       this.isLoading = false;
     });
   } 

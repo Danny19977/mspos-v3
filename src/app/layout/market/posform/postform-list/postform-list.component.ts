@@ -13,10 +13,10 @@ import { IUser } from '../../../management/user/models/user.model';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { LogsService } from '../../../management/user-logs/logs.service';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
-import { formatDate } from '@angular/common'; 
+import { formatDate } from '@angular/common';
 // import { v4 as uuidv4 } from 'uuid'; 
 import { IPosFormItem } from '../models/posform_item.model';
-import { PosformItemService } from '../posformitem.service'; 
+import { PosformItemService } from '../posformitem.service';
 import { IRoutePlan } from '../../routeplan/models/routeplan.model';
 import { IRoutePlanItem } from '../../routeplan/models/routeplanItem.model';
 import { IBrand } from '../../brand/models/brand.model';
@@ -50,7 +50,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   // Table
   displayedColumns: string[] = [
     'createdat',
-    'pos', 
+    'pos',
     'price',
     'asm',
     'sup',
@@ -1149,7 +1149,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     this.isLoading = true;
     var body: IPosForm = {
       // uuid: uuidv4(),
-      price: 50,
+      price: 100,
       comment: 'Rien à signaler',
       latitude: this.latitude,
       longitude: this.longitude,
@@ -1214,8 +1214,9 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       this.isLoading = true;
 
       const formData = {
-        // ...this.formGroup.value,
-        price: parseInt(this.formGroup.value.price) || 50,
+        latitude: this.latitude,
+        longitude: this.longitude,
+        price: parseInt(this.formGroup.value.price) || 100,
         comment: this.formGroup.value.comment || '',
         pos_uuid: this.posUUID,
         country_uuid: this.currentUser.country_uuid || '',
@@ -1232,6 +1233,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         cyclo_uuid: this.currentUser.cyclo_uuid || '',
         cyclo: this.currentUser.cyclo || '',
         user_uuid: this.currentUser.uuid,
+        signature: this.currentUser.fullname,
       };
       this.posformService.update(this.uuidItem, formData).subscribe({
         next: (res) => {
@@ -1289,8 +1291,9 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       this.isLoading = true;
 
       const formData = {
-        // ...this.formGroup.value,
-        price: parseInt(this.formGroup.value.price) || 50,
+        latitude: this.latitude,
+        longitude: this.longitude,
+        price: parseInt(this.formGroup.value.price) || 100,
         comment: this.formGroup.value.comment || '',
         pos_uuid: this.posUUID,
         country_uuid: this.currentUser.country_uuid || '',
@@ -1307,6 +1310,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         cyclo_uuid: this.currentUser.cyclo_uuid || '',
         cyclo: this.currentUser.cyclo || '',
         user_uuid: this.currentUser.uuid,
+        signature: this.currentUser.fullname,
       };
       this.posformService.update(this.uuidItem, formData).subscribe({
         next: (res) => {
@@ -1363,7 +1367,9 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       this.isLoading = true;
 
       const formData = {
-        price: parseInt(this.formGroup.value.price) || 50,
+        latitude: this.latitude,
+        longitude: this.longitude,
+        price: parseInt(this.formGroup.value.price) || 100,
         comment: this.formGroup.value.comment || '',
         pos_uuid: this.posUUID,
         country_uuid: this.currentUser.country_uuid || '',
@@ -1380,6 +1386,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         cyclo_uuid: this.currentUser.cyclo_uuid || '',
         cyclo: this.currentUser.cyclo || '',
         user_uuid: this.currentUser.uuid,
+        signature: this.currentUser.fullname,
       };
       console.log('Form Data pour la complétion du rapport:', formData);
 
@@ -1533,7 +1540,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
     // Filtrer les rapports créés par l'utilisateur connecté
     const currentUserReports = this.dataList.filter(item => item.user_uuid === this.currentUser.uuid);
-    
+
     if (currentUserReports.length === 0) {
       return true; // Si l'utilisateur n'a pas encore de rapport, permettre l'ajout
     }

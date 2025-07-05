@@ -6,6 +6,7 @@ import { SosService } from '../../services/sos.service';
 import { formatDate } from '@angular/common';
 import { IArea } from '../../../territories/areas/models/area.model';
 import { AreaService } from '../../../territories/areas/area.service';
+import { SubareaService } from '../../../territories/subarea/subarea.service';
 
 @Component({
   selector: 'app-sos-table-view-subarea',
@@ -31,7 +32,7 @@ export class SosTableViewSubareaComponent implements OnInit {
     private route: ActivatedRoute, 
     private _formBuilder: FormBuilder,
     private sosService: SosService,
-    private areaService: AreaService,
+    private subareaService: SubareaService,
   ) { }
 
 
@@ -51,9 +52,9 @@ export class SosTableViewSubareaComponent implements OnInit {
     this.route.params.subscribe(params => {
       const areaName = params['area_name'];
       console.log('areaName Name:', areaName);
-      this.areaService.getBy(areaName).subscribe((res) => {
+      this.subareaService.getBy(areaName).subscribe((res) => {
         this.area = res.data;
-        console.log('area:', this.area);
+        console.log('subareaService:', this.area);
         this.getTableViewSubArea(this.area.country_uuid, this.area.province_uuid, this.area.uuid, this.start_date, this.end_date);
         this.isLoading = false;
       });

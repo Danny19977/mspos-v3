@@ -7,6 +7,11 @@ import { formatDate } from '@angular/common';
 import { ISubArea } from '../../../territories/subarea/models/subarea.model';
 import { SubareaService } from '../../../territories/subarea/subarea.service';
 
+interface CommuneGroup {
+  name: string;
+  data: TableViewModel[];
+}
+
 @Component({
   selector: 'app-nd-table-view-commune',
   standalone: false,
@@ -75,11 +80,68 @@ export class NdTableViewCommuneComponent implements OnInit {
     });
   }
 
-  getTableViewCommune(country_uuid: string, province_uuid: string, area_uuid: string, sub_area_uuid: string, start_date: string, end_date: string) {
+  getTableViewCommune(
+    country_uuid: string, 
+    province_uuid: string, 
+    area_uuid: string, 
+    sub_area_uuid: string, 
+    start_date: string, 
+    end_date: string) {
+      console.log("getTableViewCommune", country_uuid, province_uuid, area_uuid, sub_area_uuid, start_date, end_date);
     this.ndService.NdTableViewCommune(country_uuid, province_uuid, area_uuid, sub_area_uuid, start_date, end_date).subscribe((res) => {
       this.tableViewList = res.data;
+      console.log('TableView Commune:', this.tableViewList);
       this.isLoading = false;
     });
+  }
+
+  /**
+   * Groupe les données par commune
+   */
+  getGroupedData(): CommuneGroup[] {
+    const grouped = this.tableViewList.reduce((acc, item) => {
+      const communeName = item.name;
+      if (!acc[communeName]) {
+        acc[communeName] = [];
+      }
+      acc[communeName].push(item);
+      return acc;
+    }, {} as { [key: string]: TableViewModel[] });
+
+    return Object.keys(grouped).map(name => ({
+      name,
+      data: grouped[name]
+    }));
+  }
+
+  /**
+   * Calcule la présence totale pour une commune
+   */
+  getTotalPresence(data: TableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.presence, 0);
+  }
+
+  /**
+   * Calcule le total des visites pour une commune
+   */
+  getTotalVisits(data: TableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.visits, 0);
+  }
+
+  /**
+   * Trouve le pourcentage maximum pour une commune
+   */
+  getMaxPercentage(data: TableViewModel[]): number {
+    if (data.length === 0) return 0;
+    return Math.max(...data.map(item => item.pourcent));
+  }
+
+  /**
+   * Compte le nombre de brands uniques pour une commune
+   */
+  getUniqueBrands(data: TableViewModel[]): number {
+    const uniqueBrands = new Set(data.map(item => item.brand));
+    return uniqueBrands.size;
   }
  
 }

@@ -7,6 +7,11 @@ import { formatDate } from '@angular/common';
 import { IProvince } from '../../../territories/province/models/province.model';
 import { TableViewModel } from '../../models/dashboard.models';
 
+interface AreaGroup {
+  name: string;
+  data: TableViewModel[];
+}
+
 @Component({
   selector: 'app-nd-table-view-area',
   standalone: false,
@@ -81,6 +86,55 @@ export class NdTableViewAreaComponent implements OnInit {
       console.log('Table View List:', this.tableViewList);
       this.isLoading = false;
     });
+  }
+
+  /**
+   * Groupe les données par area
+   */
+  getGroupedData(): AreaGroup[] {
+    const grouped = this.tableViewList.reduce((acc, item) => {
+      const areaName = item.name;
+      if (!acc[areaName]) {
+        acc[areaName] = [];
+      }
+      acc[areaName].push(item);
+      return acc;
+    }, {} as { [key: string]: TableViewModel[] });
+
+    return Object.keys(grouped).map(name => ({
+      name,
+      data: grouped[name]
+    }));
+  }
+
+  /**
+   * Calcule la présence totale pour une area
+   */
+  getTotalPresence(data: TableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.presence, 0);
+  }
+
+  /**
+   * Calcule le total des visites pour une area
+   */
+  getTotalVisits(data: TableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.visits, 0);
+  }
+
+  /**
+   * Trouve le pourcentage maximum pour une area
+   */
+  getMaxPercentage(data: TableViewModel[]): number {
+    if (data.length === 0) return 0;
+    return Math.max(...data.map(item => item.pourcent));
+  }
+
+  /**
+   * Compte le nombre de brands uniques pour une area
+   */
+  getUniqueBrands(data: TableViewModel[]): number {
+    const uniqueBrands = new Set(data.map(item => item.brand));
+    return uniqueBrands.size;
   }
 
 }

@@ -75,8 +75,7 @@ export class PosViewComponent implements OnInit {
         this.authService.user().subscribe({
           next: (user) => {
             this.currentUser = user;
-            this.pos = item.data; // Assign the fetched POS data to the pos property
-            console.log("Pos view", this.pos);
+            this.pos = item.data; // Assign the fetched POS data to the pos property 
             
             // Pré-remplir le formulaire avec les données du POS
             this.formGroup.patchValue({

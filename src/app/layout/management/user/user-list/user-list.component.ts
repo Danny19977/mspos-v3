@@ -311,9 +311,9 @@ export class UserListComponent implements OnInit, AfterViewInit {
     this.provinceListFilter = provinceArray.filter((obj, index, self) =>
       index === self.findIndex((t) => t.name === obj.name)
     );
-    if (this.provinceListFilter) {
-      this.getAllASM();
-    }
+    // Reset ASM dropdown when country changes
+    this.filteredOptionASMs = [];
+    this.user_asm_uuid.nativeElement.value = '';
   }
 
   onProvinceChange(event: any) {
@@ -321,9 +321,17 @@ export class UserListComponent implements OnInit, AfterViewInit {
     this.areaListFilter = areaArray.filter((obj, index, self) =>
       index === self.findIndex((t) => t.name === obj.name)
     );
-    if (this.areaListFilter) {
-      this.getAllSup();
-    }
+    
+    // Get ASM users for the selected province
+    this.getAllASMByProvince(event.value);
+    
+    // Reset dependent dropdowns
+    this.filteredOptionSups = [];
+    this.filteredOptionDrs = [];
+    this.filteredOptionCyclos = [];
+    if (this.user_sup_uuid) this.user_sup_uuid.nativeElement.value = '';
+    if (this.user_dr_uuid) this.user_dr_uuid.nativeElement.value = '';
+    if (this.user_cyclo_uuid) this.user_cyclo_uuid.nativeElement.value = '';
   }
 
   onAreaChange(event: any) {
@@ -331,9 +339,15 @@ export class UserListComponent implements OnInit, AfterViewInit {
     this.subAreaListFilter = subAreaArray.filter((obj, index, self) =>
       index === self.findIndex((t) => t.name === obj.name)
     );
-    if (this.subAreaListFilter) {
-      this.getAllDr();
-    }
+    
+    // Get Supervisor users for the selected area
+    this.getAllSupByArea(event.value);
+    
+    // Reset dependent dropdowns
+    this.filteredOptionDrs = [];
+    this.filteredOptionCyclos = [];
+    if (this.user_dr_uuid) this.user_dr_uuid.nativeElement.value = '';
+    if (this.user_cyclo_uuid) this.user_cyclo_uuid.nativeElement.value = '';
   }
 
   onSubAreaChange(event: any) {
@@ -341,9 +355,18 @@ export class UserListComponent implements OnInit, AfterViewInit {
     this.communeListFilter = communeArray.filter((obj, index, self) =>
       index === self.findIndex((t) => t.name === obj.name)
     );
-    if (this.communeListFilter) {
-      this.getAllCyclo();
-    }
+    
+    // Get DR users for the selected subarea
+    this.getAllDrBySubArea(event.value);
+    
+    // Reset dependent dropdowns
+    this.filteredOptionCyclos = [];
+    if (this.user_cyclo_uuid) this.user_cyclo_uuid.nativeElement.value = '';
+  }
+
+  onCommuneChange(event: any) {
+    // Get Cyclo users for the selected commune
+    this.getAllCycloByCommune(event.value);
   }
 
 
@@ -364,6 +387,42 @@ export class UserListComponent implements OnInit, AfterViewInit {
         this.isloadASM = false;
         console.error('Error fetching user:', error);
         this.toastr.error('Erreur lors de la récupération des marques.', 'Oupss!');
+      }
+    });
+  }
+
+  getAllASMByProvince(provinceUuid: string): void {
+    const filterValue = this.user_asm_uuid?.nativeElement.value.toLowerCase() || '';
+    this.isloadASM = true;
+
+    console.log('getAllASMByProvince called with provinceUuid:', provinceUuid);
+
+    this.usersService.getPaginated2(1, 100, '').subscribe({
+      next: (res) => {
+        this.userASMList = res.data;
+        console.log('Total users fetched:', this.userASMList.length);
+        
+        // Filter by role ASM AND province
+        this.userASMListFilter = this.userASMList.filter((u) => {
+          const isASM = u.role === 'ASM';
+          const hasMatchingProvince = u.province_uuid === provinceUuid;
+          console.log(`User ${u.fullname}: role=${u.role}, province_uuid=${u.province_uuid}, isASM=${isASM}, hasMatchingProvince=${hasMatchingProvince}`);
+          return isASM && hasMatchingProvince;
+        });
+        
+        console.log('Filtered ASM users:', this.userASMListFilter.length);
+        
+        this.filteredOptionASMs = this.userASMListFilter.filter(o => 
+          o.fullname!.toLowerCase().includes(filterValue)
+        );
+        
+        console.log('Final filtered ASMs for autocomplete:', this.filteredOptionASMs.length);
+        this.isloadASM = false;
+      },
+      error: (error) => {
+        this.isloadASM = false;
+        console.error('Error fetching user:', error);
+        this.toastr.error('Erreur lors de la récupération des ASM.', 'Oupss!');
       }
     });
   }
@@ -403,6 +462,30 @@ export class UserListComponent implements OnInit, AfterViewInit {
     });
   }
 
+  getAllSupByArea(areaUuid: string): void {
+    const filterValue = this.user_sup_uuid?.nativeElement.value.toLowerCase() || '';
+    this.isloadSup = true;
+
+    this.usersService.getPaginated2(1, 100, '').subscribe({
+      next: (res) => {
+        this.userSupList = res.data;
+        // Filter by role Supervisor AND area
+        this.userSupListFilter = this.userSupList.filter((u) => 
+          u.role === 'Supervisor' && u.area_uuid === areaUuid
+        );
+        this.filteredOptionSups = this.userSupListFilter.filter(o => 
+          o.fullname!.toLowerCase().includes(filterValue)
+        );
+        this.isloadSup = false;
+      },
+      error: (error) => {
+        this.isloadSup = false;
+        console.error('Error fetching user:', error);
+        this.toastr.error('Erreur lors de la récupération des Supervisors.', 'Oupss!');
+      }
+    });
+  }
+
   displayFnSup(user: IUser): any {
     return user && user.fullname ? user.fullname : '';
   }
@@ -433,6 +516,42 @@ export class UserListComponent implements OnInit, AfterViewInit {
         this.isloadDr = false;
         console.error('Error fetching user:', error);
         this.toastr.error('Erreur lors de la récupération des marques.', 'Oupss!');
+      }
+    });
+  }
+
+  getAllDrBySubArea(subAreaUuid: string): void {
+    const filterValue = this.user_dr_uuid?.nativeElement.value.toLowerCase() || '';
+    this.isloadDr = true;
+
+    console.log('getAllDrBySubArea called with subAreaUuid:', subAreaUuid);
+
+    this.usersService.getPaginated2(1, 100, '').subscribe({
+      next: (res) => {
+        this.userDrList = res.data;
+        console.log('Total users fetched for DR:', this.userDrList.length);
+        
+        // Filter by role DR AND sub_area
+        this.userDrListFilter = this.userDrList.filter((u) => {
+          const isDR = u.role === 'DR';
+          const hasMatchingSubArea = u.sub_area_uuid === subAreaUuid;
+          console.log(`User ${u.fullname}: role=${u.role}, sub_area_uuid=${u.sub_area_uuid}, isDR=${isDR}, hasMatchingSubArea=${hasMatchingSubArea}`);
+          return isDR && hasMatchingSubArea;
+        });
+        
+        console.log('Filtered DR users:', this.userDrListFilter.length);
+        
+        this.filteredOptionDrs = this.userDrListFilter.filter(o => 
+          o.fullname!.toLowerCase().includes(filterValue)
+        );
+        
+        console.log('Final filtered DRs for autocomplete:', this.filteredOptionDrs.length);
+        this.isloadDr = false;
+      },
+      error: (error) => {
+        this.isloadDr = false;
+        console.error('Error fetching user:', error);
+        this.toastr.error('Erreur lors de la récupération des DR.', 'Oupss!');
       }
     });
   }
@@ -468,6 +587,30 @@ export class UserListComponent implements OnInit, AfterViewInit {
         this.isloadCyclo = false;
         console.error('Error fetching user:', error);
         this.toastr.error('Erreur lors de la récupération des marques.', 'Oupss!');
+      }
+    });
+  }
+
+  getAllCycloByCommune(communeUuid: string): void {
+    const filterValue = this.user_cyclo_uuid?.nativeElement.value.toLowerCase() || '';
+    this.isloadCyclo = true;
+
+    this.usersService.getPaginated2(1, 100, '').subscribe({
+      next: (res) => {
+        this.userCycloList = res.data;
+        // Filter by role Cyclo AND commune
+        this.userCycloListFilter = this.userCycloList.filter((u) => 
+          u.role === 'Cyclo' && u.commune_uuid === communeUuid
+        );
+        this.filteredOptionCyclos = this.userCycloListFilter.filter(o => 
+          o.fullname!.toLowerCase().includes(filterValue)
+        );
+        this.isloadCyclo = false;
+      },
+      error: (error) => {
+        this.isloadCyclo = false;
+        console.error('Error fetching user:', error);
+        this.toastr.error('Erreur lors de la récupération des Cyclos.', 'Oupss!');
       }
     });
   }
@@ -690,5 +833,46 @@ export class UserListComponent implements OnInit, AfterViewInit {
 
   compareFnCommune(c1: ICommune, c2: ICommune): boolean {
     return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
+  }
+
+  // New methods for geographical filtering
+  onASMInputChange(): void {
+    const selectedProvinceUuid = this.formGroup.get('province_uuid')?.value;
+    console.log('onASMInputChange - selectedProvinceUuid:', selectedProvinceUuid);
+    if (selectedProvinceUuid) {
+      this.getAllASMByProvince(selectedProvinceUuid);
+    } else {
+      console.log('No province selected, using getAllASM');
+      this.getAllASM();
+    }
+  }
+
+  onSupInputChange(): void {
+    const selectedAreaUuid = this.formGroup.get('area_uuid')?.value;
+    if (selectedAreaUuid) {
+      this.getAllSupByArea(selectedAreaUuid);
+    } else {
+      this.getAllSup();
+    }
+  }
+
+  onDrInputChange(): void {
+    const selectedSubAreaUuid = this.formGroup.get('sub_area_uuid')?.value;
+    console.log('onDrInputChange - selectedSubAreaUuid:', selectedSubAreaUuid);
+    if (selectedSubAreaUuid) {
+      this.getAllDrBySubArea(selectedSubAreaUuid);
+    } else {
+      console.log('No sub area selected, using getAllDr');
+      this.getAllDr();
+    }
+  }
+
+  onCycloInputChange(): void {
+    const selectedCommuneUuid = this.formGroup.get('commune_uuid')?.value;
+    if (selectedCommuneUuid) {
+      this.getAllCycloByCommune(selectedCommuneUuid);
+    } else {
+      this.getAllCyclo();
+    }
   }
 }

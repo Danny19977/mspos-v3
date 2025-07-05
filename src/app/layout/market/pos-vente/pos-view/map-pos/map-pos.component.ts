@@ -38,6 +38,8 @@ export class MapPosComponent implements OnInit {
         this.isLoading = true;
         this.hasMapError = false;
         
+        console.log("posUUId", this.posUUId);
+        
         // Load Google Maps first
         this.googleMapsLoader.loadGoogleMaps().then(() => {
             this.initializeComponent();
