@@ -5,6 +5,7 @@ import { CommonService } from '../../../shared/common/common.service';
 import { formatDate } from '@angular/common';
 import { GoogleMapService } from '../services/google-map.service';
 import { GoogleMapModel } from '../models/dashboard.models';
+import { GoogleMapsLoaderService } from '../../../services/google-maps-loader.service';
 
 @Component({
   selector: 'app-google-map',
@@ -19,6 +20,9 @@ export class GoogleMapComponent implements OnInit {
   last = '';
 
   isLoading = false;
+  hasMapError = false;
+  mapErrorMessage = '';
+
 
   dateRange!: FormGroup;
   start_date!: string;
@@ -33,7 +37,8 @@ export class GoogleMapComponent implements OnInit {
     private common: CommonService,
     private _formBuilder: FormBuilder,
     private renderer: Renderer2,
-    private googleMapService: GoogleMapService, 
+    private googleMapService: GoogleMapService,
+    private googleMapsLoader: GoogleMapsLoaderService
   ) {
 
     this.common.base.subscribe((base: string) => {
@@ -52,41 +57,56 @@ export class GoogleMapComponent implements OnInit {
 
   ngOnInit() {
     this.isLoading = true;
+    this.hasMapError = false;
+
+    // Load Google Maps first
+    this.googleMapsLoader.loadGoogleMaps().then(() => {
+      this.initializeComponent();
+    }).catch((error) => {
+      console.error('Failed to load Google Maps:', error);
+      this.hasMapError = true;
+      this.mapErrorMessage = 'Failed to load Google Maps. Please check your API key and internet connection.';
+      this.isLoading = false;
+    });
+  }
+
+  private initializeComponent() {
     const date = new Date();
     const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
     const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
     this.rangeDate = [firstDay, lastDay];
 
-    this.dateRange = this._formBuilder.group({ 
+    this.dateRange = this._formBuilder.group({
       rangeValue: new FormControl(this.rangeDate),
     });
     this.start_date = formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US');
     this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
 
-    this.getPosFormList(this.start_date, this.end_date); 
+    this.getPosFormList(this.start_date, this.end_date);
 
     this.onChanges();
   }
 
 
-  onChanges(): void {
-    this.dateRange.valueChanges.subscribe(val => { 
-      this.start_date = formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US');
-      this.end_date = formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US');   
 
-      this.getPosFormList(this.start_date, this.end_date); 
+  onChanges(): void {
+    this.dateRange.valueChanges.subscribe(val => {
+      this.start_date = formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US');
+      this.end_date = formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US');
+
+      this.getPosFormList(this.start_date, this.end_date);
     });
   }
- 
 
-  getPosFormList(start_date: string, end_date: string) {  
+
+  getPosFormList(start_date: string, end_date: string) {
     this.googleMapService.getGoogleMap(start_date, end_date).subscribe((res) => {
-      const dataList = res.data;  
+      const dataList = res.data;
       const dataListFilter = dataList.filter((item: any) => item.latitude !== 0 && item.longitude !== 0);
       this.googleMapList = dataListFilter;
       console.log("googleMapList", this.googleMapList)
       this.isLoading = false;
-    }); 
+    });
   }
 
 }

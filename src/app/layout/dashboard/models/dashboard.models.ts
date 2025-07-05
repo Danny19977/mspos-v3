@@ -61,6 +61,7 @@ export interface SETableViewPriceModel {
 }
 
 export interface KPITableViewPriceModel {
+    uuid: string;
     name: string;
     signature: string;
     title: string;

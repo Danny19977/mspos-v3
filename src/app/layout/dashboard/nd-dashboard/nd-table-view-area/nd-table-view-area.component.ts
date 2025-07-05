@@ -52,8 +52,7 @@ export class NdTableViewAreaComponent implements OnInit {
       const provinceName = params['province_name'];
       console.log('Province Name:', provinceName);
       this.provinceService.getBy(provinceName).subscribe((res) => {
-        this.province = res.data;
-        console.log('Province:', this.province);
+        this.province = res.data; 
         this.getTableArea(this.province.country_uuid, this.province.uuid, this.start_date, this.end_date);
         this.isLoading = false;
       });
@@ -79,6 +78,7 @@ export class NdTableViewAreaComponent implements OnInit {
   getTableArea(country_uuid: string, province_uuid: string, start_date: string, end_date: string) {
     this.ndService.NdTableViewArea(country_uuid, province_uuid, start_date, end_date).subscribe((res) => {
       this.tableViewList = res.data;
+      console.log('Table View List:', this.tableViewList);
       this.isLoading = false;
     });
   }

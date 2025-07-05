@@ -87,6 +87,7 @@ export class MapPosComponent implements OnInit {
             if (dataList) {
                 this.googleMapList = dataList;
                 console.log("googleMapList", this.googleMapList);
+                this.isLoading = false;
             }
             this.isLoading = false;
         });

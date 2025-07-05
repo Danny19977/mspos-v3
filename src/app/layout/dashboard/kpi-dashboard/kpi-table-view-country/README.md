@@ -1,60 +1,52 @@
 # KPI Table View Country Component
 
-## Fonctionnalités complétées
+## Vue Hiérarchique Géographique Implémentée ✅
 
-### 1. Vue Hiérarchique des Données
-- **Affichage hiérarchique** : ASM → Supervisor → DR → Cyclo
-- **Navigation par niveaux** : Expansion/contraction des niveaux
-- **Indentation visuelle** : Chaque niveau a son propre style et indentation
-- **Badges de couleur** : Différenciation visuelle par niveau hiérarchique
+### Organisation Hiérarchique
+La table organise maintenant les données selon la hiérarchie géographique suivante :
+1. **ASM** (Area Sales Manager) - Niveau le plus élevé
+2. **Supervisor** - Responsable de plusieurs DRs
+3. **DR** (District Representative) - Gestionnaire de terrain
+4. **Cyclo** - Agent de terrain
 
-### 2. Statistiques de Visites Détaillées
-- **Visites personnelles** : Visites effectuées directement par la personne
-- **Visites d'équipe** : Somme des visites de tous les membres sous cette personne
-- **Total des visites** : Personnel + Équipe pour les managers
-- **Calcul automatique** : Les totaux remontent automatiquement dans la hiérarchie
+### Fonctionnalités Principales
 
-### 3. Calcul des Performances
-- **Pourcentage d'atteinte** : (Visites réalisées / Objectif) × 100
-- **Badges colorés** : 
-  - 🟢 Vert : ≥ 100% (Objectif atteint)
-  - 🟡 Jaune : ≥ 80% (Proche de l'objectif)
-  - 🔴 Rouge : < 80% (Sous l'objectif)
-- **Affichage avec précision** : Arrondi à 1 décimale
+#### 1. Vue Hiérarchique avec Totalisation
+- **Navigation par niveaux** : Expansion/contraction des niveaux hiérarchiques
+- **Calculs automatiques** : Les performances remontent automatiquement dans la hiérarchie
+- **Visites personnelles vs équipe** : Distinction entre visites propres et celles de l'équipe
+- **Performance globale** : Calcul des pourcentages d'atteinte pour chaque niveau
 
-### 4. Interface Utilisateur Améliorée
-- **Deux vues disponibles** :
-  - Vue hiérarchique : Structure organisationnelle
-  - Vue normale : Liste plate des agents
-- **Résumé statistique** : Cartes d'information en haut
-  - Total des agents
-  - Total des visites
-  - Atteinte moyenne
-  - Objectif total
+#### 2. Tableau de Résumé Exécutif
+- **Total Agents** : Nombre total d'agents dans la région
+- **Total Visites** : Somme de toutes les visites effectuées
+- **Objectif Total** : Cumul des objectifs de tous les agents
+- **Atteinte Moyenne** : Performance moyenne pondérée
 
-### 5. Fonctionnalités d'Export
-- **Export CSV** : Téléchargement des données au format CSV
-- **Nom de fichier automatique** : kpi-pays-YYYY-MM-DD.csv
-- **Données formatées** : Toutes les colonnes importantes incluses
+#### 3. Double Vue (Hiérarchique / Normale)
+- **Vue Hiérarchique** : Organisation par niveaux avec totalisations
+- **Vue Normale** : Liste plate de tous les agents
+- **Basculement instantané** : Bouton toggle pour changer de vue
 
-### 6. Gestion des Erreurs et États
-- **Indicateur de chargement** : Spinner pendant le chargement
-- **Message d'absence de données** : Affichage informatif quand aucune donnée
-- **Gestion d'erreur** : Récupération gracieuse en cas d'erreur API
+#### 4. Indicateurs Visuels
+- **Badges colorés par niveau** :
+  - 🔵 ASM (Bleu)
+  - 🟢 Supervisor (Vert)  
+  - 🟡 DR (Jaune)
+  - ⚪ Cyclo (Gris)
+- **Performance colorée** :
+  - 🟢 ≥100% (Objectif atteint)
+  - 🟡 ≥80% (Proche objectif)
+  - 🔴 <80% (Sous-performance)
 
-### 7. Filtres et Sélection
-- **Sélection de pays** : Dropdown pour choisir le pays
-- **Filtre de dates** : Sélection de période avec date range picker
-- **Mise à jour automatique** : Rechargement des données après changement de filtre
+#### 5. Actions et Navigation
+- **Développer/Réduire** : Contrôle de l'affichage hiérarchique
+- **Export CSV** : Téléchargement des données
+- **Détails** : Accès aux informations détaillées de chaque agent
 
-### 8. Actions sur les Données
-- **Boutons d'expansion** : Développer/réduire les niveaux hiérarchiques
-- **Bouton détails** : Accès aux informations détaillées de chaque agent
-- **Navigation** : Liens vers les pages de détail par zone
+### Structure des Données
 
-## Structure des Données
-
-### Interface GroupedData
+#### Interface GroupedData
 ```typescript
 interface GroupedData {
   title: string;                    // Nom/titre de la personne
@@ -75,29 +67,102 @@ interface GroupedData {
 }
 ```
 
-## Styles CSS Personnalisés
+### Calculs de Performance
 
-### Classes Hiérarchiques
-- `.hierarchy-level-0` : ASM (Bleu, gras)
-- `.hierarchy-level-1` : Supervisor (Vert, semi-gras)
-- `.hierarchy-level-2` : DR (Jaune)
-- `.hierarchy-level-3` : Cyclo (Gris)
+#### 1. Visites Personnelles
+- Pour les **Cyclos** : Toutes leurs visites sont personnelles
+- Pour les **managers** : Visites qu'ils effectuent directement
 
-### Classes Utilitaires
-- `.visit-breakdown` : Affichage structuré des visites
-- `.expand-toggle` : Boutons d'expansion/contraction
-- `.badge` : Badges de pourcentage colorés
+#### 2. Visites d'Équipe
+- Somme des visites de tous les agents sous leur responsabilité
+- Calcul récursif remontant dans la hiérarchie
 
-## Utilisation
+#### 3. Performance Calculée
+```
+Performance (%) = (Total Visites / Objectif) × 100
+```
 
-1. **Chargement initial** : Sélection automatique du premier pays
-2. **Changement de pays** : Utiliser le dropdown de sélection
-3. **Changement de période** : Utiliser le date range picker
-4. **Navigation hiérarchique** : Cliquer sur les boutons d'expansion
-5. **Export de données** : Utiliser le bouton "Exporter"
-6. **Basculer les vues** : Utiliser le bouton de toggle vue
+### Utilisation
 
-## Performance
+#### 1. Chargement Initial
+```typescript
+// Les données sont automatiquement organisées en hiérarchie
+this.groupedData = this.organizeHierarchicalData(this.tableViewList);
+```
+
+#### 2. Basculement de Vue
+```typescript
+// Changer entre vue hiérarchique et normale
+toggleHierarchicalView(): void {
+  this.isHierarchicalView = !this.isHierarchicalView;
+}
+```
+
+#### 3. Contrôle d'Expansion
+```typescript
+// Développer tous les niveaux
+expandAll(): void {
+  this.expandCollapseAll(this.groupedData, true);
+}
+
+// Réduire tous les niveaux
+collapseAll(): void {
+  this.expandCollapseAll(this.groupedData, false);
+}
+```
+
+#### 4. Export de Données
+```typescript
+// Export CSV avec données formatées
+exportToCSV(): void {
+  // Génère un fichier CSV avec toutes les données
+}
+```
+
+### Styles et Apparence
+
+#### Classes CSS Principales
+- `.hierarchy-level-0` à `.hierarchy-level-3` : Styles par niveau
+- `.expand-toggle` : Boutons d'expansion
+- `.badge` variants : Badges colorés
+- `.achievement-*` : Indicateurs de performance
+
+#### Responsive Design
+- Adaptation mobile avec réduction des polices
+- Bordures simplifiées sur petits écrans
+- Boutons adaptés aux interfaces tactiles
+
+### Avantages de Cette Implémentation
+
+1. **Visibilité Complète** : Voir les performances à tous les niveaux
+2. **Drill-Down Facile** : Navigation intuitive dans la hiérarchie
+3. **Totalisations Automatiques** : Calculs précis remontant la hiérarchie
+4. **Performance Visuelle** : Indicateurs colorés immédiats
+5. **Export Facilité** : Données exploitables en CSV
+6. **Double Vue** : Flexibilité d'affichage selon les besoins
+
+### Exemple de Hiérarchie
+
+```
+📊 ASM - Jean Dupont (Performance: 95%)
+├── 👥 Supervisor - Marie Martin (Performance: 98%)
+│   ├── 🎯 DR - Paul Durand (Performance: 102%)
+│   │   ├── 🚴 Cyclo - Luc Bernard (15 visites)
+│   │   └── 🚴 Cyclo - Anna Petit (12 visites)
+│   └── 🎯 DR - Sophie Blanc (Performance: 89%)
+│       ├── 🚴 Cyclo - Marc Rouge (8 visites)
+│       └── 🚴 Cyclo - Julie Vert (10 visites)
+└── 👥 Supervisor - Pierre Noir (Performance: 87%)
+    └── 🎯 DR - Claire Bleu (Performance: 85%)
+        ├── 🚴 Cyclo - Tom Orange (6 visites)
+        └── 🚴 Cyclo - Lisa Jaune (9 visites)
+```
+
+Cette organisation permet de voir instantanément :
+- Les performances à chaque niveau de management
+- L'impact de chaque équipe sur les résultats globaux
+- Les agents individuels et leurs contributions
+- Les totalisations remontant automatiquement
 
 - **Calcul optimisé** : Les totaux hiérarchiques sont calculés une seule fois
 - **Mise à jour intelligente** : Seules les données nécessaires sont recalculées

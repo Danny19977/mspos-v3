@@ -514,7 +514,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         });
     } else if (currentUser.role == 'DR') {
       this.posformService.getPaginatedRangeDateBySubAreaId(
-        currentUser.dr_uuid, this.current_page, this.page_size, this.search,
+        currentUser.sub_area_uuid, this.current_page, this.page_size, this.search,
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
           this.originalDataList = [...res.data];

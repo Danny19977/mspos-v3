@@ -182,7 +182,7 @@ const routes: Routes = [
           },
           {
             path: '',
-            component: KpiTableViewCountryComponent
+            component: KpiTableViewProvinceComponent
           }
         ]
       },

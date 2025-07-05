@@ -1,16 +1,51 @@
 @if (isLoading) {
-  <div class="text-center d-flex justify-content-center align-items-center">
+<div class="text-center d-flex justify-content-center align-items-center">
     <div class="spinner-border bs-primary" role="status">
-      <span class="visually-hidden">Loading...</span>
+        <span class="visually-hidden">Loading...</span>
     </div>
-  </div>
+</div>
+} @else if (hasMapError) {
+<div class="alert alert-warning" role="alert">
+    <h5 class="alert-heading">Map Loading Error</h5>
+    <p>{{ mapErrorMessage }}</p>
+    <hr>
+    <p class="mb-0">Veuillez vérifier votre clé API Google Maps et essayez de rafraîchir la page.</p>
+</div>
 } @else {
-  <google-map height="600px" width="1280px" [center]="center" [zoom]="zoom">
-    <map-marker *ngFor="let marker of markers" [position]="marker.position" [title]="marker.name"
-    (mapClick)="onMarkerClick($event)">
-      <!-- <div class="custom-marker">
-        {{ marker.name }}
-      </div> -->
-    </map-marker>
-  </google-map>
+<google-map [height]="mapHeight" [width]="mapWidth" [center]="center" [zoom]="zoom">
+    <map-marker *ngFor="let marker of markers" #markerRef="mapMarker" [position]="marker.position" [title]="marker.name"
+        [label]="marker.label" (mapClick)="openInfoWindow(marker, markerRef)"></map-marker>
+
+    <map-info-window #infoWindow>
+        <div *ngIf="selectedMarker" class="info-window-content">
+            <button (click)="closeInfoWindowManual()" class="info-window-close-btn" aria-label="Fermer">&times;</button>
+            <h4>{{ selectedMarker.name }}</h4>
+
+            <p><strong>Categorie:</strong> {{ selectedMarker.category }}</p>
+
+            <p>
+                <strong>ASM:</strong> {{ selectedMarker.asm }}
+            </p>
+            <p>
+                <strong>Sup:</strong> {{ selectedMarker.sup }}
+            </p>
+            <p>
+                <strong>DR:</strong> {{ selectedMarker.dr }}
+            </p>
+            <p>
+                <strong>Cyclo:</strong> {{ selectedMarker.cyclo }}
+            </p>
+            <p>
+                <strong>Date:</strong> {{ selectedMarker.date }}
+            </p>
+            <p>
+                <strong>Fait par:</strong> {{ selectedMarker.signature }}
+            </p>
+            <!-- <img *ngIf="selectedMarker.image_url" [src]="selectedMarker.image_url" alt="Image du lieu" style="max-width: 100%; height: auto; margin-top: 10px;"> -->
+            <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4cd.png" alt="Lieu"
+                style="width: 32px; height: 32px; margin-top: 10px;">
+            <br>
+        </div>
+    </map-info-window>
+</google-map>
 }
