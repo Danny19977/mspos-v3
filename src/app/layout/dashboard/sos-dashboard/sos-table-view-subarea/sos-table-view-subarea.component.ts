@@ -8,6 +8,11 @@ import { IArea } from '../../../territories/areas/models/area.model';
 import { AreaService } from '../../../territories/areas/area.service';
 import { SubareaService } from '../../../territories/subarea/subarea.service';
 
+interface SubareaGroup {
+  name: string;
+  data: SOSTableViewModel[];
+}
+
 @Component({
   selector: 'app-sos-table-view-subarea',
   standalone: false,
@@ -83,6 +88,62 @@ export class SosTableViewSubareaComponent implements OnInit {
       this.tableViewList = res.data;
       this.isLoading = false;
     });
+  }
+
+  /**
+   * Groupe les données par subarea
+   */
+  getGroupedData(): SubareaGroup[] {
+    const grouped = this.tableViewList.reduce((acc, item) => {
+      const subareaName = item.name;
+      if (!acc[subareaName]) {
+        acc[subareaName] = [];
+      }
+      acc[subareaName].push(item);
+      return acc;
+    }, {} as { [key: string]: SOSTableViewModel[] });
+
+    return Object.keys(grouped).map(name => ({
+      name,
+      data: grouped[name]
+    }));
+  }
+
+  /**
+   * Calcule le total des fardes pour une subarea
+   */
+  getTotalFarde(data: SOSTableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.total_farde, 0);
+  }
+
+  /**
+   * Calcule le total global des fardes pour une subarea
+   */
+  getTotalGlobalFarde(data: SOSTableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.total_global_farde, 0);
+  }
+
+  /**
+   * Calcule le total des POS pour une subarea
+   */
+  getTotalPOS(data: SOSTableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.total_pos, 0);
+  }
+
+  /**
+   * Trouve le pourcentage maximum pour une subarea
+   */
+  getMaxPercentage(data: SOSTableViewModel[]): number {
+    if (data.length === 0) return 0;
+    return Math.max(...data.map(item => item.percentage));
+  }
+
+  /**
+   * Compte le nombre de brands uniques pour une subarea
+   */
+  getUniqueBrands(data: SOSTableViewModel[]): number {
+    const uniqueBrands = new Set(data.map(item => item.brand_name));
+    return uniqueBrands.size;
   }
 
 }

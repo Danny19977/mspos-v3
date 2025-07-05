@@ -7,6 +7,11 @@ import { SosService } from '../../services/sos.service';
 import { ProvinceService } from '../../../territories/province/province.service';
 import { formatDate } from '@angular/common';
 
+interface AreaGroup {
+  name: string;
+  data: SOSTableViewModel[];
+}
+
 @Component({
   selector: 'app-sos-table-view-area',
   standalone: false,
@@ -81,6 +86,62 @@ export class SosTableViewAreaComponent implements OnInit {
       this.tableViewList = res.data;
       this.isLoading = false;
     });
+  }
+
+  /**
+   * Groupe les données par area
+   */
+  getGroupedData(): AreaGroup[] {
+    const grouped = this.tableViewList.reduce((acc, item) => {
+      const areaName = item.name;
+      if (!acc[areaName]) {
+        acc[areaName] = [];
+      }
+      acc[areaName].push(item);
+      return acc;
+    }, {} as { [key: string]: SOSTableViewModel[] });
+
+    return Object.keys(grouped).map(name => ({
+      name,
+      data: grouped[name]
+    }));
+  }
+
+  /**
+   * Calcule la présence totale pour une area
+   */
+  getTotalFarde(data: SOSTableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.total_farde, 0);
+  }
+
+  /**
+   * Calcule le total global des fardes pour une area
+   */
+  getTotalGlobalFarde(data: SOSTableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.total_global_farde, 0);
+  }
+
+  /**
+   * Calcule le total des POS pour une area
+   */
+  getTotalPOS(data: SOSTableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.total_pos, 0);
+  }
+
+  /**
+   * Trouve le pourcentage maximum pour une area
+   */
+  getMaxPercentage(data: SOSTableViewModel[]): number {
+    if (data.length === 0) return 0;
+    return Math.max(...data.map(item => item.percentage));
+  }
+
+  /**
+   * Compte le nombre de brands uniques pour une area
+   */
+  getUniqueBrands(data: SOSTableViewModel[]): number {
+    const uniqueBrands = new Set(data.map(item => item.brand_name));
+    return uniqueBrands.size;
   }
 
 }

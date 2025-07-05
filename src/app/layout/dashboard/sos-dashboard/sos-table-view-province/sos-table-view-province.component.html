@@ -82,52 +82,123 @@
           </div>
         </div>
         } @else {
-        <div class="table-responsive custom-table">
-          <table class="table dataTable" id="deals-project">
-            <thead class="thead-light">
-              <tr>
-                <th>Province</th>
-                <th>Brand</th>
-                <th>Pourcentage</th>
-                <th>Presence</th>
-                <th>Total Goblal Farde</th>
-                <th>Visits</th>
-              </tr>
-            </thead>
-            <tbody>
-              @for (item of tableViewList; track $index) {
-              <tr class="odd">
-                <td>
-                  <a [routerLink]="['/web/dashboard/share-of-stock/area', item.name]">{{ item.name }}</a>
-                </td>
-                <td>{{ item.brand_name }}</td>
-                @if (item.brand_name === 'Equateur') {
-                <td>
-                  @if (item.percentage >= 95) {
-                  <span class="badge badge-pill bg-success" style="font-size: 16px;">{{item.percentage}} %</span>
-                  }
-                  @else if (item.percentage < 95 && item.percentage>= 80) {
-                    <span class="badge badge-pill bg-warning" style="font-size: 16px;">{{item.percentage}} %</span>
-                    }
-                    @else if (item.percentage < 80) { <span class="badge badge-pill bg-danger" style="font-size: 16px;">
-                      {{item.percentage}} %</span>
-                      }
-                </td>
-                } @else if(item.brand_name === 'MTC') {
-                <td style="background-color: rgba(245, 245, 220, 0.947);">{{item.percentage}} %</td>
-                } @else {
-                <td>{{item.percentage}} %</td>
-                }
-                <td>{{item.total_farde }}</td>
-                <td>{{item.total_global_farde }}</td>
-                <td>{{ item.total_pos }}</td>
-              </tr>
-              }
-            </tbody>
-          </table>
+        <div class="accordion" id="provinceAccordion">
+          @for (province of getGroupedData(); track province.name) {
+            <div class="accordion-item">
+              <!-- Header avec le nom de la province -->
+              <h2 class="accordion-header" [id]="'heading-' + $index">
+                <button 
+                  class="accordion-button collapsed" 
+                  type="button" 
+                  data-bs-toggle="collapse" 
+                  [attr.data-bs-target]="'#collapse-' + $index" 
+                  [attr.aria-expanded]="false" 
+                  [attr.aria-controls]="'collapse-' + $index">
+                  <div class="d-flex align-items-center justify-content-between w-100">
+                    <div class="d-flex align-items-center">
+                      <span class="fw-bold">{{ province.name }}</span>
+                      <span class="text-muted ms-2">({{ province.data.length }} marque(s))</span>
+                    </div>
+                  </div>
+                </button>
+              </h2>
+              
+              <!-- Body avec les données de la province -->
+              <div 
+                [id]="'collapse-' + $index" 
+                class="accordion-collapse collapse" 
+                [attr.aria-labelledby]="'heading-' + $index" 
+                data-bs-parent="#provinceAccordion">
+                <div class="accordion-body">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>Brand</th>
+                          <th>Pourcentage</th>
+                          <th>Total Farde</th>
+                          <th>Total Global Farde</th>
+                          <th>Total POS</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        @for (item of province.data; track $index) {
+                          <tr>
+                            <td>{{ item.brand_name }}</td>
+                            <td>
+                              @if (item.brand_name === 'Equateur') {
+                                @if (item.percentage >= 95) { 
+                                  <span class="badge badge-pill bg-success" style="font-size: 16px;">{{item.percentage}}%</span>
+                                }
+                                @else if (item.percentage < 95 && item.percentage >= 80) {
+                                  <span class="badge badge-pill bg-warning" style="font-size: 16px;">{{item.percentage}}%</span>
+                                }
+                                @else if (item.percentage < 80) {
+                                  <span class="badge badge-pill bg-danger" style="font-size: 16px;">{{item.percentage}}%</span>
+                                }
+                              } @else if(item.brand_name === 'MTC') {
+                                <span style="background-color: rgba(245, 245, 220, 0.947); padding: 2px 8px; border-radius: 4px;">{{item.percentage}}%</span>
+                              } @else {
+                                <span>{{item.percentage}}%</span>
+                              }
+                            </td>
+                            <td>{{ item.total_farde }}</td>
+                            <td>{{ item.total_global_farde }}</td>
+                            <td>{{ item.total_pos }}</td>
+                            <td>
+                              <a 
+                                [routerLink]="['/web/dashboard/share-of-stock/area', item.name]" 
+                                class="btn btn-sm btn-link"
+                                title="Voir les détails">
+                                Voir area(s)
+                              </a>
+                            </td>
+                          </tr>
+                        }
+                      </tbody>
+                    </table>
+                  </div>
+                  
+                  <!-- Statistiques résumées pour cette province -->
+                  <div class="row mt-3">
+                    <div class="col-md-2">
+                      <div class="text-center">
+                        <small class="text-muted">Total Farde</small>
+                        <div class="fw-bold">{{ getTotalFarde(province.data) }}</div>
+                      </div>
+                    </div>
+                    <div class="col-md-2">
+                      <div class="text-center">
+                        <small class="text-muted">Total Global Farde</small>
+                        <div class="fw-bold">{{ getTotalGlobalFarde(province.data) }}</div>
+                      </div>
+                    </div>
+                    <div class="col-md-2">
+                      <div class="text-center">
+                        <small class="text-muted">Total POS</small>
+                        <div class="fw-bold">{{ getTotalPOS(province.data) }}</div>
+                      </div>
+                    </div>
+                    <div class="col-md-2">
+                      <div class="text-center">
+                        <small class="text-muted">Meilleur %</small>
+                        <div class="fw-bold">{{ getMaxPercentage(province.data) }}%</div>
+                      </div>
+                    </div>
+                    <div class="col-md-2">
+                      <div class="text-center">
+                        <small class="text-muted">Brands</small>
+                        <div class="fw-bold">{{ getUniqueBrands(province.data) }}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          }
         </div>
         }
-
 
         <!-- <td style="background-color: darkgray; text-align: center;">{{item.Mtc}} %</td> -->
       </div>

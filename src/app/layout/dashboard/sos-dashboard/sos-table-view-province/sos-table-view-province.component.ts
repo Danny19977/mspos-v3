@@ -10,6 +10,11 @@ import { SOSTableViewModel } from '../../models/dashboard.models';
 import { ICountry } from '../../../territories/country/models/country.model';
 import { CountryService } from '../../../territories/country/country.service';
 
+interface ProvinceGroup {
+  name: string;
+  data: SOSTableViewModel[];
+}
+
 @Component({
   selector: 'app-sos-table-view-province',
   standalone: false,
@@ -135,5 +140,61 @@ export class SosTableViewProvinceComponent implements OnInit {
       console.log('tableViewList:', this.tableViewList);
       this.isLoading = false;
     });
-  } 
+  }
+
+  /**
+   * Groupe les données par province
+   */
+  getGroupedData(): ProvinceGroup[] {
+    const grouped = this.tableViewList.reduce((acc, item) => {
+      const provinceName = item.name;
+      if (!acc[provinceName]) {
+        acc[provinceName] = [];
+      }
+      acc[provinceName].push(item);
+      return acc;
+    }, {} as { [key: string]: SOSTableViewModel[] });
+
+    return Object.keys(grouped).map(name => ({
+      name,
+      data: grouped[name]
+    }));
+  }
+
+  /**
+   * Calcule le total des fardes pour une province
+   */
+  getTotalFarde(data: SOSTableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.total_farde, 0);
+  }
+
+  /**
+   * Calcule le total global des fardes pour une province
+   */
+  getTotalGlobalFarde(data: SOSTableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.total_global_farde, 0);
+  }
+
+  /**
+   * Calcule le total des POS pour une province
+   */
+  getTotalPOS(data: SOSTableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.total_pos, 0);
+  }
+
+  /**
+   * Trouve le pourcentage maximum pour une province
+   */
+  getMaxPercentage(data: SOSTableViewModel[]): number {
+    if (data.length === 0) return 0;
+    return Math.max(...data.map(item => item.percentage));
+  }
+
+  /**
+   * Compte le nombre de brands uniques pour une province
+   */
+  getUniqueBrands(data: SOSTableViewModel[]): number {
+    const uniqueBrands = new Set(data.map(item => item.brand_name));
+    return uniqueBrands.size;
+  }
 }

@@ -238,9 +238,9 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
           }
 
           this.posformService.refreshDataList$.subscribe(() => {
-            this.fetchProducts(this.name, this.territoire_uuid, this.start_date, this.end_date);
+            this.getDataList(this.name, this.territoire_uuid, this.start_date, this.end_date);
           });
-          this.fetchProducts(this.name, this.territoire_uuid, this.start_date, this.end_date);
+          this.getDataList(this.name, this.territoire_uuid, this.start_date, this.end_date);
 
           this.onChanges();
 
@@ -424,6 +424,35 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
     this.fetchProducts(this.name, this.territoire_uuid, this.start_date, this.end_date);
   }
 
+  private getDataList(name: string, territoire_uuid: string, start_date: string, end_date: string): void {
+    if (name == "country" || name == 'Manager' || name == 'Support') {
+      this.countryService.get(this.territoire_uuid).subscribe(item => {
+        this.territoire = item.data;
+         this.fetchProducts(name, territoire_uuid, start_date, end_date);
+      });
+    } else if (name == "province" || name == "ASM") {
+      this.provinceService.get(this.territoire_uuid).subscribe(item => {
+        this.territoire = item.data;
+        this.fetchProducts(name, territoire_uuid, start_date, end_date);
+      });
+    } else if (name == "area" || name == "Supervisor") {
+      this.areaService.get(this.territoire_uuid).subscribe(item => {
+        this.territoire = item.data;
+        this.fetchProducts(name, territoire_uuid, start_date, end_date);
+      });
+    } else if (name == "subarea" || name == "Cyclo") {
+      this.subareaService.get(this.territoire_uuid).subscribe(item => {
+        this.territoire = item.data;
+        this.fetchProducts(name, territoire_uuid, start_date, end_date);
+      }); 
+    } else if (name == "commune" || name == "DR") {
+      this.communeService.get(this.territoire_uuid).subscribe(item => {
+        this.territoire = item.data;
+        this.fetchProducts(name, territoire_uuid, start_date, end_date);
+      });
+    }
+  }
+
   fetchProducts(name: string, territoire_uuid: string, start_date: string, end_date: string): void {
     this.isLoadingData = true;
 
@@ -535,8 +564,8 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
         this.territoire = res.data;
         this.posformService.getPaginatedRangeDateByAreaId(
           territoire_uuid,
-          this.current_page, 
-          this.page_size, 
+          this.current_page,
+          this.page_size,
           this.search,
           start_date, end_date).subscribe(res => {
             this.dataList = res.data;
