@@ -37,7 +37,7 @@ export class SosTableViewSubareaComponent implements OnInit {
     private route: ActivatedRoute, 
     private _formBuilder: FormBuilder,
     private sosService: SosService,
-    private subareaService: SubareaService,
+    private areaService: AreaService,
   ) { }
 
 
@@ -55,11 +55,11 @@ export class SosTableViewSubareaComponent implements OnInit {
     this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
     
     this.route.params.subscribe(params => {
-      const areaName = params['area_name'];
-      console.log('areaName Name:', areaName);
-      this.subareaService.getBy(areaName).subscribe((res) => {
+      const area_uuid = params['area_uuid'];
+      console.log('area_uuid:', area_uuid);
+      this.areaService.getBy(area_uuid).subscribe((res) => {
         this.area = res.data;
-        console.log('subareaService:', this.area);
+        console.log('areaService:', this.area);
         this.getTableViewSubArea(this.area.country_uuid, this.area.province_uuid, this.area.uuid, this.start_date, this.end_date);
         this.isLoading = false;
       });

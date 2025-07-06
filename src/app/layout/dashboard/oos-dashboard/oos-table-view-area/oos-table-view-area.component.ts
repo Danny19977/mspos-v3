@@ -7,6 +7,11 @@ import { formatDate } from '@angular/common';
 import { IProvince } from '../../../territories/province/models/province.model';
 import { TableViewModel } from '../../models/dashboard.models';
 
+interface AreaGroup {
+  name: string;
+  data: TableViewModel[];
+}
+
 @Component({
   selector: 'app-oos-table-view-area',
   standalone: false,
@@ -49,9 +54,9 @@ export class OosTableViewAreaComponent implements OnInit {
     this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
     
     this.route.params.subscribe(params => {
-      const provinceName = params['province_name'];
-      console.log('Province Name:', provinceName);
-      this.provinceService.getBy(provinceName).subscribe((res) => {
+      const province_uuid = params['province_uuid'];
+      console.log('Province UUID:', province_uuid);
+      this.provinceService.getBy(province_uuid).subscribe((res) => {
         this.province = res.data;
         console.log('Province:', this.province);
         this.getTableArea(this.province.country_uuid, this.province.uuid, this.start_date, this.end_date);
@@ -81,6 +86,74 @@ export class OosTableViewAreaComponent implements OnInit {
       this.tableViewList = res.data;
       this.isLoading = false;
     });
+  }
+
+  /**
+   * Groupe les données par area
+   */
+  getGroupedData(): AreaGroup[] {
+    const grouped = this.tableViewList.reduce((acc, item) => {
+      const areaName = item.name;
+      if (!acc[areaName]) {
+        acc[areaName] = [];
+      }
+      acc[areaName].push(item);
+      return acc;
+    }, {} as { [key: string]: TableViewModel[] });
+
+    return Object.keys(grouped).map(name => ({
+      name,
+      data: grouped[name]
+    }));
+  }
+
+  /**
+   * Calcule la présence totale pour une area
+   */
+  getTotalPresence(data: TableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.presence, 0);
+  }
+
+  /**
+   * Calcule le total des visites pour une area
+   */
+  getTotalVisits(data: TableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.visits, 0);
+  }
+
+  /**
+   * Calcule le pourcentage de rupture total pour une area
+   */
+  getTotalOOSPercentage(data: TableViewModel[]): number {
+    const totalVisits = this.getTotalVisits(data);
+    const totalPresence = this.getTotalPresence(data);
+    if (totalVisits === 0) return 0;
+    return ((totalVisits - totalPresence) * 100 / totalVisits);
+  }
+
+  /**
+   * Calcule la rupture de stock en chiffre pour une area
+   */
+  getTotalOOSNumber(data: TableViewModel[]): number {
+    return this.getTotalVisits(data) - this.getTotalPresence(data);
+  }
+
+  /**
+   * Compte le nombre de brands uniques pour une area
+   */
+  getUniqueBrands(data: TableViewModel[]): number {
+    const uniqueBrands = new Set(data.map(item => item.brand));
+    return uniqueBrands.size;
+  }
+
+  /**
+   * Trouve le pourcentage de rupture maximum pour une area
+   */
+  getMaxOOSPercentage(data: TableViewModel[]): number {
+    if (data.length === 0) return 0;
+    return Math.max(...data.map(item => 
+      item.visits > 0 ? ((item.visits - item.presence) * 100 / item.visits) : 0
+    ));
   }
 
 }

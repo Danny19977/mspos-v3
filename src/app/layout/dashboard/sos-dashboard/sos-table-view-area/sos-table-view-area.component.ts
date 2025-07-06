@@ -54,9 +54,9 @@ export class SosTableViewAreaComponent implements OnInit {
     this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
 
     this.route.params.subscribe(params => {
-      const provinceName = params['province_name'];
-      console.log('Province Name:', provinceName);
-      this.provinceService.getBy(provinceName).subscribe((res) => {
+      const province_uuid = params['province_uuid'];
+      console.log('Province UUID:', province_uuid);
+      this.provinceService.getBy(province_uuid).subscribe((res) => {
         this.province = res.data;
         console.log('Province:', this.province);
         this.getTableArea(this.province.country_uuid, this.province.uuid, this.start_date, this.end_date);

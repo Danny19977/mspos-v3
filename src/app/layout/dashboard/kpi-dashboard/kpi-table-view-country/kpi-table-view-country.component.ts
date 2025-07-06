@@ -489,9 +489,19 @@ export class KpiTableViewCountryComponent implements OnInit, OnDestroy {
     console.log('Détails du groupe:', group);
     // Implémenter la navigation vers les détails
     // <a [routerLink]="['/web/posforms/pos-form-filter', 'province', element.uuid]">
-    this.router.navigate(['/web/posforms/pos-form-filter', group.originalData?.title, group.originalData?.uuid]);
+    if( group.originalData?.title === 'ASM') {
+        this.router.navigate(['/web/posforms/pos-form-filter', 'ASM', group.originalData?.province_uuid]);
+      } else if (group.originalData?.title === 'Supervisor') {
+        this.router.navigate(['/web/posforms/pos-form-filter', 'Supervisor', group.originalData?.area_uuid]);
+      } else if (group.originalData?.title === 'DR') {
+        this.router.navigate(['/web/posforms/pos-form-filter', 'DR', group.originalData?.sub_area_uuid]);
+      } else if (group.originalData?.title === 'Cyclo') {
+        this.router.navigate(['/web/posforms/pos-form-filter', 'Cyclo', group.originalData?.commune_uuid]);
+      } else {
+        this.router.navigate(['/web/dashboard/key-performance-indicators']);
+      }
   }
-
+ 
   // Statistiques pour les cartes de résumé
   getTotalAgents(): number {
     return this.tableViewList.length;

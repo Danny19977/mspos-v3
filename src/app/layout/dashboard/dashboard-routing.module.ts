@@ -61,15 +61,15 @@ const routes: Routes = [
             component: NdTableViewProvinceComponent,
           },
           {
-            path: 'area/:province_name',
+            path: 'area/:province_uuid',
             component: NdTableViewAreaComponent,
           },
           {
-            path: 'subarea/:area_name',
+            path: 'subarea/:area_uuid',
             component: NdTableViewSubareaComponent,
           },
           {
-            path: 'commune/:subarea_name',
+            path: 'commune/:subarea_uuid',
             component: NdTableViewCommuneComponent,
           },
           {
@@ -87,15 +87,15 @@ const routes: Routes = [
             component: SosTableViewProvinceComponent,
           },
           {
-            path: 'area/:province_name',
+            path: 'area/:province_uuid',
             component: SosTableViewAreaComponent,
           },
           {
-            path: 'subarea/:area_name',
+            path: 'subarea/:area_uuid',
             component: SosTableViewSubareaComponent,
           },
           {
-            path: 'commune/:subarea_name',
+            path: 'commune/:subarea_uuid',
             component: SosTableViewCommuneComponent,
           },
           {
@@ -113,15 +113,15 @@ const routes: Routes = [
             component: OosTableViewProvinceComponent,
           },
           {
-            path: 'area/:province_name',
+            path: 'area/:province_uuid',
             component: OosTableViewAreaComponent,
           },
           {
-            path: 'subarea/:area_name',
+            path: 'subarea/:area_uuid',
             component: OosTableViewSubareaComponent,
           },
           {
-            path: 'commune/:subarea_name',
+            path: 'commune/:subarea_uuid',
             component: OosTableViewCommuneComponent,
           },
           {
@@ -139,15 +139,15 @@ const routes: Routes = [
             component: SeTableViewProvinceComponent,
           },
           {
-            path: 'area/:province_name',
+            path: 'area/:province_uuid',
             component: SeTableViewAreaComponent,
           },
           {
-            path: 'subarea/:area_name',
+            path: 'subarea/:area_uuid',
             component: SeTableViewSubareaComponent,
           },
           {
-            path: 'commune/:subarea_name',
+            path: 'commune/:subarea_uuid',
             component: SeTableViewCommuneComponent,
           },
           {
@@ -169,15 +169,15 @@ const routes: Routes = [
             component: KpiTableViewProvinceComponent,
           },
           {
-            path: 'area/:province_name',
+            path: 'area/:province_uuid',
             component: KpiTableViewAreaComponent,
           },
           {
-            path: 'subarea/:area_name',
+            path: 'subarea/:area_uuid',
             component: KpiTableViewSubareaComponent,
           },
           {
-            path: 'commune/:subarea_name',
+            path: 'commune/:subarea_uuid',
             component: KpiTableViewCommuneComponent,
           },
           {

@@ -1,5 +1,6 @@
 
 export interface TableViewModel {
+    uuid: string;
     name: string;
     brand: string;
     pourcent: number;
@@ -8,7 +9,7 @@ export interface TableViewModel {
 }
 export interface NDYearModel {
     month: string;
-   brand: string;
+    brand: string;
     pourcent: number;
     presence: number;
     visits: number;
@@ -16,6 +17,7 @@ export interface NDYearModel {
 
 
 export interface SOSTableViewModel {
+    uuid: string;
     name: string;
     brand_name: string;
     percentage: number;
@@ -37,6 +39,7 @@ export interface GoogleMapModel {
     latitude: number;
     longitude: number;
     signature: string;
+    pos_uuid: string;
     pos_name: string;
     postype: string;
     asm: string;
@@ -61,8 +64,12 @@ export interface SETableViewPriceModel {
 }
 
 export interface KPITableViewPriceModel {
-    uuid: string;
+    // uuid: string;
     name: string;
+    province_uuid: string;
+    area_uuid: string;
+    sub_area_uuid: string;
+    commune_uuid: string;
     signature: string;
     title: string;
     total_visits: number;

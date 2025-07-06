@@ -54,9 +54,9 @@ export class NdTableViewSubareaComponent implements OnInit {
     this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
     
     this.route.params.subscribe(params => {
-      const areaName = params['area_name'];
-      console.log('areaName Name:', areaName);
-      this.areaService.getBy(areaName).subscribe((res) => {
+      const area_uuid = params['area_uuid'];
+      console.log('area_uuid:', area_uuid);
+      this.areaService.getBy(area_uuid).subscribe((res) => {
         this.area = res.data;
         console.log('area:', this.area);
         this.getTableViewSubArea(this.area.country_uuid, this.area.province_uuid, this.area.uuid, this.start_date, this.end_date);
@@ -81,10 +81,15 @@ export class NdTableViewSubareaComponent implements OnInit {
   }
 
 
-
-  getTableViewSubArea(country_uuid: string, province_uuid: string, area_uuid: string, start_date: string, end_date: string) {
-    this.ndService.NdTableViewSubArea(country_uuid, province_uuid, area_uuid, start_date, end_date).subscribe((res) => {
+  getTableViewSubArea(country_uuid: string, province_uuid: string, area_uuid: string, 
+    start_date: string, end_date: string) {
+    this.ndService.NdTableViewSubArea(
+      country_uuid, 
+      province_uuid, 
+      area_uuid, 
+      start_date, end_date).subscribe((res) => {
       this.tableViewList = res.data;
+      console.log('tableViewList:', this.tableViewList);
       this.isLoading = false;
     });
   }

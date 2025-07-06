@@ -10,6 +10,10 @@ import { IUser } from '../../../management/user/models/user.model';
 import { ICountry } from '../../../territories/country/models/country.model';
 import { CountryService } from '../../../territories/country/country.service';
 
+interface ProvinceGroup {
+  name: string;
+  data: TableViewModel[];
+}
 
 @Component({
   selector: 'app-oos-table-view-province',
@@ -63,7 +67,7 @@ export class OosTableViewProvinceComponent implements OnInit {
     this.rangeDate = [firstDay, lastDay];
 
     this.dateRange = this._formBuilder.group({
-      country: new FormControl(''),
+      country_uuid: new FormControl(''),
       rangeValue: new FormControl(this.rangeDate),
     });
     this.start_date = formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US');
@@ -140,5 +144,73 @@ export class OosTableViewProvinceComponent implements OnInit {
       this.tableViewList = res.data;
       this.isLoading = false;
     });
-  } 
+  }
+
+  /**
+   * Groupe les données par province
+   */
+  getGroupedData(): ProvinceGroup[] {
+    const grouped = this.tableViewList.reduce((acc, item) => {
+      const provinceName = item.name;
+      if (!acc[provinceName]) {
+        acc[provinceName] = [];
+      }
+      acc[provinceName].push(item);
+      return acc;
+    }, {} as { [key: string]: TableViewModel[] });
+
+    return Object.keys(grouped).map(name => ({
+      name,
+      data: grouped[name]
+    }));
+  }
+
+  /**
+   * Calcule la présence totale pour une province
+   */
+  getTotalPresence(data: TableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.presence, 0);
+  }
+
+  /**
+   * Calcule le total des visites pour une province
+   */
+  getTotalVisits(data: TableViewModel[]): number {
+    return data.reduce((acc, item) => acc + item.visits, 0);
+  }
+
+  /**
+   * Calcule le pourcentage de rupture total pour une province
+   */
+  getTotalOOSPercentage(data: TableViewModel[]): number {
+    const totalVisits = this.getTotalVisits(data);
+    const totalPresence = this.getTotalPresence(data);
+    if (totalVisits === 0) return 0;
+    return ((totalVisits - totalPresence) * 100 / totalVisits);
+  }
+
+  /**
+   * Calcule la rupture de stock en chiffre pour une province
+   */
+  getTotalOOSNumber(data: TableViewModel[]): number {
+    return this.getTotalVisits(data) - this.getTotalPresence(data);
+  }
+
+  /**
+   * Compte le nombre de brands uniques pour une province
+   */
+  getUniqueBrands(data: TableViewModel[]): number {
+    const uniqueBrands = new Set(data.map(item => item.brand));
+    return uniqueBrands.size;
+  }
+
+  /**
+   * Trouve le pourcentage de rupture maximum pour une province
+   */
+  getMaxOOSPercentage(data: TableViewModel[]): number {
+    if (data.length === 0) return 0;
+    return Math.max(...data.map(item => 
+      item.visits > 0 ? ((item.visits - item.presence) * 100 / item.visits) : 0
+    ));
+  }
 }

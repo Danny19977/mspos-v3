@@ -17,6 +17,7 @@ interface Marker {
   cyclo: string;
   date: string;
   signature: string;
+  url?: string; // Optional URL for the marker
 }
 
 
@@ -110,6 +111,7 @@ export class MapCardComponent implements OnInit {
         cyclo: element.cyclo || '',
         date: element.created_at,
         signature: element.signature,
+        url: element.pos_uuid
       }));
 
       // Update map center to the first position if not already set to a specific location
