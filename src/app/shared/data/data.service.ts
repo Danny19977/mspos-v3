@@ -31,7 +31,7 @@ export class DataService {
           subMenus: [
             // {
             //   menuValue: 'Summary',
-            //   route: routes.msposDashboard,
+            //   route: routes.summaryDashboard,
             // },
             {
               menuValue: 'Numeric distribution',
@@ -88,7 +88,7 @@ export class DataService {
           base: 'route-plans',
           icon: 'list-check',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.routeplan,
         },
         {
@@ -96,17 +96,17 @@ export class DataService {
           base: 'pos',
           icon: 'home',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.posVente,
-        }, 
+        },
         {
           menuValue: 'Marques',
           base: 'brands',
           icon: 'list-check',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.brand,
-        }, 
+        },
       ],
     },
     {
@@ -119,7 +119,7 @@ export class DataService {
           base: 'countries',
           icon: 'file-text',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.countryList,
         },
         {
@@ -127,7 +127,7 @@ export class DataService {
           base: 'provinces',
           icon: 'file-text',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.provinceList,
         },
         {
@@ -135,7 +135,7 @@ export class DataService {
           base: 'areas',
           icon: 'page-break',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.areaList,
         },
         {
@@ -143,7 +143,7 @@ export class DataService {
           base: 'subareas',
           icon: 'page-break',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.subareaList,
         },
         {
@@ -151,7 +151,7 @@ export class DataService {
           base: 'communes',
           icon: 'page-break',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.communeList,
         },
       ],
@@ -160,7 +160,7 @@ export class DataService {
       tittle: 'Teams',
       showAsTab: true,
       separateRoute: false,
-      menu: [ 
+      menu: [
         {
           menuValue: 'ASM',
           base: 'asm',
@@ -202,7 +202,7 @@ export class DataService {
       tittle: 'MANAGEMENT',
       showAsTab: true,
       separateRoute: false,
-      menu: [ 
+      menu: [
         {
           menuValue: 'Managers',
           base: 'managers',
@@ -249,7 +249,7 @@ export class DataService {
           subMenus: [
             // {
             //   menuValue: 'Summary',
-            //   route: routes.msposDashboard,
+            //   route: routes.summaryDashboard,
             // },
             {
               menuValue: 'Numeric distribution',
@@ -306,7 +306,7 @@ export class DataService {
           base: 'route-plans',
           icon: 'list-check',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.routeplan,
         },
         {
@@ -314,17 +314,17 @@ export class DataService {
           base: 'pos',
           icon: 'home',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.posVente,
-        }, 
+        },
         {
           menuValue: 'Brands',
           base: 'brands',
           icon: 'list-check',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.brand,
-        }, 
+        },
       ],
     },
     {
@@ -337,7 +337,7 @@ export class DataService {
           base: 'provinces',
           icon: 'file-text',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.provinceList,
         },
         {
@@ -345,7 +345,7 @@ export class DataService {
           base: 'areas',
           icon: 'page-break',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.areaList,
         },
         {
@@ -353,7 +353,7 @@ export class DataService {
           base: 'subareas',
           icon: 'page-break',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.subareaList,
         },
         {
@@ -361,7 +361,7 @@ export class DataService {
           base: 'communes',
           icon: 'page-break',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.communeList,
         },
       ],
@@ -370,7 +370,7 @@ export class DataService {
       tittle: 'Teams',
       showAsTab: true,
       separateRoute: false,
-      menu: [ 
+      menu: [
         {
           menuValue: 'ASM',
           base: 'asm',
@@ -407,7 +407,7 @@ export class DataService {
           route: routes.cycloList,
         },
       ],
-    }, 
+    },
   ];
 
   public sidebarDataSup = [
@@ -427,7 +427,7 @@ export class DataService {
           subMenus: [
             // {
             //   menuValue: 'Summary',
-            //   route: routes.msposDashboard,
+            //   route: routes.summaryDashboard,
             // },
             {
               menuValue: 'Numeric distribution',
@@ -484,7 +484,7 @@ export class DataService {
           base: 'route-plans',
           icon: 'list-check',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.routeplan,
         },
         {
@@ -492,7 +492,7 @@ export class DataService {
           base: 'pos',
           icon: 'home',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.posVente,
         },
       ],
@@ -501,13 +501,13 @@ export class DataService {
       tittle: 'Territoires',
       showAsTab: true,
       separateRoute: false,
-      menu: [ 
+      menu: [
         {
           menuValue: 'Districts (Areas)',
           base: 'areas',
           icon: 'page-break',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.areaList,
         },
         {
@@ -515,7 +515,7 @@ export class DataService {
           base: 'subareas',
           icon: 'page-break',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.subareaList,
         },
         {
@@ -523,7 +523,7 @@ export class DataService {
           base: 'communes',
           icon: 'page-break',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.communeList,
         },
       ],
@@ -560,7 +560,7 @@ export class DataService {
           route: routes.cycloList,
         },
       ],
-    }, 
+    },
   ];
 
   public sidebarDataDR = [
@@ -583,7 +583,7 @@ export class DataService {
           base: 'route-plans',
           icon: 'list-check',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.routeplan,
         },
         {
@@ -591,7 +591,7 @@ export class DataService {
           base: 'pos',
           icon: 'home',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.posVente,
         },
       ],
@@ -606,7 +606,7 @@ export class DataService {
           base: 'subareas',
           icon: 'page-break',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.subareaList,
         },
         {
@@ -614,7 +614,7 @@ export class DataService {
           base: 'communes',
           icon: 'page-break',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.communeList,
         },
       ],
@@ -642,7 +642,7 @@ export class DataService {
           route: routes.cycloList,
         },
       ],
-    }, 
+    },
   ];
 
   public sidebarDataCyclo = [
@@ -665,7 +665,7 @@ export class DataService {
           base: 'route-plans',
           icon: 'list-check',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.routeplan,
         },
         {
@@ -673,7 +673,7 @@ export class DataService {
           base: 'pos',
           icon: 'home',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.posVente,
         },
       ],
@@ -682,13 +682,13 @@ export class DataService {
       tittle: 'Territoires',
       showAsTab: true,
       separateRoute: false,
-      menu: [ 
+      menu: [
         {
           menuValue: 'Communes/Secteurs',
           base: 'communes',
           icon: 'page-break',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.communeList,
         },
       ],
@@ -697,7 +697,7 @@ export class DataService {
       tittle: 'Teams',
       showAsTab: true,
       separateRoute: false,
-      menu: [ 
+      menu: [
         {
           menuValue: 'Cyclos',
           base: 'cyclos',
@@ -707,7 +707,7 @@ export class DataService {
           route: routes.cycloList,
         },
       ],
-    }, 
+    },
   ];
 
   public sidebarDataSupport = [
@@ -727,7 +727,7 @@ export class DataService {
           subMenus: [
             // {
             //   menuValue: 'Summary',
-            //   route: routes.msposDashboard,
+            //   route: routes.summaryDashboard,
             // },
             {
               menuValue: 'Numeric distribution',
@@ -784,7 +784,7 @@ export class DataService {
           base: 'route-plans',
           icon: 'list-check',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.routeplan,
         },
         {
@@ -792,17 +792,17 @@ export class DataService {
           base: 'pos',
           icon: 'home',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.posVente,
-        }, 
+        },
         {
           menuValue: 'Brands',
           base: 'brands',
           icon: 'list-check',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.brand,
-        }, 
+        },
       ],
     },
     {
@@ -815,7 +815,7 @@ export class DataService {
           base: 'countries',
           icon: 'file-text',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.countryList,
         },
         {
@@ -823,7 +823,7 @@ export class DataService {
           base: 'provinces',
           icon: 'file-text',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.provinceList,
         },
         {
@@ -831,7 +831,7 @@ export class DataService {
           base: 'areas',
           icon: 'page-break',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.areaList,
         },
         {
@@ -839,7 +839,7 @@ export class DataService {
           base: 'subareas',
           icon: 'page-break',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.subareaList,
         },
         {
@@ -847,7 +847,7 @@ export class DataService {
           base: 'communes',
           icon: 'page-break',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.communeList,
         },
       ],
@@ -856,7 +856,7 @@ export class DataService {
       tittle: 'Teams',
       showAsTab: true,
       separateRoute: false,
-      menu: [ 
+      menu: [
         {
           menuValue: 'ASM',
           base: 'asm',
@@ -898,7 +898,7 @@ export class DataService {
       tittle: 'MANAGEMENT',
       showAsTab: true,
       separateRoute: false,
-      menu: [ 
+      menu: [
         {
           menuValue: 'Managers',
           base: 'managers',
@@ -927,7 +927,7 @@ export class DataService {
       ],
     },
   ];
- 
+
   public sidebarOffLine = [
     {
       tittle: 'Market',
@@ -948,7 +948,7 @@ export class DataService {
           base: 'route-plans',
           icon: 'list-check',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.routeplan,
         },
         {
@@ -956,7 +956,7 @@ export class DataService {
           base: 'pos',
           icon: 'home',
           hasSubRoute: false,
-          showSubRoute: false, 
+          showSubRoute: false,
           route: routes.posVente,
         },
       ],

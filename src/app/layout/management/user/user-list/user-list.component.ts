@@ -119,8 +119,6 @@ export class UserListComponent implements OnInit, AfterViewInit {
   cycloUserUUID: string = '';
   cycloUserFullName: string = '';
 
-
-
   constructor(
     private router: Router,
     private authService: AuthService,
@@ -132,12 +130,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
     private areaService: AreaService,
     private subAreaService: SubareaService,
     private communeService: CommuneService,
-    // private asmService: AsmService,
-    // private supService: SupService,
-    // private drService: DrService,
-    // private cycloService: CycloService,
-    private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
-
+    private cdr: ChangeDetectorRef,
     private toastr: ToastrService
   ) { }
 
@@ -145,8 +138,8 @@ export class UserListComponent implements OnInit, AfterViewInit {
     this.authService.user().subscribe({
       next: (user) => {
         this.currentUser = user;
-        this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
-        this.dataSource.sort = this.sort; // Bind sort to dataSource
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
         this.cdr.detectChanges();
 
         this.usersService.refreshDataList$.subscribe(() => {
@@ -169,20 +162,6 @@ export class UserListComponent implements OnInit, AfterViewInit {
         this.communeService.getAll().subscribe(res => {
           this.communeList = res.data;
         });
-
-        // this.asmService.getAll().subscribe(res => {
-        //   this.asmList = res.data;
-        // });
-        // this.supService.getAll().subscribe(res => {
-        //   this.supList = res.data;
-        // });
-        // this.drService.getAll().subscribe(res => {
-        //   this.drList = res.data;
-        // });
-        // this.cycloService.getAll().subscribe(res => {
-        //   this.cycloList = res.data;
-        // });
-
       },
       error: (error) => {
         this.isLoadingData = false;
@@ -215,14 +194,11 @@ export class UserListComponent implements OnInit, AfterViewInit {
       dr_uuid: [''],
       cyclo_uuid: [''],
     });
-
-
   }
-
 
   onPageChange(event: PageEvent): void {
     this.isLoadingData = true;
-    this.current_page = event.pageIndex + 1; // Adjust for 1-based page index
+    this.current_page = event.pageIndex + 1;
     this.page_size = event.pageSize;
     this.fetchProducts();
   }
@@ -232,9 +208,8 @@ export class UserListComponent implements OnInit, AfterViewInit {
       this.dataList = res.data;
       this.total_pages = res.pagination.total_pages;
       this.total_records = res.pagination.total_records;
-      this.dataSource.data = this.dataList; // Update dataSource data
+      this.dataSource.data = this.dataList;
       this.dataSource.sort = this.sort;
-
       this.isLoadingData = false;
     });
   }
@@ -243,7 +218,6 @@ export class UserListComponent implements OnInit, AfterViewInit {
     this.search = search;
     this.fetchProducts();
   }
-
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
@@ -263,11 +237,9 @@ export class UserListComponent implements OnInit, AfterViewInit {
     }
   }
 
-
   public togglePassword(index: number) {
     this.password[index] = !this.password[index]
   }
-
 
   findValue(value: any) {
     this.idItem = value;
@@ -278,10 +250,8 @@ export class UserListComponent implements OnInit, AfterViewInit {
         email: this.dataItem.email,
         title: this.dataItem.title,
         phone: this.dataItem.phone,
-        // password: this.dataItem.password,
-        role: this.dataItem.title, // Role et title c'est la meme chose mais le role cest pour le code source
+        role: this.dataItem.title,
         permission: this.dataItem.permission,
-        // image: this.imageUrl,
         status: this.dataItem.status,
         country_uuid: this.dataItem.country_uuid,
         province_uuid: this.dataItem.province_uuid,
@@ -301,122 +271,259 @@ export class UserListComponent implements OnInit, AfterViewInit {
         cyclo_uuid: this.dataItem.cyclo_uuid,
         cyclo: this.dataItem.cyclo,
       });
-    }
-    );
+
+      // Mise à jour des listes filtrées en cascade
+      this.updateCascadingDropdowns();
+
+      // Restaurer les valeurs des autocomplete
+      this.restoreAutocompleteValues();
+    });
   }
 
+  private updateCascadingDropdowns() {
+    const countryUuid = this.formGroup.get('country_uuid')?.value;
+    const provinceUuid = this.formGroup.get('province_uuid')?.value;
+    const areaUuid = this.formGroup.get('area_uuid')?.value;
+    const subAreaUuid = this.formGroup.get('sub_area_uuid')?.value;
+    const communeUuid = this.formGroup.get('commune_uuid')?.value;
+
+    if (countryUuid) {
+      this.updateProvinceList(countryUuid);
+    }
+    if (provinceUuid) {
+      this.updateAreaList(provinceUuid);
+      this.getAllASMByProvince(provinceUuid);
+    }
+    if (areaUuid) {
+      this.updateSubAreaList(areaUuid);
+      this.getAllSupByArea(areaUuid);
+    }
+    if (subAreaUuid) {
+      this.updateCommuneList(subAreaUuid);
+      this.getAllDrBySubArea(subAreaUuid);
+    }
+    if (communeUuid) {
+      this.getAllCycloByCommune(communeUuid);
+    }
+  }
+
+  private restoreAutocompleteValues() {
+    // Restaurer ASM
+    if (this.dataItem.asm_uuid && this.dataItem.asm) {
+      this.asmUserUUID = this.dataItem.asm_uuid;
+      this.asmFUserullName = this.dataItem.asm;
+      if (this.user_asm_uuid) {
+        this.user_asm_uuid.nativeElement.value = this.dataItem.asm;
+      }
+    }
+
+    // Restaurer Supervisor
+    if (this.dataItem.sup_uuid && this.dataItem.sup) {
+      this.supUserUUID = this.dataItem.sup_uuid;
+      this.supUserFullName = this.dataItem.sup;
+      if (this.user_sup_uuid) {
+        this.user_sup_uuid.nativeElement.value = this.dataItem.sup;
+      }
+    }
+
+    // Restaurer DR
+    if (this.dataItem.dr_uuid && this.dataItem.dr) {
+      this.drUserUUID = this.dataItem.dr_uuid;
+      this.drUserFullName = this.dataItem.dr;
+      if (this.user_dr_uuid) {
+        this.user_dr_uuid.nativeElement.value = this.dataItem.dr;
+      }
+    }
+
+    // Restaurer Cyclo
+    if (this.dataItem.cyclo_uuid && this.dataItem.cyclo) {
+      this.cycloUserUUID = this.dataItem.cyclo_uuid;
+      this.cycloUserFullName = this.dataItem.cyclo;
+      if (this.user_cyclo_uuid) {
+        this.user_cyclo_uuid.nativeElement.value = this.dataItem.cyclo;
+      }
+    }
+  }
 
   onCountryChange(event: any) {
-    const provinceArray = this.provinceList.filter((v) => v.country_uuid == event.value);
-    this.provinceListFilter = provinceArray.filter((obj, index, self) =>
-      index === self.findIndex((t) => t.name === obj.name)
-    );
-    // Reset ASM dropdown when country changes
-    this.filteredOptionASMs = [];
-    this.user_asm_uuid.nativeElement.value = '';
+    this.updateProvinceList(event.value);
+    this.resetDependentDropdowns('country');
   }
 
   onProvinceChange(event: any) {
-    const areaArray = this.areaList.filter((v) => v.province_uuid == event.value);
+    this.updateAreaList(event.value);
+    this.getAllASMByProvince(event.value);
+    this.resetDependentDropdowns('province');
+  }
+
+  onAreaChange(event: any) {
+    this.updateSubAreaList(event.value);
+    this.getAllSupByArea(event.value);
+    this.resetDependentDropdowns('area');
+  }
+
+  onSubAreaChange(event: any) {
+    this.updateCommuneList(event.value);
+    this.getAllDrBySubArea(event.value);
+    this.resetDependentDropdowns('subarea');
+  }
+
+  onCommuneChange(event: any) {
+    this.getAllCycloByCommune(event.value);
+    this.resetDependentDropdowns('commune');
+  }
+
+  private updateProvinceList(countryUuid: string) {
+    const provinceArray = this.provinceList.filter((v) => v.country_uuid == countryUuid);
+    this.provinceListFilter = provinceArray.filter((obj, index, self) =>
+      index === self.findIndex((t) => t.name === obj.name)
+    );
+  }
+
+  private updateAreaList(provinceUuid: string) {
+    const areaArray = this.areaList.filter((v) => v.province_uuid == provinceUuid);
     this.areaListFilter = areaArray.filter((obj, index, self) =>
       index === self.findIndex((t) => t.name === obj.name)
     );
-    
-    // Get ASM users for the selected province
-    this.getAllASMByProvince(event.value);
-    
-    // Reset dependent dropdowns
+  }
+
+  private updateSubAreaList(areaUuid: string) {
+    const subAreaArray = this.subAreaList.filter((v) => v.area_uuid == areaUuid);
+    this.subAreaListFilter = subAreaArray.filter((obj, index, self) =>
+      index === self.findIndex((t) => t.name === obj.name)
+    );
+  }
+
+  private updateCommuneList(subAreaUuid: string) {
+    const communeArray = this.communeList.filter((v) => v.sub_area_uuid == subAreaUuid);
+    this.communeListFilter = communeArray.filter((obj, index, self) =>
+      index === self.findIndex((t) => t.name === obj.name)
+    );
+  }
+
+  private resetDependentDropdowns(level: string) {
+    switch (level) {
+      case 'country':
+        // Reset province and all dependent
+        this.areaListFilter = [];
+        this.subAreaListFilter = [];
+        this.communeListFilter = [];
+        this.resetAllAutocomplete();
+        break;
+      case 'province':
+        // Reset area and all dependent
+        this.subAreaListFilter = [];
+        this.communeListFilter = [];
+        this.resetSupDrCycloAutocomplete();
+        break;
+      case 'area':
+        // Reset subarea and dependent
+        this.communeListFilter = [];
+        this.resetDrCycloAutocomplete();
+        break;
+      case 'subarea':
+        // Reset commune and dependent
+        this.resetCycloAutocomplete();
+        break;
+      case 'commune':
+        // No dependent dropdowns for commune
+        break;
+    }
+  }
+
+  private resetAllAutocomplete() {
+    this.filteredOptionASMs = [];
+    this.filteredOptionSups = [];
+    this.filteredOptionDrs = [];
+    this.filteredOptionCyclos = [];
+    this.clearAutocompleteInputs();
+  }
+
+  private resetSupDrCycloAutocomplete() {
     this.filteredOptionSups = [];
     this.filteredOptionDrs = [];
     this.filteredOptionCyclos = [];
     if (this.user_sup_uuid) this.user_sup_uuid.nativeElement.value = '';
     if (this.user_dr_uuid) this.user_dr_uuid.nativeElement.value = '';
     if (this.user_cyclo_uuid) this.user_cyclo_uuid.nativeElement.value = '';
+    this.supUserUUID = '';
+    this.supUserFullName = '';
+    this.drUserUUID = '';
+    this.drUserFullName = '';
+    this.cycloUserUUID = '';
+    this.cycloUserFullName = '';
   }
 
-  onAreaChange(event: any) {
-    const subAreaArray = this.subAreaList.filter((v) => v.area_uuid == event.value);
-    this.subAreaListFilter = subAreaArray.filter((obj, index, self) =>
-      index === self.findIndex((t) => t.name === obj.name)
-    );
-    
-    // Get Supervisor users for the selected area
-    this.getAllSupByArea(event.value);
-    
-    // Reset dependent dropdowns
+  private resetDrCycloAutocomplete() {
     this.filteredOptionDrs = [];
     this.filteredOptionCyclos = [];
     if (this.user_dr_uuid) this.user_dr_uuid.nativeElement.value = '';
     if (this.user_cyclo_uuid) this.user_cyclo_uuid.nativeElement.value = '';
+    this.drUserUUID = '';
+    this.drUserFullName = '';
+    this.cycloUserUUID = '';
+    this.cycloUserFullName = '';
   }
 
-  onSubAreaChange(event: any) {
-    const communeArray = this.communeList.filter((v) => v.sub_area_uuid == event.value);
-    this.communeListFilter = communeArray.filter((obj, index, self) =>
-      index === self.findIndex((t) => t.name === obj.name)
-    );
-    
-    // Get DR users for the selected subarea
-    this.getAllDrBySubArea(event.value);
-    
-    // Reset dependent dropdowns
+  private resetCycloAutocomplete() {
     this.filteredOptionCyclos = [];
     if (this.user_cyclo_uuid) this.user_cyclo_uuid.nativeElement.value = '';
+    this.cycloUserUUID = '';
+    this.cycloUserFullName = '';
   }
 
-  onCommuneChange(event: any) {
-    // Get Cyclo users for the selected commune
-    this.getAllCycloByCommune(event.value);
+  private clearAutocompleteInputs() {
+    if (this.user_asm_uuid) this.user_asm_uuid.nativeElement.value = '';
+    if (this.user_sup_uuid) this.user_sup_uuid.nativeElement.value = '';
+    if (this.user_dr_uuid) this.user_dr_uuid.nativeElement.value = '';
+    if (this.user_cyclo_uuid) this.user_cyclo_uuid.nativeElement.value = '';
+    this.asmUserUUID = '';
+    this.asmFUserullName = '';
+    this.supUserUUID = '';
+    this.supUserFullName = '';
+    this.drUserUUID = '';
+    this.drUserFullName = '';
+    this.cycloUserUUID = '';
+    this.cycloUserFullName = '';
   }
-
-
-
 
   getAllASM(): void {
-    const filterValue = this.user_asm_uuid?.nativeElement.value.toLowerCase();
+    const filterValue = this.user_asm_uuid?.nativeElement.value.toLowerCase() || '';
     this.isloadASM = true;
 
-    this.usersService.getPaginated2(1, 15, filterValue).subscribe({
+    this.usersService.getPaginated2(1, 100, '').subscribe({
       next: (res) => {
         this.userASMList = res.data;
         this.userASMListFilter = this.userASMList.filter((u) => u.role === 'ASM');
-        this.filteredOptionASMs = this.userASMList.filter(o => o.fullname!.toLowerCase().includes(filterValue));
+        this.filteredOptionASMs = this.userASMListFilter.filter(o => 
+          o.fullname!.toLowerCase().includes(filterValue)
+        );
         this.isloadASM = false;
       },
       error: (error) => {
         this.isloadASM = false;
         console.error('Error fetching user:', error);
-        this.toastr.error('Erreur lors de la récupération des marques.', 'Oupss!');
+        this.toastr.error('Erreur lors de la récupération des ASM.', 'Oupss!');
       }
     });
   }
 
   getAllASMByProvince(provinceUuid: string): void {
+    if (!provinceUuid) return;
+    
     const filterValue = this.user_asm_uuid?.nativeElement.value.toLowerCase() || '';
     this.isloadASM = true;
-
-    console.log('getAllASMByProvince called with provinceUuid:', provinceUuid);
 
     this.usersService.getPaginated2(1, 100, '').subscribe({
       next: (res) => {
         this.userASMList = res.data;
-        console.log('Total users fetched:', this.userASMList.length);
-        
-        // Filter by role ASM AND province
-        this.userASMListFilter = this.userASMList.filter((u) => {
-          const isASM = u.role === 'ASM';
-          const hasMatchingProvince = u.province_uuid === provinceUuid;
-          console.log(`User ${u.fullname}: role=${u.role}, province_uuid=${u.province_uuid}, isASM=${isASM}, hasMatchingProvince=${hasMatchingProvince}`);
-          return isASM && hasMatchingProvince;
-        });
-        
-        console.log('Filtered ASM users:', this.userASMListFilter.length);
+        this.userASMListFilter = this.userASMList.filter((u) => 
+          u.role === 'ASM' && u.province_uuid === provinceUuid
+        ); 
         
         this.filteredOptionASMs = this.userASMListFilter.filter(o => 
           o.fullname!.toLowerCase().includes(filterValue)
         );
-        
-        console.log('Final filtered ASMs for autocomplete:', this.filteredOptionASMs.length);
         this.isloadASM = false;
       },
       error: (error) => {
@@ -433,43 +540,41 @@ export class UserListComponent implements OnInit, AfterViewInit {
 
   optionSelectedASM(event: MatAutocompleteSelectedEvent) {
     const selectedOption = event.option.value;
+    console.log('Selected ASM:', selectedOption);
     this.asmUserUUID = selectedOption.uuid;
     this.asmFUserullName = selectedOption.fullname;
-
-    // Utilisez id et fullName comme vous le souhaitez
-    console.log('asmUserUUID:', this.asmUserUUID);
-    console.log('asmUserFullName:', this.asmFUserullName);
   }
-
-
 
   getAllSup(): void {
-    const filterValue = this.user_sup_uuid?.nativeElement.value.toLowerCase();
-    this.isloadSup = true;
-
-    this.usersService.getPaginated2(1, 15, filterValue).subscribe({
-      next: (res) => {
-        this.userSupList = res.data;
-        this.userSupListFilter = this.userSupList.filter((u) => u.role === 'Supervisor');
-        this.filteredOptionSups = this.userSupList.filter(o => o.fullname!.toLowerCase().includes(filterValue));
-        this.isloadSup = false;
-      },
-      error: (error) => {
-        this.isloadSup = false;
-        console.error('Error fetching user:', error);
-        this.toastr.error('Erreur lors de la récupération des marques.', 'Oupss!');
-      }
-    });
-  }
-
-  getAllSupByArea(areaUuid: string): void {
     const filterValue = this.user_sup_uuid?.nativeElement.value.toLowerCase() || '';
     this.isloadSup = true;
 
     this.usersService.getPaginated2(1, 100, '').subscribe({
       next: (res) => {
         this.userSupList = res.data;
-        // Filter by role Supervisor AND area
+        this.userSupListFilter = this.userSupList.filter((u) => u.role === 'Supervisor');
+        this.filteredOptionSups = this.userSupListFilter.filter(o => 
+          o.fullname!.toLowerCase().includes(filterValue)
+        );
+        this.isloadSup = false;
+      },
+      error: (error) => {
+        this.isloadSup = false;
+        console.error('Error fetching user:', error);
+        this.toastr.error('Erreur lors de la récupération des Supervisors.', 'Oupss!');
+      }
+    });
+  }
+
+  getAllSupByArea(areaUuid: string): void {
+    if (!areaUuid) return;
+
+    const filterValue = this.user_sup_uuid?.nativeElement.value.toLowerCase() || '';
+    this.isloadSup = true;
+
+    this.usersService.getPaginated2(1, 100, '').subscribe({
+      next: (res) => {
+        this.userSupList = res.data;
         this.userSupListFilter = this.userSupList.filter((u) => 
           u.role === 'Supervisor' && u.area_uuid === areaUuid
         );
@@ -494,58 +599,47 @@ export class UserListComponent implements OnInit, AfterViewInit {
     const selectedOption = event.option.value;
     this.supUserUUID = selectedOption.uuid;
     this.supUserFullName = selectedOption.fullname;
-
-    // Utilisez id et fullName comme vous le souhaitez
-    console.log('supUserUUID:', this.supUserUUID);
   }
 
-
-
   getAllDr(): void {
-    const filterValue = this.user_dr_uuid?.nativeElement.value.toLowerCase();
+    const filterValue = this.user_dr_uuid?.nativeElement.value.toLowerCase() || '';
     this.isloadDr = true;
 
-    this.usersService.getPaginated2(1, 15, filterValue).subscribe({
+    this.usersService.getPaginated2(1, 100, '').subscribe({
       next: (res) => {
         this.userDrList = res.data;
         this.userDrListFilter = this.userDrList.filter((u) => u.role === 'DR');
-        this.filteredOptionDrs = this.userDrList.filter(o => o.fullname!.toLowerCase().includes(filterValue));
+        this.filteredOptionDrs = this.userDrListFilter.filter(o => 
+          o.fullname!.toLowerCase().includes(filterValue)
+        );
         this.isloadDr = false;
       },
       error: (error) => {
         this.isloadDr = false;
         console.error('Error fetching user:', error);
-        this.toastr.error('Erreur lors de la récupération des marques.', 'Oupss!');
+        this.toastr.error('Erreur lors de la récupération des DR.', 'Oupss!');
       }
     });
   }
 
   getAllDrBySubArea(subAreaUuid: string): void {
+    if (!subAreaUuid) return;
+
     const filterValue = this.user_dr_uuid?.nativeElement.value.toLowerCase() || '';
     this.isloadDr = true;
-
-    console.log('getAllDrBySubArea called with subAreaUuid:', subAreaUuid);
 
     this.usersService.getPaginated2(1, 100, '').subscribe({
       next: (res) => {
         this.userDrList = res.data;
-        console.log('Total users fetched for DR:', this.userDrList.length);
-        
-        // Filter by role DR AND sub_area
         this.userDrListFilter = this.userDrList.filter((u) => {
           const isDR = u.role === 'DR';
           const hasMatchingSubArea = u.sub_area_uuid === subAreaUuid;
-          console.log(`User ${u.fullname}: role=${u.role}, sub_area_uuid=${u.sub_area_uuid}, isDR=${isDR}, hasMatchingSubArea=${hasMatchingSubArea}`);
           return isDR && hasMatchingSubArea;
         });
-        
-        console.log('Filtered DR users:', this.userDrListFilter.length);
         
         this.filteredOptionDrs = this.userDrListFilter.filter(o => 
           o.fullname!.toLowerCase().includes(filterValue)
         );
-        
-        console.log('Final filtered DRs for autocomplete:', this.filteredOptionDrs.length);
         this.isloadDr = false;
       },
       error: (error) => {
@@ -564,41 +658,38 @@ export class UserListComponent implements OnInit, AfterViewInit {
     const selectedOption = event.option.value;
     this.drUserUUID = selectedOption.uuid;
     this.drUserFullName = selectedOption.fullname;
-
-    // Utilisez id et fullName comme vous le souhaitez
-    console.log('drUserUUID:', this.drUserUUID);
   }
-
-
-
 
   getAllCyclo(): void {
-    const filterValue = this.user_cyclo_uuid?.nativeElement.value.toLowerCase();
-    this.isloadCyclo = true;
-
-    this.usersService.getPaginated2(1, 15, filterValue).subscribe({
-      next: (res) => {
-        this.userCycloList = res.data;
-        this.userCycloListFilter = this.userCycloList.filter((u) => u.role === 'Cyclo');
-        this.filteredOptionCyclos = this.userCycloList.filter(o => o.fullname!.toLowerCase().includes(filterValue));
-        this.isloadCyclo = false;
-      },
-      error: (error) => {
-        this.isloadCyclo = false;
-        console.error('Error fetching user:', error);
-        this.toastr.error('Erreur lors de la récupération des marques.', 'Oupss!');
-      }
-    });
-  }
-
-  getAllCycloByCommune(communeUuid: string): void {
     const filterValue = this.user_cyclo_uuid?.nativeElement.value.toLowerCase() || '';
     this.isloadCyclo = true;
 
     this.usersService.getPaginated2(1, 100, '').subscribe({
       next: (res) => {
         this.userCycloList = res.data;
-        // Filter by role Cyclo AND commune
+        this.userCycloListFilter = this.userCycloList.filter((u) => u.role === 'Cyclo');
+        this.filteredOptionCyclos = this.userCycloListFilter.filter(o => 
+          o.fullname!.toLowerCase().includes(filterValue)
+        );
+        this.isloadCyclo = false;
+      },
+      error: (error) => {
+        this.isloadCyclo = false;
+        console.error('Error fetching user:', error);
+        this.toastr.error('Erreur lors de la récupération des Cyclos.', 'Oupss!');
+      }
+    });
+  }
+
+  getAllCycloByCommune(communeUuid: string): void {
+    if (!communeUuid) return;
+
+    const filterValue = this.user_cyclo_uuid?.nativeElement.value.toLowerCase() || '';
+    this.isloadCyclo = true;
+
+    this.usersService.getPaginated2(1, 100, '').subscribe({
+      next: (res) => {
+        this.userCycloList = res.data;
         this.userCycloListFilter = this.userCycloList.filter((u) => 
           u.role === 'Cyclo' && u.commune_uuid === communeUuid
         );
@@ -623,13 +714,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
     const selectedOption = event.option.value;
     this.cycloUserUUID = selectedOption.uuid;
     this.cycloUserFullName = selectedOption.fullname;
-
-    // Utilisez id et fullName comme vous le souhaitez
-    console.log('cycloUserUUID:', this.cycloUserUUID);
   }
-
-
-
 
   onSubmit() {
     try {
@@ -650,24 +735,21 @@ export class UserListComponent implements OnInit, AfterViewInit {
           commune_uuid: this.formGroup.value.commune_uuid,
 
           support_uuuid: (this.currentUser.role === 'Support') ? this.currentUser.uuid : '',
-          support: (this.currentUser.role === 'Support') ? this.currentUser.fullname : '', // Pour le fullname
+          support: (this.currentUser.role === 'Support') ? this.currentUser.fullname : '',
           manager_uuid: '',
-          manager: '', // Pour le fullname
-          asm_uuid: this.asmUserUUID,
-          asm: this.asmFUserullName, // Pour le fullname
-          sup_uuid: this.supUserUUID,
-          sup: this.supUserFullName, // Pour le fullname
-          dr_uuid: this.drUserUUID,
-          dr: this.drUserFullName, // Pour le fullname
-          cyclo_uuid: this.cycloUserUUID,
-          cyclo: this.cycloUserFullName, // Pour le fullname
+          manager: '',
+          asm_uuid: this.asmUserUUID || '',
+          asm: this.asmFUserullName || '',
+          sup_uuid: this.supUserUUID || '',
+          sup: this.supUserFullName || '',
+          dr_uuid: this.drUserUUID || '',
+          dr: this.drUserFullName || '',
+          cyclo_uuid: this.cycloUserUUID || '',
+          cyclo: this.cycloUserFullName || '',
 
-          // pos_id: (this.isManager) ? 0 : parseInt(this.formGroup.value.pos_id),
-          role: this.formGroup.value.title, // Role et title c'est la meme chose mais le role cest pour le code source
+          role: this.formGroup.value.title,
           permission: this.formGroup.value.permission,
-          // image: this.imageUrl,  
           status: (this.formGroup.value.status) ? this.formGroup.value.status : false,
-          // is_manager: (this.formGroup.value.is_manager) ? this.formGroup.value.is_manager : false,
           signature: this.currentUser.fullname,
         };
         this.usersService.create(body).subscribe({
@@ -682,6 +764,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
               next: () => {
                 this.isLoading = false;
                 this.formGroup.reset();
+                this.clearAutocompleteInputs();
                 this.toastr.success('Ajouter avec succès!', 'Success!');
               },
               error: (err) => {
@@ -704,7 +787,6 @@ export class UserListComponent implements OnInit, AfterViewInit {
     }
   }
 
-
   onSubmitUpdate() {
     try {
       this.isLoading = true;
@@ -713,8 +795,6 @@ export class UserListComponent implements OnInit, AfterViewInit {
         email: this.formGroup.value.email,
         title: this.formGroup.value.title,
         phone: this.formGroup.value.phone,
-        // password: this.formGroup.value.password,
-        // password_confirm: this.formGroup.value.password_confirm,
 
         country_uuid: this.formGroup.value.country_uuid,
         province_uuid: this.formGroup.value.province_uuid,
@@ -723,22 +803,20 @@ export class UserListComponent implements OnInit, AfterViewInit {
         commune_uuid: this.formGroup.value.commune_uuid,
 
         support_uuuid: (this.currentUser.role === 'Support') ? this.currentUser.uuid : '',
-        support: (this.currentUser.role === 'Support') ? this.currentUser.fullname : '', // Pour le fullname
+        support: (this.currentUser.role === 'Support') ? this.currentUser.fullname : '',
         manager_uuid: '',
-        manager: '', // Pour le fullname
-        asm_uuid: this.asmUserUUID,
-        asm: this.asmFUserullName, // Pour le fullname
-        sup_uuid: this.supUserUUID,
-        sup: this.supUserFullName, // Pour le fullname
-        dr_uuid: this.drUserUUID,
-        dr: this.drUserFullName, // Pour le fullname
-        cyclo_uuid: this.cycloUserUUID,
-        cyclo: this.cycloUserFullName, // Pour le fullname
+        manager: '',
+        asm_uuid: this.asmUserUUID || '',
+        asm: this.asmFUserullName || '',
+        sup_uuid: this.supUserUUID || '',
+        sup: this.supUserFullName || '',
+        dr_uuid: this.drUserUUID || '',
+        dr: this.drUserFullName || '',
+        cyclo_uuid: this.cycloUserUUID || '',
+        cyclo: this.cycloUserFullName || '',
 
-        // pos_id: (this.isManager) ? 0 : parseInt(this.formGroup.value.pos_id),
-        role: this.formGroup.value.title, // Role et title c'est la meme chose mais le role cest pour le code source
+        role: this.formGroup.value.title,
         permission: this.formGroup.value.permission,
-        // image: this.imageUrl,  
         status: (this.formGroup.value.status) ? this.formGroup.value.status : false,
         signature: this.currentUser.fullname,
       };
@@ -754,6 +832,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
             ).subscribe({
               next: () => {
                 this.formGroup.reset();
+                this.clearAutocompleteInputs();
                 this.toastr.success('Modification enregistré!', 'Success!');
                 this.isLoading = false;
               },
@@ -775,9 +854,6 @@ export class UserListComponent implements OnInit, AfterViewInit {
       console.log(error);
     }
   }
-
-
-
 
   delete(): void {
     this.usersService
@@ -802,18 +878,13 @@ export class UserListComponent implements OnInit, AfterViewInit {
               console.log(err);
             }
           });
-
         },
         error: err => {
           this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
           console.log(err);
         }
-      }
-      );
+      });
   }
-
-
-
 
   compareFn(c1: ICountry, c2: ICountry): boolean {
     return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
@@ -835,14 +906,11 @@ export class UserListComponent implements OnInit, AfterViewInit {
     return c1 && c2 ? c1.ID === c2.ID : c1 === c2;
   }
 
-  // New methods for geographical filtering
   onASMInputChange(): void {
     const selectedProvinceUuid = this.formGroup.get('province_uuid')?.value;
-    console.log('onASMInputChange - selectedProvinceUuid:', selectedProvinceUuid);
     if (selectedProvinceUuid) {
       this.getAllASMByProvince(selectedProvinceUuid);
     } else {
-      console.log('No province selected, using getAllASM');
       this.getAllASM();
     }
   }
@@ -858,11 +926,9 @@ export class UserListComponent implements OnInit, AfterViewInit {
 
   onDrInputChange(): void {
     const selectedSubAreaUuid = this.formGroup.get('sub_area_uuid')?.value;
-    console.log('onDrInputChange - selectedSubAreaUuid:', selectedSubAreaUuid);
     if (selectedSubAreaUuid) {
       this.getAllDrBySubArea(selectedSubAreaUuid);
     } else {
-      console.log('No sub area selected, using getAllDr');
       this.getAllDr();
     }
   }

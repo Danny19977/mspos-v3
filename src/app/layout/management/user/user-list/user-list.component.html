@@ -36,7 +36,7 @@
               </div>
               <div class="col-sm-8">
                 <div class="d-flex align-items-center flex-wrap row-gap-2 justify-content-sm-end">
-                  <div class="dropdown me-2">
+                  <!-- <div class="dropdown me-2">
                     <a href="javascript:void(0);" class="dropdown-toggle" data-bs-toggle="dropdown"><i
                         class="ti ti-package-export me-2"></i>Export</a>
                     <div class="dropdown-menu dropdown-menu-end">
@@ -52,7 +52,7 @@
                         </li>
                       </ul>
                     </div>
-                  </div>
+                  </div> -->
                   @if(currentUser.permission === 'ALL' ||
                   currentUser.permission === 'VAE' ||
                   currentUser.permission === 'VA') {
@@ -414,7 +414,8 @@
         <div class="col-md-6">
           <div class="mb-3">
             <label class="col-form-label" for="user_asm_uuid">ASM <span class="text-danger">*</span></label>
-            <input #user_asm_uuid type="text" matInput [matAutocomplete]="autopos3" placeholder="Selectionner le user"
+            <input #user_asm_uuid type="text" matInput [matAutocomplete]="autopos3" 
+            placeholder="Selectionner l'ASM"
               class="form-control" (input)="onASMInputChange()" (focus)="onASMInputChange()">
             @if (isloadASM) {
             <div class="d-flex align-items-center">
@@ -422,7 +423,8 @@
               <div class="spinner-border ms-auto" aria-hidden="true"></div>
             </div>
             }
-            <mat-autocomplete requireSelection #autopos3="matAutocomplete" (optionSelected)="optionSelectedASM($event)"
+            <mat-autocomplete requireSelection #autopos3="matAutocomplete" 
+            (optionSelected)="optionSelectedASM($event)"
               [displayWith]="displayFnASM">
               @for (item of filteredOptionASMs; track item.uuid) {
               <mat-option [value]="item">{{item.fullname}}</mat-option>
@@ -449,7 +451,7 @@
             <label class="col-form-label" for="user_sup_uuid">
               Supervisor
               <span class="text-danger">*</span></label>
-            <input #user_sup_uuid type="text" matInput [matAutocomplete]="autopos4" placeholder="Selectionner le user"
+            <input #user_sup_uuid type="text" matInput [matAutocomplete]="autopos4" placeholder="Selectionner le Superviseur"
               class="form-control" (input)="onSupInputChange()" (focus)="onSupInputChange()">
             @if (isloadSup) {
             <div class="d-flex align-items-center">

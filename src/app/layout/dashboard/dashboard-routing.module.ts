@@ -12,6 +12,7 @@ import { SosDashboardComponent } from './sos-dashboard/sos-dashboard.component';
 import { SeDashboardComponent } from './se-dashboard/se-dashboard.component';
 import { GoogleMapComponent } from './google-map/google-map.component';
 import { KpiDashboardComponent } from './kpi-dashboard/kpi-dashboard.component';
+import { SummaryDashboardComponent } from './summary-dashboard/summary-dashboard.component';
 import { NdTableViewAreaComponent } from './nd-dashboard/nd-table-view-area/nd-table-view-area.component';
 import { NdTableViewSubareaComponent } from './nd-dashboard/nd-table-view-subarea/nd-table-view-subarea.component';
 import { NdTableViewCommuneComponent } from './nd-dashboard/nd-table-view-commune/nd-table-view-commune.component';
@@ -199,6 +200,10 @@ const routes: Routes = [
       {
         path: 'google-maps',
         component: GoogleMapComponent,
+      },
+      {
+        path: 'summary',
+        component: SummaryDashboardComponent,
       },
       
     ],

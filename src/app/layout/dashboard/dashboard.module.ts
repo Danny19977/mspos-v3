@@ -56,7 +56,9 @@ import { NdService } from './services/nd.service';
 import { SaleEvolutionService } from './services/sale-evolution.service';
 import { SosService } from './services/sos.service';
 import { SummaryService } from './services/summary.service';
+import { SummaryDashboardService } from './services/summary-dashboard.service';
 import { KpiTableViewCountryComponent } from './kpi-dashboard/kpi-table-view-country/kpi-table-view-country.component';
+import { SummaryDashboardComponent } from './summary-dashboard/summary-dashboard.component';
 
 @NgModule({
   declarations: [
@@ -106,6 +108,7 @@ import { KpiTableViewCountryComponent } from './kpi-dashboard/kpi-table-view-cou
     KpiTableViewProvinceComponent,
     KpiTableViewSubareaComponent,
     KpiTableViewCountryComponent,
+    SummaryDashboardComponent,
   ],
   imports: [
     CommonModule,
@@ -121,6 +124,7 @@ import { KpiTableViewCountryComponent } from './kpi-dashboard/kpi-table-view-cou
     SaleEvolutionService,
     SosService,
     SummaryService,
+    SummaryDashboardService,
   ]
 })
 export class DashboardModule { }

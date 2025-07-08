@@ -42,6 +42,9 @@ export class routes {
   public static get msposDashboard(): string {
     return this.dashboard + '/mspos-dashboard';
   }
+  public static get summaryDashboard(): string {
+    return this.dashboard + '/summary';
+  }
   public static get ndDashboard(): string {
     return this.dashboard + '/numeric-distribution';
   }
