@@ -57,7 +57,7 @@
                   currentUser.permission === 'VAE' ||
                   currentUser.permission === 'VA') {
                   <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="offcanvas"
-                    data-bs-target="#offcanvas_add"><i class="ti ti-square-rounded-plus me-2"></i>Add user</a>
+                    data-bs-target="#offcanvas_add" (click)="initializeAddForm()"><i class="ti ti-square-rounded-plus me-2"></i>Add user</a>
                   }
                 </div>
               </div>
@@ -284,35 +284,46 @@
 <!-- Add User -->
 <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add">
   <div class="offcanvas-header border-bottom">
-    <h5 class="fw-semibold">Add New User</h5>
+    <h5 class="fw-semibold">
+      @if (currentStep === 1) {
+        Ajouter un utilisateur - Étape 1: Informations de base
+      }
+      @if (currentStep === 2) {
+        Ajouter un utilisateur - Étape 2: Attribution des rôles
+      }
+    </h5>
     <button type="button"
       class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle"
-      data-bs-dismiss="offcanvas" aria-label="Close">
+      data-bs-dismiss="offcanvas" aria-label="Close" (click)="resetFormSteps()">
       <i class="ti ti-x"></i>
     </button>
   </div>
   <div class="offcanvas-body">
-    <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+    
+    <!-- Step 1: Basic Information + Territory -->
+    @if (currentStep === 1) {
+    <form [formGroup]="step1FormGroup" (ngSubmit)="onSubmitStep1()">
       <div class="row">
+        <!-- Basic Information -->
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label" for="user">Fullname <span class="text-danger">*</span></label>
+            <label class="col-form-label" for="user">Nom complet <span class="text-danger">*</span></label>
             <input type="text" class="form-control" formControlName="fullname" required />
-            <mat-error *ngIf="formGroup.controls['fullname'].hasError('required')">
-              Ce champs est obligatoire
+            <mat-error *ngIf="step1FormGroup.controls['fullname'].hasError('required')">
+              Ce champ est obligatoire
             </mat-error>
           </div>
         </div>
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label" for="location">Title <span class="text-danger">*</span></label>
-            <mat-select class="select custom-mat-select" placeholder="Choose title" formControlName="title" required>
+            <label class="col-form-label" for="location">Titre <span class="text-danger">*</span></label>
+            <mat-select class="select custom-mat-select" placeholder="Choisir le titre" formControlName="title" required>
               @for (item of isTitleList; track item) {
               <mat-option value="{{item}}">{{item}}</mat-option>
               }
             </mat-select>
-            <mat-error *ngIf="formGroup.controls['title'].hasError('required')">
-              Ce champs est obligatoire
+            <mat-error *ngIf="step1FormGroup.controls['title'].hasError('required')">
+              Ce champ est obligatoire
             </mat-error>
           </div>
         </div>
@@ -321,78 +332,81 @@
             <div class="d-flex justify-content-between align-items-center">
               <label class="col-form-label" for="email">Email <span class="text-danger">*</span></label>
             </div>
-            <input type="text" class="form-control" formControlName="email" required />
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="col-form-label" for="phone">Phone
-              <span class="text-danger">*</span>
-            </label>
-            <input type="text" class="form-control" formControlName="phone" required />
-            <mat-error *ngIf="formGroup.controls['phone'].hasError('required')">
-              Ce champs est obligatoire
+            <input type="email" class="form-control" formControlName="email" required />
+            <mat-error *ngIf="step1FormGroup.controls['email'].hasError('required')">
+              Ce champ est obligatoire
             </mat-error>
           </div>
         </div>
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label" for="Password">Password <span class="text-danger">*</span></label>
+            <label class="col-form-label" for="phone">Téléphone <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" formControlName="phone" required />
+            <mat-error *ngIf="step1FormGroup.controls['phone'].hasError('required')">
+              Ce champ est obligatoire
+            </mat-error>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label" for="Password">Mot de passe <span class="text-danger">*</span></label>
             <div class="icon-form-end">
               <span class="form-icon" (click)="togglePassword(1)" tabindex="0"><i class="ti"
                   [ngClass]="password[1] ? 'ti-eye' : 'ti-eye-off'"></i></span>
               <input [type]="password[1] ? 'text' : 'password'" class="form-control" formControlName="password"
                 required />
-              <mat-error *ngIf="formGroup.controls['password'].hasError('required')">
-                Ce champs est obligatoire
+              <mat-error *ngIf="step1FormGroup.controls['password'].hasError('required')">
+                Ce champ est obligatoire
               </mat-error>
             </div>
           </div>
         </div>
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label" for="text">Repeat Password <span class="text-danger">*</span></label>
+            <label class="col-form-label" for="text">Confirmer le mot de passe <span class="text-danger">*</span></label>
             <div class="icon-form-end">
               <span class="form-icon" (click)="togglePassword(2)" (keydown.enter)="togglePassword(2)" tabindex="0"><i
                   class="ti" [ngClass]="password[2] ? 'ti-eye' : 'ti-eye-off'"></i></span>
               <input [type]="password[2] ? 'text' : 'password'" class="form-control" formControlName="password_confirm"
                 required />
-              <mat-error *ngIf="formGroup.controls['password_confirm'].hasError('required')">
-                Ce champs est obligatoire
+              <mat-error *ngIf="step1FormGroup.controls['password_confirm'].hasError('required')">
+                Ce champ est obligatoire
               </mat-error>
             </div>
           </div>
         </div>
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label" for="permission">
-              Permission
-              <span class="text-danger">*</span>
-            </label>
-            <mat-select class="select custom-mat-select" formControlName="permission" placeholder="Choose permission">
+            <label class="col-form-label" for="permission">Permission <span class="text-danger">*</span></label>
+            <mat-select class="select custom-mat-select" formControlName="permission" placeholder="Choisir permission">
               @for (item of permissionList; track item) {
               <mat-option value="{{item.name}}">{{item.name}} => "{{item.desc}}"</mat-option>
               }
             </mat-select>
-            <mat-error *ngIf="formGroup.controls['permission'].hasError('required')">
-              Ce champs est obligatoire
+            <mat-error *ngIf="step1FormGroup.controls['permission'].hasError('required')">
+              Ce champ est obligatoire
             </mat-error>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-6">
           <div class="mt-3 mb-3">
-            <label class="col-form-label" for="statususer">Status user <span class="text-danger">*</span></label>
+            <label class="col-form-label" for="statususer">Statut utilisateur</label>
             <div class="status-toggle">
               <input type="checkbox" id="statususer" class="check form-control" formControlName="status">
               <label for="statususer" class="checktoggle"></label>
             </div>
           </div>
         </div>
+
+        <!-- Territory Information -->
+        <div class="col-md-12">
+          <h6 class="mt-4 mb-3">Informations territoriales</h6>
+        </div>
         <div class="col-md-12">
           <div class="mb-3">
             <label class="col-form-label" for="country">Pays <span class="text-danger">*</span></label>
             <mat-select [compareWith]="compareFn" class="select custom-mat-select" formControlName="country_uuid"
-              placeholder="Choose pays" (selectionChange)="onCountryChange($event)">
+              placeholder="Choisir le pays" (selectionChange)="onStep1CountryChange($event)">
               @for (item of countryList; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
               }
@@ -403,9 +417,9 @@
           <div class="mb-3">
             <label class="col-form-label" for="location">Province <span class="text-danger">*</span></label>
             <mat-select [compareWith]="compareFnProvince" class="select custom-mat-select"
-              formControlName="province_uuid" placeholder="Choose province"
-              (selectionChange)="onProvinceChange($event)">
-              @for (item of provinceList; track item) {
+              formControlName="province_uuid" placeholder="Choisir la province"
+              (selectionChange)="onStep1ProvinceChange($event)">
+              @for (item of provinceListFilter; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
               }
             </mat-select>
@@ -413,10 +427,72 @@
         </div>
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label" for="user_asm_uuid">ASM <span class="text-danger">*</span></label>
+            <label class="col-form-label" for="area_uuid">Area <span class="text-danger">*</span></label>
+            <mat-select [compareWith]="compareFnArea" class="select custom-mat-select" formControlName="area_uuid"
+              placeholder="Choisir l'area" (selectionChange)="onStep1AreaChange($event)">
+              @for (item of areaListFilter; track item) {
+              <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
+              }
+            </mat-select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label" for="sub_area_uuid">SubArea <span class="text-danger">*</span></label>
+            <mat-select [compareWith]="compareFnSubArea" class="select custom-mat-select"
+              formControlName="sub_area_uuid" placeholder="Choisir la subarea" (selectionChange)="onStep1SubAreaChange($event)">
+              @for (item of subAreaListFilter; track item) {
+              <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
+              }
+            </mat-select>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label" for="commune_uuid">Commune <span class="text-danger">*</span></label>
+            <mat-select [compareWith]="compareFnCommune" class="select custom-mat-select" formControlName="commune_uuid"
+              placeholder="Choisir la commune" (selectionChange)="onStep1CommuneChange($event)">
+              @for (item of communeListFilter; track item) {
+              <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
+              }
+            </mat-select>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex align-items-center justify-content-end">
+        <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="offcanvas" (click)="resetFormSteps()">Annuler</a>
+        @if (isLoading) {
+        <button disabled class="btn btn-primary">
+          <div class="spinner-border" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </button>
+        }
+        @if (!isLoading) {
+        <button type="submit" class="btn btn-primary">Créer et continuer</button>
+        }
+      </div>
+    </form>
+    }
+
+    <!-- Step 2: Hierarchical Assignments -->
+    @if (currentStep === 2) {
+    <form [formGroup]="step2FormGroup" (ngSubmit)="onSubmitStep2()">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="alert alert-info">
+            <i class="ti ti-info-circle me-2"></i>
+            Utilisateur <strong>{{step1UserData?.fullname}}</strong> créé avec succès!<br>
+            Maintenant, attribuez les rôles hiérarchiques basés sur son territoire.
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label" for="user_asm_uuid">ASM (Basé sur Province: {{step1UserData?.Province?.name || 'Province sélectionnée'}})</label>
             <input #user_asm_uuid type="text" matInput [matAutocomplete]="autopos3" 
-            placeholder="Selectionner l'ASM"
-              class="form-control" (input)="onASMInputChange()" (focus)="onASMInputChange()">
+            placeholder="Sélectionner l'ASM"
+              class="form-control" (input)="onASMInputChange()" (focus)="onASMFocus()">
             @if (isloadASM) {
             <div class="d-flex align-items-center">
               <strong role="status">Loading...</strong>
@@ -432,27 +508,12 @@
             </mat-autocomplete>
           </div>
         </div>
+        
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label" for="area_uuid">
-              Area
-              <span class="text-danger">*</span>
-            </label>
-            <mat-select [compareWith]="compareFnArea" class="select custom-mat-select" formControlName="area_uuid"
-              placeholder="Choose area" (selectionChange)="onAreaChange($event)">
-              @for (item of areaListFilter; track item) {
-              <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
-              }
-            </mat-select>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="col-form-label" for="user_sup_uuid">
-              Supervisor
-              <span class="text-danger">*</span></label>
-            <input #user_sup_uuid type="text" matInput [matAutocomplete]="autopos4" placeholder="Selectionner le Superviseur"
-              class="form-control" (input)="onSupInputChange()" (focus)="onSupInputChange()">
+            <label class="col-form-label" for="user_sup_uuid">Supervisor (Basé sur Area: {{step1UserData?.Area?.name || 'Area sélectionnée'}})</label>
+            <input #user_sup_uuid type="text" matInput [matAutocomplete]="autopos4" placeholder="Sélectionner le Superviseur"
+              class="form-control" (input)="onSupInputChange()" (focus)="onSupFocus()">
             @if (isloadSup) {
             <div class="d-flex align-items-center">
               <strong role="status">Loading...</strong>
@@ -467,25 +528,12 @@
             </mat-autocomplete>
           </div>
         </div>
+
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label" for="sub_area_uuid">
-              SubArea
-              <span class="text-danger">*</span>
-            </label>
-            <mat-select [compareWith]="compareFnSubArea" class="select custom-mat-select"
-              formControlName="sub_area_uuid" placeholder="Choose subarea" (selectionChange)="onSubAreaChange($event)">
-              @for (item of subAreaListFilter; track item) {
-              <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
-              }
-            </mat-select>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="col-form-label" for="user_dr_uuid">DR <span class="text-danger">*</span></label>
-            <input #user_dr_uuid type="text" matInput [matAutocomplete]="autopos5" placeholder="Selectionner le user"
-              class="form-control" (input)="onDrInputChange()" (focus)="onDrInputChange()">
+            <label class="col-form-label" for="user_dr_uuid">DR (Basé sur SubArea: {{step1UserData?.SubArea?.name || 'SubArea sélectionnée'}})</label>
+            <input #user_dr_uuid type="text" matInput [matAutocomplete]="autopos5" placeholder="Sélectionner le DR"
+              class="form-control" (input)="onDrInputChange()" (focus)="onDrFocus()">
             @if (isloadDr) {
             <div class="d-flex align-items-center">
               <strong role="status">Loading...</strong>
@@ -500,27 +548,12 @@
             </mat-autocomplete>
           </div>
         </div>
+
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label" for="commune_uuid">
-              Communes
-              <span class="text-danger">*</span>
-            </label>
-            <mat-select [compareWith]="compareFnCommune" class="select custom-mat-select" formControlName="commune_uuid"
-              placeholder="Choose commune" (selectionChange)="onCommuneChange($event)">
-              @for (item of communeListFilter; track item) {
-              <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
-              }
-            </mat-select>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="col-form-label" for="text">
-              Cyclos
-              <span class="text-danger">*</span></label>
-            <input #user_cyclo_uuid type="text" matInput [matAutocomplete]="autopos6" placeholder="Selectionner le user"
-              class="form-control" (input)="onCycloInputChange()" (focus)="onCycloInputChange()">
+            <label class="col-form-label" for="user_cyclo_uuid">Cyclo (Basé sur Commune: {{step1UserData?.Commune?.name || 'Commune sélectionnée'}})</label>
+            <input #user_cyclo_uuid type="text" matInput [matAutocomplete]="autopos6" placeholder="Sélectionner le Cyclo"
+              class="form-control" (input)="onCycloInputChange()" (focus)="onCycloFocus()">
             @if (isloadCyclo) {
             <div class="d-flex align-items-center">
               <strong role="status">Loading...</strong>
@@ -536,58 +569,74 @@
           </div>
         </div>
       </div>
-      <div class="d-flex align-items-center justify-content-end">
-        <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="offcanvas">Annuler</a>
-        @if (isLoading) {
-        <button disabled class="btn btn-primary">
-          <div class="spinner-border" role="status">
-            <span class="visually-hidden">Loading...</span>
-          </div>
+      <div class="d-flex align-items-center justify-content-between">
+        <button type="button" class="btn btn-outline-primary" (click)="goToStep1()">
+          <i class="ti ti-arrow-left me-2"></i>Retour
         </button>
-        }
-        @if (!isLoading) {
-        <button type="submit" class="btn btn-primary" data-bs-target="#create_success">Create</button>
-        }
+        <div>
+          <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="offcanvas" (click)="resetFormSteps()">Terminer plus tard</a>
+          @if (isLoading) {
+          <button disabled class="btn btn-success">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </button>
+          }
+          @if (!isLoading) {
+          <button type="submit" class="btn btn-success">Finaliser</button>
+          }
+        </div>
       </div>
     </form>
+    }
   </div>
 </div>
 <!-- /Add User -->
 
 
-<!-- Edit Contracts -->
+<!-- Edit User -->
 <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_edit">
-
   <div class="offcanvas-header border-bottom">
-    <h4>Edit User</h4>
+    <h5 class="fw-semibold">
+      @if (currentEditStep === 1) {
+        Modifier un utilisateur - Étape 1: Informations de base
+      }
+      @if (currentEditStep === 2) {
+        Modifier un utilisateur - Étape 2: Attribution des rôles
+      }
+    </h5>
     <button type="button"
       class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle"
-      data-bs-dismiss="offcanvas" aria-label="Close">
+      data-bs-dismiss="offcanvas" aria-label="Close" (click)="resetEditFormSteps()">
       <i class="ti ti-x"></i>
     </button>
   </div>
   <div class="offcanvas-body">
-    <form [formGroup]="formGroup" (ngSubmit)="onSubmitUpdate()">
+    
+    <!-- Edit Step 1: Basic Information + Territory -->
+    @if (currentEditStep === 1) {
+    <form [formGroup]="formGroup" (ngSubmit)="onSubmitEditStep1()">
       <div class="row">
+        <!-- Basic Information -->
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label" for="user">Fullname <span class="text-danger">*</span></label>
+            <label class="col-form-label" for="user">Nom complet <span class="text-danger">*</span></label>
             <input type="text" class="form-control" formControlName="fullname" required />
             <mat-error *ngIf="formGroup.controls['fullname'].hasError('required')">
-              Ce champs est obligatoire
+              Ce champ est obligatoire
             </mat-error>
           </div>
         </div>
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label" for="location">Title <span class="text-danger">*</span></label>
-            <mat-select class="select custom-mat-select" placeholder="Choose title" formControlName="title" required>
+            <label class="col-form-label" for="location">Titre <span class="text-danger">*</span></label>
+            <mat-select class="select custom-mat-select" placeholder="Choisir le titre" formControlName="title" required>
               @for (item of isTitleList; track item) {
               <mat-option value="{{item}}">{{item}}</mat-option>
               }
             </mat-select>
             <mat-error *ngIf="formGroup.controls['title'].hasError('required')">
-              Ce champs est obligatoire
+              Ce champ est obligatoire
             </mat-error>
           </div>
         </div>
@@ -596,50 +645,53 @@
             <div class="d-flex justify-content-between align-items-center">
               <label class="col-form-label" for="email">Email <span class="text-danger">*</span></label>
             </div>
-            <input type="text" class="form-control" formControlName="email" required />
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="col-form-label" for="phone">Phone
-              <span class="text-danger">*</span>
-            </label>
-            <input type="text" class="form-control" formControlName="phone" required />
-            <mat-error *ngIf="formGroup.controls['phone'].hasError('required')">
-              Ce champs est obligatoire
+            <input type="email" class="form-control" formControlName="email" required />
+            <mat-error *ngIf="formGroup.controls['email'].hasError('required')">
+              Ce champ est obligatoire
             </mat-error>
           </div>
         </div>
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label" for="permission">
-              Permission
-              <span class="text-danger">*</span>
-            </label>
-            <mat-select class="select custom-mat-select" formControlName="permission" placeholder="Choose permission">
+            <label class="col-form-label" for="phone">Téléphone <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" formControlName="phone" required />
+            <mat-error *ngIf="formGroup.controls['phone'].hasError('required')">
+              Ce champ est obligatoire
+            </mat-error>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label" for="permission">Permission <span class="text-danger">*</span></label>
+            <mat-select class="select custom-mat-select" formControlName="permission" placeholder="Choisir permission">
               @for (item of permissionList; track item) {
               <mat-option value="{{item.name}}">{{item.name}} => "{{item.desc}}"</mat-option>
               }
             </mat-select>
             <mat-error *ngIf="formGroup.controls['permission'].hasError('required')">
-              Ce champs est obligatoire
+              Ce champ est obligatoire
             </mat-error>
           </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-6">
           <div class="mt-3 mb-3">
-            <label class="col-form-label" for="statususer">Status user <span class="text-danger">*</span></label>
+            <label class="col-form-label" for="statususer">Statut utilisateur</label>
             <div class="status-toggle">
               <input type="checkbox" id="statususer" class="check form-control" formControlName="status">
               <label for="statususer" class="checktoggle"></label>
             </div>
           </div>
         </div>
+
+        <!-- Territory Information -->
+        <div class="col-md-12">
+          <h6 class="mt-4 mb-3">Informations territoriales</h6>
+        </div>
         <div class="col-md-12">
           <div class="mb-3">
             <label class="col-form-label" for="country">Pays <span class="text-danger">*</span></label>
             <mat-select [compareWith]="compareFn" class="select custom-mat-select" formControlName="country_uuid"
-              placeholder="Choose pays" (selectionChange)="onCountryChange($event)">
+              placeholder="Choisir le pays" (selectionChange)="onCountryChange($event)">
               @for (item of countryList; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
               }
@@ -650,9 +702,9 @@
           <div class="mb-3">
             <label class="col-form-label" for="location">Province <span class="text-danger">*</span></label>
             <mat-select [compareWith]="compareFnProvince" class="select custom-mat-select"
-              formControlName="province_uuid" placeholder="Choose province"
+              formControlName="province_uuid" placeholder="Choisir la province"
               (selectionChange)="onProvinceChange($event)">
-              @for (item of provinceList; track item) {
+              @for (item of provinceListFilter; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
               }
             </mat-select>
@@ -660,31 +712,9 @@
         </div>
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label" for="user_asm_uuid">ASM <span class="text-danger">*</span></label>
-            <input #user_asm_uuid type="text" matInput [matAutocomplete]="autopos3" placeholder="Selectionner le user"
-              class="form-control" (input)="onASMInputChange()" (focus)="onASMInputChange()">
-            @if (isloadASM) {
-            <div class="d-flex align-items-center">
-              <strong role="status">Loading...</strong>
-              <div class="spinner-border ms-auto" aria-hidden="true"></div>
-            </div>
-            }
-            <mat-autocomplete requireSelection #autopos3="matAutocomplete" (optionSelected)="optionSelectedASM($event)"
-              [displayWith]="displayFnASM">
-              @for (item of filteredOptionASMs; track item.uuid) {
-              <mat-option [value]="item">{{item.fullname}}</mat-option>
-              }
-            </mat-autocomplete>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="col-form-label" for="area_uuid">
-              Area
-              <span class="text-danger">*</span>
-            </label>
+            <label class="col-form-label" for="area_uuid">Area <span class="text-danger">*</span></label>
             <mat-select [compareWith]="compareFnArea" class="select custom-mat-select" formControlName="area_uuid"
-              placeholder="Choose area" (selectionChange)="onAreaChange($event)">
+              placeholder="Choisir l'area" (selectionChange)="onAreaChange($event)">
               @for (item of areaListFilter; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
               }
@@ -693,33 +723,9 @@
         </div>
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label" for="user_sup_uuid">
-              Supervisor
-              <span class="text-danger">*</span></label>
-            <input #user_sup_uuid type="text" matInput [matAutocomplete]="autopos4" placeholder="Selectionner le user"
-              class="form-control" (input)="onSupInputChange()" (focus)="onSupInputChange()">
-            @if (isloadSup) {
-            <div class="d-flex align-items-center">
-              <strong role="status">Loading...</strong>
-              <div class="spinner-border ms-auto" aria-hidden="true"></div>
-            </div>
-            }
-            <mat-autocomplete requireSelection #autopos4="matAutocomplete" (optionSelected)="optionSelectedSup($event)"
-              [displayWith]="displayFnSup">
-              @for (item of filteredOptionSups; track item.uuid) {
-              <mat-option [value]="item">{{item.fullname}}</mat-option>
-              }
-            </mat-autocomplete>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="col-form-label" for="sub_area_uuid">
-              SubArea
-              <span class="text-danger">*</span>
-            </label>
+            <label class="col-form-label" for="sub_area_uuid">SubArea <span class="text-danger">*</span></label>
             <mat-select [compareWith]="compareFnSubArea" class="select custom-mat-select"
-              formControlName="sub_area_uuid" placeholder="Choose subarea" (selectionChange)="onSubAreaChange($event)">
+              formControlName="sub_area_uuid" placeholder="Choisir la subarea" (selectionChange)="onSubAreaChange($event)">
               @for (item of subAreaListFilter; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
               }
@@ -728,61 +734,18 @@
         </div>
         <div class="col-md-6">
           <div class="mb-3">
-            <label class="col-form-label" for="user_dr_uuid">DR <span class="text-danger">*</span></label>
-            <input #user_dr_uuid type="text" matInput [matAutocomplete]="autopos5" placeholder="Selectionner le user"
-              class="form-control" (input)="onDrInputChange()" (focus)="onDrInputChange()">
-            @if (isloadDr) {
-            <div class="d-flex align-items-center">
-              <strong role="status">Loading...</strong>
-              <div class="spinner-border ms-auto" aria-hidden="true"></div>
-            </div>
-            }
-            <mat-autocomplete requireSelection #autopos5="matAutocomplete" (optionSelected)="optionSelectedDr($event)"
-              [displayWith]="displayFnDr">
-              @for (item of filteredOptionDrs; track item.uuid) {
-              <mat-option [value]="item">{{item.fullname}}</mat-option>
-              }
-            </mat-autocomplete>
-          </div>
-        </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="col-form-label" for="commune_uuid">
-              Communes
-              <span class="text-danger">*</span>
-            </label>
+            <label class="col-form-label" for="commune_uuid">Commune <span class="text-danger">*</span></label>
             <mat-select [compareWith]="compareFnCommune" class="select custom-mat-select" formControlName="commune_uuid"
-              placeholder="Choose commune" (selectionChange)="onCommuneChange($event)">
+              placeholder="Choisir la commune" (selectionChange)="onCommuneChange($event)">
               @for (item of communeListFilter; track item) {
               <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
               }
             </mat-select>
           </div>
         </div>
-        <div class="col-md-6">
-          <div class="mb-3">
-            <label class="col-form-label" for="text">
-              Cyclos
-              <span class="text-danger">*</span></label>
-            <input #user_cyclo_uuid type="text" matInput [matAutocomplete]="autopos6" placeholder="Selectionner le user"
-              class="form-control" (input)="onCycloInputChange()" (focus)="onCycloInputChange()">
-            @if (isloadCyclo) {
-            <div class="d-flex align-items-center">
-              <strong role="status">Loading...</strong>
-              <div class="spinner-border ms-auto" aria-hidden="true"></div>
-            </div>
-            }
-            <mat-autocomplete requireSelection #autopos6="matAutocomplete"
-              (optionSelected)="optionSelectedCyclo($event)" [displayWith]="displayFnCyclo">
-              @for (item of filteredOptionCyclos; track item.uuid) {
-              <mat-option [value]="item">{{item.fullname}}</mat-option>
-              }
-            </mat-autocomplete>
-          </div>
-        </div>
       </div>
       <div class="d-flex align-items-center justify-content-end">
-        <button type="button" data-bs-dismiss="offcanvas" class="btn btn-light me-2">Annuler</button>
+        <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="offcanvas" (click)="resetEditFormSteps()">Annuler</a>
         @if (isLoading) {
         <button disabled class="btn btn-primary">
           <div class="spinner-border" role="status">
@@ -791,15 +754,129 @@
         </button>
         }
         @if (!isLoading) {
-        <button type="submit" class="btn btn-primary" data-bs-dismiss="offcanvas" data-bs-target="#create_success">Save
-          Changes</button>
+        <button type="submit" class="btn btn-primary">Modifier et continuer</button>
         }
       </div>
     </form>
-  </div>
+    }
 
+    <!-- Edit Step 2: Hierarchical Assignments -->
+    @if (currentEditStep === 2) {
+    <form (ngSubmit)="onSubmitEditStep2()">
+      <div class="row">
+        <div class="col-md-12">
+          <div class="alert alert-info">
+            <i class="ti ti-info-circle me-2"></i>
+            Informations de base de <strong>{{editUserData?.fullname}}</strong> modifiées avec succès!<br>
+            Maintenant, modifiez les rôles hiérarchiques basés sur son nouveau territoire.
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label" for="user_asm_uuid">ASM (Basé sur Province: {{editUserData?.Province?.name || 'Province sélectionnée'}})</label>
+            <input #user_asm_uuid type="text" matInput [matAutocomplete]="autopos7" 
+            placeholder="Sélectionner l'ASM"
+              class="form-control" (input)="onASMInputChange()" (focus)="onASMFocus()">
+            @if (isloadASM) {
+            <div class="d-flex align-items-center">
+              <strong role="status">Loading...</strong>
+              <div class="spinner-border ms-auto" aria-hidden="true"></div>
+            </div>
+            }
+            <mat-autocomplete requireSelection #autopos7="matAutocomplete" 
+            (optionSelected)="optionSelectedASM($event)"
+              [displayWith]="displayFnASM">
+              @for (item of filteredOptionASMs; track item.uuid) {
+              <mat-option [value]="item">{{item.fullname}}</mat-option>
+              }
+            </mat-autocomplete>
+          </div>
+        </div>
+        
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label" for="user_sup_uuid">Supervisor (Basé sur Area: {{editUserData?.Area?.name || 'Area sélectionnée'}})</label>
+            <input #user_sup_uuid type="text" matInput [matAutocomplete]="autopos8" placeholder="Sélectionner le Superviseur"
+              class="form-control" (input)="onSupInputChange()" (focus)="onSupFocus()">
+            @if (isloadSup) {
+            <div class="d-flex align-items-center">
+              <strong role="status">Loading...</strong>
+              <div class="spinner-border ms-auto" aria-hidden="true"></div>
+            </div>
+            }
+            <mat-autocomplete requireSelection #autopos8="matAutocomplete" (optionSelected)="optionSelectedSup($event)"
+              [displayWith]="displayFnSup">
+              @for (item of filteredOptionSups; track item.uuid) {
+              <mat-option [value]="item">{{item.fullname}}</mat-option>
+              }
+            </mat-autocomplete>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label" for="user_dr_uuid">DR (Basé sur SubArea: {{editUserData?.SubArea?.name || 'SubArea sélectionnée'}})</label>
+            <input #user_dr_uuid type="text" matInput [matAutocomplete]="autopos9" placeholder="Sélectionner le DR"
+              class="form-control" (input)="onDrInputChange()" (focus)="onDrFocus()">
+            @if (isloadDr) {
+            <div class="d-flex align-items-center">
+              <strong role="status">Loading...</strong>
+              <div class="spinner-border ms-auto" aria-hidden="true"></div>
+            </div>
+            }
+            <mat-autocomplete requireSelection #autopos9="matAutocomplete" (optionSelected)="optionSelectedDr($event)"
+              [displayWith]="displayFnDr">
+              @for (item of filteredOptionDrs; track item.uuid) {
+              <mat-option [value]="item">{{item.fullname}}</mat-option>
+              }
+            </mat-autocomplete>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="mb-3">
+            <label class="col-form-label" for="user_cyclo_uuid">Cyclo (Basé sur Commune: {{editUserData?.Commune?.name || 'Commune sélectionnée'}})</label>
+            <input #user_cyclo_uuid type="text" matInput [matAutocomplete]="autopos10" placeholder="Sélectionner le Cyclo"
+              class="form-control" (input)="onCycloInputChange()" (focus)="onCycloFocus()">
+            @if (isloadCyclo) {
+            <div class="d-flex align-items-center">
+              <strong role="status">Loading...</strong>
+              <div class="spinner-border ms-auto" aria-hidden="true"></div>
+            </div>
+            }
+            <mat-autocomplete requireSelection #autopos10="matAutocomplete"
+              (optionSelected)="optionSelectedCyclo($event)" [displayWith]="displayFnCyclo">
+              @for (item of filteredOptionCyclos; track item.uuid) {
+              <mat-option [value]="item">{{item.fullname}}</mat-option>
+              }
+            </mat-autocomplete>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex align-items-center justify-content-between">
+        <button type="button" class="btn btn-outline-primary" (click)="goToEditStep1()">
+          <i class="ti ti-arrow-left me-2"></i>Retour
+        </button>
+        <div>
+          <a href="javascript:void(0);" class="btn btn-light me-2" data-bs-dismiss="offcanvas" (click)="resetEditFormSteps()">Annuler</a>
+          @if (isLoading) {
+          <button disabled class="btn btn-success">
+            <div class="spinner-border" role="status">
+              <span class="visually-hidden">Loading...</span>
+            </div>
+          </button>
+          }
+          @if (!isLoading) {
+          <button type="submit" class="btn btn-success">Finaliser les modifications</button>
+          }
+        </div>
+      </div>
+    </form>
+    }
+  </div>
 </div>
-<!-- /Edit Contracts -->
+<!-- /Edit User -->
 
 <!-- Delete User -->
 <div class="modal fade" id="delete_contact" role="dialog">
