@@ -440,15 +440,15 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
         this.territoire = item.data;
         this.fetchProducts(name, territoire_uuid, start_date, end_date);
       });
-    } else if (name == "subarea" || name == "Cyclo") {
+    } else if (name == "subarea" || name == "DR") {
       this.subareaService.get(this.territoire_uuid).subscribe(item => {
         this.territoire = item.data;
         this.fetchProducts(name, territoire_uuid, start_date, end_date);
       }); 
-    } else if (name == "commune" || name == "DR") {
+    } else if (name == "commune" || name == "Cyclo") {
       this.communeService.get(this.territoire_uuid).subscribe(item => {
-        this.territoire = item.data;
-        this.fetchProducts(name, territoire_uuid, start_date, end_date);
+        this.territoire = item.data; 
+        this.fetchProducts(name, this.territoire_uuid, start_date, end_date);
       });
     }
   }

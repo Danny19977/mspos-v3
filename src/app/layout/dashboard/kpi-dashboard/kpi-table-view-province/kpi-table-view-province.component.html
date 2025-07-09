@@ -183,9 +183,9 @@
                                 <th style="width: 50%;">Hiérarchie</th>
                                 <th>Objectifs</th>
                                 <th>Target</th>
-                                <th>Visites Personnel</th>
-                                <th>Visites Équipe</th>
-                                <th>Total Visites</th>
+                                <th>Visites</th>
+                                <!-- <th>Visites Équipe</th> -->
+                                <!-- <th>Total Visites</th> -->
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -216,22 +216,26 @@
                                             </div>
                                         </div>
                                     </td>
-                                    <td>{{ group.objectif | number:'1.0-2' }} %</td>
-                                    <td>{{ group.target | number:'1.0-2' }}</td>
                                     <td>
-                                        <span class="text-primary">{{ group.personalVisits || 0 }}</span>
+                                        <!-- {{ group.objectif | number:'1.0-2' }} % -->
                                     </td>
                                     <td>
-                                        <span class="text-success">{{ group.teamVisits || 0 }}</span>
+                                        <!-- {{ group.target | number:'1.0-2' }} -->
+                                    </td>
+                                      <!-- <td>
+                                      <span class="text-primary">{{ group.personalVisits || 0 }}</span>  
                                     </td>
                                     <td>
-                                        <strong>{{ group.total_visits }}</strong>
+                                     <span class="text-success">{{ group.teamVisits || 0 }}</span>
+                                    </td> -->
+                                    <td>
+                                        <!-- <strong>{{ group.total_visits }}</strong> -->
                                     </td>
                                     <td>
-                                        <button class="btn btn-sm btn-outline-info" 
+                                        <!-- <button class="btn btn-sm btn-outline-info" 
                                                 (click)="viewDetails(group)">
                                             <i class="ti ti-eye"></i>
-                                        </button>
+                                        </button> -->
                                     </td>
                                 </tr>
                                 
@@ -262,15 +266,21 @@
                                                     </div>
                                                 </div>
                                             </td>
-                                            <td>{{ child.objectif | number:'1.0-2' }} %</td>
-                                            <td>{{ child.target | number:'1.0-2' }}</td>
                                             <td>
-                                                <span class="text-primary">{{ child.personalVisits || 0 }}</span>
+                                                <span class="text-success">{{ child.objectif | number:'1.0-2' }} %</span>
+                                            </td>
+                                            <td>
+                                                <span class="text-primary">{{ child.target | number:'1.0-2' }}</span>
+                                            </td>
+                                            <!--  <td>
+                                               <span class="text-primary">{{ child.personalVisits || 0 }}</span>  
                                             </td>
                                             <td>
                                                 <span class="text-success">{{ child.teamVisits || 0 }}</span>
+                                            </td> -->
+                                            <td>
+                                                <strong>{{ child.total_visits }}</strong>
                                             </td>
-                                            <td>{{ child.total_visits }}</td>
                                             <td>
                                                 <button class="btn btn-sm btn-outline-info" 
                                                         (click)="viewDetails(child)">

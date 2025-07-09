@@ -55,8 +55,8 @@ export class SosTableViewCommuneComponent implements OnInit {
       this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
       
       this.route.params.subscribe(params => {
-        const subarea_name = params['subarea_name']; 
-        this.subareaService.getBy(subarea_name).subscribe((res) => {
+        const subarea_uuid = params['subarea_uuid']; 
+        this.subareaService.getBy(subarea_uuid).subscribe((res) => {
           this.subarea = res.data;
           console.log('subarea:', this.subarea);
           this.getTableViewCommune(this.subarea.country_uuid, this.subarea.province_uuid, this.subarea.area_uuid, this.subarea.uuid, this.start_date, this.end_date);

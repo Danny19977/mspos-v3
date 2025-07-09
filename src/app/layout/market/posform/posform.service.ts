@@ -112,17 +112,26 @@ export class PosformService extends ApiService {
       params = params.set('quickDate', filters.quickDate);
     }
 
-    if (currentUser.role == 'ASM') {
+    if (currentUser.role == 'Manager' || currentUser.role == 'Support') {
+      console.log("Manager or Support user detected, fetching by country");
+      return this.http.get<any>(`${this.endpoint}/all/paginate/country/${currentUser.country_uuid}`, { params });
+
+    } else if (currentUser.role == 'ASM') {
+      console.log("ASM user detected, fetching by country");
       return this.http.get<any>(`${this.endpoint}/all/paginate/province/${currentUser.province_uuid}`, { params });
 
     } else if (currentUser.role == 'Supervisor') {
+      console.log("Supervisor user detected, fetching by area");
       return this.http.get<any>(`${this.endpoint}/all/paginate/area/${currentUser.area_uuid}`, { params });
 
     } else if (currentUser.role == 'DR') {
+      console.log("DR user detected, fetching by subarea");
       return this.http.get<any>(`${this.endpoint}/all/paginate/subarea/${currentUser.sub_area_uuid}`, { params });
 
     } else if (currentUser.role == 'Cyclo') {
+      console.log("Cyclo user detected, fetching by commune");
       return this.http.get<any>(`${this.endpoint}/all/paginate/commune/${currentUser.uuid}`, { params });
+
     } else {
       return this.http.get<any>(`${this.endpoint}/all/paginate`, { params });
     }
@@ -226,7 +235,7 @@ export class PosformService extends ApiService {
       return this.http.get<any>(`${this.endpoint}/all/paginate/subarea/${territoire_uuid}`, { params });
 
     } else if (name == 'commune' || name == 'Cyclo') {
-      return this.http.get<any>(`${this.endpoint}/all/paginate/commune/${territoire_uuid}`, { params });
+      return this.http.get<any>(`${this.endpoint}/all/paginate/commune-filter/${territoire_uuid}`, { params });
     } else {
       return this.http.get<any>(`${this.endpoint}/all/paginate`, { params });
     }
@@ -258,7 +267,7 @@ export class PosformService extends ApiService {
     return this.http.get<any>(`${this.endpoint}/all/paginate/country/${country_uuid}`, { params });
   }
 
-   override getPaginatedRangeDateByProvinceId(province_uuid: string, page: number, pageSize: number, search: string,
+  override getPaginatedRangeDateByProvinceId(province_uuid: string, page: number, pageSize: number, search: string,
     startDateStr: string, endDateStr: string): Observable<any> {
     let params = new HttpParams()
       .set("page", page.toString())

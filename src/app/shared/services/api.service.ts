@@ -227,8 +227,8 @@ export abstract class ApiService {
     return this.http.get(`${this.endpoint}/get/${uuid}`);
   }
 
-  getBy(name: any): Observable<any> {
-    return this.http.get(`${this.endpoint}/get-by/${name}`);
+  getBy(uuid: any): Observable<any> {
+    return this.http.get(`${this.endpoint}/get-by/${uuid}`);
   }
 
   getByUserUUID(uuid: string): Observable<any> {
