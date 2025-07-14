@@ -138,7 +138,7 @@ export class KpiTableViewProvinceComponent implements OnInit, OnDestroy {
     this.onChanges();
 
     // Démarrer la synchronisation automatique toutes les 30 secondes
-    this.startAutoRefresh();
+    // this.startAutoRefresh();
   }
 
 

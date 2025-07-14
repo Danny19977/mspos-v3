@@ -73,7 +73,7 @@
                         @for (item of tableViewList; track $index) {
                         <tr class="odd">
                             <td>
-                                <a [routerLink]="['/web/dashboard/sales-evolution/subarea', item.name]">{{ item.name }}</a>
+                                <a [routerLink]="['/web/dashboard/sales-evolution/subarea', item.uuid]">{{ item.name }}</a>
                             </td>
                             <td class="text-center">{{ item.type_pos }}</td>
                             <td class="text-center">{{ item.total_pos }}</td>
@@ -117,7 +117,7 @@
                         @for (item of tableViewPriceList; track $index) {
                         <tr class="odd">
                             <td>
-                                <a [routerLink]="['/web/dashboard/sales-evolution/subarea', item.name]">{{ item.name }}</a>
+                                <a [routerLink]="['/web/dashboard/sales-evolution/subarea', item.uuid]">{{ item.name }}</a>
                             </td>
                             <td class="text-center">{{ item.price }} FC</td>
                             <td class="text-center">{{ item.count_price }}</td>

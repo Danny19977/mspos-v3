@@ -70,7 +70,7 @@
                     @for (item of tableViewList; track $index) {
                     <tr class="odd">
                         <td>
-                            <a [routerLink]="['/web/dashboard/key-performance-indicators/subarea', item.name]">
+                            <a [routerLink]="['/web/dashboard/key-performance-indicators/subarea', item.uuid]">
                                 {{ item.name }}
                             </a>
                         </td>

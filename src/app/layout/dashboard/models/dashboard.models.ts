@@ -51,12 +51,14 @@ export interface GoogleMapModel {
 
 
 export interface SETableViewModel {
+    uuid: string;
     name: string;
     type_pos: string;
     total_pos: number;
 }
 
 export interface SETableViewPriceModel {
+    uuid: string;
     name: string;
     price: string;
     count_price: number;
@@ -64,7 +66,7 @@ export interface SETableViewPriceModel {
 }
 
 export interface KPITableViewPriceModel {
-    // uuid: string;
+    uuid: string;
     name: string;
     province_uuid: string;
     area_uuid: string;

@@ -49,8 +49,8 @@ export class KpiTableViewSubareaComponent implements OnInit {
     this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
     
     this.route.params.subscribe(params => {
-      const areaName = params['area_name']; 
-      this.areaService.getBy(areaName).subscribe((res) => {
+     const area_uuid = params['area_uuid'];
+      this.areaService.getBy(area_uuid).subscribe((res) => {
         this.area = res.data;
         console.log('area:', this.area);
         this.getTableViewSubArea(this.area.country_uuid, this.area.province_uuid, this.area.uuid, this.start_date, this.end_date);
