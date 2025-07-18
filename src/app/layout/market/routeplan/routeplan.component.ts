@@ -138,16 +138,12 @@ export class RouteplanComponent implements OnInit {
         processPosList(res.data);
       });
     } else if (currentUser.role == 'Supervisor') {
-      this.posVenteService.getPaginatedByAreaId(currentUser.area_uuid, 1, 15, filterValue
-
-      ).subscribe(res => {
+      this.posVenteService.getPaginatedByAreaId(currentUser.area_uuid, 1, 15, filterValue ).subscribe(res => {
         processPosList(res.data);
       });
     } else if (currentUser.role == 'DR') {
       console.log("sub_area_uuid", currentUser.dr_uuid);
-      this.posVenteService.getPaginatedBySubAreaId(currentUser.sub_area_uuid, 1, 15, filterValue
-
-      ).subscribe(res => {
+      this.posVenteService.getPaginatedBySubAreaId(currentUser.sub_area_uuid, 1, 15, filterValue).subscribe(res => {
         processPosList(res.data);
       });
     } else if (currentUser.role == 'Cyclo') {
