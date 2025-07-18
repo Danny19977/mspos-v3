@@ -114,7 +114,8 @@ export class PosformService extends ApiService {
 
     if (currentUser.role == 'Manager' || currentUser.role == 'Support') {
       console.log("Manager or Support user detected, fetching by country");
-      return this.http.get<any>(`${this.endpoint}/all/paginate/country/${currentUser.country_uuid}`, { params });
+      // return this.http.get<any>(`${this.endpoint}/all/paginate/country/${currentUser.country_uuid}`, { params });
+      return this.http.get<any>(`${this.endpoint}/all/paginate`, { params });
 
     } else if (currentUser.role == 'ASM') {
       console.log("ASM user detected, fetching by country");
