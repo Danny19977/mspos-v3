@@ -112,44 +112,77 @@ export class RouteplanComponent implements OnInit {
 
 
   getAllPos(currentUser: IUser): void {
-    const filterValue = this.pos_uuid?.nativeElement?.value?.toLowerCase() || '';
-    
+    const filterValue = this.pos_uuid?.nativeElement?.value || '';
+
     const processPosList = (posList: IPos[]) => {
       this.posList = posList;
       // Filter out POS that are already selected in the current route plan
       const posUuidsInCurrentDataList = this.dataListItem.map(item => item.pos_uuid);
       this.posListFilter = this.posList.filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
-      // Apply text filter on the remaining POS
-      this.filteredOptions = this.posListFilter.filter(pos => 
-        pos.name?.toLowerCase().includes(filterValue) || 
-        pos.shop?.toLowerCase().includes(filterValue)
-      );
+      // Since filtering is now done at the API level, we can directly assign the filtered POS
+      this.filteredOptions = this.posListFilter;
       this.isload = false;
     };
 
     this.isload = true;
 
     if (currentUser.role == 'Manager') {
-      this.posVenteService.getAll().subscribe(res => {
+      this.posVenteService.getPaginated2(1, 15, filterValue
+      ).subscribe(res => {
         processPosList(res.data);
       });
     } else if (currentUser.role == 'ASM') {
-      this.posVenteService.getAllByASM(currentUser.province_uuid).subscribe(res => {
+      this.posVenteService.getPaginatedByProvinceId(currentUser.province_uuid, 1, 15, filterValue
+
+      ).subscribe(res => {
         processPosList(res.data);
       });
     } else if (currentUser.role == 'Supervisor') {
-      this.posVenteService.getAllBySup(currentUser.area_uuid).subscribe(res => {
+      this.posVenteService.getPaginatedByAreaId(currentUser.area_uuid, 1, 15, filterValue
+
+      ).subscribe(res => {
         processPosList(res.data);
       });
     } else if (currentUser.role == 'DR') {
-      this.posVenteService.getAllByDR(currentUser.sub_area_uuid).subscribe(res => {
+      console.log("sub_area_uuid", currentUser.dr_uuid);
+      this.posVenteService.getPaginatedBySubAreaId(currentUser.sub_area_uuid, 1, 15, filterValue
+
+      ).subscribe(res => {
         processPosList(res.data);
       });
     } else if (currentUser.role == 'Cyclo') {
-      this.posVenteService.getAllByCyclo(currentUser.cyclo_uuid).subscribe(res => {
+      this.posVenteService.getPaginatedByCommuneId(currentUser.uuid, 1, 15, filterValue
+
+      ).subscribe(res => {
+        processPosList(res.data);
+      });
+    } else {
+      this.posVenteService.getPaginated2(1, 15, filterValue).subscribe(res => {
         processPosList(res.data);
       });
     }
+
+    // if (currentUser.role == 'Manager') {
+    //   this.posVenteService.getAll().subscribe(res => {
+    //     processPosList(res.data);
+    //   });
+    // } else if (currentUser.role == 'ASM') {
+    //   this.posVenteService.getAllByASM(currentUser.province_uuid).subscribe(res => {
+    //     processPosList(res.data); 
+    //   });
+    // } else if (currentUser.role == 'Supervisor') {
+    //   this.posVenteService.getAllBySup(currentUser.area_uuid).subscribe(res => {
+    //     processPosList(res.data);
+    //   });
+    // } else if (currentUser.role == 'DR') {
+    //   this.posVenteService.getAllByDR(currentUser.sub_area_uuid).subscribe(res => {
+    //     processPosList(res.data);
+    //   });
+    // } else if (currentUser.role == 'Cyclo') {
+    //   this.posVenteService.getAllByCyclo(currentUser.cyclo_uuid).subscribe(res => {
+    //     processPosList(res.data);
+    //   });
+    // }
   }
 
   displayFn(pos: IPos): any {
@@ -161,6 +194,11 @@ export class RouteplanComponent implements OnInit {
     this.posuuId = selectedOption.uuid;
     // Utilisez id et fullName comme vous le souhaitez
     console.log('pos_uuid:', this.posuuId);
+  }
+
+  onPosSearchChange() {
+    // Refresh the POS list when the search filter changes
+    this.getAllPos(this.currentUser);
   }
 
 
