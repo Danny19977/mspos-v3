@@ -462,8 +462,7 @@
                                     <th mat-header-cell *matHeaderCellDef> Action </th>
                                     <td mat-cell *matCellDef="let element" class="d-flex align-items-center">
 
-                                        <ng-container *ngIf="element.pos_uuid == '' && 
-                                            isLessThan24HoursOld(element.CreatedAt) && 
+                                        <ng-container *ngIf="element.pos_uuid == '' &&  
                                             isCurrentUserCreator(element)">
                                             <button mat-icon-button (click)="findValue(element.uuid)"
                                                 data-bs-toggle="offcanvas" data-bs-target="#offcanvas_add"
@@ -471,7 +470,8 @@
                                                 title="Compléter ce rapport en sélectionnant un point de vente">
                                                 <mat-icon>add_circle</mat-icon>
                                             </button>
-                                        </ng-container>
+
+                                        </ng-container> 
 
                                         <button mat-icon-button (click)="findValue(element.uuid)"
                                             data-bs-toggle="offcanvas" data-bs-target="#offcanvas_visibility"
@@ -551,7 +551,7 @@
 <div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_add">
 
     <div class="offcanvas-header border-bottom">
-        @if (dataItem && dataItem.pos_uuid === '') {
+        @if (isCompletionMode()) {
         <h4>🎯 Compléter le rapport de visite</h4>
         } @else {
         <h4>📋 Ajouter un rapport de visite</h4>
@@ -570,10 +570,10 @@
                 champs marqués d'une étoile rouge (*) sont obligatoires.</p>
         </div>
 
-        <form [formGroup]="formGroup" (ngSubmit)="dataItem && dataItem.pos_uuid === '' ? completeReport() : onSubmit()">
+        <form [formGroup]="formGroup" (ngSubmit)="isCompletionMode() ? completeReport() : onSubmit()">
             <div class="row">
                 <!-- Alerte pour rapport incomplet -->
-                @if (dataItem && dataItem.pos_uuid === '') {
+                @if (isCompletionMode()) {
                 <div class="col-12 mb-4">
                     <div class="alert alert-warning">
                         <h6><i class="ti ti-alert-triangle me-2"></i>Complétion du rapport de visite</h6>
@@ -830,7 +830,7 @@
                 @if (!isLoading) {
                 <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-dismiss="offcanvas"
                     data-bs-target="#create_success">
-                    @if (dataItem && dataItem.pos_uuid === '') {
+                    @if (isCompletionMode()) {
                     <i class="ti ti-check me-2"></i>Compléter le rapport
                     } @else {
                     <i class="ti ti-send me-2"></i>Envoyer le rapport

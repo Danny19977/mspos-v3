@@ -98,6 +98,13 @@ export class KpiTableViewProvinceComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.isLoading = true;
+
+    // Initialisation explicite des tableaux pour éviter les erreurs null
+    this.tableViewList = [];
+    this.groupedData = [];
+    this.filteredTableViewList = [];
+    this.filteredGroupedData = [];
+    this.provinceList = [];
     const date = new Date();
     const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
     const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
@@ -180,24 +187,35 @@ export class KpiTableViewProvinceComponent implements OnInit, OnDestroy {
 
 
   getTableView(country_uuid: string, province_uuid: string, start_date: string, end_date: string) {
-    this.kpiService.TableViewProvince(country_uuid, province_uuid, start_date, end_date).subscribe((res) => {
-      this.tableViewList = res.data;
-      console.log("tableViewList", this.tableViewList);
+    this.kpiService.TableViewProvince(country_uuid, province_uuid, start_date, end_date).subscribe({
+      next: (res) => {
+        // Vérification de sécurité pour la réponse
+        this.tableViewList = res?.data || [];
+        console.log("tableViewList", this.tableViewList);
 
-         // Organiser les données selon la hiérarchie géographique
-      this.groupedData = this.organizeHierarchicalData(this.tableViewList);
-      console.log("groupedData", this.groupedData);
-      
-      // Initialiser les données filtrées
-      this.filteredTableViewList = [...this.tableViewList];
-      this.filteredGroupedData = [...this.groupedData];
-      
-      // Appliquer la recherche si un terme est présent
-      if (this.searchTerm.trim() !== '') {
-        this.onSearch();
+        // Organiser les données selon la hiérarchie géographique
+        this.groupedData = this.organizeHierarchicalData(this.tableViewList);
+        console.log("groupedData", this.groupedData);
+        
+        // Initialiser les données filtrées
+        this.filteredTableViewList = [...this.tableViewList];
+        this.filteredGroupedData = [...this.groupedData];
+        
+        // Appliquer la recherche si un terme est présent
+        if (this.searchTerm.trim() !== '') {
+          this.onSearch();
+        }
+
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Erreur lors de la récupération des données KPI:', error);
+        this.tableViewList = [];
+        this.groupedData = [];
+        this.filteredTableViewList = [];
+        this.filteredGroupedData = [];
+        this.isLoading = false;
       }
-
-      this.isLoading = false;
     });
   }
 
@@ -206,11 +224,17 @@ export class KpiTableViewProvinceComponent implements OnInit, OnDestroy {
     private organizeHierarchicalData(data: KPITableViewPriceModel[]): GroupedData[] {
       console.log('Données reçues pour organisation hiérarchique:', data);
       
+      // Vérification de sécurité pour éviter l'erreur "Cannot read properties of null"
+      if (!data || !Array.isArray(data)) {
+        console.warn('Données invalides reçues:', data);
+        return [];
+      }
+      
       // 1. Séparer les données par titre
-      const asmData = data.filter(item => item.title === 'ASM');
-      const supervisorData = data.filter(item => item.title === 'Supervisor');
-      const drData = data.filter(item => item.title === 'DR');
-      const cycloData = data.filter(item => item.title === 'Cyclo');
+      const asmData = data.filter(item => item && item.title === 'ASM');
+      const supervisorData = data.filter(item => item && item.title === 'Supervisor');
+      const drData = data.filter(item => item && item.title === 'DR');
+      const cycloData = data.filter(item => item && item.title === 'Cyclo');
       
       console.log(`Données trouvées - ASM: ${asmData.length}, Supervisor: ${supervisorData.length}, DR: ${drData.length}, Cyclo: ${cycloData.length}`);
       
@@ -382,7 +406,7 @@ export class KpiTableViewProvinceComponent implements OnInit, OnDestroy {
         // 6. Fallback : créer une structure simplifiée par titre si pas d'ASM
         const allTitles = ['Supervisor', 'DR', 'Cyclo'];
         allTitles.forEach(title => {
-          const titleData = data.filter(item => item.title === title);
+          const titleData = data.filter(item => item && item.title === title);
           if (titleData.length > 0) {
             const titleGroup: GroupedData = {
               title: `Équipe ${title}`,
@@ -623,18 +647,18 @@ export class KpiTableViewProvinceComponent implements OnInit, OnDestroy {
     // Méthodes de recherche
     onSearch(): void {
       if (this.searchTerm.trim() === '') {
-        this.filteredTableViewList = [...this.tableViewList];
-        this.filteredGroupedData = [...this.groupedData];
+        this.filteredTableViewList = [...(this.tableViewList || [])];
+        this.filteredGroupedData = [...(this.groupedData || [])];
       } else {
         // Filtrer la liste normale
-        this.filteredTableViewList = this.tableViewList.filter(item =>
-          item.signature.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-          item.title.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-          item.name.toLowerCase().includes(this.searchTerm.toLowerCase())
+        this.filteredTableViewList = (this.tableViewList || []).filter(item =>
+          item?.signature?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+          item?.title?.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
+          item?.name?.toLowerCase().includes(this.searchTerm.toLowerCase())
         );
   
         // Filtrer les données hiérarchiques
-        this.filteredGroupedData = this.filterHierarchicalData(this.groupedData, this.searchTerm.toLowerCase());
+        this.filteredGroupedData = this.filterHierarchicalData(this.groupedData || [], this.searchTerm.toLowerCase());
       }
     }
   

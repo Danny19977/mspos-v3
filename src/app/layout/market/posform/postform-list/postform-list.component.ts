@@ -118,6 +118,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
   // Flag pour indiquer si on est en train de compléter un rapport
   isCompletingReport = false;
+  submissionInProgress = false;
 
   // Forms posform
   uuidItem: string = ''; // UUID of the item to be edited or deleted
@@ -447,6 +448,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       next: (res) => {
         this.dataList = res.data;
         this.originalDataList = [...res.data]; // Sauvegarder les données originales
+        this.filteredDataList = [...res.data]; // Initialiser les données filtrées
         this.total_pages = res.pagination.total_pages;
         this.total_records = res.pagination.total_records;
 
@@ -479,6 +481,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
           this.originalDataList = [...res.data];
+          this.filteredDataList = [...res.data]; // Initialiser les données filtrées
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
           this.updateUniqueValues();
@@ -492,6 +495,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
           this.originalDataList = [...res.data];
+          this.filteredDataList = [...res.data]; // Initialiser les données filtrées
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
           this.updateUniqueValues();
@@ -505,6 +509,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
           this.originalDataList = [...res.data];
+          this.filteredDataList = [...res.data]; // Initialiser les données filtrées
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
           this.updateUniqueValues();
@@ -518,6 +523,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
           this.originalDataList = [...res.data];
+          this.filteredDataList = [...res.data]; // Initialiser les données filtrées
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
           this.updateUniqueValues();
@@ -531,6 +537,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
           this.originalDataList = [...res.data];
+          this.filteredDataList = [...res.data]; // Initialiser les données filtrées
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
           this.updateUniqueValues();
@@ -543,6 +550,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         start_date, end_date).subscribe(res => {
           this.dataList = res.data;
           this.originalDataList = [...res.data];
+          this.filteredDataList = [...res.data]; // Initialiser les données filtrées
           this.total_pages = res.pagination.total_pages;
           this.total_records = res.pagination.total_records;
           this.updateUniqueValues();
@@ -951,7 +959,15 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    */
   exportToExcel(): void {
     try {
-      const dataToExport = this.filteredDataList.map(item => ({
+      // Utiliser les données actuellement affichées dans le tableau
+      const sourceData = this.filteredDataList.length > 0 ? this.filteredDataList : this.dataSource.data;
+      
+      if (!sourceData || sourceData.length === 0) {
+        this.toastr.warning('Aucune donnée à exporter', 'Attention');
+        return;
+      }
+
+      const dataToExport = sourceData.map(item => ({
         'Date de visite': formatDate(item.CreatedAt || new Date(), 'dd/MM/yyyy HH:mm', 'en-US'),
         'Point de vente': item.Pos?.name || 'Non renseigné',
         'Type de magasin': item.Pos?.shop || '--',
@@ -970,6 +986,8 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         'Statut': (item.pos_uuid && item.pos_uuid.trim() !== '') ? 'Complet' : 'Incomplet'
       }));
 
+      console.log('Données à exporter:', dataToExport.length, 'éléments');
+
       // Créer un élément temporaire pour télécharger
       const csvContent = this.convertToCSV(dataToExport);
       const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
@@ -985,7 +1003,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         document.body.removeChild(link);
       }
 
-      this.toastr.success('Export Excel réussi!', 'Succès');
+      this.toastr.success(`Export Excel réussi! ${dataToExport.length} ligne(s) exportée(s)`, 'Succès');
     } catch (error) {
       console.error('Erreur lors de l\'export Excel:', error);
       this.toastr.error('Erreur lors de l\'export Excel', 'Erreur');
@@ -1076,7 +1094,10 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    * Convertir les données en format CSV
    */
   private convertToCSV(data: any[]): string {
-    if (!data || data.length === 0) return '';
+    if (!data || data.length === 0) {
+      console.log('Aucune donnée à convertir en CSV');
+      return '';
+    }
 
     const headers = Object.keys(data[0]);
     const csvHeaders = headers.join(',');
@@ -1084,14 +1105,22 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     const csvRows = data.map(row =>
       headers.map(header => {
         const value = row[header];
+        // Gérer les valeurs null/undefined
+        if (value === null || value === undefined) return '';
+        
         // Échapper les virgules et guillemets dans les valeurs
-        return typeof value === 'string' && value.includes(',')
-          ? `"${value.replace(/"/g, '""')}"`
-          : value;
+        const stringValue = String(value);
+        return stringValue.includes(',') || stringValue.includes('"') || stringValue.includes('\n')
+          ? `"${stringValue.replace(/"/g, '""')}"`
+          : stringValue;
       }).join(',')
     );
 
-    return [csvHeaders, ...csvRows].join('\n');
+    const csvContent = [csvHeaders, ...csvRows].join('\n');
+    console.log('CSV généré:', csvContent.substring(0, 200) + '...');
+    
+    // Ajouter le BOM UTF-8 pour une meilleure compatibilité avec Excel
+    return '\ufeff' + csvContent;
   }
 
   /**
@@ -1363,7 +1392,30 @@ export class PostformListComponent implements OnInit, AfterViewInit {
  * Compléter un rapport existant en ajoutant un POS
  */
   completeReport(): void {
+    console.log('🔄 completeReport() appelée - État:', {
+      isValid: this.formGroup.valid,
+      posUUID: this.posUUID,
+      uuidItem: this.uuidItem,
+      dataItem: this.dataItem,
+      isLoading: this.isLoading,
+      submissionInProgress: this.submissionInProgress
+    });
+
+    // Éviter les soumissions multiples
+    if (this.submissionInProgress) {
+      console.log('⚠️ Soumission déjà en cours, abandon');
+      return;
+    }
+
+    // Ne pas vérifier canAddNewPosForm() pour la complétion - c'est un cas spécial
     if (this.formGroup.valid && this.posUUID) {
+      // Vérifier que nous sommes en mode complétion
+      if (!this.dataItem || !this.uuidItem) {
+        this.toastr.error('Erreur: Aucun rapport à compléter trouvé.', 'Erreur');
+        return;
+      }
+
+      this.submissionInProgress = true;
       this.isLoading = true;
 
       const formData = {
@@ -1411,10 +1463,8 @@ export class PostformListComponent implements OnInit, AfterViewInit {
                       this.fetchProducts(this.currentUser, this.start_date, this.end_date);
                       this.isLoading = false;
 
-                      // Réinitialiser les variables
-                      this.posUUID = '';
-                      this.posName = '';
-                      this.formGroup.reset();
+                      // Réinitialiser complètement l'état du formulaire
+                      this.resetFormState();
                     },
                     error: (err) => {
                       this.isLoading = false;
@@ -1438,6 +1488,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
                     next: () => {
                       this.fetchProducts(this.currentUser, this.start_date, this.end_date);
                       this.isLoading = false;
+                      this.resetFormState(); // Réinitialiser l'état même en cas d'erreur de route plan
                     },
                     error: (logErr) => {
                       this.isLoading = false;
@@ -1450,11 +1501,13 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         },
         error: (err) => {
           this.isLoading = false;
+          this.submissionInProgress = false;
           this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
           console.error(err);
         }
       });
     } else {
+      this.submissionInProgress = false;
       this.toastr.warning('Veuillez remplir tous les champs et sélectionner un point de vente', 'Attention');
     }
   }
@@ -1550,6 +1603,50 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
     // Vérifier si le dernier rapport de l'utilisateur a un pos_uuid valide (non vide)
     return !!(lastUserReport.pos_uuid && typeof lastUserReport.pos_uuid === 'string' && lastUserReport.pos_uuid.trim() !== '');
+  }
+
+  /**
+   * Réinitialise complètement l'état du formulaire après une soumission réussie
+   */
+  resetFormState(): void {
+    // Réinitialiser les variables liées au POS
+    this.posUUID = '';
+    this.posName = '';
+    this.routePlanItemUUID = '';
+    
+    // Réinitialiser les variables liées aux marques
+    this.brandUUID = '';
+    this.brandName = '';
+    this.dataListPosFormItem = [];
+    
+    // Réinitialiser les variables de l'item sélectionné
+    this.dataItem = {} as IPosForm;
+    this.uuidItem = '';
+    
+    // Réinitialiser les variables d'état
+    this.isCompletingReport = false;
+    this.submissionInProgress = false;
+    
+    // Réinitialiser le formulaire
+    this.formGroup.reset();
+    this.formGroupPosFormItem.reset();
+    
+    // Forcer la mise à jour de la vue
+    this.cdr.detectChanges();
+    
+    console.log('État du formulaire réinitialisé');
+  }
+
+  /**
+   * Détermine si nous sommes en mode complétion d'un rapport existant
+   */
+  isCompletionMode(): boolean {
+    // Mode complétion si la variable interne l'indique ou si les conditions sont remplies
+    return this.isCompletingReport || 
+           !!(this.dataItem && 
+              this.uuidItem && 
+              this.uuidItem.trim() !== '' && 
+              (!this.dataItem.pos_uuid || this.dataItem.pos_uuid.trim() === ''));
   }
 
 

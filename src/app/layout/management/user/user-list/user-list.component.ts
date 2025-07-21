@@ -103,7 +103,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
   @ViewChild('user_asm_uuid') user_asm_uuid!: ElementRef<HTMLInputElement>;
   isloadASM = false;
   asmUserUUID: string = '';
-  asmFUserullName: string = '';
+  asmUserFullName: string = '';
 
   userSupList: IUser[] = [];
   userSupListFilter: IUser[] = [];
@@ -348,7 +348,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
     // Restaurer ASM
     if (this.dataItem.asm_uuid && this.dataItem.asm) {
       this.asmUserUUID = this.dataItem.asm_uuid;
-      this.asmFUserullName = this.dataItem.asm;
+      this.asmUserFullName = this.dataItem.asm;
       if (this.user_asm_uuid) {
         this.user_asm_uuid.nativeElement.value = this.dataItem.asm;
       }
@@ -593,7 +593,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
     if (this.user_dr_uuid) this.user_dr_uuid.nativeElement.value = '';
     if (this.user_cyclo_uuid) this.user_cyclo_uuid.nativeElement.value = '';
     this.asmUserUUID = '';
-    this.asmFUserullName = '';
+    this.asmUserFullName = '';
     this.supUserUUID = '';
     this.supUserFullName = '';
     this.drUserUUID = '';
@@ -636,7 +636,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
     const selectedOption = event.option.value;
     console.log('Selected ASM:', selectedOption);
     this.asmUserUUID = selectedOption.uuid;
-    this.asmFUserullName = selectedOption.fullname;
+    this.asmUserFullName = selectedOption.fullname;
   }
 
   getAllSupByArea(areaUuid: string): void {
@@ -770,7 +770,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
           manager_uuid: '',
           manager: '',
           asm_uuid: this.asmUserUUID || '',
-          asm: this.asmFUserullName || '',
+          asm: this.asmUserFullName || '',
           sup_uuid: this.supUserUUID || '',
           sup: this.supUserFullName || '',
           dr_uuid: this.drUserUUID || '',
@@ -914,7 +914,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
           manager_uuid: this.step1UserData.manager_uuid,
           manager: this.step1UserData.manager,
           asm_uuid: this.asmUserUUID || '',
-          asm: this.asmFUserullName || '',
+          asm: this.asmUserFullName || '',
           sup_uuid: this.supUserUUID || '',
           sup: this.supUserFullName || '',
           dr_uuid: this.drUserUUID || '',
@@ -1211,7 +1211,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
         manager_uuid: '',
         manager: '',
         asm_uuid: this.asmUserUUID || '',
-        asm: this.asmFUserullName || '',
+        asm: this.asmUserFullName || '',
         sup_uuid: this.supUserUUID || '',
         sup: this.supUserFullName || '',
         dr_uuid: this.drUserUUID || '',
@@ -1430,8 +1430,22 @@ export class UserListComponent implements OnInit, AfterViewInit {
 
   // Step 1 - Update basic info and territory
   onSubmitEditStep1() {
+    console.log('onSubmitEditStep1 called');
+    console.log('Form valid:', this.formGroup.valid);
+    console.log('Form errors:', this.formGroup.errors);
+    console.log('Form values:', this.formGroup.value);
+    
     try {
-      if (this.formGroup.valid) {
+      // Check if required fields for edit step 1 are filled
+      const requiredFields = ['fullname', 'title', 'phone', 'permission'];
+      const isValidForEdit = requiredFields.every(field => {
+        const value = this.formGroup.get(field)?.value;
+        return value && value.toString().trim() !== '';
+      });
+
+      console.log('Required fields validation:', isValidForEdit);
+
+      if (isValidForEdit) {
         this.isLoading = true;
         var body = {
           fullname: this.formGroup.value.fullname,
@@ -1493,6 +1507,17 @@ export class UserListComponent implements OnInit, AfterViewInit {
             console.log(err);
           }
         });
+      } else {
+        // Show validation error message
+        this.toastr.error('Veuillez remplir tous les champs obligatoires (Nom complet, Titre, Téléphone, Permission)', 'Validation requise');
+        
+        // Mark invalid fields as touched to show validation errors
+        requiredFields.forEach(field => {
+          const control = this.formGroup.get(field);
+          if (control && (!control.value || control.value.toString().trim() === '')) {
+            control.markAsTouched();
+          }
+        });
       }
     } catch (error) {
       this.isLoading = false;
@@ -1503,6 +1528,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
   // Step 2 - Update hierarchical assignments
   onSubmitEditStep2() {
     try {
+      console.log('onSubmitEditStep2 called', this.editUserData);
       if (this.editUserData) {
         this.isLoading = true;
         var body = {
@@ -1522,7 +1548,7 @@ export class UserListComponent implements OnInit, AfterViewInit {
           manager_uuid: this.editUserData.manager_uuid,
           manager: this.editUserData.manager,
           asm_uuid: this.asmUserUUID || '',
-          asm: this.asmFUserullName || '',
+          asm: this.asmUserFullName || '',
           sup_uuid: this.supUserUUID || '',
           sup: this.supUserFullName || '',
           dr_uuid: this.drUserUUID || '',
