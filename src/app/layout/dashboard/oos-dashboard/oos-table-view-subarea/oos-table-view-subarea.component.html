@@ -64,6 +64,34 @@
             </div>
           </div>
           } @else {
+          
+          <!-- Graphique en barres -->
+          @if (ndBarChartSubAreaList && ndBarChartSubAreaList.length > 0) {
+          <div class="row mb-4">
+              <div class="col-12">
+                  <div class="card">
+                      <div class="card-header">
+                          <h5 class="card-title">Graphique OOS par Sub-Area (Valeurs Inversées)</h5>
+                      </div>
+                      <div class="card-body">
+                          <apx-chart
+                              #chart
+                              [series]="chartOptions.series"
+                              [chart]="chartOptions.chart"
+                              [dataLabels]="chartOptions.dataLabels"
+                              [plotOptions]="chartOptions.plotOptions"
+                              [xaxis]="chartOptions.xaxis"
+                              [yaxis]="chartOptions.yaxis"
+                              [colors]="chartOptions.colors"
+                              [tooltip]="chartOptions.tooltip"
+                              [legend]="chartOptions.legend">
+                          </apx-chart>
+                      </div>
+                  </div>
+              </div>
+          </div>
+          }
+
           <div class="accordion" id="subareaAccordion">
             @for (subarea of getGroupedData(); track subarea.name) {
               <div class="accordion-item">
@@ -196,3 +224,43 @@
   
     </div>
   </div>
+
+<div class="row">
+  <div class="col-md-12 d-flex">
+    <div class="card w-100">
+      <div class="card-header border-0 pb-0">
+        <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
+          <h4><i class="ti ti-grip-vertical me-1"></i>Graphique OOS par Sub-Area (Valeurs Inversées)</h4>
+        </div>
+      </div>
+      <div class="card-body">
+        @if (isLoading) {
+        <div class="text-center d-flex justify-content-center align-items-center">
+          <div class="spinner-border bs-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+        } @else if (ndBarChartSubAreaList && ndBarChartSubAreaList.length > 0) {
+        <div id="oos-bar-chart">
+          <apx-chart 
+            #chart
+            [series]="chartOptions.series" 
+            [chart]="chartOptions.chart"
+            [dataLabels]="chartOptions.dataLabels" 
+            [plotOptions]="chartOptions.plotOptions"
+            [xaxis]="chartOptions.xaxis" 
+            [yaxis]="chartOptions.yaxis"
+            [colors]="chartOptions.colors"
+            [tooltip]="chartOptions.tooltip"
+            [legend]="chartOptions.legend">
+          </apx-chart>
+        </div>
+        } @else {
+        <div class="text-center">
+          <p>Aucune donnée disponible pour le graphique</p>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

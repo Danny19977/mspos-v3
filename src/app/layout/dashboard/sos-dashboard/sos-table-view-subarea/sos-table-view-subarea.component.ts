@@ -1,16 +1,33 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { SOSTableViewModel } from '../../models/dashboard.models';
+import { SOSTableViewModel, SOSBarChartSubAreaModel } from '../../models/dashboard.models';
 import { ActivatedRoute } from '@angular/router';
 import { SosService } from '../../services/sos.service';
 import { formatDate } from '@angular/common';
 import { IArea } from '../../../territories/areas/models/area.model';
 import { AreaService } from '../../../territories/areas/area.service';
 import { SubareaService } from '../../../territories/subarea/subarea.service';
+import {
+  ApexAxisChartSeries,
+  ApexChart,
+  ChartComponent,
+  ApexDataLabels,
+  ApexXAxis,
+  ApexPlotOptions,
+} from 'ng-apexcharts';
 
 interface SubareaGroup {
   name: string;
   data: SOSTableViewModel[];
+}
+
+export interface ChartOptions {
+  series: ApexAxisChartSeries | any;
+  chart: ApexChart | any;
+  dataLabels: ApexDataLabels | any;
+  plotOptions: ApexPlotOptions | any;
+  xaxis: ApexXAxis | any;
+  colors: any;
 }
 
 @Component({
@@ -32,6 +49,10 @@ export class SosTableViewSubareaComponent implements OnInit {
   area!: IArea;
 
   tableViewList: SOSTableViewModel[] = [];
+  sosBarChartSubAreaList: SOSBarChartSubAreaModel[] = [];
+
+  @ViewChild('chart') chart!: ChartComponent;
+  public chartOptions: Partial<ChartOptions> | any;
 
   constructor(
     private route: ActivatedRoute, 
@@ -88,6 +109,109 @@ export class SosTableViewSubareaComponent implements OnInit {
       this.tableViewList = res.data;
       this.isLoading = false;
     });
+
+    // Récupérer les données pour le graphique en barres
+    this.getBarChartData(country_uuid, province_uuid, area_uuid, start_date, end_date);
+  }
+
+  getBarChartData(country_uuid: string, province_uuid: string, area_uuid: string, start_date: string, end_date: string) {
+    this.sosService.SosBarChartSubArea(country_uuid, province_uuid, area_uuid, start_date, end_date).subscribe((res) => {
+      this.sosBarChartSubAreaList = res.data;
+      console.log('sosBarChartSubAreaList:', this.sosBarChartSubAreaList);
+      this.generateBarChart();
+    });
+  }
+
+  generateBarChart() {
+    if (!this.sosBarChartSubAreaList || this.sosBarChartSubAreaList.length === 0) {
+      return;
+    }
+
+    // Obtenir toutes les marques uniques
+    const allBrands = Array.from(
+      new Set(
+        this.sosBarChartSubAreaList.flatMap(subarea => 
+          subarea.brands.map(brand => brand.brand_name)
+        )
+      )
+    );
+
+    // Créer les séries pour chaque marque
+    const series = allBrands.map(brandName => ({
+      name: brandName,
+      data: this.sosBarChartSubAreaList.map(subarea => {
+        const brandData = subarea.brands.find(b => b.brand_name === brandName);
+        return brandData ? brandData.percentage : 0;
+      })
+    }));
+
+    // Couleurs attractives pour les marques
+    const attractiveColors = [
+      '#1E90FF', // Dodger Blue
+      '#32CD32', // Lime Green
+      '#FFD700', // Gold
+      '#FF69B4', // Hot Pink
+      '#8A2BE2', // Blue Violet
+      '#00CED1', // Dark Turquoise
+      '#FF4500', // Orange Red
+      '#7FFF00', // Chartreuse
+      '#DC143C', // Crimson
+      '#00FA9A', // Medium Spring Green
+      '#FF6347', // Tomato
+      '#4682B4', // Steel Blue
+      '#DA70D6', // Orchid
+      '#40E0D0', // Turquoise
+      '#FF8C00', // Dark Orange
+      '#ADFF2F', // Green Yellow
+      '#C71585', // Medium Violet Red
+      '#20B2AA', // Light Sea Green
+      '#FF1493', // Deep Pink
+      '#7B68EE', // Medium Slate Blue
+    ];
+
+    this.chartOptions = {
+      series: series,
+      colors: attractiveColors.slice(0, allBrands.length),
+      chart: {
+        height: 350,
+        type: 'bar',
+        toolbar: {
+          show: false,
+        }
+      },
+      plotOptions: {
+        bar: {
+          horizontal: false,
+          columnWidth: '55%',
+          endingShape: 'rounded'
+        },
+      },
+      dataLabels: {
+        enabled: false,
+      },
+      xaxis: {
+        categories: this.sosBarChartSubAreaList.map(subarea => subarea.name),
+        title: {
+          text: 'Sub Areas'
+        }
+      },
+      yaxis: {
+        title: {
+          text: 'Pourcentage (%)'
+        },
+        labels: {
+          formatter: (val: number) => `${val.toFixed(2)}%`
+        }
+      },
+      tooltip: {
+        y: {
+          formatter: (val: number) => `${val.toFixed(2)}%`
+        }
+      },
+      legend: {
+        position: 'top'
+      }
+    };
   }
 
   /**

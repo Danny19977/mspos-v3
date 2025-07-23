@@ -169,3 +169,45 @@
 
   </div>
 </div>
+
+<div class="row">
+  <div class="col-md-12 d-flex">
+    <div class="card w-100">
+      <div class="card-header border-0 pb-0">
+        <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
+          <h4><i class="ti ti-grip-vertical me-1"></i>ND Distribution by Commune</h4>
+          @if (subarea) {
+          <h5><span style="color: red; font-weight: bold;">Sub Area: {{ subarea.name }}</span></h5>
+          }
+        </div>
+      </div>
+      <div class="card-body">
+        @if (isLoading) {
+        <div class="text-center d-flex justify-content-center align-items-center">
+          <div class="spinner-border bs-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
+        } @else if (ndBarChartCommuneList && ndBarChartCommuneList.length > 0) {
+        <div id="nd-bar-chart-commune">
+          <apx-chart 
+            [series]="chartOptions.series" 
+            [chart]="chartOptions.chart"
+            [dataLabels]="chartOptions.dataLabels" 
+            [plotOptions]="chartOptions.plotOptions"
+            [xaxis]="chartOptions.xaxis" 
+            [yaxis]="chartOptions.yaxis"
+            [colors]="chartOptions.colors"
+            [tooltip]="chartOptions.tooltip"
+            [legend]="chartOptions.legend">
+          </apx-chart>
+        </div>
+        } @else {
+        <div class="text-center">
+          <p>Aucune donnée disponible pour le graphique</p>
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

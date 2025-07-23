@@ -19,6 +19,15 @@ export class SosService extends ApiService {
     return this.http.get<any>(`${this.endpoint}/table-view-province`, { params });
   }
 
+  SosBarChartProvince(country_uuid: string, province_uuid: string, start_date: string, end_date: string): Observable<any> {
+    let params = new HttpParams()
+      .set("country_uuid", country_uuid)
+      .set("province_uuid", province_uuid)
+      .set("start_date", start_date)
+      .set("end_date", end_date)
+    return this.http.get<any>(`${this.endpoint}/bar-chart-province`, { params });
+  }
+
   SOSTableViewArea(country_uuid: string, province_uuid: string,
     start_date: string, end_date: string): Observable<any> {
     let params = new HttpParams()
@@ -27,6 +36,15 @@ export class SosService extends ApiService {
       .set("start_date", start_date)
       .set("end_date", end_date)
     return this.http.get<any>(`${this.endpoint}/table-view-area`, { params });
+  }
+
+  SosBarChartArea(country_uuid: string, province_uuid: string, start_date: string, end_date: string): Observable<any> {
+    let params = new HttpParams()
+      .set("country_uuid", country_uuid)
+      .set("province_uuid", province_uuid)
+      .set("start_date", start_date)
+      .set("end_date", end_date)
+    return this.http.get<any>(`${this.endpoint}/bar-chart-area`, { params });
   }
 
   SOSTableViewSubArea(country_uuid: string, province_uuid: string, area_uuid: string,
@@ -40,6 +58,16 @@ export class SosService extends ApiService {
     return this.http.get<any>(`${this.endpoint}/table-view-subarea`, { params });
   }
 
+  SosBarChartSubArea(country_uuid: string, province_uuid: string, area_uuid: string, start_date: string, end_date: string): Observable<any> {
+    let params = new HttpParams()
+      .set("country_uuid", country_uuid)
+      .set("province_uuid", province_uuid)
+      .set("area_uuid", area_uuid)
+      .set("start_date", start_date)
+      .set("end_date", end_date)
+    return this.http.get<any>(`${this.endpoint}/bar-chart-subarea`, { params });
+  }
+
   SOSTableViewCommune(country_uuid: string, province_uuid: string, area_uuid: string, sub_area_uuid: string,
     start_date: string, end_date: string): Observable<any> {
     let params = new HttpParams()
@@ -50,6 +78,17 @@ export class SosService extends ApiService {
       .set("start_date", start_date)
       .set("end_date", end_date)
     return this.http.get<any>(`${this.endpoint}/table-view-commune`, { params });
+  }
+
+  SosBarChartCommune(country_uuid: string, province_uuid: string, area_uuid: string, sub_area_uuid: string, start_date: string, end_date: string): Observable<any> {
+    let params = new HttpParams()
+      .set("country_uuid", country_uuid)
+      .set("province_uuid", province_uuid)
+      .set("area_uuid", area_uuid)
+      .set("sub_area_uuid", sub_area_uuid)
+      .set("start_date", start_date)
+      .set("end_date", end_date)
+    return this.http.get<any>(`${this.endpoint}/bar-chart-commune`, { params });
   }
 
 

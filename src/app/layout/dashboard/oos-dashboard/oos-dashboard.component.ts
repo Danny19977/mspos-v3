@@ -64,14 +64,14 @@ export class OosDashboardComponent implements OnInit {
       next: (user) => {
         this.currentUser = user;
 
-        this.countryService.getAll().subscribe((res) => {
-          this.countryList.set(res.data); 
-          if (this.currentUser.role != 'Managers' && this.currentUser.role != 'Support') { 
-            this.getNDYear(this.countryList()[0].uuid);
-          } else { 
-            this.getNDYear(this.currentUser.country_uuid);
-          }
-        }); 
+        // this.countryService.getAll().subscribe((res) => {
+        //   this.countryList.set(res.data); 
+        //   if (this.currentUser.role != 'Managers' && this.currentUser.role != 'Support') { 
+        //     this.getNDYear(this.countryList()[0].uuid);
+        //   } else { 
+        //     this.getNDYear(this.currentUser.country_uuid);
+        //   }
+        // }); 
 
       },
       error: (error) => {

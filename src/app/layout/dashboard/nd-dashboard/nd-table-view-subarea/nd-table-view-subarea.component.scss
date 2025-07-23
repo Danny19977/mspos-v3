@@ -94,3 +94,27 @@
     }
   }
 }
+
+// Styles pour le graphique en barres
+#nd-bar-chart-subarea {
+  .apexcharts-canvas {
+    margin: 0 auto;
+  }
+}
+
+.card-header {
+  h4 {
+    color: #2c3e50;
+    font-weight: 600;
+  }
+  
+  h5 {
+    margin: 0;
+    font-size: 14px;
+  }
+}
+
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}

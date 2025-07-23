@@ -65,14 +65,14 @@ export class SosDashboardComponent implements OnInit {
       next: (user) => {
         this.currentUser = user;
 
-        this.countryService.getAll().subscribe((res) => {
-          this.countryList.set(res.data); 
-          if (this.currentUser.role != 'Managers' && this.currentUser.role != 'Support') { 
-            this.getChartLineYear(this.countryList()[0].uuid);
-          } else { 
-            this.getChartLineYear(this.currentUser.country_uuid);
-          }
-        }); 
+        // this.countryService.getAll().subscribe((res) => {
+        //   this.countryList.set(res.data); 
+        //   if (this.currentUser.role != 'Managers' && this.currentUser.role != 'Support') { 
+        //     this.getChartLineYear(this.countryList()[0].uuid);
+        //   } else { 
+        //     this.getChartLineYear(this.currentUser.country_uuid);
+        //   }
+        // }); 
       },
       error: (error) => {
         console.log(error);
@@ -81,13 +81,13 @@ export class SosDashboardComponent implements OnInit {
  
   }
  
-  getChartLineYear(country_uuid: string) {
-    const year = new Date().getFullYear();
-    this.sosService.SOSTotalByBrandByMonth(country_uuid, year.toString()).subscribe((res) => {
-      console.log('getChartLineYear res:', res);
-      this.ndYearList = res.data;
-      this.isLoading = false;
-    });
-  }
+  // getChartLineYear(country_uuid: string) {
+  //   const year = new Date().getFullYear();
+  //   this.sosService.SOSTotalByBrandByMonth(country_uuid, year.toString()).subscribe((res) => {
+  //     console.log('getChartLineYear res:', res);
+  //     this.ndYearList = res.data;
+  //     this.isLoading = false;
+  //   });
+  // }
 
 }

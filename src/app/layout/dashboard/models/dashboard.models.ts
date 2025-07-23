@@ -15,7 +15,89 @@ export interface NDYearModel {
     visits: number;
 }
 
+export interface NDBarChartProvinceModel {
+    name: string;
+    brands: {
+        brand: string;
+        presence: number;
+        pourcent: number;
+    }[];
+    total_visits: number;
+}
 
+export interface NDBarChartAreaModel {
+    name: string;
+    brands: {
+        brand: string;
+        presence: number;
+        pourcent: number;
+    }[];
+    total_visits: number;
+}
+
+export interface NDBarChartSubAreaModel {
+    name: string;
+    brands: {
+        brand: string;
+        presence: number;
+        pourcent: number;
+    }[];
+    total_visits: number;
+}
+
+export interface NDBarChartCommuneModel {
+    name: string;
+    brands: {
+        brand: string;
+        presence: number;
+        pourcent: number;
+    }[];
+    total_visits: number;
+}
+
+export interface SOSBarChartProvinceModel {
+    name: string;
+    brands: {
+        brand_name: string;
+        total_farde: number;
+        total_global_farde: number;
+        percentage: number;
+    }[];
+    total_pos: number;
+}
+
+export interface SOSBarChartAreaModel {
+    name: string;
+    brands: {
+        brand_name: string;
+        total_farde: number;
+        total_global_farde: number;
+        percentage: number;
+    }[];
+    total_pos: number;
+}
+
+export interface SOSBarChartSubAreaModel {
+  name: string;
+  brands: {
+    brand_name: string;
+    total_farde: number;
+    total_global_farde: number;
+    percentage: number;
+  }[];
+  total_pos: number;
+}
+
+export interface SOSBarChartCommuneModel {
+  name: string;
+  brands: {
+    brand_name: string;
+    total_farde: number;
+    total_global_farde: number;
+    percentage: number;
+  }[];
+  total_pos: number;
+}
 export interface SOSTableViewModel {
     uuid: string;
     name: string;

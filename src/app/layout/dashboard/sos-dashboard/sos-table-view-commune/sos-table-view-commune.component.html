@@ -69,6 +69,43 @@
                     </div>
                 </div>
                 } @else {
+                
+                <!-- Section du graphique en barres SOS Commune -->
+                <div class="row mb-4">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5><i class="ti ti-chart-bar me-2"></i>Graphique SOS par Commune</h5>
+                            </div>
+                            <div class="card-body">
+                                @if (isLoadingChart) {
+                                <div class="text-center d-flex justify-content-center align-items-center" style="height: 300px;">
+                                    <div class="spinner-border text-primary" role="status">
+                                        <span class="visually-hidden">Loading chart...</span>
+                                    </div>
+                                </div>
+                                } @else if (barChartData && barChartData.length > 0) {
+                                <div id="sos-bar-chart-commune">
+                                    <apx-chart
+                                        [series]="chartOptions.series!"
+                                        [chart]="chartOptions.chart!"
+                                        [xaxis]="chartOptions.xaxis!"
+                                        [yaxis]="chartOptions.yaxis!"
+                                        [dataLabels]="chartOptions.dataLabels!"
+                                        [legend]="chartOptions.legend!"
+                                        [title]="chartOptions.title!">
+                                    </apx-chart>
+                                </div>
+                                } @else {
+                                <div class="text-center py-4">
+                                    <p class="text-muted">Aucune donnée disponible pour le graphique</p>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="accordion" id="communeAccordion">
                     @for (commune of getGroupedData(); track commune.name) {
                       <div class="accordion-item">

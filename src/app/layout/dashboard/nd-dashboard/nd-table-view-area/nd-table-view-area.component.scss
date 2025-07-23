@@ -94,3 +94,44 @@
     }
   }
 }
+
+// ===== STYLES POUR LE GRAPHIQUE EN BARRES ND AREA =====
+#nd-bar-chart-area {
+  padding: 20px;
+  background: #f8f9ff;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+// Animation de chargement pour le graphique
+.chart-loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+// Personnalisation de la légende du graphique
+.apexcharts-legend {
+  justify-content: center !important;
+}
+
+// Responsive design pour le graphique
+@media (max-width: 768px) {
+  #nd-bar-chart-area {
+    padding: 10px;
+  }
+  
+  .apexcharts-legend {
+    flex-wrap: wrap !important;
+  }
+}
