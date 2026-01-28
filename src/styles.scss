@@ -887,3 +887,18 @@ div.toggle-popup2 {
   margin-top: 4px;
   color: #ffebee;
 }
+
+// PWA Install Dialog Styles
+.pwa-install-dialog-panel {
+  .mat-mdc-dialog-container {
+    padding: 0;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    
+    .mat-mdc-dialog-surface {
+      border-radius: 20px;
+      padding: 0;
+    }
+  }
+}

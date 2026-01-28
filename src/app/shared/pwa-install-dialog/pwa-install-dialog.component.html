@@ -1,0 +1,33 @@
+<div class="pwa-install-dialog">
+  <div class="dialog-header">
+    <button mat-icon-button class="close-button" (click)="dismiss()">
+      <i class="bi bi-x"></i>
+    </button>
+  </div>
+
+  <div mat-dialog-content class="dialog-content">
+    <div class="logo-wrapper">
+      <img src="img/logo.png" alt="MSPOS Logo" class="app-logo">
+    </div>
+    
+    <h2 class="dialog-title">Installer MSPOS</h2>
+  </div>
+
+  <div mat-dialog-actions class="dialog-actions">
+    <button 
+      mat-raised-button 
+      color="primary"
+      class="install-button"
+      (click)="install()">
+      <i class="bi bi-download"></i>
+      Installer
+    </button>
+
+    <button 
+      mat-button 
+      class="later-button"
+      (click)="dismiss()">
+      Plus tard
+    </button>
+  </div>
+</div>

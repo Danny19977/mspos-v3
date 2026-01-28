@@ -4,7 +4,11 @@ import { Router, NavigationEnd, NavigationStart, Event as RouterEvent } from '@a
 import { filter, first, takeUntil } from 'rxjs/operators';
 import { SwUpdate } from '@angular/service-worker';
 import { Subject } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
 import { PerformanceService } from './core/services/performance.service';
+import { SyncService } from './services/sync.service';
+import { PwaInstallService } from './core/services/pwa-install.service';
+import { PwaInstallDialogComponent } from './shared/pwa-install-dialog/pwa-install-dialog.component';
 
 @Component({
   selector: 'app-root',
@@ -22,7 +26,10 @@ export class AppComponent implements OnInit, OnDestroy {
     private zone: NgZone,
     private router: Router,
     private swUpdate: SwUpdate,
-    private performanceService: PerformanceService
+    private performanceService: PerformanceService,
+    private syncService: SyncService, // Injection du service de synchronisation
+    private pwaInstallService: PwaInstallService,
+    private dialog: MatDialog
   ) {
     // Marquer le début du bootstrap Angular
     this.performanceService.mark('angular-constructor-start');
@@ -73,6 +80,13 @@ export class AppComponent implements OnInit, OnDestroy {
       });
     }
 
+    // Initialiser le service de synchronisation offline/online
+    console.log('🔄 Service de synchronisation initialisé');
+    // Le SyncService écoute les changements de connexion et synchronise automatiquement
+    if (this.syncService.isSyncInProgress()) {
+      console.log('⏳ Synchronisation en cours...');
+    }
+
     // Effacer le cache de manière optimisée
     this.clearCacheOptimized();
 
@@ -81,6 +95,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
     // Vérification des mises à jour du service worker
     this.setupServiceWorkerUpdates();
+
+    // Afficher le dialog d'installation PWA si nécessaire
+    this.showInstallPromptIfNeeded();
 
     console.groupEnd();
   }
@@ -247,5 +264,53 @@ export class AppComponent implements OnInit, OnDestroy {
       this.performanceService.mark('sw-update-deferred');
       // La mise à jour sera appliquée au prochain rechargement
     }
+  }
+
+  /**
+   * Affiche le dialog d'installation PWA si nécessaire
+   */
+  private showInstallPromptIfNeeded(): void {
+    // Attendre un peu après le chargement pour ne pas être intrusif
+    setTimeout(() => {
+      this.pwaInstallService.getPlatformInfo()
+        .pipe(first(), takeUntil(this.destroy$))
+        .subscribe((platformInfo) => {
+          // Vérifier si on doit afficher le prompt
+          if (this.pwaInstallService.shouldShowInstallPrompt()) {
+            console.log('📲 Affichage du dialog d\'installation PWA');
+            
+            // Afficher le dialog après un délai pour ne pas perturber l'expérience utilisateur
+            setTimeout(() => {
+              this.openInstallDialog(platformInfo);
+            }, 3000); // 3 secondes après le chargement complet
+          } else {
+            console.log('ℹ️ Dialog d\'installation PWA non affiché');
+          }
+        });
+    }, 1000);
+  }
+
+  /**
+   * Ouvre le dialog d'installation PWA
+   */
+  private openInstallDialog(platformInfo: any): void {
+    const dialogRef = this.dialog.open(PwaInstallDialogComponent, {
+      width: '500px',
+      maxWidth: '90vw',
+      data: { platformInfo },
+      panelClass: 'pwa-install-dialog-panel',
+      disableClose: false,
+      autoFocus: false
+    });
+
+    dialogRef.afterClosed()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe((result) => {
+        if (result?.installed) {
+          console.log('✅ Application installée avec succès');
+        } else if (result?.dismissed) {
+          console.log('👋 Dialog d\'installation fermé par l\'utilisateur');
+        }
+      });
   }
 }

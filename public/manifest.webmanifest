@@ -1,11 +1,16 @@
 {
-  "name": "mspos-v3",
-  "short_name": "mspos-v3",
-  "theme_color": "#1976d2",
-  "background_color": "#fafafa",
+  "name": "MSPOS V3 - Système de Gestion",
+  "short_name": "MSPOS V3",
+  "description": "Application de gestion complète pour votre entreprise - POS, inventaire, ventes et plus encore",
+  "theme_color": "#667eea",
+  "background_color": "#ffffff",
   "display": "standalone",
+  "orientation": "any",
   "scope": "./",
   "start_url": "./",
+  "categories": ["business", "productivity", "finance"],
+  "lang": "fr-FR",
+  "dir": "ltr",
   "icons": [
     {
       "src": "icons/icon-72x72.png",
@@ -55,5 +60,23 @@
       "type": "image/png",
       "purpose": "maskable any"
     }
-  ]
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Accéder au tableau de bord",
+      "url": "./dashboard",
+      "icons": [
+        {
+          "src": "icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false
 }
+

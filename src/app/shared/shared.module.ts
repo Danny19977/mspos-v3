@@ -36,11 +36,13 @@ import { HelpTooltipComponent } from './components/help-tooltip/help-tooltip.com
 import { SmartFieldComponent } from './components/smart-field/smart-field.component';
 import { UserFriendlyTooltipDirective } from './directives/user-friendly-tooltip.directive';
 import { UserFriendlyFormsService } from './services/user-friendly-forms.service';
+import { PwaInstallDialogComponent } from './pwa-install-dialog/pwa-install-dialog.component';
 
 
 @NgModule({    declarations: [ 
         ReloadComponent,
-        UserGetComponent, 
+        UserGetComponent,
+        PwaInstallDialogComponent,
     ],
     exports: [
         CommonModule,
