@@ -1,0 +1,22 @@
+
+
+
+je veux que tu reprend l'authentification pour implementer 
+le login Angular qui fonctionne offline (sans internet) 
+et online (avec internet), suit cette procedure : 
+
+Mode Offline (sans internet)
+- Angular détecte l’absence de connexion (navigator.onLine === false).
+- Au lieu d’appeler le backend, Angular vérifie les identifiants dans une base locale (IndexedDB ou SQLite via Capacitor).
+- Lors de la première connexion online réussie :
+- Les identifiants hashés et le token sont sauvegardés localement.
+- Lorsqu’on est offline :
+- Angular compare les identifiants saisis avec ceux stockés localement.
+- Si correspondance → accès accordé.
+- Sinon → refus.
+
+Dès que la connexion revient :
+- Angular synchronise les données locales avec le backend.
+- Met à jour le token si nécessaire.
+
+le systeme de doit pas stocker tous les utilisateurs localement car ca n'a aucun sens le user doit etre uniquement celui connecter 
