@@ -3,6 +3,10 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '../../shared/shared.module';
 
+// Sync Components (Standalone)
+import { SyncStatusComponent } from '../../shared/components/sync-status/sync-status.component';
+import { RecordSyncBadgeComponent } from '../../shared/components/record-sync-badge/record-sync-badge.component';
+
 // Components
 import { PosVenteListComponent } from './pos-vente/pos-vente-list/pos-vente-list.component';
 import { PosViewComponent } from './pos-vente/pos-view/pos-view.component';
@@ -43,6 +47,9 @@ import { MarketRoutingModule } from './market-routing.module';
     SharedModule,
     // RouterModule.forChild(routes),
     GoogleMapsModule,
+    // Standalone sync components
+    SyncStatusComponent,
+    RecordSyncBadgeComponent,
   ],
   providers: [
     PosVenteService,

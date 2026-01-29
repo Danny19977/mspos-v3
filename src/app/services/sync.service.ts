@@ -4,6 +4,7 @@ import { LocalDbService } from './local-db.service';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { filter } from 'rxjs/operators';
+import { SyncQueueService } from '../shared/services/sync-queue.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,7 +15,8 @@ export class SyncService {
   constructor(
     private networkService: NetworkService,
     private localDb: LocalDbService,
-    private http: HttpClient
+    private http: HttpClient,
+    private syncQueue: SyncQueueService
   ) {
     this.initAutoSync();
   }
@@ -30,7 +32,21 @@ export class SyncService {
       .subscribe(() => {
         console.log('🔄 Connexion rétablie, synchronisation en cours...');
         this.syncUserData();
+        this.syncMarketData(); // Sync market module data
       });
+  }
+
+  /**
+   * Synchronize market module data (brands, POS, forms, etc.)
+   */
+  async syncMarketData(): Promise<void> {
+    try {
+      console.log('🔄 Starting market data synchronization...');
+      const result = await this.syncQueue.processQueue();
+      console.log(`✅ Market data sync completed: ${result.success} success, ${result.failed} failed`);
+    } catch (error) {
+      console.error('❌ Error syncing market data:', error);
+    }
   }
 
   /**

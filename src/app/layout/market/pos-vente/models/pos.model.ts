@@ -48,6 +48,10 @@ export interface IPos {
     UpdatedAt?: Date;
 
     sync: boolean;
+    
+    // Offline sync fields
+    sync_status?: 'synced' | 'pending' | 'error';
+    temp_id?: string; // Temporary UUID for offline-created entities
 
     Country?: ICountry;
     Province?: IProvince;

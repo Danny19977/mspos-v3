@@ -27,5 +27,70 @@
         ]
       }
     }
+  ],
+  "dataGroups": [
+    {
+      "name": "api-brands",
+      "urls": [
+        "https://mspos-api-dvp8.onrender.com/api/brands/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 100,
+        "maxAge": "1d",
+        "timeout": "10s",
+        "strategy": "freshness"
+      }
+    },
+    {
+      "name": "api-pos",
+      "urls": [
+        "https://mspos-api-dvp8.onrender.com/api/pos/**",
+        "https://mspos-api-dvp8.onrender.com/api/pos-ventes/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 500,
+        "maxAge": "1d",
+        "timeout": "10s",
+        "strategy": "freshness"
+      }
+    },
+    {
+      "name": "api-posforms",
+      "urls": [
+        "https://mspos-api-dvp8.onrender.com/api/posforms/**",
+        "https://mspos-api-dvp8.onrender.com/api/posform-items/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 1000,
+        "maxAge": "1d",
+        "timeout": "10s",
+        "strategy": "performance"
+      }
+    },
+    {
+      "name": "api-routeplans",
+      "urls": [
+        "https://mspos-api-dvp8.onrender.com/api/routeplans/**",
+        "https://mspos-api-dvp8.onrender.com/api/routeplan-items/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 200,
+        "maxAge": "1d",
+        "timeout": "10s",
+        "strategy": "freshness"
+      }
+    },
+    {
+      "name": "api-equipments",
+      "urls": [
+        "https://mspos-api-dvp8.onrender.com/api/pos-equipements/**"
+      ],
+      "cacheConfig": {
+        "maxSize": 100,
+        "maxAge": "1d",
+        "timeout": "10s",
+        "strategy": "performance"
+      }
+    }
   ]
 }

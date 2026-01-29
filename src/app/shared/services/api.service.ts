@@ -1,15 +1,26 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { Observable, Subject, tap } from 'rxjs';
+import { Injectable, Injector } from '@angular/core';
+import { Observable, Subject, tap, map } from 'rxjs';
 import { ApiResponse, ApiResponse2 } from '../model/api-response.model';
+import { OfflineService } from './offline.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export abstract class ApiService {
   abstract get endpoint(): string;
+  
+  protected offlineService!: OfflineService;
 
-  constructor(protected http: HttpClient) { }
+  constructor(
+    protected http: HttpClient,
+    protected injector: Injector
+  ) {
+    // Lazy inject OfflineService to avoid circular dependency
+    setTimeout(() => {
+      this.offlineService = this.injector.get(OfflineService);
+    });
+  }
 
   private _refreshDataList$ = new Subject<void>();
 
@@ -52,6 +63,11 @@ export abstract class ApiService {
       .set("page", page.toString())
       .set("limit", pageSize.toString())
       .set("search", search)
+    const url = `${this.endpoint}/all/paginate?${params.toString()}`;
+    
+    if (this.offlineService) {
+      return this.offlineService.request<ApiResponse2>('GET', url, undefined, { cacheResponse: true });
+    }
     return this.http.get<ApiResponse2>(`${this.endpoint}/all/paginate`, { params });
   }
 
@@ -84,6 +100,11 @@ export abstract class ApiService {
       .set("page", page.toString())
       .set("page_size", pageSize.toString())
       .set("search", search)
+    const url = `${this.endpoint}/all/paginate/province/${province_uuid}?${params.toString()}`;
+    
+    if (this.offlineService) {
+      return this.offlineService.request<any>('GET', url, undefined, { cacheResponse: true, filterByProvince: true });
+    }
     return this.http.get<any>(`${this.endpoint}/all/paginate/province/${province_uuid}`, { params });
   }
 
@@ -186,10 +207,16 @@ export abstract class ApiService {
 
   // @Cacheable({ cacheBusterObserver: cacheBuster$ })
   getAll(): Observable<any> {
+    if (this.offlineService) {
+      return this.offlineService.request<any>('GET', `${this.endpoint}/all`, undefined, { cacheResponse: true });
+    }
     return this.http.get(`${this.endpoint}/all`);
   }
 
   getAllById(uuid: string): Observable<any> {
+    if (this.offlineService) {
+      return this.offlineService.request<any>('GET', `${this.endpoint}/all/${uuid}`, undefined, { cacheResponse: true });
+    }
     return this.http.get(`${this.endpoint}/all/${uuid}`);
   }
 
@@ -237,6 +264,14 @@ export abstract class ApiService {
 
 
   create(data: any): Observable<any> {
+    if (this.offlineService) {
+      return this.offlineService.request('POST', `${this.endpoint}/create`, data).pipe(
+        tap(() => {
+          this._refreshDataList$.next();
+          this._refreshData$.next();
+        })
+      );
+    }
     return this.http.post(`${this.endpoint}/create`, data).pipe(tap(() => {
       this._refreshDataList$.next();
       this._refreshData$.next();
@@ -244,6 +279,14 @@ export abstract class ApiService {
   }
 
   update(uuid: string, data: any): Observable<any> {
+    if (this.offlineService) {
+      return this.offlineService.request('PUT', `${this.endpoint}/update/${uuid}`, data).pipe(
+        tap(() => {
+          this._refreshDataList$.next();
+          this._refreshData$.next();
+        })
+      );
+    }
     return this.http.put(`${this.endpoint}/update/${uuid}`, data).pipe(tap(() => {
       this._refreshDataList$.next();
       this._refreshData$.next();
@@ -252,6 +295,15 @@ export abstract class ApiService {
 
 
   delete(uuid: string): Observable<void> {
+    if (this.offlineService) {
+      return this.offlineService.request('DELETE', `${this.endpoint}/delete/${uuid}`, { uuid }).pipe(
+        map(() => undefined),
+        tap(() => {
+          this._refreshDataList$.next();
+          this._refreshData$.next();
+        })
+      );
+    }
     return this.http.delete<void>(`${this.endpoint}/delete/${uuid}`).pipe(tap(() => {
       this._refreshDataList$.next();
       this._refreshData$.next();

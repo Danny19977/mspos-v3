@@ -28,6 +28,10 @@ export interface IRoutePlan {
     CreatedAt?: Date;
     UpdatedAt?: Date;
 
+    // Offline sync fields
+    sync_status?: 'synced' | 'pending' | 'error';
+    temp_id?: string; // Temporary UUID for offline-created entities
+
     // total_route_plan_item_active?: number;
     // total_route_plan_item?: number;
 

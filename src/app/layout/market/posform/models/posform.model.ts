@@ -49,6 +49,10 @@ export interface IPosForm {
     // sync: boolean; // pour savoir si le posform est synchronisé ou non
     signature: string;
 
+    // Offline sync fields
+    sync_status?: 'synced' | 'pending' | 'error';
+    temp_id?: string; // Temporary UUID for offline-created entities
+
     CreatedAt?: Date;
     UpdatedAt?: Date;
  

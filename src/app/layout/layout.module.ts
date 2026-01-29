@@ -9,6 +9,10 @@ import { SidebarComponent } from './common/sidebar/sidebar.component';
 import { HeaderComponent } from './common/header/header.component';
 import { LayoutCommonComponent } from './common/layout-common/layout-common.component'; 
 
+// Sync Components (Standalone)
+import { SyncStatusComponent } from '../shared/components/sync-status/sync-status.component';
+import { RecordSyncBadgeComponent } from '../shared/components/record-sync-badge/record-sync-badge.component';
+
 @NgModule({
   declarations: [
     LayoutComponent,
@@ -20,6 +24,13 @@ import { LayoutCommonComponent } from './common/layout-common/layout-common.comp
     CommonModule,
     LayoutRoutingModule,
     SharedModule,
+    // Standalone sync components
+    SyncStatusComponent,
+    RecordSyncBadgeComponent,
+  ],
+  exports: [
+    SyncStatusComponent,
+    RecordSyncBadgeComponent,
   ]
 })
 export class LayoutModule { }
