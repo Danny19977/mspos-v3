@@ -120,30 +120,58 @@ export class BrandComponent implements OnInit {
     this.fetchProducts(this.currentUser);
   }
 
-  fetchProducts(currentUser: IUser) {
+  fetchProducts(currentUser: IUser) { 
     if (currentUser.role == 'Manager') {
-      this.brandService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
-        this.dataList = res.data;
-        this.total_pages = res.pagination.total_pages;
-        this.total_records = res.pagination.total_records;
-        this.dataSource.data = this.dataList; // Update dataSource data
-        this.isLoadingData = false;
+      this.brandService.getPaginated2(this.current_page, this.page_size, this.search).subscribe({
+        next: (res) => {
+          if (res && res.data) {
+            this.dataList = res.data;
+            this.total_pages = res.pagination.total_pages;
+            this.total_records = res.pagination.total_records;
+            this.dataSource.data = this.dataList; // Update dataSource data
+          }
+          this.isLoadingData = false;
+        },
+        error: (err) => {
+          console.error('Error fetching brands:', err);
+          this.isLoadingData = false;
+          this.toastr.error('Erreur lors du chargement des données', 'Erreur!');
+        }
       });
     } else if (currentUser.role == 'ASM') {
-      this.brandService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page, this.page_size, this.search).subscribe(res => {
-        this.dataList = res.data;
-        this.total_pages = res.pagination.total_pages;
-        this.total_records = res.pagination.total_records;
-        this.dataSource.data = this.dataList; // Update dataSource data
-        this.isLoadingData = false;
+      this.brandService.getPaginatedByProvinceId(currentUser.province_uuid, 
+        this.current_page, this.page_size, this.search).subscribe({
+        next: (res) => {
+          if (res && res.data) {
+            this.dataList = res.data;
+            this.total_pages = res.pagination.total_pages;
+            this.total_records = res.pagination.total_records;
+            this.dataSource.data = this.dataList; // Update dataSource data
+          }
+          this.isLoadingData = false;
+        },
+        error: (err) => {
+          console.error('Error fetching brands:', err);
+          this.isLoadingData = false;
+          this.toastr.error('Erreur lors du chargement des données', 'Erreur!');
+        }
       });
     } else {
-      this.brandService.getPaginated2(this.current_page, this.page_size, this.search).subscribe(res => {
-        this.dataList = res.data;
-        this.total_pages = res.pagination.total_pages;
-        this.total_records = res.pagination.total_records;
-        this.dataSource.data = this.dataList; // Update dataSource data
-        this.isLoadingData = false;
+      this.brandService.getPaginated2(this.current_page, this.page_size, this.search).subscribe({
+        next: (res) => {
+          if (res && res.data) {
+            this.dataList = res.data;
+            this.total_pages = res.pagination.total_pages;
+            this.total_records = res.pagination.total_records;
+            this.dataSource.data = this.dataList; // Update dataSource data
+          }
+          this.isLoadingData = false;
+        },
+        error: (err) => {
+          console.error('Error fetching brands:', err);
+          this.isLoadingData = false;
+          this.toastr.error('Erreur lors du chargement des données', 'Erreur!');
+        }
       });
     }
   }
