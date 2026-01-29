@@ -144,6 +144,7 @@ export class BrandComponent implements OnInit {
         next: (res) => {
           if (res && res.data) {
             this.dataList = res.data;
+            console.log(this.dataList);
             this.total_pages = res.pagination.total_pages;
             this.total_records = res.pagination.total_records;
             this.dataSource.data = this.dataList; // Update dataSource data
@@ -211,10 +212,7 @@ export class BrandComponent implements OnInit {
     this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
-
-  getPostFormItemCount(postFormItem: IPosFormItem[]): string {
-    return postFormItem ? postFormItem.length > 0 ? postFormItem.length.toString() : '0' : '0';
-  }
+ 
 
   onCountryChange(event: any) {
     const provinceArray = this.provinceList.filter((v) => v.country_uuid == event.value);

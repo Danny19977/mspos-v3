@@ -16,6 +16,7 @@ export interface IBrand {
 
     Country?: ICountry;
     Province?: IProvince;
-
+    total_brand_usage?: number;
+    
     PosFormItems?: IPosFormItem[];
 }
