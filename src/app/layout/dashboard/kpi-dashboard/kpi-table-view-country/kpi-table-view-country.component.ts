@@ -161,7 +161,7 @@ export class KpiTableViewCountryComponent implements OnInit, OnDestroy {
     this.getTableView(this.country.uuid, this.start_date, this.end_date);
   }
 
-
+ 
   getTableView(country_uuid: string, start_date: string, end_date: string) {
     this.kpiService.TableViewCountry(country_uuid, start_date, end_date).subscribe((res) => {
       this.tableViewList = res.data;

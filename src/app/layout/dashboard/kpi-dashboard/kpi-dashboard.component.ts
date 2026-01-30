@@ -31,10 +31,9 @@ export class KpiDashboardComponent {
   );
  
   constructor(
-    private common: CommonService, 
-    private renderer: Renderer2,  
+    private common: CommonService,
+    private renderer: Renderer2,
   ) {
-
     this.common.base.subscribe((base: string) => {
       this.base = base;
     });
