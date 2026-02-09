@@ -24,9 +24,10 @@ export class GoogleMapComponent implements OnInit {
   mapErrorMessage = '';
 
 
-  dateRange!: FormGroup;
+  dateRange: FormGroup;
   start_date!: string;
   end_date!: string;
+  searchQuery: string = '';
 
   // Filtre 
   rangeDate: any[] = [];
@@ -40,6 +41,16 @@ export class GoogleMapComponent implements OnInit {
     private googleMapService: GoogleMapService,
     private googleMapsLoader: GoogleMapsLoaderService
   ) {
+    // Initialize FormGroup in constructor
+    const date = new Date();
+    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+    this.rangeDate = [firstDay, lastDay];
+
+    this.dateRange = this._formBuilder.group({
+      rangeValue: [this.rangeDate],
+      search: ['']
+    });
 
     this.common.base.subscribe((base: string) => {
       this.base = base;
@@ -71,14 +82,6 @@ export class GoogleMapComponent implements OnInit {
   }
 
   private initializeComponent() {
-    const date = new Date();
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-    this.rangeDate = [firstDay, lastDay];
-
-    this.dateRange = this._formBuilder.group({
-      rangeValue: new FormControl(this.rangeDate),
-    });
     this.start_date = formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US');
     this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
 
@@ -93,19 +96,27 @@ export class GoogleMapComponent implements OnInit {
     this.dateRange.valueChanges.subscribe(val => {
       this.start_date = formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US');
       this.end_date = formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US');
+      this.searchQuery = val.search || '';
 
-      this.getPosFormList(this.start_date, this.end_date);
+      this.getPosFormList(this.start_date, this.end_date, this.searchQuery);
     });
   }
 
 
-  getPosFormList(start_date: string, end_date: string) {
-    this.googleMapService.getGoogleMap(start_date, end_date).subscribe((res) => {
-      const dataList = res.data;
-      const dataListFilter = dataList.filter((item: any) => item.latitude !== 0 && item.longitude !== 0);
-      this.googleMapList = dataListFilter;
-      console.log("googleMapList", this.googleMapList)
-      this.isLoading = false;
+  getPosFormList(start_date: string, end_date: string, search?: string) {
+    this.googleMapService.getGoogleMap(start_date, end_date, search).subscribe({
+      next: (res) => {
+        const dataList = res?.data || [];
+        const dataListFilter = dataList.filter((item: any) => item.latitude !== 0 && item.longitude !== 0);
+        this.googleMapList = dataListFilter;
+        console.log("googleMapList", this.googleMapList);
+        this.isLoading = false;
+      },
+      error: (err) => {
+        console.error('Error fetching Google Map data:', err);
+        this.googleMapList = [];
+        this.isLoading = false;
+      }
     });
   }
 

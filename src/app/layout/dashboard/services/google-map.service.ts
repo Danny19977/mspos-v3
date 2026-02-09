@@ -10,10 +10,16 @@ import { Observable } from 'rxjs';
 export class GoogleMapService extends ApiService {
   endpoint: string = `${environment.apiUrl}/dashboard/google-map`;
 
-  getGoogleMap(start_date: string, end_date: string): Observable<any> {
+  getGoogleMap(start_date: string, end_date: string, search?: string): Observable<any> {
     let params = new HttpParams()
       .set("start_date", start_date)
-      .set("end_date", end_date)
+      .set("end_date", end_date);
+    
+    // Add search parameter if provided
+    if (search && search.trim() !== '') {
+      params = params.set("search", search.trim());
+    }
+    
     return this.http.get<any>(`${this.endpoint}/view`, { params });
   }
 }

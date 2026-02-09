@@ -4,26 +4,35 @@
       <div class="col-md-12">
         <div class="page-header">
           <div class="row align-items-center">
-            <div class="col-md-4">
+            <div class="col-12 col-md-4 mb-3 mb-md-0">
               <h3 class="page-title">Map DR</h3>
             </div>
-            <div class="col-md-8 float-end ms-auto">
+            <!-- <div class="col-12 col-md-8">
               <form [formGroup]="dateRange">
-                <div class="d-flex title-head">
-                  <div class="daterange-picker d-flex align-items-center justify-content-center">
-                    <div class="form-sort me-2">
-                      <i class="ti ti-calendar"></i>
-                      <input type="text" class="form-control date-range bookingrange" bsDaterangepicker
-                        [bsConfig]="{ adaptivePosition: true }"  formControlName="rangeValue" />
+                <div class="row g-2">
+                  <div class="col-12 col-md-12 col-lg-3">
+                    <div class="form-sort">
+                      <i class="ti ti-search"></i>
+                      <input type="text" class="form-control" placeholder="Rechercher (ASM, SUP, DR, Cyclo)" 
+                        formControlName="search" />
                     </div>
-                    <div class="head-icons mb-0">
-                      <app-reload></app-reload>
-                      <app-collapse-header></app-collapse-header>
-                    </div> 
+                  </div>
+                  <div class="col-12 col-md-12 col-lg-9">
+                    <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center">
+                      <div class="form-sort me-0 me-sm-2 mb-2 mb-sm-0 flex-grow-1">
+                        <i class="ti ti-calendar"></i>
+                        <input type="text" class="form-control date-range bookingrange" bsDaterangepicker
+                          [bsConfig]="{ adaptivePosition: true }"  formControlName="rangeValue" />
+                      </div>
+                      <div class="head-icons mb-0 d-flex justify-content-end">
+                        <app-reload></app-reload>
+                        <app-collapse-header></app-collapse-header>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </form> 
-            </div>
+            </div> -->
           </div>
         </div>
       </div>
