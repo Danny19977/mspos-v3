@@ -1,28 +1,12 @@
-import Dexie, { Table } from 'dexie';
 import { Injectable } from '@angular/core';
+import { db, LocalUser } from '../shared/services/db';
 
-export interface LocalUser {
-  id?: number;
-  identifier: string; // email ou username
-  passwordHash: string;
-  token: string;
-  userData: any; // Informations complètes de l'utilisateur
-  lastSync: Date;
-}
+export type { LocalUser };
 
 @Injectable({
   providedIn: 'root'
 })
-export class LocalDbService extends Dexie {
-  users!: Table<LocalUser, number>;
-
-  constructor() {
-    super('MSPOSAuthDB');
-    
-    this.version(1).stores({
-      users: '++id, identifier'
-    });
-  }
+export class LocalDbService {
 
   /**
    * Sauvegarde ou met à jour l'utilisateur authentifié
@@ -34,10 +18,10 @@ export class LocalDbService extends Dexie {
     userData: any
   ): Promise<void> {
     // On supprime tous les anciens utilisateurs d'abord
-    await this.users.clear();
-    
+    await db.authUsers.clear();
+
     // On sauvegarde uniquement l'utilisateur actuel
-    await this.users.add({
+    await db.authUsers.add({
       identifier: identifier.toLowerCase(),
       passwordHash,
       token,
@@ -50,7 +34,7 @@ export class LocalDbService extends Dexie {
    * Récupère l'utilisateur authentifié stocké localement
    */
   async getAuthenticatedUser(identifier: string): Promise<LocalUser | undefined> {
-    return await this.users
+    return await db.authUsers
       .where('identifier')
       .equals(identifier.toLowerCase())
       .first();
@@ -60,7 +44,7 @@ export class LocalDbService extends Dexie {
    * Vérifie si un utilisateur est stocké localement
    */
   async hasStoredUser(): Promise<boolean> {
-    const count = await this.users.count();
+    const count = await db.authUsers.count();
     return count > 0;
   }
 
@@ -68,14 +52,14 @@ export class LocalDbService extends Dexie {
    * Récupère le premier (et unique) utilisateur stocké
    */
   async getStoredUser(): Promise<LocalUser | undefined> {
-    return await this.users.toCollection().first();
+    return await db.authUsers.toCollection().first();
   }
 
   /**
    * Supprime l'utilisateur stocké (lors du logout)
    */
   async clearUser(): Promise<void> {
-    await this.users.clear();
+    await db.authUsers.clear();
   }
 
   /**
@@ -84,7 +68,7 @@ export class LocalDbService extends Dexie {
   async updateToken(identifier: string, token: string): Promise<void> {
     const user = await this.getAuthenticatedUser(identifier);
     if (user && user.id) {
-      await this.users.update(user.id, {
+      await db.authUsers.update(user.id, {
         token,
         lastSync: new Date()
       });
@@ -97,7 +81,7 @@ export class LocalDbService extends Dexie {
   async updateUserData(identifier: string, userData: any): Promise<void> {
     const user = await this.getAuthenticatedUser(identifier);
     if (user && user.id) {
-      await this.users.update(user.id, {
+      await db.authUsers.update(user.id, {
         userData,
         lastSync: new Date()
       });

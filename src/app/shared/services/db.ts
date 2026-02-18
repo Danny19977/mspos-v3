@@ -9,6 +9,15 @@ import { IRoutePlanItem } from '../../layout/market/routeplan/models/routeplanIt
 import { IPosEquipment } from '../../layout/market/pos-vente/models/pos-equipment.model';
 import { QueuedOperation } from './queue-operation.interface';
 
+export interface LocalUser {
+  id?: number;
+  identifier: string;
+  passwordHash: string;
+  token: string;
+  userData: any;
+  lastSync: Date;
+}
+
 export class AppDB extends Dexie {
   brands!: Table<IBrand, number>;
   pos!: Table<IPos, number>;
@@ -19,10 +28,11 @@ export class AppDB extends Dexie {
   posEquipments!: Table<IPosEquipment, number>;
   UserLogs!: Table<UserLogsModel, number>;
   syncQueue!: Table<QueuedOperation, number>;
+  authUsers!: Table<LocalUser, number>;
 
   constructor() {
-    super('ngdexieliveQuery');
-    this.version(5).stores({
+    super('msposlocaldb');
+    this.version(6).stores({
       brands: '++id, uuid, name, country_uuid, province_uuid, signature, CreatedAt, UpdatedAt',
       pos: '++id, name, shop, postype, gerant, avenue, quartier, reference, telephone, country_uuid, country_name, province_uuid, province_name, area_uuid, area_name, sub_area_uuid, subarea_name, commune_uuid, commune_name, asm_uuid, sup_uuid, dr_uuid, cyclo_uuid, user_uuid, user_fullname, status, signature, CreatedAt, UpdatedAt',
       posForms: '++id, uuid, price, comment, latitude, longitude, pos_uuid, country_name, province_uuid, province_name, area_uuid, area_name, sub_area_uuid, subarea_name, commune_uuid, commune_name, asm_uuid, sup_uuid, dr_uuid, cyclo_uuid, sync, signature, CreatedAt, UpdatedAt',
@@ -32,12 +42,9 @@ export class AppDB extends Dexie {
       posEquipments: '++id, pos_uuid, parasol, parasol_status, stand, stand_status, kiosk, kiosk_status, CreatedAt, UpdatedAt',
       UserLogs: '++id, name, user_uuid, action, description, signature, CreatedAt, UpdatedAt',
       syncQueue: '++id, operationId, entityType, operation, status, timestamp, userId, retryCount',
-    }).upgrade(async (trans) => {
-      console.log("Base de donnee ok!");
-      // Handle schema upgrades if necessary
-      // Example: await trans.table('brands').toColle ction().modify(...);
+      authUsers: '++id, identifier',
     });
   }
 }
 
-export const db = new AppDB();
+export const db = new AppDB(); 

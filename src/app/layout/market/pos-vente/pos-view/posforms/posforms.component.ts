@@ -789,7 +789,7 @@ export class PosformsComponent implements OnInit, AfterViewInit {
       this.isLoading.set(true);
 
       const formData = {
-        price: parseInt(this.formGroup().value.price) || 50,
+        price: parseInt(this.formGroup().value.price) || 100,
         comment: this.formGroup().value.comment || '',
       };
 
