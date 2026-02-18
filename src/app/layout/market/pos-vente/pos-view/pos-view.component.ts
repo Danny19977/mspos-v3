@@ -1,64 +1,101 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild, AfterViewInit } from '@angular/core';
-import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
-import { MatPaginator, PageEvent } from '@angular/material/paginator';
-import { MatSort, Sort } from '@angular/material/sort';
-import { MatTableDataSource } from '@angular/material/table';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component, OnInit, signal, inject, DestroyRef, computed } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormGroup, FormBuilder, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
 import { ToastrService } from 'ngx-toastr';
 import { routes } from '../../../../shared/routes/routes';
 import { IPosForm } from '../../posform/models/posform.model';
 import { IUser } from '../../../management/user/models/user.model';
 import { IPos } from '../models/pos.model';
 import { AuthService } from '../../../../auth/auth.service';
-import { PosVenteService } from '../pos-vente.service'; 
+import { PosVenteService } from '../pos-vente.service';
 import { LogsService } from '../../../management/user-logs/logs.service';
+import { ReloadComponent } from '../../../../shared/components/reload/reload.component';
+import { CollapseHeaderComponent } from '../../../../shared/common/collapse-header/collapse-header.component';
+import { MapPosComponent } from './map-pos/map-pos.component';
+import { PosformsComponent } from './posforms/posforms.component';
+import { PosEquipmentComponent } from '../pos-equipment/pos-equipment.component';
 
 
 @Component({
   selector: 'app-pos-view',
-  standalone: false,
+  standalone: true,
+  imports: [
+    // Core
+    CommonModule,
+    ReactiveFormsModule,
+    FormsModule,
+    RouterModule,
+    // Material
+    MatFormFieldModule,
+    MatInputModule,
+    // Custom Components
+    ReloadComponent,
+    CollapseHeaderComponent,
+    MapPosComponent,
+    PosformsComponent,
+    PosEquipmentComponent
+  ],
   templateUrl: './pos-view.component.html',
   styleUrl: './pos-view.component.scss'
 })
 export class PosViewComponent implements OnInit {
-  isLoadingData = false;
-  public routes = routes;
+  // Force compiler to recognize component usage
+  protected readonly _componentRefs = {
+    reload: ReloadComponent,
+    collapse: CollapseHeaderComponent,
+    map: MapPosComponent,
+    forms: PosformsComponent,
+    equipment: PosEquipmentComponent
+  };
 
-  // Forms  
-  idItem!: string;
-  dataItem!: IPosForm; // Single data 
+  // Services avec inject()
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+  private readonly formBuilder = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly posService = inject(PosVenteService);
+  private readonly logActivity = inject(LogsService);
+  private readonly toastr = inject(ToastrService);
+  private readonly destroyRef = inject(DestroyRef);
 
-  formGroup!: FormGroup;
-  currentUser!: IUser;
-  isLoading = false;
-
-  posUUID!: string;
-  pos!: IPos; 
-  activeTab: string = 'map-tab';
-  
-  posTypes: string[] = [
+  // Signals pour l'état du composant
+  readonly isLoadingData = signal(false);
+  readonly routes = routes;
+  readonly idItem = signal('');
+  readonly dataItem = signal<IPosForm | undefined>(undefined);
+  readonly formGroup = signal<FormGroup>(new FormGroup({}));
+  readonly currentUser = signal<IUser | undefined>(undefined);
+  readonly isLoading = signal(false);
+  readonly posUUID = signal('');
+  readonly pos = signal<IPos | undefined>(undefined);
+  readonly activeTab = signal('map-tab');
+  readonly posTypes = signal<string[]>([
     'Gros',
     'Détail',
     'Mixte'
-  ];
+  ]);
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private _formBuilder: FormBuilder,
-    private authService: AuthService,
-    private posService: PosVenteService,
-    private logActivity: LogsService,
-    private toastr: ToastrService
-  ) {
-  }
+  // Computed signal pour combiner les conditions
+  readonly posData = computed(() => {
+    const user = this.currentUser();
+    const posValue = this.pos();
+    return user && posValue ? posValue : undefined;
+  });
+
+  readonly canShowContent = computed(() => {
+    return !this.isLoadingData() && this.posData() !== undefined;
+  });
 
 
   ngOnInit() {
-    this.isLoadingData = true;
+    this.isLoadingData.set(true);
 
     // Initialiser le formulaire de modification du POS
-    this.formGroup = this._formBuilder.group({
+    this.formGroup.set(this.formBuilder.group({
       name: ['', Validators.required],
       shop: ['', Validators.required],
       postype: ['', Validators.required],
@@ -67,98 +104,112 @@ export class PosViewComponent implements OnInit {
       quartier: ['', Validators.required],
       reference: ['', Validators.required],
       telephone: ['', Validators.required],
-    });
+    }));
 
-    this.route.params.subscribe(params => {
-      this.posUUID = params['uuid']; 
-      this.posService.get(this.posUUID).subscribe(item => {
-        this.authService.user().subscribe({
-          next: (user) => {
-            this.currentUser = user;
-            this.pos = item.data; // Assign the fetched POS data to the pos property 
-            
-            // Pré-remplir le formulaire avec les données du POS
-            this.formGroup.patchValue({
-              name: this.pos.name,
-              shop: this.pos.shop,
-              postype: this.pos.postype,
-              gerant: this.pos.gerant,
-              avenue: this.pos.avenue,
-              quartier: this.pos.quartier,
-              reference: this.pos.reference,
-              telephone: this.pos.telephone,
-            });
-            this.isLoadingData = false;
-          },
-          error: (error) => {
-            this.isLoadingData = false;
-            this.router.navigate(['/auth/login']);
-            console.log(error);
-          }
+    this.route.params
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(params => {
+        this.posUUID.set(params['uuid']);
+        this.posService.get(this.posUUID()).subscribe(item => {
+          this.authService.user().subscribe({
+            next: (user) => {
+              this.currentUser.set(user);
+              this.pos.set(item.data); // Assign the fetched POS data to the pos property 
+              
+              // Pré-remplir le formulaire avec les données du POS
+              const currentPos = this.pos();
+              if (currentPos) {
+                this.formGroup().patchValue({
+                  name: currentPos.name,
+                  shop: currentPos.shop,
+                  postype: currentPos.postype,
+                  gerant: currentPos.gerant,
+                  avenue: currentPos.avenue,
+                  quartier: currentPos.quartier,
+                  reference: currentPos.reference,
+                  telephone: currentPos.telephone,
+                });
+              }
+              this.isLoadingData.set(false);
+            },
+            error: (error) => {
+              this.isLoadingData.set(false);
+              this.router.navigate(['/auth/login']);
+              console.log(error);
+            }
+          });
         });
       });
-    });
-
-  } 
+  }
 
   onTabClick(tabId: string, event?: Event): void {
     if (event) {
       event.preventDefault();
       event.stopPropagation();
     }
-    this.activeTab = tabId;
+    this.activeTab.set(tabId);
     console.log('Tab clicked:', tabId); // Debug log
   }
 
   isTabActive(tabId: string): boolean {
-    return this.activeTab === tabId;
+    return this.activeTab() === tabId;
   }
 
   onSubmitUpdate() {
     try {
-      this.isLoading = true;
+      this.isLoading.set(true);
+      const currentUser = this.currentUser();
+      const currentPos = this.pos();
+      const formValue = this.formGroup().value;
+      
+      if (!currentUser || !currentPos) {
+        this.isLoading.set(false);
+        this.toastr.error('Données utilisateur ou POS manquantes', 'Erreur');
+        return;
+      }
+
       var body: IPos = {
-        name: this.formGroup.value.name,
-        shop: this.formGroup.value.shop,
-        postype: this.formGroup.value.postype,
-        gerant: this.formGroup.value.gerant,
-        avenue: this.formGroup.value.avenue,
-        quartier: this.formGroup.value.quartier,
-        reference: this.formGroup.value.reference,
-        telephone: this.formGroup.value.telephone,
-        country_uuid: this.currentUser.country_uuid,
-        province_uuid: this.currentUser.province_uuid,
-        area_uuid: this.currentUser.area_uuid,
-        sub_area_uuid: this.currentUser.sub_area_uuid,
-        commune_uuid: this.currentUser.commune_uuid,
-        asm_uuid: this.currentUser.asm_uuid,
-        asm: this.currentUser.asm,
-        sup_uuid: this.currentUser.sup_uuid,
-        sup: this.currentUser.sup,
-        dr_uuid: this.currentUser.dr_uuid,
-        dr: this.currentUser.dr,
-        cyclo_uuid: this.currentUser.cyclo_uuid,
-        cyclo: this.currentUser.cyclo,
-        user_uuid: this.currentUser.uuid,
-        status: this.pos.status, // Conserver le statut actuel
-        signature: this.currentUser.fullname,
+        name: formValue.name,
+        shop: formValue.shop,
+        postype: formValue.postype,
+        gerant: formValue.gerant,
+        avenue: formValue.avenue,
+        quartier: formValue.quartier,
+        reference: formValue.reference,
+        telephone: formValue.telephone,
+        country_uuid: currentUser.country_uuid,
+        province_uuid: currentUser.province_uuid,
+        area_uuid: currentUser.area_uuid,
+        sub_area_uuid: currentUser.sub_area_uuid,
+        commune_uuid: currentUser.commune_uuid,
+        asm_uuid: currentUser.asm_uuid,
+        asm: currentUser.asm,
+        sup_uuid: currentUser.sup_uuid,
+        sup: currentUser.sup,
+        dr_uuid: currentUser.dr_uuid,
+        dr: currentUser.dr,
+        cyclo_uuid: currentUser.cyclo_uuid,
+        cyclo: currentUser.cyclo,
+        user_uuid: currentUser.uuid,
+        status: currentPos.status, // Conserver le statut actuel
+        signature: currentUser.fullname,
         sync: false // Indique que le POS n'est pas encore synchronisé
       };
       
-      this.posService.update(this.posUUID, body)
+      this.posService.update(this.posUUID(), body)
         .subscribe({
           next: (res) => {
             this.logActivity.activity(
               'POS',
-              this.currentUser.uuid,
+              currentUser.uuid,
               'updated',
               `Updated Pos uuid: ${res.data.uuid}`,
-              this.currentUser.fullname
+              currentUser.fullname
             ).subscribe({
               next: () => {
-                this.formGroup.reset();
+                this.formGroup().reset();
                 this.toastr.success('Modification enregistré!', 'Success!');
-                this.isLoading = false;
+                this.isLoading.set(false);
                 // Fermer l'offcanvas automatiquement
                 const offcanvasElement = document.getElementById('offcanvas_edit');
                 if (offcanvasElement) {
@@ -169,7 +220,7 @@ export class PosViewComponent implements OnInit {
                 this.loadPosData();
               },
               error: (err) => {
-                this.isLoading = false;
+                this.isLoading.set(false);
                 this.toastr.error(`${err.error.message}`, 'Oupss!');
                 console.log(err);
               }
@@ -178,30 +229,33 @@ export class PosViewComponent implements OnInit {
           error: err => {
             console.log(err);
             this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-            this.isLoading = false;
+            this.isLoading.set(false);
           }
         });
     } catch (error) {
-      this.isLoading = false;
+      this.isLoading.set(false);
       console.log(error);
     }
   }
 
   // Méthode pour recharger les données du POS après modification
   private loadPosData() {
-    this.posService.get(this.posUUID).subscribe(item => {
-      this.pos = item.data; 
+    this.posService.get(this.posUUID()).subscribe(item => {
+      this.pos.set(item.data);
       // Mettre à jour le formulaire avec les nouvelles données
-      this.formGroup.patchValue({
-        name: this.pos.name,
-        shop: this.pos.shop,
-        postype: this.pos.postype,
-        gerant: this.pos.gerant,
-        avenue: this.pos.avenue,
-        quartier: this.pos.quartier,
-        reference: this.pos.reference,
-        telephone: this.pos.telephone,
-      });
+      const currentPos = this.pos();
+      if (currentPos) {
+        this.formGroup().patchValue({
+          name: currentPos.name,
+          shop: currentPos.shop,
+          postype: currentPos.postype,
+          gerant: currentPos.gerant,
+          avenue: currentPos.avenue,
+          quartier: currentPos.quartier,
+          reference: currentPos.reference,
+          telephone: currentPos.telephone,
+        });
+      }
     });
   }
 

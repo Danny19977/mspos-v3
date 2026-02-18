@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
 import { routes } from '../../shared/routes/routes';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -20,35 +20,30 @@ import { PosVenteService } from '../../layout/market/pos-vente/pos-vente.service
   styleUrl: './register.component.scss'
 })
 export class RegisterComponent implements OnInit {
-  dateY = "";
-  public routes = routes;
-  isLoading = false;
+  // Services avec inject()
+  private readonly router = inject(Router);
+  private readonly formBuilder = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly provinceService = inject(ProvinceService);
+  private readonly areaService = inject(AreaService);
+  private readonly supService = inject(SupService);
+  private readonly posService = inject(PosVenteService);
+  private readonly toastr = inject(ToastrService);
+
+  // Signals pour l'état du composant
+  readonly dateY = formatDate(new Date(), 'yyyy', 'en');
+  readonly routes = routes;
+  readonly isLoading = signal(false);
+  readonly password = signal<boolean[]>([false]);
+  readonly isManager = signal(false);
+  
+  readonly provinceList = signal<IProvince[]>([]);
+  readonly areaList = signal<IArea[]>([]);
+  readonly areaListFilter = signal<IArea[]>([]);
+  readonly posList = signal<IPos[]>([]);
+  readonly posListFilter = signal<IPos[]>([]);
 
   formGroup!: FormGroup;
-
-  provinceList: IProvince[] = [];
-  areaList: IArea[] = [];
-  areaListFilter: IArea[] = []; 
-  posList: IPos[] = [];
-  posListFilter: IPos[] = [];
-
-  isManager = false; 
-
-  public password: boolean[] = [false];
-
-
-  constructor(
-    private router: Router,
-    private formBuilder: FormBuilder, 
-    private authService: AuthService,
-    private provinceService: ProvinceService,
-    private areaService: AreaService,
-    private supService: SupService,
-    private posService: PosVenteService,
-    private toastr: ToastrService
-  ) {
-    this.dateY = formatDate(new Date(), 'yyyy', 'en');
-  }
 
   ngOnInit(): void {
     this.formGroup = this.formBuilder.group({
@@ -61,13 +56,15 @@ export class RegisterComponent implements OnInit {
   }
 
   public togglePassword(index: number) {
-    this.password[index] = !this.password[index]
+    const current = this.password();
+    current[index] = !current[index];
+    this.password.set([...current]);
   }
 
   onSubmit() {
     try {
       if (this.formGroup.valid) {
-        this.isLoading = true;
+        this.isLoading.set(true);
         var body = {
           fullname: this.formGroup.value.fullname,
           email: this.formGroup.value.email,
@@ -87,20 +84,20 @@ export class RegisterComponent implements OnInit {
         };
         this.authService.register(body).subscribe({ 
           next: (res) => {
-            this.isLoading = false;
+            this.isLoading.set(false);
             this.formGroup.reset();
             this.toastr.success('Compte cree avec succès! \n Contactez-votre adminstrateur', 'Success!');
             this.navigate();
           },
           error: (err) => {
-            this.isLoading = false;
+            this.isLoading.set(false);
             this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
             console.log(err);
           }
         });
       }
     } catch (error) {
-      this.isLoading = false;
+      this.isLoading.set(false);
       console.log(error);
     }
   }

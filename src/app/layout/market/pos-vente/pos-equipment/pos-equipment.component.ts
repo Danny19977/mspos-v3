@@ -1,5 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Component, Input, OnInit, signal, inject, DestroyRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { IPosEquipment } from '../models/pos-equipment.model';
 import { PosEquipmentService } from './pos-equipment.service';
 import { BrandService } from '../../brand/brand.service'; 
@@ -14,96 +16,98 @@ declare var bootstrap: any;
 
 @Component({
   selector: 'app-pos-equipment',
-  standalone: false,
+  standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   templateUrl: './pos-equipment.component.html',
   styleUrl: './pos-equipment.component.scss'
 })
 export class PosEquipmentComponent implements OnInit {
   @Input() posUUId!: string;
-  equipmentList: IPosEquipment[] = [];
-  isLoading = false;
+  
+  // Signal declarations
+  equipmentList = signal<IPosEquipment[]>([]);
+  isLoading = signal(false);
+  total_pages = signal(0);
+  page_size = signal(15);
+  current_page = signal(1);
+  total_records = signal(0);
+  search = signal('');
+  equipmentForm = signal<FormGroup>(null!);
+  isEditMode = signal(false);
+  selectedEquipment = signal<IPosEquipment | null>(null);
+  equipmentToDelete = signal<IPosEquipment | null>(null);
+  brandList = signal<IBrand[]>([]);
+  currentUser = signal<IUser>(null!);
 
-  total_pages: number = 0;
-  page_size: number = 15;
-  current_page: number = 1;
-  total_records: number = 0;
-
-  public search = '';
-
-  equipmentForm!: FormGroup;
-  isEditMode = false;
-  selectedEquipment: IPosEquipment | null = null;
-  equipmentToDelete: IPosEquipment | null = null;
-  brandList: IBrand[] = [];
-  currentUser!: IUser;
+  // Services
+  private equipmentService = inject(PosEquipmentService);
+  private fb = inject(FormBuilder);
+  private brandService = inject(BrandService);
+  private authService = inject(AuthService);
+  private toastr = inject(ToastrService);
+  private destroyRef = inject(DestroyRef);
 
   private searchSubject = new Subject<string>();
-
-  constructor(
-    private equipmentService: PosEquipmentService,
-    private fb: FormBuilder,
-    private brandService: BrandService,
-    private authService: AuthService,
-    private toastr: ToastrService
-  ) {}
 
   ngOnInit() {
     if (this.posUUId) {
       this.loadEquipments();
     }
     this.initializeForm();
-    this.authService.user().subscribe({
+    this.authService.user().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (user) => {
-        this.currentUser = user;
+        this.currentUser.set(user);
         this.loadBrandsByRole();
       }
     });
     this.searchSubject.pipe(
       debounceTime(300),
-      distinctUntilChanged()
+      distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef)
     ).subscribe((searchValue) => {
       if (searchValue.length === 0 || searchValue.length >= 3) {
-        this.search = searchValue;
-        this.current_page = 1;
+        this.search.set(searchValue);
+        this.current_page.set(1);
         this.loadEquipments();
       }
     });
   }
 
   private initializeForm() {
-    this.equipmentForm = this.fb.group({
+    this.equipmentForm.set(this.fb.group({
       parasol: ['', [Validators.required]],
       parasol_status: ['', [Validators.required]],
       stand: ['', [Validators.required]],
       stand_status: ['', [Validators.required]],
       kiosk: ['', [Validators.required]],
       kiosk_status: ['', [Validators.required]],
-    });
+    }));
   }
 
   loadEquipments() {
-    this.isLoading = true;
+    this.isLoading.set(true);
     this.equipmentService.getPaginatedById(this.posUUId, 
-      this.current_page, this.page_size, this.search).subscribe({
+      this.current_page(), this.page_size(), this.search()).subscribe({
       next: (data) => {
-        this.equipmentList = data.data || data;
-        this.total_records = data.total || (data.meta ? data.meta.total : 0);
-        this.total_pages = Math.ceil(this.total_records / this.page_size);
-        this.isLoading = false;
+        this.equipmentList.set(data.data || data);
+        this.total_records.set(data.total || (data.meta ? data.meta.total : 0));
+        this.total_pages.set(Math.ceil(this.total_records() / this.page_size()));
+        this.isLoading.set(false);
       },
       error: () => {
-        this.isLoading = false;
+        this.isLoading.set(false);
       }
     });
   }
 
   loadBrandsByRole() {
-    if (!this.currentUser) return;
-     this.brandService.getAllByASM(this.currentUser.province_uuid).subscribe({
+    const currentUser = this.currentUser();
+    if (!currentUser) return;
+     this.brandService.getAllByASM(currentUser.province_uuid).subscribe({
         next: (res: any) => {
-          this.brandList = res.data || [];
+          const brands = res.data || [];
           // Ajouter l'option "Pas d'équipement" au début de la liste
-          this.brandList.unshift({
+          brands.unshift({
             uuid: 'no-equipment',
             name: "Pas d'équipement",
             country_uuid: '',
@@ -112,16 +116,17 @@ export class PosEquipmentComponent implements OnInit {
             CreatedAt: new Date(),
             UpdatedAt: new Date()
           });
+          this.brandList.set(brands);
         },
       });
   }
 
   addEquipment() {
-    this.isEditMode = false;
-    this.selectedEquipment = null;
-    this.equipmentForm.reset();
+    this.isEditMode.set(false);
+    this.selectedEquipment.set(null);
+    this.equipmentForm().reset();
     // Set default values for required fields
-    this.equipmentForm.patchValue({
+    this.equipmentForm().patchValue({
       parasol: '',
       parasol_status: '',
       stand: '',
@@ -133,9 +138,9 @@ export class PosEquipmentComponent implements OnInit {
   }
 
   editEquipment(eq: IPosEquipment) {
-    this.isEditMode = true;
-    this.selectedEquipment = eq;
-    this.equipmentForm.patchValue({
+    this.isEditMode.set(true);
+    this.selectedEquipment.set(eq);
+    this.equipmentForm().patchValue({
       parasol: eq.parasol || '',
       parasol_status: eq.parasol_status || '',
       stand: eq.stand || '',
@@ -148,20 +153,21 @@ export class PosEquipmentComponent implements OnInit {
 
   deleteEquipment(eq?: IPosEquipment) {
     if (eq) {
-      this.equipmentToDelete = eq;
+      this.equipmentToDelete.set(eq);
       this.openModal('deleteConfirmModal');
       return;
     }
-    if (!this.equipmentToDelete) return;
-    this.isLoading = true;
-    this.equipmentService.delete(this.equipmentToDelete.uuid!).subscribe({
+    const toDelete = this.equipmentToDelete();
+    if (!toDelete) return;
+    this.isLoading.set(true);
+    this.equipmentService.delete(toDelete.uuid!).subscribe({
       next: () => {
         this.loadEquipments();
-        this.isLoading = false;
+        this.isLoading.set(false);
         this.closeModal('deleteConfirmModal');
       },
       error: () => {
-        this.isLoading = false;
+        this.isLoading.set(false);
       }
     });
   }
@@ -171,30 +177,31 @@ export class PosEquipmentComponent implements OnInit {
   }
 
   onSubmitEquipment() {
-    if (this.equipmentForm.invalid) {
+    if (this.equipmentForm().invalid) {
       // Mark all fields as touched to show validation errors
-      this.equipmentForm.markAllAsTouched();
+      this.equipmentForm().markAllAsTouched();
       this.toastr.warning('Veuillez remplir tous les champs obligatoires.');
       return;
     }
     
-    this.isLoading = true;
-    const formValue = this.equipmentForm.value;
+    this.isLoading.set(true);
+    const formValue = this.equipmentForm().value;
     const payload: IPosEquipment = {
       ...formValue,
       pos_uuid: this.posUUId,
     };
     
-    if (this.isEditMode && this.selectedEquipment) {
-      this.equipmentService.update(this.selectedEquipment.uuid!, payload).subscribe({
+    const currentEquipment = this.selectedEquipment();
+    if (this.isEditMode() && currentEquipment) {
+      this.equipmentService.update(currentEquipment.uuid!, payload).subscribe({
         next: () => {
           this.loadEquipments();
-          this.isLoading = false;
+          this.isLoading.set(false);
           this.closeModal('equipmentModal');
           this.toastr.success('Équipement modifié avec succès !');
         },
         error: (error) => {
-          this.isLoading = false;
+          this.isLoading.set(false);
           console.error('Error updating equipment:', error);
           this.toastr.error('Erreur lors de la modification de l\'équipement.');
         }
@@ -203,12 +210,12 @@ export class PosEquipmentComponent implements OnInit {
       this.equipmentService.create(payload).subscribe({
         next: () => {
           this.loadEquipments();
-          this.isLoading = false;
+          this.isLoading.set(false);
           this.closeModal('equipmentModal');
           this.toastr.success('Équipement ajouté avec succès !');
         },
         error: (error) => {
-          this.isLoading = false;
+          this.isLoading.set(false);
           console.error('Error creating equipment:', error);
           this.toastr.error('Erreur lors de l\'ajout de l\'équipement.');
         }
@@ -217,7 +224,7 @@ export class PosEquipmentComponent implements OnInit {
   }
 
   onSearch() {
-    this.current_page = 1;
+    this.current_page.set(1);
     this.loadEquipments();
   }
 
@@ -226,8 +233,8 @@ export class PosEquipmentComponent implements OnInit {
   }
 
   changePage(page: number) {
-    if (page < 1 || page > this.total_pages) return;
-    this.current_page = page;
+    if (page < 1 || page > this.total_pages()) return;
+    this.current_page.set(page);
     this.loadEquipments();
   }
 

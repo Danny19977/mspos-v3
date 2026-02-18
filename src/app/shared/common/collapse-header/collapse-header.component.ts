@@ -1,9 +1,12 @@
-import { Component } from '@angular/core'; 
+import { Component } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { DataService } from '../../data/data.service';
 
 @Component({
   selector: 'app-collapse-header',
-  standalone: false,
+  standalone: true,
+  imports: [CommonModule, MatTooltipModule],
   templateUrl: './collapse-header.component.html',
   styleUrl: './collapse-header.component.scss',
 })

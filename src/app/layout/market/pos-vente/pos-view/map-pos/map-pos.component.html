@@ -5,7 +5,7 @@
                 <h3 class="page-title">Map DR</h3>
             </div>
             <div class="col-md-8 float-end ms-auto">
-                <form [formGroup]="dateRange">
+                <form [formGroup]="dateRange()">
                     <div class="d-flex title-head">
                         <div class="daterange-picker d-flex align-items-center justify-content-center">
                             <div class="form-sort me-2">
@@ -20,14 +20,14 @@
         </div>
     </div>
     <div class=" ">
-        @if (hasMapError) {
+        @if (hasMapError()) {
         <div class="alert alert-danger" role="alert">
             <h4 class="alert-heading">Google Maps Error</h4>
-            <p>{{ mapErrorMessage }}</p>
+            <p>{{ mapErrorMessage() }}</p>
             <p class="mb-0">Please check your Google Maps API key configuration and ensure it has the necessary permissions.</p>
         </div>
         } @else {
-        <app-map-pos-card [isLoading]="isLoading" [googleMapList]="googleMapList"></app-map-pos-card>
+        <app-map-pos-card [isLoading]="isLoading()" [googleMapList]="googleMapList()"></app-map-pos-card>
         }
     </div>
 </div>

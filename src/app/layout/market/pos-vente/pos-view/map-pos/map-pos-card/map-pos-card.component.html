@@ -4,23 +4,24 @@
         <span class="visually-hidden">Loading...</span>
     </div>
 </div>
-} @else if (hasMapError) {
+} @else if (hasMapError()) {
 <div class="alert alert-warning" role="alert">
     <h5 class="alert-heading">Map Loading Error</h5>
-    <p>{{ mapErrorMessage }}</p>
+    <p>{{ mapErrorMessage() }}</p>
     <hr>
     <p class="mb-0">Veuillez vérifier votre clé API Google Maps et essayer de rafraîchir la page.</p>
 </div>
 } @else {
-<google-map [height]="mapHeight" [width]="mapWidth" [center]="center" [zoom]="zoom">
-    <map-marker *ngFor="let marker of markers" #markerRef="mapMarker" [position]="marker.position" [title]="marker.name"
+<google-map [height]="mapHeight()" [width]="mapWidth()" [center]="center()" [zoom]="zoom()">
+    <map-marker *ngFor="let marker of markers()" #markerRef="mapMarker" [position]="marker.position" [title]="marker.name"
         (mapClick)="openInfoWindow(marker, markerRef)"></map-marker>
 
     <map-info-window #infoWindow>
-        <div *ngIf="selectedMarker" class="gmaps-infowindow">
+        @if (selectedMarker(); as marker) {
+        <div class="gmaps-infowindow">
             <!-- En-tête avec titre et bouton X -->
             <div class="gmaps-header">
-                <h3 class="gmaps-title">{{ selectedMarker.name }}</h3>
+                <h3 class="gmaps-title">{{ marker.name }}</h3>
                 <button (click)="closeInfoWindowManual()" class="gmaps-close" aria-label="Fermer">×</button>
             </div>
             
@@ -30,32 +31,40 @@
                 <div class="gmaps-info">
                     <div class="info-row">
                         <span class="label">Catégorie:</span>
-                        <span class="value">{{ selectedMarker.category }}</span>
+                        <span class="value">{{ marker.category }}</span>
                     </div>
                     
-                    <div class="info-row" *ngIf="selectedMarker.asm">
+                    @if (marker.asm) {
+                    <div class="info-row">
                         <span class="label">ASM:</span>
-                        <span class="value">{{ selectedMarker.asm }}</span>
+                        <span class="value">{{ marker.asm }}</span>
                     </div>
+                    }
                     
-                    <div class="info-row" *ngIf="selectedMarker.sup">
+                    @if (marker.sup) {
+                    <div class="info-row">
                         <span class="label">Sup:</span>
-                        <span class="value">{{ selectedMarker.sup }}</span>
+                        <span class="value">{{ marker.sup }}</span>
                     </div>
+                    }
                     
-                    <div class="info-row" *ngIf="selectedMarker.dr">
+                    @if (marker.dr) {
+                    <div class="info-row">
                         <span class="label">DR:</span>
-                        <span class="value">{{ selectedMarker.dr }}</span>
+                        <span class="value">{{ marker.dr }}</span>
                     </div>
+                    }
                     
-                    <div class="info-row" *ngIf="selectedMarker.cyclo">
+                    @if (marker.cyclo) {
+                    <div class="info-row">
                         <span class="label">Cyclo:</span>
-                        <span class="value">{{ selectedMarker.cyclo }}</span>
+                        <span class="value">{{ marker.cyclo }}</span>
                     </div>
+                    }
                     
                     <div class="info-row">
                         <span class="label">Date:</span>
-                        <span class="value">{{ selectedMarker.date | date: "dd/MM/yyyy HH:mm" }}</span>
+                        <span class="value">{{ marker.date | date: "dd/MM/yyyy HH:mm" }}</span>
                     </div>
                 </div>
 
@@ -66,6 +75,7 @@
                 </div>
             </div>
         </div>
+        }
     </map-info-window>
 </google-map>
 }

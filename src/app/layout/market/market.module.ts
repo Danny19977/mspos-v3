@@ -30,15 +30,9 @@ import { MarketRoutingModule } from './market-routing.module';
 
 @NgModule({
   declarations: [
-    PosVenteListComponent,
-    PosViewComponent,
-    PosEquipmentComponent,
+    // Non-standalone components only
     RouteplanComponent,
     BrandComponent,
-    MapPosComponent,
-    PosformsComponent,
-    MapPosCardComponent,
-    PosFilterListComponent,
     BrandFilterListComponent,
   ],
   imports: [
@@ -47,9 +41,17 @@ import { MarketRoutingModule } from './market-routing.module';
     SharedModule,
     // RouterModule.forChild(routes),
     GoogleMapsModule,
-    // Standalone sync components
+    // Standalone components
     SyncStatusComponent,
     RecordSyncBadgeComponent,
+
+    PosVenteListComponent,
+    PosViewComponent,
+    PosEquipmentComponent,
+    MapPosComponent,
+    PosformsComponent,
+    MapPosCardComponent,
+    PosFilterListComponent,
   ],
   providers: [
     PosVenteService,

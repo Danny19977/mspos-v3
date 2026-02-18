@@ -1,13 +1,14 @@
 <!-- Page Wrapper -->
 <div class="page-wrapper">
-    @if (isLoadingData) {
+    @if (isLoadingData()) {
     <div class="text-center d-flex justify-content-center align-items-center">
         <div class="spinner-border bs-primary" role="status">
             <span class="visually-hidden">Loading...</span>
         </div>
     </div>
-    } @else {
-    @if (currentUser && pos) {
+    }
+    
+    @if (!isLoadingData() && posData(); as posData) {
     <div class="content">
         <div class="row">
             <div class="col-md-12">
@@ -37,7 +38,7 @@
                         <div class="col-sm-6">
                             <ul class="contact-breadcrumb">
                                 <li><a href="javascript:void(0);">POS</a></li>
-                                <li>{{ pos.name }}</li>
+                                <li>{{ posData.name }}</li>
                             </ul>
                         </div>
                     </div>
@@ -51,23 +52,27 @@
                                     <i class="ti ti-building-store fs-36 text-primary"></i>
                                 </div>
                                 <div>
-                                    <h5 class="mb-1">{{ pos.name.toLocaleUpperCase() }}</h5>
+                                    <h5 class="mb-1">{{ posData.name.toLocaleUpperCase() }}</h5>
                                     <p class="mb-2">Point de Vente</p>
                                     <div class="d-flex align-items-center">
                                         <span class="badge badge-light text-dark me-3">
-                                            <a [href]="'tel:' + pos.telephone" class="text-dark text-decoration-none">
+                                            <a [href]="'tel:' + posData.telephone" class="text-dark text-decoration-none">
                                                 <i class="ti ti-phone me-1"></i>
-                                                {{ pos.telephone }}
+                                                {{ posData.telephone }}
                                             </a>
                                         </span>
-                                        <span class="badge badge-success" *ngIf="pos.status">
+                                        @if (posData.status) {
+                                        <span class="badge badge-success">
                                             <i class="ti ti-check me-1"></i>
                                             Active
                                         </span>
-                                        <span class="badge badge-danger" *ngIf="!pos.status">
+                                        }
+                                        @if (!posData.status) {
+                                        <span class="badge badge-danger">
                                             <i class="ti ti-x me-1"></i>
                                             Inactive
                                         </span>
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -94,28 +99,28 @@
                                     class="avatar avatar-xs bg-light-300 p-0 flex-shrink-0 rounded-circle text-dark me-2">
                                     <i class="ti ti-building-store"></i>
                                 </span>
-                                <p><strong>Shop:</strong> {{ pos.shop || 'Pas de shop' }}</p>
+                                <p><strong>Shop:</strong> {{ posData.shop || 'Pas de shop' }}</p>
                             </div>
                             <div class="d-flex align-items-center mb-3">
                                 <span
                                     class="avatar avatar-xs bg-light-300 p-0 flex-shrink-0 rounded-circle text-dark me-2">
                                     <i class="ti ti-category"></i>
                                 </span>
-                                <p><strong>Categorie:</strong> {{ pos.postype }}</p>
+                                <p><strong>Categorie:</strong> {{ posData.postype }}</p>
                             </div>
                             <div class="d-flex align-items-center mb-3">
                                 <span
                                     class="avatar avatar-xs bg-light-300 p-0 flex-shrink-0 rounded-circle text-dark me-2">
                                     <i class="ti ti-map-pin"></i>
                                 </span>
-                                <p><strong>Reference:</strong> {{ pos.reference || 'Pas de reference' }}</p>
+                                <p><strong>Reference:</strong> {{ posData.reference || 'Pas de reference' }}</p>
                             </div>
                             <div class="d-flex align-items-center mb-3">
                                 <span
                                     class="avatar avatar-xs bg-light-300 p-0 flex-shrink-0 rounded-circle text-dark me-2">
                                     <i class="ti ti-calendar-exclamation"></i>
                                 </span>
-                                <p><strong>Créé le: </strong> {{ pos.CreatedAt | date: 'dd/MM/yyyy' }}</p>
+                                <p><strong>Créé le: </strong> {{ posData.CreatedAt | date: 'dd/MM/yyyy' }}</p>
                             </div>
                         </div>
                         <hr>
@@ -123,27 +128,27 @@
                         <ul>
                             <li class="row mb-3">
                                 <span class="col-6"><strong>Pays</strong></span>
-                                <span class="col-6">{{ pos.Country?.name || 'N/A' }}</span>
+                                <span class="col-6">{{ posData.Country?.name || 'N/A' }}</span>
                             </li>
                             <li class="row mb-3">
                                 <span class="col-6"><strong>Province</strong></span>
-                                <span class="col-6">{{ pos.Province?.name || 'N/A' }}</span>
+                                <span class="col-6">{{ posData.Province?.name || 'N/A' }}</span>
                             </li>
                             <li class="row mb-3">
                                 <span class="col-6"><strong>Area</strong></span>
-                                <span class="col-6">{{ pos.Area?.name || 'N/A' }}</span>
+                                <span class="col-6">{{ posData.Area?.name || 'N/A' }}</span>
                             </li>
                             <li class="row mb-3">
                                 <span class="col-6"><strong>Sub Area</strong> </span>
-                                <span class="col-6">{{ pos.SubArea?.name || 'N/A' }}</span>
+                                <span class="col-6">{{ posData.SubArea?.name || 'N/A' }}</span>
                             </li>
                             <li class="row mb-3">
                                 <span class="col-6"><strong>Sous sous-Area <small>(Quartier)</small></strong> </span>
-                                <span class="col-6">{{ pos.Commune?.name || 'N/A' }}</span>
+                                <span class="col-6">{{ posData.Commune?.name || 'N/A' }}</span>
                             </li>
                             <li class="row mb-3">
                                 <span class="col-6"><strong>Avenue</strong> </span>
-                                <span class="col-6">{{ pos.quartier || 'N/A' }}{{ pos.avenue || 'N/A' }}</span>
+                                <span class="col-6">{{ posData.quartier || 'N/A' }}{{ posData.avenue || 'N/A' }}</span>
                             </li>
                         </ul>
                         <hr>
@@ -152,20 +157,24 @@
                             <li class="row mb-3">
                                 <span class="col-6"><strong>Total Visite</strong> </span>
                                 <span class="col-6">
-                                    <span class="badge badge-primary">{{ pos.PosForms?.length }}</span>
+                                    <span class="badge badge-primary">{{ posData.PosForms?.length }}</span>
                                 </span>
                             </li>
                              <li class="row mb-3">
                                 <span class="col-6"><strong>Total Pos Equipments</strong> </span>
                                 <span class="col-6">
-                                    <span class="badge badge-primary">{{ pos.PosEquipments?.length }}</span>
+                                    <span class="badge badge-primary">{{ posData.PosEquipments?.length }}</span>
                                 </span>
                             </li>
                             <li class="row mb-3">
                                 <span class="col-6"><strong>Status</strong></span>
                                 <span class="col-6">
-                                    <span class="badge badge-success" *ngIf="pos.status">Active</span>
-                                    <span class="badge badge-danger" *ngIf="!pos.status">Inactive</span>
+                                    @if (posData.status) {
+                                    <span class="badge badge-success">Active</span>
+                                    }
+                                    @if (!posData.status) {
+                                    <span class="badge badge-danger">Inactive</span>
+                                    }
                                 </span>
                             </li>
                         </ul>
@@ -240,7 +249,7 @@
                          tabindex="0">
                         <div class="card">
                             <div class="card-body">
-                                <app-map-pos [posUUId]="pos.uuid || ''"></app-map-pos>
+                                <app-map-pos [posUUId]="posData.uuid || ''"></app-map-pos>
                             </div>
                         </div>
                     </div>
@@ -253,7 +262,7 @@
                          role="tabpanel" 
                          aria-labelledby="forms-tab-btn" 
                          tabindex="0">
-                        <app-posforms [posUUId]="pos.uuid || ''"></app-posforms>
+                        <app-posforms [posUUId]="posData.uuid || ''"></app-posforms>
                     </div>
                     
                     <!-- Equipment Tab -->
@@ -264,7 +273,7 @@
                          role="tabpanel" 
                          aria-labelledby="equipment-tab-btn" 
                          tabindex="0">
-                        <app-pos-equipment [posUUId]="pos.uuid || ''"></app-pos-equipment>
+                        <app-pos-equipment [posUUId]="posData.uuid || ''"></app-pos-equipment>
                     </div>
                 </div>
                 <!-- /Tab Content -->
@@ -273,7 +282,6 @@
         </div>
     </div>
     }
-}
 </div>
 <!-- /Page Wrapper -->
 
@@ -288,15 +296,17 @@
         </button>
     </div>
     <div class="offcanvas-body">
-        <form [formGroup]="formGroup" (ngSubmit)="onSubmitUpdate()">
+        <form [formGroup]="formGroup()" (ngSubmit)="onSubmitUpdate()">
             <div class="row">
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="col-form-label" for="text">Shop <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" formControlName="shop" required />
-                        <mat-error *ngIf="formGroup.controls['shop'].hasError('required')">
+                        @if (formGroup().controls['shop'].hasError('required')) {
+                        <div class="text-danger small mt-1">
                             Ce champs est obligatoire
-                        </mat-error>
+                        </div>
+                        }
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -304,78 +314,94 @@
                         <label class="col-form-label" for="postype">POS Type <span class="text-danger">*</span></label>
                         <select class="form-control" formControlName="postype" required>
                             <option value="" disabled selected>Select POS Type</option>
-                            <option *ngFor="let type of posTypes" [value]="type">{{ type }}</option>
+                            @for (type of posTypes(); track type) {
+                            <option [value]="type">{{ type }}</option>
+                            }
                         </select>
-                        <mat-error *ngIf="formGroup.controls['postype'].hasError('required')">
+                        @if (formGroup().controls['postype'].hasError('required')) {
+                        <div class="text-danger small mt-1">
                             Ce champs est obligatoire
-                        </mat-error>
+                        </div>
+                        }
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="col-form-label" for="text">Nom du vendeur<span class="text-danger">*</span></label>
                         <input type="text" class="form-control" formControlName="name" required />
-                        <mat-error *ngIf="formGroup.controls['name'].hasError('required')">
+                        @if (formGroup().controls['name'].hasError('required')) {
+                        <div class="text-danger small mt-1">
                             Ce champs est obligatoire
-                        </mat-error>
+                        </div>
+                        }
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="col-form-label" for="text">Gérant <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" formControlName="gerant" required />
-                        <mat-error *ngIf="formGroup.controls['gerant'].hasError('required')">
+                        @if (formGroup().controls['gerant'].hasError('required')) {
+                        <div class="text-danger small mt-1">
                             Ce champs est obligatoire
-                        </mat-error>
+                        </div>
+                        }
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="col-form-label" for="text">Avenue <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" formControlName="avenue" required />
-                        <mat-error *ngIf="formGroup.controls['avenue'].hasError('required')">
+                        @if (formGroup().controls['avenue'].hasError('required')) {
+                        <div class="text-danger small mt-1">
                             Ce champs est obligatoire
-                        </mat-error>
+                        </div>
+                        }
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="col-form-label" for="text">Quartier <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" formControlName="quartier" required />
-                        <mat-error *ngIf="formGroup.controls['quartier'].hasError('required')">
+                        @if (formGroup().controls['quartier'].hasError('required')) {
+                        <div class="text-danger small mt-1">
                             Ce champs est obligatoire
-                        </mat-error>
+                        </div>
+                        }
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="col-form-label" for="text">Reference <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" formControlName="reference" required />
-                        <mat-error *ngIf="formGroup.controls['reference'].hasError('required')">
+                        @if (formGroup().controls['reference'].hasError('required')) {
+                        <div class="text-danger small mt-1">
                             Ce champs est obligatoire
-                        </mat-error>
+                        </div>
+                        }
                     </div>
                 </div>
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="col-form-label" for="text">Telephone <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" formControlName="telephone" required />
-                        <mat-error *ngIf="formGroup.controls['telephone'].hasError('required')">
+                        @if (formGroup().controls['telephone'].hasError('required')) {
+                        <div class="text-danger small mt-1">
                             Ce champs est obligatoire
-                        </mat-error>
+                        </div>
+                        }
                     </div>
                 </div>
             </div>
             <div class="d-flex align-items-center justify-content-end">
                 <button type="button" data-bs-dismiss="offcanvas" class="btn btn-light me-2">Annuler</button>
-                @if (isLoading) {
+                @if (isLoading()) {
                 <button disabled class="btn btn-primary">
                     <div class="spinner-border" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </button>
                 }
-                @if (!isLoading) {
+                @if (!isLoading()) {
                 <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
                 }
             </div>

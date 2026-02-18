@@ -1,7 +1,5 @@
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterModule, Routes } from '@angular/router';
-import { SharedModule } from '../../shared/shared.module';
 
 // Components
 import { PosVenteListComponent } from './pos-vente/pos-vente-list/pos-vente-list.component';

@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild, inject, DestroyRef } from '@angular/core';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
@@ -18,6 +18,8 @@ import { BrandService } from './brand.service';
 import { IPosFormItem } from '../posform/models/posform_item.model';
 import { db } from '../../../shared/services/db';
 import { liveQuery } from 'dexie';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { signal } from '@angular/core';
 
 @Component({
   selector: 'app-brand',
@@ -26,76 +28,75 @@ import { liveQuery } from 'dexie';
   styleUrl: './brand.component.scss'
 })
 export class BrandComponent implements OnInit {
-  isLoadingData = false;
+  private readonly router = inject(Router);
+  private readonly _formBuilder = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly brandService = inject(BrandService);
+  private readonly provinceService = inject(ProvinceService);
+  private readonly countryService = inject(CountryService);
+  private readonly logActivity = inject(LogsService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly toastr = inject(ToastrService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  readonly isLoadingData = signal(false);
   public routes = routes;
 
-  // Table 
-  dataList: IBrand[] = [];
-  total_pages: number = 0;
-  page_size: number = 15;
-  current_page: number = 1;
-  total_records: number = 0;
+  readonly dataList = signal<IBrand[]>([]);
+  readonly total_pages = signal(0);
+  readonly page_size = signal(15);
+  readonly current_page = signal(1);
+  readonly total_records = signal(0);
 
-  // Table 
   displayedColumns: string[] = ['country', 'province', 'name', 'posformitem', 'uuid'];
-  dataSource = new MatTableDataSource<IBrand>(this.dataList);
+  readonly dataSource = signal(new MatTableDataSource<IBrand>([]));
 
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  public search = '';
+  readonly search = signal('');
 
-  // Forms  
-  idItem!: string;
-  dataItem!: IBrand; // Single data 
+  readonly idItem = signal('');
+  readonly dataItem = signal<IBrand | null>(null);
 
-  formGroup!: FormGroup;
-  currentUser!: IUser;
-  isLoading = false;
+  readonly formGroup = signal<FormGroup>(this._formBuilder.group({
+    name: ['', Validators.required],
+    country_uuid: ['', Validators.required],
+    province_uuid: ['', Validators.required],
+  }));
+  readonly currentUser = signal<IUser | null>(null);
+  readonly isLoading = signal(false);
 
-  countryList: ICountry[] = [];
-  provinceList: IProvince[] = [];
-  provinceFilterList: IProvince[] = [];
+  readonly countryList = signal<ICountry[]>([]);
+  readonly provinceList = signal<IProvince[]>([]);
+  readonly provinceFilterList = signal<IProvince[]>([]);
 
-  dataListLocal: IBrand[] = [];
-  isOnLine: boolean = navigator.onLine;
-
-  constructor(
-    private router: Router,
-    private _formBuilder: FormBuilder,
-    private authService: AuthService,
-    private brandService: BrandService,
-    private provinceService: ProvinceService,
-    private countryService: CountryService,
-    private logActivity: LogsService,
-    private cdr: ChangeDetectorRef, // Inject ChangeDetectorRef
-    private toastr: ToastrService
-  ) {
-  }
+  readonly dataListLocal = signal<IBrand[]>([]);
+  readonly isOnLine = signal(navigator.onLine);
 
 
   ngAfterViewInit(): void {
-    this.authService.user().subscribe({
+    this.authService.user().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (user) => {
-        this.currentUser = user;
-        this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
-        this.dataSource.sort = this.sort; // Bind sort to dataSource
-        this.cdr.detectChanges(); // Trigger change detection
+        this.currentUser.set(user);
+        this.dataSource().paginator = this.paginator;
+        this.dataSource().sort = this.sort;
+        this.cdr.detectChanges();
 
-        this.brandService.refreshDataList$.subscribe(() => {
-          this.fetchProducts(this.currentUser);
+        this.brandService.refreshDataList$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+          this.fetchProducts(this.currentUser()!);
         });
-        this.fetchProducts(this.currentUser);
+        this.fetchProducts(this.currentUser()!);
 
         this.countryService.getAll().subscribe(res => {
-          this.countryList = res.data;
+          this.countryList.set(res.data);
         });
         this.provinceService.getAll().subscribe(res => {
-          this.provinceList = res.data;
+          this.provinceList.set(res.data);
         });
       },
       error: (error) => {
-        this.isLoadingData = false;
+        this.isLoadingData.set(false);
         this.router.navigate(['/auth/login']);
         console.log(error);
       }
@@ -104,73 +105,68 @@ export class BrandComponent implements OnInit {
 
 
   ngOnInit() {
-    this.isLoadingData = true;
-    this.formGroup = this._formBuilder.group({
-      name: ['', Validators.required],
-      country_uuid: ['', Validators.required],
-      province_uuid: ['', Validators.required],
-    });
+    this.isLoadingData.set(true);
   }
 
 
   onPageChange(event: PageEvent): void {
-    this.isLoadingData = true;
-    this.current_page = event.pageIndex + 1; // Adjust for 1-based page index
-    this.page_size = event.pageSize;
-    this.fetchProducts(this.currentUser);
+    this.isLoadingData.set(true);
+    this.current_page.set(event.pageIndex + 1);
+    this.page_size.set(event.pageSize);
+    this.fetchProducts(this.currentUser()!);
   }
 
   fetchProducts(currentUser: IUser) { 
     if (currentUser.role == 'Manager') {
-      this.brandService.getPaginated2(this.current_page, this.page_size, this.search).subscribe({
+      this.brandService.getPaginated2(this.current_page(), this.page_size(), this.search()).subscribe({
         next: (res) => {
           if (res && res.data) {
-            this.dataList = res.data;
-            this.total_pages = res.pagination.total_pages;
-            this.total_records = res.pagination.total_records;
-            this.dataSource.data = this.dataList; // Update dataSource data
+            this.dataList.set(res.data);
+            this.total_pages.set(res.pagination.total_pages);
+            this.total_records.set(res.pagination.total_records);
+            this.dataSource().data = res.data;
           }
-          this.isLoadingData = false;
+          this.isLoadingData.set(false);
         },
         error: (err) => {
           console.error('Error fetching brands:', err);
-          this.isLoadingData = false;
+          this.isLoadingData.set(false);
           this.toastr.error('Erreur lors du chargement des données', 'Erreur!');
         }
       });
     } else if (currentUser.role == 'ASM') {
       this.brandService.getPaginatedByProvinceId(currentUser.province_uuid, 
-        this.current_page, this.page_size, this.search).subscribe({
+        this.current_page(), this.page_size(), this.search()).subscribe({
         next: (res) => {
           if (res && res.data) {
-            this.dataList = res.data;
-            console.log(this.dataList);
-            this.total_pages = res.pagination.total_pages;
-            this.total_records = res.pagination.total_records;
-            this.dataSource.data = this.dataList; // Update dataSource data
+            this.dataList.set(res.data);
+            console.log(this.dataList());
+            this.total_pages.set(res.pagination.total_pages);
+            this.total_records.set(res.pagination.total_records);
+            this.dataSource().data = res.data;
           }
-          this.isLoadingData = false;
+          this.isLoadingData.set(false);
         },
         error: (err) => {
           console.error('Error fetching brands:', err);
-          this.isLoadingData = false;
+          this.isLoadingData.set(false);
           this.toastr.error('Erreur lors du chargement des données', 'Erreur!');
         }
       });
     } else {
-      this.brandService.getPaginated2(this.current_page, this.page_size, this.search).subscribe({
+      this.brandService.getPaginated2(this.current_page(), this.page_size(), this.search()).subscribe({
         next: (res) => {
           if (res && res.data) {
-            this.dataList = res.data;
-            this.total_pages = res.pagination.total_pages;
-            this.total_records = res.pagination.total_records;
-            this.dataSource.data = this.dataList; // Update dataSource data
+            this.dataList.set(res.data);
+            this.total_pages.set(res.pagination.total_pages);
+            this.total_records.set(res.pagination.total_records);
+            this.dataSource().data = res.data;
           }
-          this.isLoadingData = false;
+          this.isLoadingData.set(false);
         },
         error: (err) => {
           console.error('Error fetching brands:', err);
-          this.isLoadingData = false;
+          this.isLoadingData.set(false);
           this.toastr.error('Erreur lors du chargement des données', 'Erreur!');
         }
       });
@@ -180,55 +176,51 @@ export class BrandComponent implements OnInit {
 
   fecthlocalData() {
     liveQuery(() => db.brands.toArray()).subscribe(data => {
-      this.dataListLocal = data;
-      // this.total_pages = Math.ceil(data.length / this.page_size);
-      // this.total_records = data.length;
-      // this.dataSource.data = this.dataListLocal; // Update dataSource data
-      this.isLoadingData = false;
+      this.dataListLocal.set(data);
+      this.isLoadingData.set(false);
     });
   }
 
   onSearchChange(search: string) {
-    this.search = search;
-    this.fetchProducts(this.currentUser);
+    this.search.set(search);
+    this.fetchProducts(this.currentUser()!);
   }
 
 
   public sortData(sort: Sort) {
-    const data = this.dataList.slice();
+    const data = this.dataList().slice();
     if (!sort.active || sort.direction === '') {
-      this.dataList = data;
+      this.dataList.set(data);
     } else {
-      this.dataList = data.sort((a, b) => {
+      const sorted = data.sort((a, b) => {
         const aValue = (a as never)[sort.active];
         const bValue = (b as never)[sort.active];
         return (aValue < bValue ? -1 : 1) * (sort.direction === 'asc' ? 1 : -1);
       });
+      this.dataList.set(sorted);
     }
   }
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource.filter = filterValue.trim().toLowerCase();
+    this.dataSource().filter = filterValue.trim().toLowerCase();
   }
 
- 
-
   onCountryChange(event: any) {
-    const provinceArray = this.provinceList.filter((v) => v.country_uuid == event.value);
-    this.provinceFilterList = provinceArray;
+    const provinceArray = this.provinceList().filter((v) => v.country_uuid == event.value);
+    this.provinceFilterList.set(provinceArray);
   }
 
 
   onSubmit() {
     try {
-      if (this.formGroup.valid) {
-        this.isLoading = true;
+      if (this.formGroup().valid) {
+        this.isLoading.set(true);
         var body: IBrand = {
-          name: this.formGroup.value.name,
-          country_uuid: this.formGroup.value.country_uuid,
-          province_uuid: this.formGroup.value.province_uuid,
-          signature: this.currentUser.fullname,
+          name: this.formGroup().value.name,
+          country_uuid: this.formGroup().value.country_uuid,
+          province_uuid: this.formGroup().value.province_uuid,
+          signature: this.currentUser()!.fullname,
           CreatedAt: new Date(),
           UpdatedAt: new Date(),
         };
@@ -236,64 +228,64 @@ export class BrandComponent implements OnInit {
           next: (res) => {
             this.logActivity.activity(
               'Brand',
-              this.currentUser.uuid,
+              this.currentUser()!.uuid,
               'created',
               `Created new Brand uuid: ${res.data.uuid}`,
-              this.currentUser.fullname
+              this.currentUser()!.fullname
             ).subscribe({
               next: () => {
-                this.isLoading = false;
-                this.formGroup.reset();
+                this.isLoading.set(false);
+                this.formGroup().reset();
                 this.toastr.success('Ajouter avec succès!', 'Success!');
               },
               error: (err) => {
-                this.isLoading = false;
+                this.isLoading.set(false);
                 this.toastr.error(`${err.error.message}`, 'Oupss!');
                 console.log(err);
               }
             });
           },
           error: (err) => {
-            this.isLoading = false;
+            this.isLoading.set(false);
             this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
             console.log(err);
           }
         });
       }
     } catch (error) {
-      this.isLoading = false;
+      this.isLoading.set(false);
       console.log(error);
     }
   }
 
   onSubmitUpdate() {
     try {
-      this.isLoading = true;
+      this.isLoading.set(true);
       var body: IBrand = {
-        name: this.formGroup.value.name,
-        country_uuid: this.formGroup.value.country_uuid,
-        province_uuid: this.formGroup.value.province_uuid,
-        signature: this.currentUser.fullname,
+        name: this.formGroup().value.name,
+        country_uuid: this.formGroup().value.country_uuid,
+        province_uuid: this.formGroup().value.province_uuid,
+        signature: this.currentUser()!.fullname,
         CreatedAt: new Date(),
         UpdatedAt: new Date(),
       };
-      this.brandService.update(this.idItem, body)
+      this.brandService.update(this.idItem(), body)
         .subscribe({
           next: (res) => {
             this.logActivity.activity(
               'Brand',
-              this.currentUser.uuid,
+              this.currentUser()!.uuid,
               'updated',
               `Updated Brand uuid: ${res.data.uuid}`,
-              this.currentUser.fullname
+              this.currentUser()!.fullname
             ).subscribe({
               next: () => {
-                this.formGroup.reset();
+                this.formGroup().reset();
                 this.toastr.success('Modification enregistré!', 'Success!');
-                this.isLoading = false;
+                this.isLoading.set(false);
               },
               error: (err) => {
-                this.isLoading = false;
+                this.isLoading.set(false);
                 this.toastr.error(`${err.error.message}`, 'Oupss!');
                 console.log(err);
               }
@@ -302,23 +294,23 @@ export class BrandComponent implements OnInit {
           error: err => {
             console.log(err);
             this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
-            this.isLoading = false;
+            this.isLoading.set(false);
           }
         });
     } catch (error) {
-      this.isLoading = false;
+      this.isLoading.set(false);
       console.log(error);
     }
   }
 
   findValue(value: string) {
-    this.idItem = value;
-    this.brandService.get(this.idItem).subscribe(item => {
-      this.dataItem = item.data;
-      this.formGroup.patchValue({
-        name: this.dataItem.name,
-        country_uuid: this.dataItem.country_uuid,
-        province_uuid: this.dataItem.province_uuid,
+    this.idItem.set(value);
+    this.brandService.get(this.idItem()).subscribe(item => {
+      this.dataItem.set(item.data);
+      this.formGroup().patchValue({
+        name: this.dataItem()!.name,
+        country_uuid: this.dataItem()!.country_uuid,
+        province_uuid: this.dataItem()!.province_uuid,
       });
     });
   }
@@ -326,23 +318,23 @@ export class BrandComponent implements OnInit {
 
   delete(): void {
     this.brandService
-      .delete(this.idItem)
+      .delete(this.idItem())
       .subscribe({
         next: () => {
           this.logActivity.activity(
             'Brand',
-            this.currentUser.uuid,
+            this.currentUser()!.uuid,
             'deleted',
-            `Delete Brand id: ${this.idItem}`,
-            this.currentUser.fullname
+            `Delete Brand id: ${this.idItem()}`,
+            this.currentUser()!.fullname
           ).subscribe({
             next: () => {
-              this.formGroup.reset();
+              this.formGroup().reset();
               this.toastr.info('Supprimé avec succès!', 'Success!');
-              this.isLoading = false;
+              this.isLoading.set(false);
             },
             error: (err) => {
-              this.isLoading = false;
+              this.isLoading.set(false);
               this.toastr.error(`${err.error.message}`, 'Oupss!');
               console.log(err);
             }

@@ -10,6 +10,20 @@
                     <div class="mb-4">
                         <h4 class="mb-2 fs-20">Login</h4>
                         <p>Management System Point Of Sales.</p>
+                        <!-- Indicateur de statut de connexion -->
+                        <div class="d-flex align-items-center gap-2 mt-2">
+                            @if (isOnline()) {
+                                <span class="badge bg-success d-flex align-items-center gap-1">
+                                    <i class="ti ti-wifi"></i>
+                                    En ligne
+                                </span>
+                            } @else {
+                                <span class="badge bg-warning text-dark d-flex align-items-center gap-1">
+                                    <i class="ti ti-wifi-off"></i>
+                                    Mode hors ligne
+                                </span>
+                            }
+                        </div>
                     </div>
                     <div class="mb-3">
                         <label class="col-form-label" for="identifier">Email ou Telephone</label>
@@ -23,9 +37,9 @@
                     <div class="mb-3">
                         <label class="col-form-label" for="Password">Mot de passe</label>
                         <div class="pass-group">
-                            <input [type]="password[1] ? 'text' : 'password' " formControlName="password" 
+                            <input [type]="password()[1] ? 'text' : 'password' " formControlName="password" 
                                 class="pass-input form-control">
-                            <span class="ti toggle-password " [ngClass]=" password[1] ? 'ti-eye' : 'ti-eye-off'"
+                            <span class="ti toggle-password " [ngClass]="password()[1] ? 'ti-eye' : 'ti-eye-off'"
                                 (click)="togglePassword(1)" (keydown.enter)="togglePassword(1)" tabindex="0"></span>
                         </div>
                     </div>
@@ -36,14 +50,14 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        @if (isLoading) {
+                        @if (isLoading()) {
                             <button disabled class="btn btn-primary w-100">
                                 <div class="spinner-border" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
                             </button>
                         }
-                       @if (!isLoading) {
+                       @if (!isLoading()) {
                         <button type="submit" class="btn btn-primary w-100">Sign In</button>
                        } 
                     </div>

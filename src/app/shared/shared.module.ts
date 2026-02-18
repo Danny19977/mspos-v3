@@ -11,25 +11,20 @@ import { HttpClientModule, provideHttpClient, withInterceptorsFromDi } from '@an
 import { MaterialModule } from './material/material.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { NgxEditorModule } from 'ngx-editor';
-// import { MultiSelectModule } from 'primeng/multiselect';
 import { CarouselModule } from 'ngx-owl-carousel-o';
 import { LightgalleryModule } from 'lightgallery/angular';
 import { FullCalendarModule } from '@fullcalendar/angular';
-// import { ToastModule } from 'primeng/toast';
 import { TooltipModule } from 'ngx-bootstrap/tooltip';
 import { PopoverModule } from 'ngx-bootstrap/popover';
 import { NgxMaskModule } from 'ngx-mask';
 import { NgxDropzoneModule } from 'ngx-dropzone';
 import { NgChartsModule } from 'ng2-charts';
 import { LightboxModule } from 'ngx-lightbox';
-// import { ChipsModule } from 'primeng/chips';
-// import { EditorModule } from 'primeng/editor';
-// import { DropdownModule } from 'primeng/dropdown';
 import { TimepickerModule } from 'ngx-bootstrap/timepicker';
 import { NgxMatTimepickerModule } from 'ngx-mat-timepicker';
 import { BsDaterangepickerConfig } from 'ngx-bootstrap/datepicker';
 import { DateRangePickerModule } from './common/date-range-picker/date-range-picker.module';
-import { CollapseHeaderModule } from './common/collapse-header/collapse-header.module'; 
+import { CollapseHeaderModule } from './common/collapse-header/collapse-header.module';
 import { ReloadComponent } from './components/reload/reload.component';
 import { UserGetComponent } from './components/user-get/user-get.component';
 import { HelpTooltipComponent } from './components/help-tooltip/help-tooltip.component';
@@ -39,8 +34,8 @@ import { UserFriendlyFormsService } from './services/user-friendly-forms.service
 import { PwaInstallDialogComponent } from './pwa-install-dialog/pwa-install-dialog.component';
 
 
-@NgModule({    declarations: [ 
-        ReloadComponent,
+@NgModule({
+    declarations: [
         UserGetComponent,
         PwaInstallDialogComponent,
     ],
@@ -73,44 +68,42 @@ import { PwaInstallDialogComponent } from './pwa-install-dialog/pwa-install-dial
         DateRangePickerModule,
         // DropdownModule,
         TimepickerModule,
-        NgxMatTimepickerModule,        UserGetComponent,
+        NgxMatTimepickerModule,
+        UserGetComponent,
         ReloadComponent,
         HelpTooltipComponent,
         SmartFieldComponent,
         UserFriendlyTooltipDirective,
-    ], imports: [
+    ],
+    imports: [
         CommonModule,
+        HttpClientModule,
         NgScrollbarModule,
         NgApexchartsModule,
-        BsDatepickerModule,
+        BsDatepickerModule.forRoot(),
         CustomPaginationModule,
         MaterialModule,
         FormsModule,
         ReactiveFormsModule,
-        BsDatepickerModule.forRoot(),
         NgxEditorModule,
-        // MultiSelectModule,
         CollapseHeaderModule,
         CarouselModule,
         LightgalleryModule,
         FullCalendarModule,
-        // ToastModule,
         TooltipModule,
         PopoverModule,
-        // NgxMaskModule.forRoot({
-        //     showMaskTyped: false,
-        // }),
         NgxDropzoneModule,
         NgChartsModule.forRoot(),
         LightboxModule,
-        // ChipsModule,
-        // EditorModule,        DateRangePickerModule,
-        // DropdownModule,
+        DateRangePickerModule,
         TimepickerModule.forRoot(),
         NgxMatTimepickerModule,
         HelpTooltipComponent,
         SmartFieldComponent,
-        UserFriendlyTooltipDirective],    providers: [
+        UserFriendlyTooltipDirective,
+        ReloadComponent
+    ],
+    providers: [
         BsDatepickerConfig,
         DatePipe,
         BsDaterangepickerConfig,

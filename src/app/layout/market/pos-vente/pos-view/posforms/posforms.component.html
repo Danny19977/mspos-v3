@@ -6,7 +6,7 @@
                 <div class="col-sm-4">
                     <div class="icon-form mb-3 mb-sm-0">
                         <span class="form-icon"><i class="ti ti-search"></i></span>
-                        <input type="text" #input [(ngModel)]="search" (ngModelChange)="onSearchChange($event)"
+                        <input type="text" #input [ngModel]="search()" (ngModelChange)="onSearchChange($event)"
                             class="form-control" placeholder="Rechercher...">
                     </div>
                 </div>
@@ -14,15 +14,15 @@
                     <div class="d-flex align-items-center flex-wrap row-gap-2 justify-content-sm-end">
                         <!-- Bouton pour afficher/masquer les filtres avancés -->
                         <button type="button" class="btn btn-outline-primary me-2" (click)="toggleAdvancedFilters()">
-                            <i class="ti" [class.ti-filter]="!showAdvancedFilters"
-                                [class.ti-filter-off]="showAdvancedFilters"></i>
-                            Filtres {{ showAdvancedFilters ? 'moins' : 'plus' }}
+                            <i class="ti" [class.ti-filter]="!showAdvancedFilters()"
+                                [class.ti-filter-off]="showAdvancedFilters()"></i>
+                            Filtres {{ showAdvancedFilters() ? 'moins' : 'plus' }}
                             @if (hasActiveFilters()) {
                             <span class="badge bg-danger rounded-pill ms-1">{{getActiveFiltersCount()}}</span>
                             }
                         </button>
 
-                        <form [formGroup]="dateRange">
+                        <form [formGroup]="dateRange()">
                             <div class="daterange-picker">
                                 <div class="form-sort me-2">
                                     <i class="ti ti-calendar"></i>
@@ -37,7 +37,7 @@
             <!-- /Search -->
 
             <!-- Advanced Filters -->
-            <div class="advanced-filters mt-3" [class.d-none]="!showAdvancedFilters">
+            <div class="advanced-filters mt-3" [class.d-none]="!showAdvancedFilters()">
                 <div class="card">
                     <div class="card-header">
                         <h6 class="mb-0">
@@ -55,38 +55,38 @@
                             <!-- Filtres géographiques -->
                             <div class="col-md-3">
                                 <label class="form-label">🌍 Pays</label>
-                                <select class="form-select" [(ngModel)]="filters.country"
-                                    (ngModelChange)="applyFilters()">
+                                <select class="form-select" [ngModel]="filters().country"
+                                    (ngModelChange)="updateFilter('country', $event); applyFilters()">
                                     <option value="">Tous les pays</option>
-                                    <option *ngFor="let country of uniqueCountries" [value]="country">{{country}}
+                                    <option *ngFor="let country of uniqueCountries()" [value]="country">{{country}}
                                     </option>
                                 </select>
                             </div>
 
                             <div class="col-md-3">
                                 <label class="form-label">🏢 Province</label>
-                                <select class="form-select" [(ngModel)]="filters.province"
-                                    (ngModelChange)="applyFilters()">
+                                <select class="form-select" [ngModel]="filters().province"
+                                    (ngModelChange)="updateFilter('province', $event); applyFilters()">
                                     <option value="">Toutes les provinces</option>
-                                    <option *ngFor="let province of uniqueProvinces" [value]="province">{{province}}
+                                    <option *ngFor="let province of uniqueProvinces()" [value]="province">{{province}}
                                     </option>
                                 </select>
                             </div>
 
                             <div class="col-md-3">
                                 <label class="form-label">📍 Area</label>
-                                <select class="form-select" [(ngModel)]="filters.area" (ngModelChange)="applyFilters()">
+                                <select class="form-select" [ngModel]="filters().area" (ngModelChange)="updateFilter('area', $event); applyFilters()">
                                     <option value="">Toutes les areas</option>
-                                    <option *ngFor="let area of uniqueAreas" [value]="area">{{area}}</option>
+                                    <option *ngFor="let area of uniqueAreas()" [value]="area">{{area}}</option>
                                 </select>
                             </div>
 
                             <div class="col-md-3">
                                 <label class="form-label">💰 Prix</label>
-                                <select class="form-select" [(ngModel)]="filters.price"
-                                    (ngModelChange)="applyFilters()">
+                                <select class="form-select" [ngModel]="filters().price"
+                                    (ngModelChange)="updateFilter('price', $event); applyFilters()">
                                     <option value="">Tous les prix</option>
-                                    <option *ngFor="let price of uniquePrices" [value]="price">{{price}} FC</option>
+                                    <option *ngFor="let price of uniquePrices()" [value]="price">{{price}} FC</option>
                                 </select>
                             </div>
                         </div>
@@ -96,11 +96,11 @@
                             <div class="col-md-3">
                                 <label class="form-label">👔 ASM</label>
                                 <div class="dropdown-with-search">
-                                    <input type="text" class="form-control mb-1" [(ngModel)]="filters.asmSearch"
-                                        (ngModelChange)="filterAsmOptions($event); applyFilters()"
+                                    <input type="text" class="form-control mb-1" [ngModel]="filters().asmSearch"
+                                        (ngModelChange)="updateFilter('asmSearch', $event); filterAsmOptions($event); applyFilters()"
                                         placeholder="🔍 Rechercher un ASM...">
-                                    <select class="form-select" [(ngModel)]="filters.asm"
-                                        (ngModelChange)="applyFilters()">
+                                    <select class="form-select" [ngModel]="filters().asm"
+                                        (ngModelChange)="updateFilter('asm', $event); applyFilters()">
                                         <option value="">Tous les ASM</option>
                                         <option *ngFor="let asm of getFilteredAsms()" [value]="asm">{{asm}}</option>
                                     </select>
@@ -110,11 +110,11 @@
                             <div class="col-md-3">
                                 <label class="form-label">👨‍💼 Supervisor</label>
                                 <div class="dropdown-with-search">
-                                    <input type="text" class="form-control mb-1" [(ngModel)]="filters.supervisorSearch"
-                                        (ngModelChange)="filterSupervisorOptions($event); applyFilters()"
+                                    <input type="text" class="form-control mb-1" [ngModel]="filters().supervisorSearch"
+                                        (ngModelChange)="updateFilter('supervisorSearch', $event); filterSupervisorOptions($event); applyFilters()"
                                         placeholder="🔍 Rechercher un supervisor...">
-                                    <select class="form-select" [(ngModel)]="filters.supervisor"
-                                        (ngModelChange)="applyFilters()">
+                                    <select class="form-select" [ngModel]="filters().supervisor"
+                                        (ngModelChange)="updateFilter('supervisor', $event); applyFilters()">
                                         <option value="">Tous les supervisors</option>
                                         <option *ngFor="let supervisor of getFilteredSupervisors()"
                                             [value]="supervisor">{{supervisor}}</option>
@@ -125,11 +125,11 @@
                             <div class="col-md-3">
                                 <label class="form-label">🎯 DR</label>
                                 <div class="dropdown-with-search">
-                                    <input type="text" class="form-control mb-1" [(ngModel)]="filters.drSearch"
-                                        (ngModelChange)="filterDrOptions($event); applyFilters()"
+                                    <input type="text" class="form-control mb-1" [ngModel]="filters().drSearch"
+                                        (ngModelChange)="updateFilter('drSearch', $event); filterDrOptions($event); applyFilters()"
                                         placeholder="🔍 Rechercher un DR...">
-                                    <select class="form-select" [(ngModel)]="filters.dr"
-                                        (ngModelChange)="applyFilters()">
+                                    <select class="form-select" [ngModel]="filters().dr"
+                                        (ngModelChange)="updateFilter('dr', $event); applyFilters()">
                                         <option value="">Tous les DR</option>
                                         <option *ngFor="let dr of getFilteredDrs()" [value]="dr">{{dr}}</option>
                                     </select>
@@ -139,11 +139,11 @@
                             <div class="col-md-3">
                                 <label class="form-label">🚴‍♂️ Cyclo</label>
                                 <div class="dropdown-with-search">
-                                    <input type="text" class="form-control mb-1" [(ngModel)]="filters.cycloSearch"
-                                        (ngModelChange)="filterCycloOptions($event); applyFilters()"
+                                    <input type="text" class="form-control mb-1" [ngModel]="filters().cycloSearch"
+                                        (ngModelChange)="updateFilter('cycloSearch', $event); filterCycloOptions($event); applyFilters()"
                                         placeholder="🔍 Rechercher un cyclo...">
-                                    <select class="form-select" [(ngModel)]="filters.cyclo"
-                                        (ngModelChange)="applyFilters()">
+                                    <select class="form-select" [ngModel]="filters().cyclo"
+                                        (ngModelChange)="updateFilter('cyclo', $event); applyFilters()">
                                         <option value="">Tous les cyclos</option>
                                         <option *ngFor="let cyclo of getFilteredCyclos()" [value]="cyclo">{{cyclo}}
                                         </option>
@@ -156,8 +156,8 @@
                             <!-- Filtres commerciaux -->
                             <div class="col-md-4">
                                 <label class="form-label">📊 Nombre de marques</label>
-                                <select class="form-select" [(ngModel)]="filters.brandCount"
-                                    (ngModelChange)="applyFilters()">
+                                <select class="form-select" [ngModel]="filters().brandCount"
+                                    (ngModelChange)="updateFilter('brandCount', $event); applyFilters()">
                                     <option value="">Tous</option>
                                     <option value="0">Aucune marque (0)</option>
                                     <option value="5">Exactement 5 marques</option>
@@ -168,14 +168,14 @@
 
                             <div class="col-md-4">
                                 <label class="form-label">🔍 Recherche POS</label>
-                                <input type="text" class="form-control" [(ngModel)]="filters.posSearch"
-                                    (ngModelChange)="applyFilters()" placeholder="Nom ou type de POS...">
+                                <input type="text" class="form-control" [ngModel]="filters().posSearch"
+                                    (ngModelChange)="updateFilter('posSearch', $event); applyFilters()" placeholder="Nom ou type de POS...">
                             </div>
 
                             <div class="col-md-4">
                                 <label class="form-label">📋 Statut</label>
-                                <select class="form-select" [(ngModel)]="filters.status"
-                                    (ngModelChange)="applyFilters()">
+                                <select class="form-select" [ngModel]="filters().status"
+                                    (ngModelChange)="updateFilter('status', $event); applyFilters()">
                                     <option value="">Tous les statuts</option>
                                     <option value="complete">Complets (avec POS)</option>
                                     <option value="incomplete">Incomplets (sans POS)</option>
@@ -189,7 +189,7 @@
         </div>
         <div class="card-body">
             <div class="table-responsive custom-table" style="overflow-x: auto;">
-                <table mat-table [dataSource]="dataSource" matSort (matSortChange)="sortData($event)"
+                <table mat-table [dataSource]="dataSource()" matSort (matSortChange)="sortData($event)"
                     class="mat-elevation-z2 table" style="min-width: 900px;">
 
                     <!-- createdat Column -->
@@ -272,13 +272,13 @@
                         </td>
                     </ng-container>
 
-                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                    <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="table-row-hover"></tr>
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns();" class="table-row-hover"></tr>
 
                     <!-- Row shown when there is no matching data. -->
                     <tr class="mat-row" *matNoDataRow>
-                        @if (isLoadingData){
-                        <td class="mat-cell text-center" [attr.colspan]="displayedColumns.length">
+                        @if (isLoadingData()){
+                        <td class="mat-cell text-center" [attr.colspan]="displayedColumns().length">
                             <div class="d-flex justify-content-center align-items-center py-4">
                                 <div class="spinner-border text-primary" role="status">
                                     <span class="visually-hidden">Chargement...</span>
@@ -287,7 +287,7 @@
                             </div>
                         </td>
                         } @else {
-                        <td class="mat-cell text-center" [attr.colspan]="displayedColumns.length">
+                        <td class="mat-cell text-center" [attr.colspan]="displayedColumns().length">
                             <div class="py-4">
                                 <i class="ti ti-search-off fs-48 text-muted mb-2"></i>
                                 <p class="text-muted">Aucune donnée correspondante au filtre "{{input.value}}"</p>
@@ -297,7 +297,7 @@
                     </tr>
                 </table>
             </div>
-            <mat-paginator [length]="total_records" [pageSize]="page_size"
+            <mat-paginator [length]="total_records()" [pageSize]="page_size()"
                 [pageSizeOptions]="[15, 20, 30, 40, 50, 80, 100]" showFirstLastButtons (page)="onPageChange($event)"
                 aria-label="Select page">
             </mat-paginator>
@@ -336,19 +336,19 @@
                 <h4 class="modal-title">Détails du POS Form</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body" *ngIf="dataItem">
+            <div class="modal-body" *ngIf="dataItem()">
                 <div class="row">
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="form-label">📅 Date de création</label>
-                            <p class="form-control-static">{{ dataItem.CreatedAt | date:'dd/MM/yyyy HH:mm' }}</p>
+                            <p class="form-control-static">{{ dataItem().CreatedAt | date:'dd/MM/yyyy HH:mm' }}</p>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="form-label">💰 Prix</label>
                             <p class="form-control-static">
-                                <span class="badge badge-success">{{ dataItem.price }} FC</span>
+                                <span class="badge badge-success">{{ dataItem().price }} FC</span>
                             </p>
                         </div>
                     </div>
@@ -358,13 +358,13 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="form-label">🌍 Pays</label>
-                            <p class="form-control-static">{{ dataItem.Country?.name || '--' }}</p>
+                            <p class="form-control-static">{{ dataItem().Country?.name || '--' }}</p>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="form-label">🏢 Province</label>
-                            <p class="form-control-static">{{ dataItem.Province?.name || '--' }}</p>
+                            <p class="form-control-static">{{ dataItem().Province?.name || '--' }}</p>
                         </div>
                     </div>
                 </div>
@@ -373,13 +373,13 @@
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="form-label">📍 Area</label>
-                            <p class="form-control-static">{{ dataItem.Area?.name || '--' }}</p>
+                            <p class="form-control-static">{{ dataItem().Area?.name || '--' }}</p>
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="form-group">
                             <label class="form-label">🗺️ SubArea</label>
-                            <p class="form-control-static">{{ dataItem.SubArea?.name || '--' }}</p>
+                            <p class="form-control-static">{{ dataItem().SubArea?.name || '--' }}</p>
                         </div>
                     </div>
                 </div>
@@ -388,7 +388,7 @@
                     <div class="col-md-12">
                         <div class="form-group">
                             <label class="form-label">🏘️ Commune</label>
-                            <p class="form-control-static">{{ dataItem.Commune?.name || '--' }}</p>
+                            <p class="form-control-static">{{ dataItem().Commune?.name || '--' }}</p>
                         </div>
                     </div>
                 </div>
@@ -397,15 +397,15 @@
                     <div class="col-md-12">
                         <div class="form-group">
                             <label class="form-label">💬 Commentaire</label>
-                            <p class="form-control-static">{{ dataItem.comment || 'Aucun commentaire' }}</p>
+                            <p class="form-control-static">{{ dataItem().comment || 'Aucun commentaire' }}</p>
                         </div>
                     </div>
                 </div>
 
                 <!-- Liste des marques observées -->
-                <div class="row mt-3" *ngIf="dataListPosFormItem && dataListPosFormItem.length > 0">
+                <div class="row mt-3" *ngIf="dataListPosFormItem() && dataListPosFormItem().length > 0">
                     <div class="col-12">
-                        <h5>🏷️ Marques observées ({{ dataListPosFormItem.length }})</h5>
+                        <h5>🏷️ Marques observées ({{ dataListPosFormItem().length }})</h5>
                         <div class="table-responsive">
                             <table class="table table-sm">
                                 <thead>
@@ -416,7 +416,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <tr *ngFor="let item of dataListPosFormItem">
+                                    <tr *ngFor="let item of dataListPosFormItem()">
                                         <td>{{ item.Brand?.name || item.brand_name }}</td>
                                         <td>{{ item.number_farde }}</td>
                                         <td>
@@ -449,14 +449,14 @@
                 <h4 class="modal-title">Modifier POS Form</h4>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <form [formGroup]="formGroup" (ngSubmit)="onSubmitUpdate()">
-                <div class="modal-body" *ngIf="dataItem">
+            <form [formGroup]="formGroup()" (ngSubmit)="onSubmitUpdate()">
+                <div class="modal-body" *ngIf="dataItem()">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label class="form-label">💰 Prix <span class="text-danger">*</span></label>
                                 <select class="form-select" formControlName="price">
-                                    <option *ngFor="let price of priceList" [value]="price">{{ price }} FC</option>
+                                    <option *ngFor="let price of priceList()" [value]="price">{{ price }} FC</option>
                                 </select>
                             </div>
                         </div>
@@ -473,7 +473,7 @@
                     <div class="row mt-3">
                         <div class="col-12">
                             <h5>🏷️ Ajouter une marque</h5>
-                            <form [formGroup]="formGroupPosFormItem" (ngSubmit)="onSubmitItem()">
+                            <form [formGroup]="formGroupPosFormItem()" (ngSubmit)="onSubmitItem()">
                                 <div class="row">
                                     <div class="col-md-4">
                                         <div class="form-group">
@@ -483,7 +483,7 @@
                                             <mat-autocomplete #autoBrand="matAutocomplete"
                                                 [displayWith]="displayFnBrand"
                                                 (optionSelected)="optionSelectedBrand($event)">
-                                                <mat-option *ngFor="let brand of filteredOptionBrand" [value]="brand">
+                                                <mat-option *ngFor="let brand of filteredOptionBrand()" [value]="brand">
                                                     {{ brand.name }}
                                                 </mat-option>
                                             </mat-autocomplete>
@@ -507,8 +507,8 @@
                                         <div class="form-group">
                                             <label class="form-label">&nbsp;</label>
                                             <button type="submit" class="btn btn-primary btn-sm d-block"
-                                                [disabled]="isLoadingPosFormItem || !brandUUID">
-                                                <span *ngIf="isLoadingPosFormItem"
+                                                [disabled]="isLoadingPosFormItem() || !brandUUID()">
+                                                <span *ngIf="isLoadingPosFormItem()"
                                                     class="spinner-border spinner-border-sm me-2"></span>
                                                 Ajouter
                                             </button>
@@ -520,9 +520,9 @@
                     </div>
 
                     <!-- Liste des marques ajoutées -->
-                    <div class="row mt-3" *ngIf="dataListPosFormItem && dataListPosFormItem.length > 0">
+                    <div class="row mt-3" *ngIf="dataListPosFormItem() && dataListPosFormItem().length > 0">
                         <div class="col-12">
-                            <h6>Marques ajoutées ({{ dataListPosFormItem.length }})</h6>
+                            <h6>Marques ajoutées ({{ dataListPosFormItem().length }})</h6>
                             <div class="table-responsive">
                                 <table class="table table-sm">
                                     <thead class="table-light">
@@ -534,7 +534,7 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr *ngFor="let item of dataListPosFormItem">
+                                        <tr *ngFor="let item of dataListPosFormItem()">
                                             <td>{{ item.Brand?.name || item.brand_name }}</td>
                                             <td>{{ item.number_farde }}</td>
                                             <td>
@@ -560,8 +560,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">Annuler</button>
-                    <button type="submit" class="btn btn-primary" [disabled]="isLoading">
-                        <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+                    <button type="submit" class="btn btn-primary" [disabled]="isLoading()">
+                        <span *ngIf="isLoading()" class="spinner-border spinner-border-sm me-2"></span>
                         Enregistrer
                     </button>
                 </div>

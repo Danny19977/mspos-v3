@@ -8,7 +8,7 @@
                     <div class="row align-items-center">
                         <div class="col-md-4">
                             <h4 class="page-title">
-                                Brands <span class="count-title">{{ total_records }}</span>
+                                Brands <span class="count-title">{{ total_records() }}</span>
                             </h4>
                         </div>
                         <div class="col-md-8 text-end">
@@ -20,7 +20,7 @@
                     </div>
                 </div>
                 <!-- /Page Header -->
-                @if (currentUser) {
+                @if (currentUser()) {
                 <div class="card">
                     <div class="card-header">
                         <!-- Search -->
@@ -28,7 +28,7 @@
                             <div class="col-sm-4">
                                 <div class="icon-form mb-3 mb-sm-0">
                                     <span class="form-icon"><i class="ti ti-search"></i></span>
-                                    <input type="text" #input [(ngModel)]="search"
+                                    <input type="text" #input [ngModel]="search()"
                                         (ngModelChange)="onSearchChange($event)" class="form-control"
                                         placeholder="Ex. Funa">
                                 </div>
@@ -55,15 +55,15 @@
                                         </div>
                                     </div> -->
                                     <div class="me-2">
-                                        <div *ngIf="dataListLocal.length > 0" class="alert alert-warning mt-2" role="alert">
-                                            Total hors ligne : <span style="font-size: larger;">{{ dataListLocal.length }}</span>
+                                        <div *ngIf="dataListLocal().length > 0" class="alert alert-warning mt-2" role="alert">
+                                            Total hors ligne : <span style="font-size: larger;">{{ dataListLocal().length }}</span>
                                         </div>
                                     </div>
-                                    @if(currentUser.role == 'Manager' ||
-                                    currentUser.role == 'Support' ||
-                                    currentUser.role == 'ASM' && currentUser.permission === 'ALL' ||
-                                    currentUser.permission === 'VAE' ||
-                                    currentUser.permission === 'VA') {
+                                    @if(currentUser()?.role == 'Manager' ||
+                                    currentUser()?.role == 'Support' ||
+                                    currentUser()?.role == 'ASM' && currentUser()?.permission === 'ALL' ||
+                                    currentUser()?.permission === 'VAE' ||
+                                    currentUser()?.permission === 'VA') {
                                     <a href="javascript:void(0);" class="btn btn-primary" data-bs-toggle="offcanvas"
                                         data-bs-target="#offcanvas_add">
                                         <i class="ti ti-square-rounded-plus me-2"></i>
@@ -77,7 +77,7 @@
                     </div>
                     <div class="card-body">
                         <div class="table-responsive custom-table">
-                            <table mat-table [dataSource]="dataSource" matSort (matSortChange)="sortData($event)"
+                            <table mat-table [dataSource]="dataSource()" matSort (matSortChange)="sortData($event)"
                                 class="mat-elevation-z2 table">
 
                                 <!-- country Column -->
@@ -112,21 +112,21 @@
                                 <ng-container matColumnDef="uuid">
                                     <th mat-header-cell *matHeaderCellDef> Action </th>
                                     <td mat-cell *matCellDef="let element">
-                                        @if(currentUser.role == 'Manager' ||
-                                        currentUser.role == 'Support' ||
-                                        currentUser.role == 'ASM' && currentUser.permission === 'ALL' ||
-                                        currentUser.permission === 'VAE' ||
-                                        currentUser.permission === 'VED' ||
-                                        currentUser.permission === 'VE') {
+                                        @if(currentUser()?.role == 'Manager' ||
+                                        currentUser()?.role == 'Support' ||
+                                        currentUser()?.role == 'ASM' && currentUser()?.permission === 'ALL' ||
+                                        currentUser()?.permission === 'VAE' ||
+                                        currentUser()?.permission === 'VED' ||
+                                        currentUser()?.permission === 'VE') {
                                         <button mat-icon-button (click)="findValue(element.uuid)"
                                             data-bs-toggle="offcanvas" data-bs-target="#offcanvas_edit">
                                             <mat-icon class="text-blue">edit</mat-icon>
                                         </button>
                                         }
-                                        @if(currentUser.role == 'Manager' ||
-                                        currentUser.role == 'Support' ||
-                                        currentUser.role == 'ASM' && currentUser.permission === 'ALL' ||
-                                        currentUser.permission === 'VED') {
+                                        @if(currentUser()?.role == 'Manager' ||
+                                        currentUser()?.role == 'Support' ||
+                                        currentUser()?.role == 'ASM' && currentUser()?.permission === 'ALL' ||
+                                        currentUser()?.permission === 'VED') {
                                         <button mat-icon-button (click)="findValue(element.uuid)" data-bs-toggle="modal"
                                             data-bs-target="#delete_contact">
                                             <mat-icon class="text-danger">delete</mat-icon>
@@ -140,20 +140,22 @@
 
                                 <!-- Row shown when there is no matching data. -->
                                 <tr class="mat-row" *matNoDataRow>
-                                    @if (isLoadingData){
+                                    @if (isLoadingData()){
                                     <button disabled class="btn btn-primary">
                                         <div class="spinner-border" role="status">
                                             <span class="visually-hidden">Loading...</span>
                                         </div>
                                     </button>
                                     } @else {
-                                    <td class="mat-cell" colspan="4">Aucune donnée correspondante au filtre
-                                        "{{input.value}}"</td>
+                                    <td class="mat-cell" colspan="4">
+                                        Aucune donnée correspondante au filtre
+                                        "{{input.value}}"
+                                    </td>
                                     }
                                 </tr>
                             </table>
                         </div>
-                        <mat-paginator [length]="total_records" [pageSize]="page_size"
+                        <mat-paginator [length]="total_records()" [pageSize]="page_size()"
                             [pageSizeOptions]="[15, 20, 30, 40, 50, 80, 100]" showFirstLastButtons
                             (page)="onPageChange($event)" aria-label="Select page">
                         </mat-paginator>
@@ -186,7 +188,7 @@
         </button>
     </div>
     <div class="offcanvas-body">
-        <form [formGroup]="formGroup" (ngSubmit)="onSubmit()">
+        <form [formGroup]="formGroup()" (ngSubmit)="onSubmit()">
             <div class="row">
                 <div class="col-md-12">
                     <div class="mb-3">
@@ -194,11 +196,11 @@
                         <mat-select [compareWith]="compareFn" class="select custom-mat-select"
                             formControlName="country_uuid" placeholder="Choose pays"
                             (selectionChange)="onCountryChange($event)">
-                            @for (item of countryList; track item) {
+                            @for (item of countryList(); track item) {
                             <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
                             }
                         </mat-select>
-                        <mat-error *ngIf="formGroup.controls['country_uuid'].hasError('required')">
+                        <mat-error *ngIf="formGroup().controls['country_uuid'].hasError('required')">
                             Ce champs est obligatoire
                         </mat-error>
                     </div>
@@ -208,11 +210,11 @@
                         <label class="col-form-label" for="location">Province <span class="text-danger">*</span></label>
                         <mat-select [compareWith]="compareFnProvince" class="select custom-mat-select"
                             formControlName="province_uuid" placeholder="Choose province">
-                            @for (item of provinceFilterList; track item) {
+                            @for (item of provinceFilterList(); track item) {
                             <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
                             }
                         </mat-select>
-                        <mat-error *ngIf="formGroup.controls['province_uuid'].hasError('required')">
+                        <mat-error *ngIf="formGroup().controls['province_uuid'].hasError('required')">
                             Ce champs est obligatoire
                         </mat-error>
                     </div>
@@ -221,7 +223,7 @@
                     <div class="mb-3">
                         <label class="col-form-label" for="text">Name Brand <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" formControlName="name" required />
-                        <mat-error *ngIf="formGroup.controls['name'].hasError('required')">
+                        <mat-error *ngIf="formGroup().controls['name'].hasError('required')">
                             Ce champs est obligatoire
                         </mat-error>
                     </div>
@@ -229,14 +231,14 @@
             </div>
             <div class="d-flex align-items-center justify-content-end">
                 <button type="button" data-bs-dismiss="offcanvas" class="btn btn-light me-2">Annuler</button>
-                @if (isLoading) {
+                @if (isLoading()) {
                 <button disabled class="btn btn-primary">
                     <div class="spinner-border" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </button>
                 }
-                @if (!isLoading) {
+                @if (!isLoading()) {
                 <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-dismiss="offcanvas"
                     data-bs-target="#create_success">Create</button>
                 }
@@ -260,18 +262,18 @@
         </button>
     </div>
     <div class="offcanvas-body">
-        <form [formGroup]="formGroup" (ngSubmit)="onSubmitUpdate()">
+        <form [formGroup]="formGroup()" (ngSubmit)="onSubmitUpdate()">
             <div class="row">
                 <div class="col-md-12">
                     <div class="mb-3">
                         <label class="col-form-label" for="country">Pays <span class="text-danger">*</span></label>
                         <mat-select class="select custom-mat-select" formControlName="country_uuid"
                             placeholder="Choose pays" (selectionChange)="onCountryChange($event)">
-                            @for (item of countryList; track item) {
+                            @for (item of countryList(); track item) {
                             <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
                             }
                         </mat-select>
-                        <mat-error *ngIf="formGroup.controls['country_uuid'].hasError('required')">
+                        <mat-error *ngIf="formGroup().controls['country_uuid'].hasError('required')">
                             Ce champs est obligatoire
                         </mat-error>
                     </div>
@@ -281,11 +283,11 @@
                         <label class="col-form-label" for="location">Province <span class="text-danger">*</span></label>
                         <mat-select class="select custom-mat-select" formControlName="province_uuid"
                             placeholder="Choose province">
-                            @for (item of provinceFilterList; track item) {
+                            @for (item of provinceFilterList(); track item) {
                             <mat-option value="{{item.uuid}}">{{item.name}}</mat-option>
                             }
                         </mat-select>
-                        <mat-error *ngIf="formGroup.controls['province_uuid'].hasError('required')">
+                        <mat-error *ngIf="formGroup().controls['province_uuid'].hasError('required')">
                             Ce champs est obligatoire
                         </mat-error>
                     </div>
@@ -294,7 +296,7 @@
                     <div class="mb-3">
                         <label class="col-form-label" for="text">Name Brand <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" formControlName="name" required />
-                        <mat-error *ngIf="formGroup.controls['name'].hasError('required')">
+                        <mat-error *ngIf="formGroup().controls['name'].hasError('required')">
                             Ce champs est obligatoire
                         </mat-error>
                     </div>
@@ -302,14 +304,14 @@
             </div>
             <div class="d-flex align-items-center justify-content-end">
                 <button type="button" data-bs-dismiss="offcanvas" class="btn btn-light me-2">Annuler</button>
-                @if (isLoading) {
+                @if (isLoading()) {
                 <button disabled class="btn btn-primary">
                     <div class="spinner-border" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </button>
                 }
-                @if (!isLoading) {
+                @if (!isLoading()) {
                 <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-dismiss="offcanvas"
                     data-bs-target="#create_success">Enregistrer les modifications</button>
                 }

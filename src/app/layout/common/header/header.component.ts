@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Location } from '@angular/common';
 import { SidebarService } from '../../../shared/sidebar/sidebar.service';
 import { CommonService } from '../../../shared/common/common.service';
@@ -16,52 +17,65 @@ import { IUser } from '../../management/user/models/user.model';
   styleUrl: './header.component.scss'
 })
 export class HeaderComponent implements OnInit {
-  base = '';
-  page = '';
-  last = '';
-  themeMode = 'light_mode';
-  public miniSidebar = false;
-  public routes = routes;
+  // Services avec inject()
+  private readonly common = inject(CommonService);
+  private readonly router = inject(Router);
+  private readonly sidebar = inject(SidebarService);
+  private readonly settings = inject(SettingsService);
+  private readonly authService = inject(AuthService);
+  private readonly logActivity = inject(LogsService);
+  private readonly location = inject(Location);
 
-  currentUser!: IUser;
-  isLoading = false;
+  // Signals pour l'état du composant
+  readonly base = signal('');
+  readonly page = signal('');
+  readonly last = signal('');
+  readonly themeMode = signal('light_mode');
+  readonly miniSidebar = signal(false);
+  readonly routes = routes;
+  readonly currentUser = signal<IUser | null>(null);
+  readonly isLoading = signal(false);
+  readonly onLine = signal(navigator.onLine);
 
-  onLine = navigator.onLine;
-
-  constructor(
-    private common: CommonService,
-    private router: Router,
-    private sidebar: SidebarService,
-    private settings: SettingsService,
-    private authService: AuthService,
-    private logActivity: LogsService,
-    private location: Location,
-  ) {
-    this.common.base.subscribe((base: string) => {
-      this.base = base;
-    });
-    this.common.page.subscribe((page: string) => {
-      this.page = page;
-    });
-    this.common.last.subscribe((last: string) => {
-      this.last = last;
-    });
-    this.sidebar.sideBarPosition.subscribe((res: string) => {
-      if (res == 'true') {
-        this.miniSidebar = true;
-      } else {
-        this.miniSidebar = false;
-      }
-    });
-    this.settings.themeMode.subscribe((res: string) => {
-      this.themeMode = res;
-    });
+  constructor() {
+    // Observer les changements de route
+    this.common.base
+      .pipe(takeUntilDestroyed())
+      .subscribe((base: string) => {
+        this.base.set(base);
+      });
+    
+    this.common.page
+      .pipe(takeUntilDestroyed())
+      .subscribe((page: string) => {
+        this.page.set(page);
+      });
+    
+    this.common.last
+      .pipe(takeUntilDestroyed())
+      .subscribe((last: string) => {
+        this.last.set(last);
+      });
+    
+    // Observer la position de la sidebar
+    this.sidebar.sideBarPosition
+      .pipe(takeUntilDestroyed())
+      .subscribe((res: string) => {
+        this.miniSidebar.set(res === 'true');
+      });
+    
+    // Observer le theme mode
+    this.settings.themeMode
+      .pipe(takeUntilDestroyed())
+      .subscribe((res: string) => {
+        this.themeMode.set(res);
+      });
   }
 
   ngOnInit(): void {
     this.authService.user().subscribe({
       next: (user) => {
-        this.currentUser = user;
+        this.currentUser.set(user);
       },
       error: (error) => { 
         this.router.navigate(['/auth/login']);
@@ -72,21 +86,24 @@ export class HeaderComponent implements OnInit {
 
 
   logout() {
-    this.isLoading = true;
+    const user = this.currentUser();
+    if (!user) return;
+    
+    this.isLoading.set(true);
     this.logActivity.activity(
       'Auth',
-      this.currentUser.uuid,
+      user.uuid,
       'logout',
       'Logout Auth',
-      this.currentUser.fullname
+      user.fullname
     ).subscribe({
       next: () => {
-        this.isLoading = false;
+        this.isLoading.set(false);
         this.authService.logout()
         this.router.navigate(['/auth/login']);
       },
       error: (err) => {
-        this.isLoading = false; 
+        this.isLoading.set(false); 
         console.log(err);
       }
     });

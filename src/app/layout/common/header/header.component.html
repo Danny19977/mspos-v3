@@ -3,9 +3,9 @@
     (focus)="miniSideBarMouseHover('over')" (blur)="miniSideBarMouseHover('out')" tabindex="0">
 
     <!-- Logo -->
-     @if (currentUser) {
+     @if (currentUser(); as user) {
         <div class="header-left active">
-            @if(currentUser.role == 'Manager') {
+            @if(user.role == 'Manager') {
                 <a [routerLink]="routes.msposDashboard" class="logo logo-normal">
                     <img src="img/logo.png" alt="Logo">
                     <img src="img/white-logo.svg" class="white-logo" alt="Logo">
@@ -17,7 +17,7 @@
                     <i class="ti ti-arrow-bar-to-left"></i>
                 </a>
 
-            } @else if(currentUser.role == 'ASM') {
+            } @else if(user.role == 'ASM') {
                 <a [routerLink]="routes.area" class="logo logo-normal">
                     <img src="img/logo.png" alt="Logo">
                     <img src="img/white-logo.svg" class="white-logo" alt="Logo">
@@ -29,7 +29,7 @@
                     <i class="ti ti-arrow-bar-to-left"></i>
                 </a>
 
-            } @else if(currentUser.role == 'Supervisor') {
+            } @else if(user.role == 'Supervisor') {
                 <a [routerLink]="routes.posVente" class="logo logo-normal">
                     <img src="img/logo.png" alt="Logo">
                     <img src="img/white-logo.svg" class="white-logo" alt="Logo">
@@ -41,7 +41,7 @@
                     <i class="ti ti-arrow-bar-to-left"></i>
                 </a>
 
-            } @else if(currentUser.role == 'DR') {
+            } @else if(user.role == 'DR') {
                 <a [routerLink]="routes.posFormList" class="logo logo-normal">
                     <img src="img/logo.png" alt="Logo">
                     <img src="img/white-logo.svg" class="white-logo" alt="Logo">
@@ -53,7 +53,7 @@
                     <i class="ti ti-arrow-bar-to-left"></i>
                 </a>
 
-            }  @else if(currentUser.role == 'Cyclo') {
+            }  @else if(user.role == 'Cyclo') {
                 <a [routerLink]="routes.posFormList" class="logo logo-normal">
                     <img src="img/logo.png" alt="Logo">
                     <img src="img/white-logo.svg" class="white-logo" alt="Logo">
@@ -65,7 +65,7 @@
                     <i class="ti ti-arrow-bar-to-left"></i>
                 </a>
 
-            } @else if(currentUser.role == 'Support') {
+            } @else if(user.role == 'Support') {
                 <a [routerLink]="routes.msposDashboard" class="logo logo-normal">
                     <img src="img/logo.png" alt="Logo">
                     <img src="img/white-logo.svg" class="white-logo" alt="Logo">
@@ -131,12 +131,11 @@
                 <ul class="nav">
                     <li class="dark-mode-list">
                         <a href="javascript:void(0);" id="dark-mode-toggle" class="dark-mode-toggle">
-                            <i class="ti ti-sun light-mode " [ngClass]="{'active': themeMode === 'light_mode'}"
+                            <i class="ti ti-sun light-mode " [ngClass]="{'active': themeMode() === 'light_mode'}"
                                 (click)="changeThemeMode('light_mode')" (keydown.enter)="changeThemeMode('light_mode')"
                                 (keydown.space)="changeThemeMode('light_mode')" tabindex="0"></i>
-                            <i class="ti ti-moon dark-mode" [ngClass]="{'active': themeMode === 'dark_mode'}"
+                            <i class="ti ti-moon dark-mode" [ngClass]="{'active': themeMode() === 'dark_mode'}"
                                 (click)="changeThemeMode('dark_mode')" (keydown.enter)="changeThemeMode('dark_mode')"
-                                (keydown.space)="changeThemeMode('dark_mode')"
                                 (keydown.space)="changeThemeMode('dark_mode')" tabindex="0"></i>
                         </a>
 
@@ -224,16 +223,16 @@
             <!-- Profile Dropdown -->
             <li class="nav-item dropdown has-arrow main-drop">
                 <a href="javascript:void(0);" class="nav-link userset" data-bs-toggle="dropdown">
-                    @if (currentUser) {
+                    @if (currentUser(); as user) {
                     <span class="user-info">
                         <span class="user-letter">
-                            @if (currentUser.image) {
-                            <img [src]="currentUser.image" class="img-fluid" alt="Profile">
+                            @if (user.image) {
+                            <img [src]="user.image" class="img-fluid" alt="Profile">
                             } @else {
                             <img src="img/profiles/avatar-20.jpg" alt="Profile">
                             }
                         </span>
-                        @if (onLine) {
+                        @if (onLine()) {
                           <span class="badge badge-success rounded-pill"></span>  
                         }@else {
                             <span class="badge badge-danger rounded-pill"></span>  
@@ -272,7 +271,7 @@
             <a class="dropdown-item" routerLink="/web/profile">
                 <i class="ti ti-user-pin"></i> My Profil
             </a>
-            @if (isLoading) {
+            @if (isLoading()) {
             <div class="spinner-border" role="status">
                 <span class="visually-hidden">Loading...</span>
             </div>

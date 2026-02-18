@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { routes } from '../../shared/routes/routes';
 import { Router } from '@angular/router';
 import { formatDate } from '@angular/common';
@@ -7,7 +8,6 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
 import { LogsService } from '../../layout/management/user-logs/logs.service';
 import { NetworkService } from '../../services/network.service';
-import { SyncService } from '../../services/sync.service';
 
 @Component({
   selector: 'app-login',
@@ -16,22 +16,30 @@ import { SyncService } from '../../services/sync.service';
   styleUrl: './login.component.scss'
 })
 export class LoginComponent implements OnInit {
-  dateY = "";
-  public routes = routes;
-  isLoading = false;
+  // Services avec inject()
+  private readonly router = inject(Router);
+  private readonly formBuilder = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly logActivity = inject(LogsService);
+  private readonly toastr = inject(ToastrService);
+  private readonly networkService = inject(NetworkService);
+
+  // Signals pour l'état du composant
+  readonly dateY = formatDate(new Date(), 'yyyy', 'en');
+  readonly routes = routes;
+  readonly isLoading = signal(false);
+  readonly password = signal<boolean[]>([false]);
+  readonly isOnline = signal(this.networkService.isOnline());
 
   form!: FormGroup;
 
-  constructor(
-    private router: Router,
-    private formBuilder: FormBuilder,
-    private authService: AuthService,
-    private logActivity: LogsService,
-    private toastr: ToastrService,
-    private networkService: NetworkService,
-    private syncService: SyncService // Injection du service de synchronisation
-  ) {
-    this.dateY = formatDate(new Date(), 'yyyy', 'en');
+  constructor() {
+    // Observer l'état du réseau
+    this.networkService.getNetworkStatus()
+      .pipe(takeUntilDestroyed())
+      .subscribe(status => {
+        this.isOnline.set(status);
+      });
   }
 
   ngOnInit(): void {
@@ -44,7 +52,7 @@ export class LoginComponent implements OnInit {
 
   onSubmit(): void {
     if (this.form.valid) {
-      this.isLoading = true;
+      this.isLoading.set(true);
       
       const body = {
         identifier: this.form.value.identifier.toLowerCase(),
@@ -66,33 +74,38 @@ export class LoginComponent implements OnInit {
           // Récupérer les informations utilisateur (online ou offline)
           this.authService.user().subscribe({
             next: (user) => {
-              // Logger l'activité
-              this.logActivity.activity(
-                'Login',
-                user.uuid,
-                'login',
-                'Login Authentification',
-                user.fullname
-              ).subscribe({
-                next: () => {
-                  this.redirectUser(user, isOfflineMode);
-                },
-                error: (err) => {
-                  console.error('❌ Erreur lors du log d\'activité:', err);
-                  // Rediriger quand même
-                  this.redirectUser(user, isOfflineMode);
-                }
-              });
+              // Ne logger l'activité qu'en mode online
+              if (!isOfflineMode) {
+                this.logActivity.activity(
+                  'Login',
+                  user.uuid,
+                  'login',
+                  'Login Authentification',
+                  user.fullname
+                ).subscribe({
+                  next: () => {
+                    this.redirectUser(user, isOfflineMode);
+                  },
+                  error: (err) => {
+                    console.error('❌ Erreur lors du log d\'activité:', err);
+                    // Rediriger quand même
+                    this.redirectUser(user, isOfflineMode);
+                  }
+                });
+              } else {
+                // En mode offline, rediriger directement
+                this.redirectUser(user, isOfflineMode);
+              }
             },
             error: (error) => {
-              this.isLoading = false;
+              this.isLoading.set(false);
               this.toastr.error('Impossible de charger les données utilisateur', 'Erreur');
               console.error('❌ Erreur user():', error);
             }
           });
         },
         error: (e) => {
-          this.isLoading = false;
+          this.isLoading.set(false);
           console.error('❌ Erreur login:', e);
           
           const errorMessage = e.error?.message || 'Erreur d\'authentification';
@@ -112,7 +125,7 @@ export class LoginComponent implements OnInit {
       : `Bienvenue ${user.fullname}! 🎉`;
     
     this.toastr.success(welcomeMessage, 'Succès');
-    this.isLoading = false;
+    this.isLoading.set(false);
 
     // Redirection selon le rôle
     if (user.role === 'Manager' || user.role === 'ASM' || user.role === 'Supervisor') {
@@ -130,9 +143,10 @@ export class LoginComponent implements OnInit {
   private navigate() {
     this.router.navigate([routes.msposDashboard]);
   }
-  public password: boolean[] = [false];
 
-  public togglePassword(index: any) {
-    this.password[index] = !this.password[index]
+  public togglePassword(index: number) {
+    const current = this.password();
+    current[index] = !current[index];
+    this.password.set([...current]);
   }
 }

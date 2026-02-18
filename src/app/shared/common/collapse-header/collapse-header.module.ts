@@ -6,12 +6,9 @@ import { CollapseHeaderComponent } from './collapse-header.component';
 
 
 @NgModule({
-  declarations: [
-    CollapseHeaderComponent
-  ],
+  declarations: [],
   imports: [
-    CommonModule,
-    MatTooltipModule
+    CollapseHeaderComponent
   ],
   exports: [CollapseHeaderComponent],
 })

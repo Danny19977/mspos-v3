@@ -1,9 +1,9 @@
-<div *ngIf="isLoading" class="text-center py-4">
+<div *ngIf="isLoading()" class="text-center py-4">
     <div class="spinner-border bs-primary" role="status">
         <span class="visually-hidden">Chargement...</span>
     </div>
 </div>
-<div *ngIf="!isLoading">
+<div *ngIf="!isLoading()">
     <div class="card">
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center mb-3">
@@ -12,7 +12,7 @@
             </div>
             <div class="row mb-2">
                 <div class="col-md-6">
-                    <input type="text" class="form-control" placeholder="Rechercher..." [(ngModel)]="search" (ngModelChange)="onTypeaheadSearch($event)">
+                    <input type="text" class="form-control" placeholder="Rechercher..." [ngModel]="search()" (ngModelChange)="onTypeaheadSearch($event)">
                 </div>
                 <div class="col-md-2">
                     <button class="btn btn-outline-primary w-100" (click)="onSearch()">Rechercher</button>
@@ -34,7 +34,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr *ngFor="let eq of equipmentList">
+                    <tr *ngFor="let eq of equipmentList()">
                         <td>{{ eq.parasol }}</td>
                         <td>{{ eq.parasol_status }}</td>
                         <td>{{ eq.stand }}</td>
@@ -49,22 +49,22 @@
                                     class="ti ti-trash"></i></button>
                         </td>
                     </tr>
-                    <tr *ngIf="equipmentList.length === 0">
+                    <tr *ngIf="equipmentList().length === 0">
                         <td colspan="8" class="text-center">Aucun équipement trouvé.</td>
                     </tr>
                 </tbody>
             </table>
             <!-- Pagination -->
-            <nav *ngIf="total_pages > 1">
+            <nav *ngIf="total_pages() > 1">
                 <ul class="pagination justify-content-center">
-                    <li class="page-item" [class.disabled]="current_page === 1">
-                        <a class="page-link" (click)="changePage(current_page - 1)" href="#">Précédent</a>
+                    <li class="page-item" [class.disabled]="current_page() === 1">
+                        <a class="page-link" (click)="changePage(current_page() - 1)" href="#">Précédent</a>
                     </li>
-                    <li class="page-item" *ngFor="let page of [].constructor(total_pages); let i = index" [class.active]="current_page === (i+1)">
+                    <li class="page-item" *ngFor="let page of [].constructor(total_pages()); let i = index" [class.active]="current_page() === (i+1)">
                         <a class="page-link" (click)="changePage(i+1)" href="#">{{ i+1 }}</a>
                     </li>
-                    <li class="page-item" [class.disabled]="current_page === total_pages">
-                        <a class="page-link" (click)="changePage(current_page + 1)" href="#">Suivant</a>
+                    <li class="page-item" [class.disabled]="current_page() === total_pages()">
+                        <a class="page-link" (click)="changePage(current_page() + 1)" href="#">Suivant</a>
                     </li>
                 </ul>
             </nav>
@@ -76,11 +76,11 @@
 <div class="modal fade" id="equipmentModal" tabindex="-1" aria-labelledby="equipmentModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
-            <form [formGroup]="equipmentForm" (ngSubmit)="onSubmitEquipment()">
+            <form [formGroup]="equipmentForm()" (ngSubmit)="onSubmitEquipment()">
                 <div class="modal-header border-bottom">
                     <h5 class="modal-title fw-semibold" id="equipmentModalLabel">
                         <i class="ti ti-tools me-2"></i>
-                        {{ isEditMode ? 'Modifier' : 'Ajouter' }} un équipement
+                        {{ isEditMode() ? 'Modifier' : 'Ajouter' }} un équipement
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
@@ -95,10 +95,10 @@
                                 </label>
                                 <select class="form-select" formControlName="parasol" required>
                                     <option value="" disabled selected>Sélectionner un parasol</option>
-                                    <option *ngFor="let brand of brandList" [value]="brand.name">{{ brand.name }}</option>
+                                    <option *ngFor="let brand of brandList()" [value]="brand.name">{{ brand.name }}</option>
                                     <option value="Autres">Autres</option>
                                 </select>
-                                <div class="invalid-feedback" *ngIf="equipmentForm.get('parasol')?.touched && equipmentForm.get('parasol')?.invalid">
+                                <div class="invalid-feedback" *ngIf="equipmentForm().get('parasol')?.touched && equipmentForm().get('parasol')?.invalid">
                                     Veuillez sélectionner un parasol
                                 </div>
                             </div>
@@ -116,7 +116,7 @@
                                     <option value="Vieux">Vieux</option>
                                     <option value="Cassé">Cassé</option>
                                 </select>
-                                <div class="invalid-feedback" *ngIf="equipmentForm.get('parasol_status')?.touched && equipmentForm.get('parasol_status')?.invalid">
+                                <div class="invalid-feedback" *ngIf="equipmentForm().get('parasol_status')?.touched && equipmentForm().get('parasol_status')?.invalid">
                                     Veuillez sélectionner un statut
                                 </div>
                             </div>
@@ -133,10 +133,10 @@
                                 </label>
                                 <select class="form-select" formControlName="stand" required>
                                     <option value="" disabled selected>Sélectionner un stand</option>
-                                    <option *ngFor="let brand of brandList" [value]="brand.name">{{ brand.name }}</option>
+                                    <option *ngFor="let brand of brandList()" [value]="brand.name">{{ brand.name }}</option>
                                     <option value="Autres">Autres</option>
                                 </select>
-                                <div class="invalid-feedback" *ngIf="equipmentForm.get('stand')?.touched && equipmentForm.get('stand')?.invalid">
+                                <div class="invalid-feedback" *ngIf="equipmentForm().get('stand')?.touched && equipmentForm().get('stand')?.invalid">
                                     Veuillez sélectionner un stand
                                 </div>
                             </div>
@@ -154,7 +154,7 @@
                                     <option value="Vieux">Vieux</option>
                                     <option value="Cassé">Cassé</option>
                                 </select>
-                                <div class="invalid-feedback" *ngIf="equipmentForm.get('stand_status')?.touched && equipmentForm.get('stand_status')?.invalid">
+                                <div class="invalid-feedback" *ngIf="equipmentForm().get('stand_status')?.touched && equipmentForm().get('stand_status')?.invalid">
                                     Veuillez sélectionner un statut
                                 </div>
                             </div>
@@ -171,10 +171,10 @@
                                 </label>
                                 <select class="form-select" formControlName="kiosk" required>
                                     <option value="" disabled selected>Sélectionner un kiosque</option>
-                                    <option *ngFor="let brand of brandList" [value]="brand.name">{{ brand.name }}</option>
+                                    <option *ngFor="let brand of brandList()" [value]="brand.name">{{ brand.name }}</option>
                                     <option value="Autres">Autres</option>
                                 </select>
-                                <div class="invalid-feedback" *ngIf="equipmentForm.get('kiosk')?.touched && equipmentForm.get('kiosk')?.invalid">
+                                <div class="invalid-feedback" *ngIf="equipmentForm().get('kiosk')?.touched && equipmentForm().get('kiosk')?.invalid">
                                     Veuillez sélectionner un kiosque
                                 </div>
                             </div>
@@ -192,7 +192,7 @@
                                     <option value="Vieux">Vieux</option>
                                     <option value="Cassé">Cassé</option>
                                 </select>
-                                <div class="invalid-feedback" *ngIf="equipmentForm.get('kiosk_status')?.touched && equipmentForm.get('kiosk_status')?.invalid">
+                                <div class="invalid-feedback" *ngIf="equipmentForm().get('kiosk_status')?.touched && equipmentForm().get('kiosk_status')?.invalid">
                                     Veuillez sélectionner un statut
                                 </div>
                             </div>
@@ -204,7 +204,7 @@
                         <i class="ti ti-x me-1"></i>
                         Annuler
                     </button>
-                    @if (isLoading) {
+                    @if (isLoading()) {
                         <button type="button" class="btn btn-primary" disabled>
                             <div class="spinner-border spinner-border-sm me-2" role="status">
                                 <span class="visually-hidden">Loading...</span>
@@ -212,9 +212,9 @@
                             Traitement...
                         </button>
                     } @else {
-                        <button type="submit" class="btn btn-primary" [disabled]="equipmentForm.invalid">
+                        <button type="submit" class="btn btn-primary" [disabled]="equipmentForm().invalid">
                             <i class="ti ti-check me-1"></i>
-                            {{ isEditMode ? 'Enregistrer' : 'Ajouter' }}
+                            {{ isEditMode() ? 'Enregistrer' : 'Ajouter' }}
                         </button>
                     }
                 </div>
@@ -247,7 +247,7 @@
                     <i class="ti ti-x me-1"></i>
                     Annuler
                 </button>
-                @if (isLoading) {
+                @if (isLoading()) {
                     <button type="button" class="btn btn-danger" disabled>
                         <div class="spinner-border spinner-border-sm me-2" role="status">
                             <span class="visually-hidden">Loading...</span>

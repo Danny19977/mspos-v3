@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-reload',
-  standalone: false,
+  standalone: true,
   templateUrl: './reload.component.html',
   styleUrl: './reload.component.scss'
 })
