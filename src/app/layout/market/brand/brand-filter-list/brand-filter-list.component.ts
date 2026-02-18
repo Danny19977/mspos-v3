@@ -47,7 +47,7 @@ export class BrandFilterListComponent implements OnInit, AfterViewInit {
   readonly current_page = signal(1);
   readonly total_records = signal(0);
   readonly displayedColumns = signal<string[]>(['country', 'province', 'name', 'posformitem', 'uuid']);
-  readonly dataSource = signal(new MatTableDataSource<IBrand>([]));
+  readonly dataSource = new MatTableDataSource<IBrand>([]);
   readonly search = signal('');
   readonly idItem = signal('');
   readonly dataItem = signal<IBrand | undefined>(undefined);
@@ -74,8 +74,8 @@ export class BrandFilterListComponent implements OnInit, AfterViewInit {
         this.authService.user().subscribe({
           next: (user) => {
             this.currentUser.set(user);
-            this.dataSource().paginator = this.paginator; // Bind paginator to dataSource
-            this.dataSource().sort = this.sort; // Bind sort to dataSource
+            this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
+            this.dataSource.sort = this.sort; // Bind sort to dataSource
             this.cdr.detectChanges(); // Trigger change detection
 
             this.brandService.refreshDataList$
@@ -129,7 +129,7 @@ export class BrandFilterListComponent implements OnInit, AfterViewInit {
           this.dataList.set(res.data);
           this.total_pages.set(res.pagination.total_pages);
           this.total_records.set(res.pagination.total_records);
-          this.dataSource().data = this.dataList(); // Update dataSource data
+          this.dataSource.data = this.dataList(); // Update dataSource data
           this.isLoadingData.set(false);
         });
       });
@@ -137,11 +137,11 @@ export class BrandFilterListComponent implements OnInit, AfterViewInit {
       this.provinceService.get(territoire_uuid).subscribe(item => {
         this.territoire.set(item.data);
 
-        this.brandService.getPaginatedByProvinceId(territoire_uuid, this.current_page(), this.page_size(), this.search()).subscribe(res => {
+        this.brandService.getBrandsByProvinceId(territoire_uuid, this.current_page(), this.page_size(), this.search()).subscribe(res => {
           this.dataList.set(res.data);
           this.total_pages.set(res.pagination.total_pages);
           this.total_records.set(res.pagination.total_records);
-          this.dataSource().data = this.dataList(); // Update dataSource data
+          this.dataSource.data = this.dataList(); // Update dataSource data
           this.isLoadingData.set(false);
         });
       });
@@ -172,7 +172,7 @@ export class BrandFilterListComponent implements OnInit, AfterViewInit {
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource().filter = filterValue.trim().toLowerCase();
+    this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
 
@@ -200,7 +200,7 @@ export class BrandFilterListComponent implements OnInit, AfterViewInit {
           CreatedAt: new Date(),
           UpdatedAt: new Date(),
         };
-        this.brandService.create(body).subscribe({
+        this.brandService.createBrand(body).subscribe({
           next: (res) => {
             this.logActivity.activity(
               'Brand',
@@ -251,7 +251,7 @@ export class BrandFilterListComponent implements OnInit, AfterViewInit {
         CreatedAt: new Date(),
         UpdatedAt: new Date(),
       };
-      this.brandService.update(this.idItem(), body)
+      this.brandService.updateBrand(this.idItem(), body)
         .subscribe({
           next: (res) => {
             this.logActivity.activity(
@@ -306,7 +306,7 @@ export class BrandFilterListComponent implements OnInit, AfterViewInit {
     if (!currentUser) return;
 
     this.brandService
-      .delete(this.idItem())
+      .deleteBrand(this.idItem())
       .subscribe({
         next: () => {
           this.logActivity.activity(

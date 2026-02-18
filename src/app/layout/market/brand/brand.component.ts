@@ -49,7 +49,7 @@ export class BrandComponent implements OnInit {
   readonly total_records = signal(0);
 
   displayedColumns: string[] = ['country', 'province', 'name', 'posformitem', 'uuid'];
-  readonly dataSource = signal(new MatTableDataSource<IBrand>([]));
+  readonly dataSource = new MatTableDataSource<IBrand>([]);
 
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -79,8 +79,8 @@ export class BrandComponent implements OnInit {
     this.authService.user().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (user) => {
         this.currentUser.set(user);
-        this.dataSource().paginator = this.paginator;
-        this.dataSource().sort = this.sort;
+        this.dataSource.paginator = this.paginator;
+        this.dataSource.sort = this.sort;
         this.cdr.detectChanges();
 
         this.brandService.refreshDataList$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
@@ -118,13 +118,13 @@ export class BrandComponent implements OnInit {
 
   fetchProducts(currentUser: IUser) { 
     if (currentUser.role == 'Manager') {
-      this.brandService.getPaginated2(this.current_page(), this.page_size(), this.search()).subscribe({
+      this.brandService.getBrandsPaginated(this.current_page(), this.page_size(), this.search()).subscribe({
         next: (res) => {
           if (res && res.data) {
             this.dataList.set(res.data);
             this.total_pages.set(res.pagination.total_pages);
             this.total_records.set(res.pagination.total_records);
-            this.dataSource().data = res.data;
+            this.dataSource.data = res.data;
           }
           this.isLoadingData.set(false);
         },
@@ -135,7 +135,7 @@ export class BrandComponent implements OnInit {
         }
       });
     } else if (currentUser.role == 'ASM') {
-      this.brandService.getPaginatedByProvinceId(currentUser.province_uuid, 
+      this.brandService.getBrandsByProvinceId(currentUser.province_uuid, 
         this.current_page(), this.page_size(), this.search()).subscribe({
         next: (res) => {
           if (res && res.data) {
@@ -143,7 +143,7 @@ export class BrandComponent implements OnInit {
             console.log(this.dataList());
             this.total_pages.set(res.pagination.total_pages);
             this.total_records.set(res.pagination.total_records);
-            this.dataSource().data = res.data;
+            this.dataSource.data = res.data;
           }
           this.isLoadingData.set(false);
         },
@@ -154,13 +154,13 @@ export class BrandComponent implements OnInit {
         }
       });
     } else {
-      this.brandService.getPaginated2(this.current_page(), this.page_size(), this.search()).subscribe({
+      this.brandService.getBrandsPaginated(this.current_page(), this.page_size(), this.search()).subscribe({
         next: (res) => {
           if (res && res.data) {
             this.dataList.set(res.data);
             this.total_pages.set(res.pagination.total_pages);
             this.total_records.set(res.pagination.total_records);
-            this.dataSource().data = res.data;
+            this.dataSource.data = res.data;
           }
           this.isLoadingData.set(false);
         },
@@ -203,7 +203,7 @@ export class BrandComponent implements OnInit {
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource().filter = filterValue.trim().toLowerCase();
+    this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
   onCountryChange(event: any) {
@@ -224,7 +224,7 @@ export class BrandComponent implements OnInit {
           CreatedAt: new Date(),
           UpdatedAt: new Date(),
         };
-        this.brandService.create(body).subscribe({
+        this.brandService.createBrand(body).subscribe({
           next: (res) => {
             this.logActivity.activity(
               'Brand',
@@ -269,7 +269,7 @@ export class BrandComponent implements OnInit {
         CreatedAt: new Date(),
         UpdatedAt: new Date(),
       };
-      this.brandService.update(this.idItem(), body)
+      this.brandService.updateBrand(this.idItem(), body)
         .subscribe({
           next: (res) => {
             this.logActivity.activity(
@@ -318,7 +318,7 @@ export class BrandComponent implements OnInit {
 
   delete(): void {
     this.brandService
-      .delete(this.idItem())
+      .deleteBrand(this.idItem())
       .subscribe({
         next: () => {
           this.logActivity.activity(

@@ -6,9 +6,11 @@ import { PosVenteListComponent } from './pos-vente/pos-vente-list/pos-vente-list
 import { PosViewComponent } from './pos-vente/pos-view/pos-view.component';
 import { PosEquipmentComponent } from './pos-vente/pos-equipment/pos-equipment.component';
 import { RouteplanComponent } from './routeplan/routeplan.component';
-import { BrandComponent } from './brand/brand.component'; 
+import { BrandComponent } from './brand/brand.component';
 import { PosFilterListComponent } from './pos-vente/pos-filter-list/pos-filter-list.component';
 import { BrandFilterListComponent } from './brand/brand-filter-list/brand-filter-list.component';
+import { PostformListComponent } from './posform/postform-list/postform-list.component';
+import { PosformFilterComponent } from './posform/posform-filter/posform-filter.component';
 
 const routes: Routes = [
   {
@@ -33,11 +35,12 @@ const routes: Routes = [
     component: PosEquipmentComponent,
   },
   {
-    path: 'posforms',
-    loadChildren: () =>
-      import('./posform/pos.module').then(
-        (m) => m.PosModule
-      ),
+    path: 'posforms/pos-form-list',
+    component: PostformListComponent,
+  },
+  {
+    path: 'posforms/pos-form-filter/:name/:uuid',
+    component: PosformFilterComponent,
   },
   {
     path: 'route-plans/list',

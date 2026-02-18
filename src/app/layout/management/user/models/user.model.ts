@@ -16,7 +16,7 @@ export interface IUser {
     title: string;
     phone: string;
     password: string;
-    password_confirm: string;
+    password_confirm: string; 
 
     country_uuid: string;
     Country: ICountry;

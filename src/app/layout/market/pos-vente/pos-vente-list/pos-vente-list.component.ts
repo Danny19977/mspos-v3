@@ -76,7 +76,7 @@ export class PosVenteListComponent implements OnInit {
     'posforms',
     'action'
   ]);
-  dataSource = signal(new MatTableDataSource<IPos>([]));
+  dataSource = new MatTableDataSource<IPos>([]);
 
   readonly sort = viewChild.required(MatSort);
   readonly paginator = viewChild.required(MatPaginator);
@@ -184,8 +184,8 @@ export class PosVenteListComponent implements OnInit {
       .subscribe({
       next: (user) => {
         this.currentUser.set(user);
-        this.dataSource().paginator = this.paginator(); // Bind paginator to dataSource
-        this.dataSource().sort = this.sort(); // Bind sort to dataSource
+        this.dataSource.paginator = this.paginator(); // Bind paginator to dataSource
+        this.dataSource.sort = this.sort(); // Bind sort to dataSource
         this.cdr.detectChanges(); // Trigger change detection
 
         this.posVenteService.refreshDataList$
@@ -240,7 +240,7 @@ export class PosVenteListComponent implements OnInit {
         this.originalDataList.set([...res.data]); // Conserver une copie des données originales
         this.total_pages.set(res.pagination.total_pages);
         this.total_records.set(res.pagination.total_records);
-        this.dataSource().data = this.dataList();
+        this.dataSource.data = this.dataList();
         this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
         this.isLoadingData.set(false);
       },
@@ -262,7 +262,7 @@ export class PosVenteListComponent implements OnInit {
         this.originalDataList.set([...res.data]);
         this.total_pages.set(res.pagination.total_pages);
         this.total_records.set(res.pagination.total_records);
-        this.dataSource().data = this.dataList();
+        this.dataSource.data = this.dataList();
         this.updateUniqueValues();
         this.isLoadingData.set(false);
       });
@@ -276,7 +276,7 @@ export class PosVenteListComponent implements OnInit {
         console.log("dataList", this.dataList());
         this.total_pages.set(res.pagination.total_pages);
         this.total_records.set(res.pagination.total_records);
-        this.dataSource().data = this.dataList();
+        this.dataSource.data = this.dataList();
         this.updateUniqueValues();
         this.isLoadingData.set(false);
       });
@@ -289,7 +289,7 @@ export class PosVenteListComponent implements OnInit {
         this.originalDataList.set([...res.data]);
         this.total_pages.set(res.pagination.total_pages);
         this.total_records.set(res.pagination.total_records);
-        this.dataSource().data = this.dataList();
+        this.dataSource.data = this.dataList();
         this.updateUniqueValues();
         this.isLoadingData.set(false);
       });
@@ -303,7 +303,7 @@ export class PosVenteListComponent implements OnInit {
         this.originalDataList.set([...res.data]);
         this.total_pages.set(res.pagination.total_pages);
         this.total_records.set(res.pagination.total_records);
-        this.dataSource().data = this.dataList();
+        this.dataSource.data = this.dataList();
         this.updateUniqueValues();
         this.isLoadingData.set(false);
       });
@@ -315,7 +315,7 @@ export class PosVenteListComponent implements OnInit {
         this.originalDataList.set([...res.data]);
         this.total_pages.set(res.pagination.total_pages);
         this.total_records.set(res.pagination.total_records);
-        this.dataSource().data = this.dataList();
+        this.dataSource.data = this.dataList();
         this.updateUniqueValues();
         this.isLoadingData.set(false);
       });
@@ -328,7 +328,7 @@ export class PosVenteListComponent implements OnInit {
         console.log("dataList", this.dataList());
         this.total_pages.set(res.pagination.total_pages);
         this.total_records.set(res.pagination.total_records);
-        this.dataSource().data = this.dataList();
+        this.dataSource.data = this.dataList();
         this.updateUniqueValues();
         this.isLoadingData.set(false);
       });
@@ -538,7 +538,7 @@ export class PosVenteListComponent implements OnInit {
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource().filter = filterValue.trim().toLowerCase();
+    this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
   findValue(value: string) {

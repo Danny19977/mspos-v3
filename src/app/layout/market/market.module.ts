@@ -21,12 +21,22 @@ import { PosVenteService } from './pos-vente/pos-vente.service';
 import { RouteplanService } from './routeplan/routeplan.service';
 import { RouteplanItemService } from './routeplan/routeplanitem.service';
 import { BrandService } from './brand/brand.service';
+
+// Offline/Sync Services
+import { NetworkService } from '../../services/network.service';
+import { SyncQueueService } from '../../shared/services/sync-queue.service';
+import { OfflineService } from '../../shared/services/offline.service';
+import { DataSyncService } from '../../shared/services/data-sync.service';
+import { AutoSyncService } from '../../shared/services/auto-sync.service';
+
 import { MapPosCardComponent } from './pos-vente/pos-view/map-pos/map-pos-card/map-pos-card.component';
 import { GoogleMapsModule } from '@angular/google-maps';
 import { GoogleMapsLoaderService } from '../../services/google-maps-loader.service';
 import { PosFilterListComponent } from './pos-vente/pos-filter-list/pos-filter-list.component';
 import { BrandFilterListComponent } from './brand/brand-filter-list/brand-filter-list.component';
 import { MarketRoutingModule } from './market-routing.module';
+import { PosformFilterComponent } from './posform/posform-filter/posform-filter.component';
+import { PostformListComponent } from './posform/postform-list/postform-list.component';
 
 @NgModule({
   declarations: [
@@ -34,6 +44,8 @@ import { MarketRoutingModule } from './market-routing.module';
     RouteplanComponent,
     BrandComponent,
     BrandFilterListComponent,
+     PostformListComponent,
+    PosformFilterComponent, 
   ],
   imports: [
     CommonModule,
@@ -54,11 +66,18 @@ import { MarketRoutingModule } from './market-routing.module';
     PosFilterListComponent,
   ],
   providers: [
-    PosVenteService,
-    RouteplanService,
-    RouteplanItemService,
-    BrandService,
+    // Business Services - Déjà providedIn:'root', mais on les garde ici pour la cohérence
     GoogleMapsLoaderService,
+    RouteplanItemService,
+    
+    // Les services offline/sync sont déjà providedIn:'root'
   ]
 })
-export class MarketModule { }
+export class MarketModule {
+  constructor(private autoSyncService: AutoSyncService) {
+    // Démarrer la synchronisation automatique au chargement du module
+    this.autoSyncService.start();
+    console.log('🚀 MarketModule: Services offline/online initialisés');
+  }
+}
+

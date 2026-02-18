@@ -14,6 +14,10 @@ export interface IPosFormItem {
     counter: number; // permet le calcul de la somme pour le ND dashboard
     sold: number;
 
+    // Offline sync fields
+    sync_status?: 'synced' | 'pending' | 'error';
+    temp_id?: string; // Temporary UUID for offline-created entities
+
     CreatedAt?: Date;
     UpdatedAt?: Date;
  

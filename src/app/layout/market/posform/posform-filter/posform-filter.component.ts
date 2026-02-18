@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit, inject, signal, WritableSignal, computed } from '@angular/core';
 import { GeolocationService } from '@ng-web-apis/geolocation';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -37,19 +37,20 @@ import { CommuneService } from '../../../territories/commune/commune.service';
   styleUrl: './posform-filter.component.scss'
 })
 export class PosformFilterComponent implements OnInit, AfterViewInit {
-  isLoadingData = false;
+  // Modern Angular signals
+  isLoadingData = signal(false);
   public routes = routes;
 
   dateRange!: FormGroup;
-  start_date!: string;
-  end_date!: string;
+  start_date = signal<string>('');
+  end_date = signal<string>('');
   rangeDate: any[] = [];
 
-  dataList: IPosForm[] = [];
-  total_pages: number = 0;
-  page_size: number = 15;
-  current_page: number = 1;
-  total_records: number = 0;
+  dataList = signal<IPosForm[]>([]);
+  total_pages = signal(0);
+  page_size = signal(15);
+  current_page = signal(1);
+  total_records = signal(0);
 
   // Table
   // Table
@@ -65,15 +66,15 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
     'comment',
     'action'
   ];
-  dataSource = new MatTableDataSource<IPosForm>(this.dataList);
+  dataSource = new MatTableDataSource<IPosForm>([]);
 
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  public search = '';
+  public search = signal('');
 
   // Propriétés pour les filtres avancés
-  showAdvancedFilters = false;
+  showAdvancedFilters = signal(false);
 
   // Objet contenant tous les filtres
   filters = {
@@ -99,112 +100,112 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   };
 
   // Listes des valeurs uniques pour les filtres
-  uniqueCountries: string[] = [];
-  uniqueProvinces: string[] = [];
-  uniqueAreas: string[] = [];
-  uniqueSubAreas: string[] = [];
-  uniqueCommunes: string[] = [];
-  uniquePrices: number[] = [];
-  uniquePosTypes: string[] = [];
-  uniqueAsms: string[] = [];
-  uniqueSupervisors: string[] = [];
-  uniqueDrs: string[] = [];
-  uniqueCyclos: string[] = [];
+  uniqueCountries = signal<string[]>([]);
+  uniqueProvinces = signal<string[]>([]);
+  uniqueAreas = signal<string[]>([]);
+  uniqueSubAreas = signal<string[]>([]);
+  uniqueCommunes = signal<string[]>([]);
+  uniquePrices = signal<number[]>([]);
+  uniquePosTypes = signal<string[]>([]);
+  uniqueAsms = signal<string[]>([]);
+  uniqueSupervisors = signal<string[]>([]);
+  uniqueDrs = signal<string[]>([]);
+  uniqueCyclos = signal<string[]>([]);
 
   // Listes filtrées pour la hiérarchie commerciale
-  filteredAsms: string[] = [];
-  filteredSupervisors: string[] = [];
-  filteredDrs: string[] = [];
-  filteredCyclos: string[] = [];
+  filteredAsms = signal<string[]>([]);
+  filteredSupervisors = signal<string[]>([]);
+  filteredDrs = signal<string[]>([]);
+  filteredCyclos = signal<string[]>([]);
 
   // Données originales et filtrées
-  originalDataList: IPosForm[] = [];
-  filteredDataList: IPosForm[] = [];
+  originalDataList = signal<IPosForm[]>([]);
+  filteredDataList = signal<IPosForm[]>([]);
 
   // Flag pour indiquer si on est en train de compléter un rapport
-  isCompletingReport = false;
+  isCompletingReport = signal(false);
 
   // Forms posform
-  uuidItem: string = ''; // UUID of the item to be edited or deleted
-  dataItem!: IPosForm; // Single data 
+  uuidItem = signal(''); // UUID of the item to be edited or deleted
+  dataItem = signal<IPosForm | null>(null); // Single data 
 
   // posformItem
-  uuidPosformItem: string = ''; // UUID of the posformitem to be edited or deleted
-  dataPosformItem!: IPosFormItem; // Single data
+  uuidPosformItem = signal(''); // UUID of the posformitem to be edited or deleted
+  dataPosformItem = signal<IPosFormItem | null>(null); // Single data
 
   // PosFormItem list
-  dataListPosFormItem: IPosFormItem[] = [];
+  dataListPosFormItem = signal<IPosFormItem[]>([]);
 
 
   // FormGroup for the main form posform
   formGroup!: FormGroup;
-  currentUser!: IUser;
-  isLoading = false;
+  currentUser = signal<IUser | null>(null);
+  isLoading = signal(false);
 
   // FormGroup for the posformitem
   formGroupPosFormItem!: FormGroup;
-  isLoadingPosFormItem = false;
+  isLoadingPosFormItem = signal(false);
 
   // Geolocation
-  latitude!: number;
-  longitude!: number;
+  latitude = signal<number>(0);
+  longitude = signal<number>(0);
 
-  priceList: string[] = ['50', '100', '150', '200', '250', '300'];
+  priceList: string[] = ['100', '125', '150', '200', '250', '300'];
 
   // Get single Routeplan
-  routePlan!: IRoutePlan;
-  routePlanItemList: IRoutePlanItem[] = [];
-  routePlanItemListFilter: IRoutePlanItem[] = [];
-  filteredOptions: IRoutePlanItem[] = [];
+  routePlan = signal<IRoutePlan | null>(null);
+  routePlanItemList = signal<IRoutePlanItem[]>([]);
+  routePlanItemListFilter = signal<IRoutePlanItem[]>([]);
+  filteredOptions = signal<IRoutePlanItem[]>([]);
 
   @ViewChild('pos_uuid') pos_uuid!: ElementRef<HTMLInputElement>;
-  isload = false;
-  posUUID: string = '';
-  posName: string = '';
+  isload = signal(false);
+  posUUID = signal('');
+  posName = signal('');
 
   // Liste brands
-  brandList: IBrand[] = [];
-  brandListFilter: IBrand[] = [];
-  filteredOptionBrand: IBrand[] = [];
-  isLoadingBrand = false;
+  brandList = signal<IBrand[]>([]);
+  brandListFilter = signal<IBrand[]>([]);
+  filteredOptionBrand = signal<IBrand[]>([]);
+  isLoadingBrand = signal(false);
 
   @ViewChild('brand_uuid') brand_uuid!: ElementRef<HTMLInputElement>;
-  isloadBrand = false;
-  brandUUID: string = '';
-  brandName: string = '';
+  isloadBrand = signal(false);
+  brandUUID = signal('');
+  brandName = signal('');
 
   // Ajouter une nouvelle propriété pour stocker l'UUID du routePlanItem
-  routePlanItemUUID: string = '';
+  routePlanItemUUID = signal('');
 
-  name!: string;
-  territoire_uuid!: string;
-  territoire!: any;
+  name = signal('');
+  territoire_uuid = signal('');
+  territoire = signal<any>(null);
 
-  constructor(
-    private readonly geolocation$: GeolocationService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private _formBuilder: FormBuilder,
-    private authService: AuthService,
-    private posformService: PosformService,
-    private posformItemService: PosformItemService,
-    private brandService: BrandService,
-    private routePlanService: RouteplanService,
-    private routePlanItemService: RouteplanItemService,
-    private countryService: CountryService,
-    private provinceService: ProvinceService,
-    private areaService: AreaService,
-    private subareaService: SubareaService,
-    private communeService: CommuneService,
-    private logActivity: LogsService,
-    private toastr: ToastrService,
-    private cdr: ChangeDetectorRef // Inject ChangeDetectorRef
-  ) {
+  // Modern Angular inject pattern
+  private readonly geolocation$ = inject(GeolocationService);
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private _formBuilder = inject(FormBuilder);
+  private authService = inject(AuthService);
+  private posformService = inject(PosformService);
+  private posformItemService = inject(PosformItemService);
+  private brandService = inject(BrandService);
+  private routePlanService = inject(RouteplanService);
+  private routePlanItemService = inject(RouteplanItemService);
+  private countryService = inject(CountryService);
+  private provinceService = inject(ProvinceService);
+  private areaService = inject(AreaService);
+  private subareaService = inject(SubareaService);
+  private communeService = inject(CommuneService);
+  private logActivity = inject(LogsService);
+  private toastr = inject(ToastrService);
+  private cdr = inject(ChangeDetectorRef);
 
+  constructor() {
     this.geolocation$.subscribe((position) => {
-      this.latitude = position.coords.latitude;
-      this.longitude = position.coords.longitude;
-      console.log('Latitude:', this.latitude, 'Longitude:', this.longitude);
+      this.latitude.set(position.coords.latitude);
+      this.longitude.set(position.coords.longitude);
+      console.log('Latitude:', this.latitude(), 'Longitude:', this.longitude());
     });
   }
 
@@ -219,41 +220,42 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
     this.dateRange = this._formBuilder.group({
       rangeValue: new FormControl(this.rangeDate),
     });
-    this.start_date = formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US');
-    this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
+    this.start_date.set(formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US'));
+    this.end_date.set(formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US'));
 
     this.route.params.subscribe(params => {
-      this.name = params['name'];
-      this.territoire_uuid = params['uuid'];
+      this.name.set(params['name']);
+      this.territoire_uuid.set(params['uuid']);
       this.authService.user().subscribe({
         next: (user) => {
-          this.currentUser = user;
+          this.currentUser.set(user);
           this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
           this.dataSource.sort = this.sort; // Bind sort to dataSource 
           this.cdr.detectChanges(); // Trigger change detection
 
-          if (this.currentUser.province_uuid != '') {
+          const user_data = this.currentUser();
+          if (user_data && user_data.province_uuid != '') {
             this.getAllRoutePlans();
             this.getAllBrand();
           }
 
           this.posformService.refreshDataList$.subscribe(() => {
-            this.getDataList(this.name, this.territoire_uuid, this.start_date, this.end_date);
+            this.getDataList(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
           });
-          this.getDataList(this.name, this.territoire_uuid, this.start_date, this.end_date);
+          this.getDataList(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
 
           this.onChanges();
 
           this.geolocation$.subscribe((position) => {
-            this.latitude = position.coords.latitude;
-            this.longitude = position.coords.longitude;
+            this.latitude.set(position.coords.latitude);
+            this.longitude.set(position.coords.longitude);
             // console.log('Latitude:', position.coords.latitude);
             // console.log('Longitude:', position.coords.longitude);
           });
 
         },
         error: (error) => {
-          this.isLoadingData = false;
+          this.isLoadingData.set(false);
           this.router.navigate(['/auth/login']);
           console.log(error);
         }
@@ -266,7 +268,7 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.isLoadingData = true;
+    this.isLoadingData.set(true);
 
     this.formGroup = this._formBuilder.group({
       pos_uuid: ['', Validators.required],
@@ -283,16 +285,20 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   // Pour obtenir la liste des pos pour le plan de route
   getAllRoutePlans(): void {
     const filterValue = this.pos_uuid?.nativeElement.value.toLowerCase() || '';
-    this.isload = true;
+    this.isload.set(true);
 
-    this.routePlanService.getByUserUUID(this.currentUser.uuid).subscribe({
+    const user = this.currentUser();
+    if (!user) return;
+
+    this.routePlanService.getByUserUUID(user.uuid).subscribe({
       next: (res) => {
-        this.routePlan = res.data;
-        console.log('Route Plan:', this.routePlan);
-        if (this.routePlan.uuid != '') {
-          this.routePlanItemService.getAllById(this.routePlan.uuid!).subscribe({
+        this.routePlan.set(res.data);
+        const plan = this.routePlan();
+        console.log('Route Plan:', plan);
+        if (plan && plan.uuid != '') {
+          this.routePlanItemService.getAllById(plan.uuid!).subscribe({
             next: (r) => {
-              this.routePlanItemList = r.data;
+              this.routePlanItemList.set(r.data);
 
               // Extraire les pos_uuid déjà utilisés dans les posforms existants
               // Mais exclure le pos_uuid actuel si on modifie un rapport existant
@@ -301,10 +307,10 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
               const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
               const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
 
-              const usedPosUuids = this.dataList
+              const usedPosUuids = this.dataList()
                 .filter(posform => {
                   // Exclure le rapport actuel
-                  if (posform.uuid === this.uuidItem) return false;
+                  if (posform.uuid === this.uuidItem()) return false;
 
                   // Filtrer uniquement les posforms d'aujourd'hui
                   if (posform.CreatedAt) {
@@ -317,26 +323,28 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
                 .filter(uuid => uuid !== null && uuid !== undefined);
 
               // Filtrer les items du route plan pour exclure ceux qui ont le status false ET qui ne sont pas déjà utilisés
-              this.routePlanItemListFilter = this.routePlanItemList.filter(pos =>
+              const filteredList = this.routePlanItemList().filter(pos =>
                 pos.uuid &&
                 pos.status == false &&
                 !usedPosUuids.includes(pos.pos_uuid)
               );
+              this.routePlanItemListFilter.set(filteredList);
 
-              this.filteredOptions = this.routePlanItemListFilter.filter(o => o.Pos!.name.toLowerCase().includes(filterValue));
-              this.isload = false;
+              const filteredOpts = filteredList.filter(o => o.Pos!.name.toLowerCase().includes(filterValue));
+              this.filteredOptions.set(filteredOpts);
+              this.isload.set(false);
             },
             error: (error) => {
-              this.isload = false;
+              this.isload.set(false);
               console.error('Error fetching route plan items:', error);
               this.toastr.info('Veuillez créer un plan de route.', 'Plan de route inexistant');
             }
           });
         };
-        this.isload = false;
+        this.isload.set(false);
       },
       error: (error) => {
-        this.isload = false;
+        this.isload.set(false);
         console.error('Error fetching route plans:', error);
         this.toastr.error('Erreur lors de la récupération des plans de route.', 'Oupss!');
       }
@@ -352,35 +360,40 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   // Modifier la méthode optionSelected pour capturer l'UUID du routePlanItem
   optionSelected(event: MatAutocompleteSelectedEvent) {
     const selectedOption = event.option.value;
-    this.posUUID = selectedOption.pos_uuid;
-    this.posName = selectedOption.pos_name;
+    this.posUUID.set(selectedOption.pos_uuid);
+    this.posName.set(selectedOption.pos_name);
     // ✅ Capturer l'UUID du routePlanItem sélectionné
-    this.routePlanItemUUID = selectedOption.uuid; // Ceci est l'UUID du routePlanItem, pas du POS
+    this.routePlanItemUUID.set(selectedOption.uuid); // Ceci est l'UUID du routePlanItem, pas du POS
   }
 
   // Pour obtenir la liste des marques visitées
   getAllBrand(): void {
     const filterValue = this.brand_uuid?.nativeElement.value.toLowerCase();
-    this.isloadBrand = true;
+    this.isloadBrand.set(true);
 
-    this.brandService.getAllByASM(this.currentUser.province_uuid).subscribe({
+    const user = this.currentUser();
+    if (!user) return;
+
+    this.brandService.getAllByASM(user.province_uuid).subscribe({
       next: (res) => {
-        this.brandList = res.data;
+        this.brandList.set(res.data);
 
         // Extraire les brand_uuid déjà utilisés dans les posformItems existants
-        const usedBrandUuids = this.dataListPosFormItem.map(item => item.brand_uuid).filter(uuid => uuid !== null && uuid !== undefined);
+        const usedBrandUuids = this.dataListPosFormItem().map(item => item.brand_uuid).filter(uuid => uuid !== null && uuid !== undefined);
 
         // Filtrer les brands pour exclure ceux qui sont déjà utilisés
-        this.brandListFilter = this.brandList.filter(brand =>
+        const filteredList = this.brandList().filter(brand =>
           brand.uuid &&
           !usedBrandUuids.includes(brand.uuid)
         );
+        this.brandListFilter.set(filteredList);
 
-        this.filteredOptionBrand = this.brandListFilter.filter(o => o.name!.toLowerCase().includes(filterValue));
-        this.isloadBrand = false;
+        const filteredOpts = filteredList.filter(o => o.name!.toLowerCase().includes(filterValue));
+        this.filteredOptionBrand.set(filteredOpts);
+        this.isloadBrand.set(false);
       },
       error: (error) => {
-        this.isloadBrand = false;
+        this.isloadBrand.set(false);
         console.error('Error fetching brand items:', error);
         this.toastr.error('Erreur lors de la récupération des marques.', 'Oupss!');
       }
@@ -394,71 +407,71 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
 
   optionSelectedBrand(event: MatAutocompleteSelectedEvent) {
     const selectedOption = event.option.value;
-    this.brandUUID = selectedOption.uuid;
-    this.brandName = selectedOption.name;
+    this.brandUUID.set(selectedOption.uuid);
+    this.brandName.set(selectedOption.name);
 
     // Utilisez id et fullName comme vous le souhaitez
-    console.log('brand_uuid:', this.brandUUID);
+    console.log('brand_uuid:', this.brandUUID());
   }
 
 
   // Méthode onChanges
   onChanges(): void {
     this.dateRange.valueChanges.subscribe((val) => {
-      this.start_date = formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US');
+      this.start_date.set(formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US'));
 
       val.rangeValue[1].setDate(val.rangeValue[1].getDate() + 1);
-      this.end_date = formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US');
+      this.end_date.set(formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US'));
 
 
-      this.fetchProducts(this.name, this.territoire_uuid, this.start_date, this.end_date);
+      this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
 
     });
   }
 
   onPageChange(event: PageEvent): void {
-    this.isLoadingData = true;
-    this.current_page = event.pageIndex + 1; // Adjust for 1-based page index
-    this.page_size = event.pageSize;
+    this.isLoadingData.set(true);
+    this.current_page.set(event.pageIndex + 1); // Adjust for 1-based page index
+    this.page_size.set(event.pageSize);
 
-    this.fetchProducts(this.name, this.territoire_uuid, this.start_date, this.end_date);
+    this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
   }
 
   private getDataList(name: string, territoire_uuid: string, start_date: string, end_date: string): void {
     if (name == "country" || name == 'Manager' || name == 'Support') {
-      this.countryService.get(this.territoire_uuid).subscribe(item => {
-        this.territoire = item.data;
+      this.countryService.get(territoire_uuid).subscribe(item => {
+        this.territoire.set(item.data);
          this.fetchProducts(name, territoire_uuid, start_date, end_date);
       });
     } else if (name == "province" || name == "ASM") {
-      this.provinceService.get(this.territoire_uuid).subscribe(item => {
-        this.territoire = item.data;
+      this.provinceService.get(territoire_uuid).subscribe(item => {
+        this.territoire.set(item.data);
         this.fetchProducts(name, territoire_uuid, start_date, end_date);
       });
     } else if (name == "area" || name == "Supervisor") {
-      this.areaService.get(this.territoire_uuid).subscribe(item => {
-        this.territoire = item.data;
+      this.areaService.get(territoire_uuid).subscribe(item => {
+        this.territoire.set(item.data);
         this.fetchProducts(name, territoire_uuid, start_date, end_date);
       });
     } else if (name == "subarea" || name == "DR") {
-      this.subareaService.get(this.territoire_uuid).subscribe(item => {
-        this.territoire = item.data;
+      this.subareaService.get(territoire_uuid).subscribe(item => {
+        this.territoire.set(item.data);
         this.fetchProducts(name, territoire_uuid, start_date, end_date);
       }); 
     } else if (name == "commune" || name == "Cyclo") {
-      this.communeService.get(this.territoire_uuid).subscribe(item => {
-        this.territoire = item.data; 
-        this.fetchProducts(name, this.territoire_uuid, start_date, end_date);
+      this.communeService.get(territoire_uuid).subscribe(item => {
+        this.territoire.set(item.data); 
+        this.fetchProducts(name, territoire_uuid, start_date, end_date);
       });
     }
   }
 
   fetchProducts(name: string, territoire_uuid: string, start_date: string, end_date: string): void {
-    this.isLoadingData = true;
+    this.isLoadingData.set(true);
 
     // Construire l'objet de filtres pour l'API
     const apiFilters = {
-      search: this.search,
+      search: this.search(),
       // Filtres géographiques
       country: this.filters.country,
       province: this.filters.province,
@@ -489,34 +502,34 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
     this.posformService.getPaginatedWithAdvancedFilters2(
       name,
       territoire_uuid,
-      this.current_page,
-      this.page_size,
+      this.current_page(),
+      this.page_size(),
       start_date,
       end_date,
       apiFilters
     ).subscribe({
       next: (res) => {
-        this.dataList = res.data;
-        this.originalDataList = [...res.data]; // Sauvegarder les données originales
-        this.total_pages = res.pagination.total_pages;
-        this.total_records = res.pagination.total_records;
+        this.dataList.set(res.data);
+        this.originalDataList.set([...res.data]); // Sauvegarder les données originales
+        this.total_pages.set(res.pagination.total_pages);
+        this.total_records.set(res.pagination.total_records);
 
         // Mettre à jour les valeurs uniques pour les filtres frontend (si nécessaire)
         this.updateUniqueValues();
 
         // Puisque les filtres sont maintenant appliqués côté serveur,
         // nous n'avons plus besoin d'appliquer les filtres côté client
-        this.dataSource.data = this.dataList;
+        this.dataSource.data = this.dataList();
 
         this.getAllRoutePlans(); // Refresh route plans to exclude used POS
-        this.isLoadingData = false;
+        this.isLoadingData.set(false);
       },
       error: (error) => {
         console.error('Erreur lors de la récupération des posforms:', error);
-        this.isLoadingData = false;
+        this.isLoadingData.set(false);
 
         // Fallback : utiliser les anciennes méthodes selon le rôle
-        this.fetchProductsFallback(this.name, this.territoire_uuid, start_date, end_date);
+        this.fetchProductsFallback(this.name(), this.territoire_uuid(), start_date, end_date);
       }
     });
   }
@@ -526,123 +539,127 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
    */
   private fetchProductsFallback(name: string, territoire_uuid: string, start_date: string, end_date: string): void {
     if (name == "country" || name == 'Manager' || name == 'Support') {
-      this.countryService.get(this.territoire_uuid).subscribe(res => {
-        this.territoire = res.data;
+      this.countryService.get(territoire_uuid).subscribe(res => {
+        this.territoire.set(res.data);
         this.posformService.getPaginatedRangeDateByCountryUUID(
           territoire_uuid,
-          this.current_page,
-          this.page_size, this.search,
+          this.current_page(),
+          this.page_size(), this.search(),
           start_date, end_date).subscribe(res => {
-            this.dataList = res.data;
-            this.originalDataList = [...res.data];
-            this.total_pages = res.pagination.total_pages;
-            this.total_records = res.pagination.total_records;
+            this.dataList.set(res.data);
+            this.originalDataList.set([...res.data]);
+            this.total_pages.set(res.pagination.total_pages);
+            this.total_records.set(res.pagination.total_records);
             this.updateUniqueValues();
             this.applyFilters();
             this.getAllRoutePlans();
-            this.isLoadingData = false;
+            this.isLoadingData.set(false);
           });
       });
     } else if (name == 'province' || name == 'ASM') {
-      this.provinceService.get(this.territoire_uuid).subscribe(res => {
-        this.territoire = res.data;
+      this.provinceService.get(territoire_uuid).subscribe(res => {
+        this.territoire.set(res.data);
         this.posformService.getPaginatedRangeDateByProvinceId(
-          territoire_uuid, this.current_page, this.page_size, this.search,
+          territoire_uuid, this.current_page(), this.page_size(), this.search(),
           start_date, end_date).subscribe(res => {
-            this.dataList = res.data;
-            this.originalDataList = [...res.data];
-            this.total_pages = res.pagination.total_pages;
-            this.total_records = res.pagination.total_records;
+            this.dataList.set(res.data);
+            this.originalDataList.set([...res.data]);
+            this.total_pages.set(res.pagination.total_pages);
+            this.total_records.set(res.pagination.total_records);
             this.updateUniqueValues();
             this.applyFilters();
             this.getAllRoutePlans();
-            this.isLoadingData = false;
+            this.isLoadingData.set(false);
           });
       });
     } else if (name == 'area' || name == 'Supervisor') {
-      this.areaService.get(this.territoire_uuid).subscribe(res => {
-        this.territoire = res.data;
+      this.areaService.get(territoire_uuid).subscribe(res => {
+        this.territoire.set(res.data);
         this.posformService.getPaginatedRangeDateByAreaId(
           territoire_uuid,
-          this.current_page,
-          this.page_size,
-          this.search,
+          this.current_page(),
+          this.page_size(),
+          this.search(),
           start_date, end_date).subscribe(res => {
-            this.dataList = res.data;
-            this.originalDataList = [...res.data];
-            this.total_pages = res.pagination.total_pages;
-            this.total_records = res.pagination.total_records;
+            this.dataList.set(res.data);
+            this.originalDataList.set([...res.data]);
+            this.total_pages.set(res.pagination.total_pages);
+            this.total_records.set(res.pagination.total_records);
             this.updateUniqueValues();
             this.applyFilters();
             this.getAllRoutePlans();
-            this.isLoadingData = false;
+            this.isLoadingData.set(false);
           });
       });
     } else if (name == 'subarea' || name == 'DR') {
-      this.subareaService.get(this.territoire_uuid).subscribe(res => {
-        this.territoire = res.data;
+      this.subareaService.get(territoire_uuid).subscribe(res => {
+        this.territoire.set(res.data);
         this.posformService.getPaginatedRangeDateBySubAreaId(
-          territoire_uuid, this.current_page, this.page_size, this.search,
+          territoire_uuid, this.current_page(), this.page_size(), this.search(),
           start_date, end_date).subscribe(res => {
-            this.dataList = res.data;
-            this.originalDataList = [...res.data];
-            this.total_pages = res.pagination.total_pages;
-            this.total_records = res.pagination.total_records;
+            this.dataList.set(res.data);
+            this.originalDataList.set([...res.data]);
+            this.total_pages.set(res.pagination.total_pages);
+            this.total_records.set(res.pagination.total_records);
             this.updateUniqueValues();
             this.applyFilters();
             this.getAllRoutePlans();
-            this.isLoadingData = false;
+            this.isLoadingData.set(false);
           });
       });
     } else if (name == 'commune' || name == 'Cyclo') {
-      this.communeService.get(this.territoire_uuid).subscribe(res => {
-        this.territoire = res.data;
-        this.posformService.getPaginatedRangeDateByCommuneId(
-          this.currentUser.uuid, this.current_page, this.page_size, this.search,
-          start_date, end_date).subscribe(res => {
-            this.dataList = res.data;
-            this.originalDataList = [...res.data];
-            this.total_pages = res.pagination.total_pages;
-            this.total_records = res.pagination.total_records;
-            this.updateUniqueValues();
-            this.applyFilters();
-            this.getAllRoutePlans();
-            this.isLoadingData = false;
-          });
+      this.communeService.get(territoire_uuid).subscribe(res => {
+        this.territoire.set(res.data);
+        const user = this.currentUser();
+        if (user) {
+          this.posformService.getPaginatedRangeDateByCommuneId(
+            user.uuid, this.current_page(), this.page_size(), this.search(),
+            start_date, end_date).subscribe(res => {
+              this.dataList.set(res.data);
+              this.originalDataList.set([...res.data]);
+              this.total_pages.set(res.pagination.total_pages);
+              this.total_records.set(res.pagination.total_records);
+              this.updateUniqueValues();
+              this.applyFilters();
+              this.getAllRoutePlans();
+              this.isLoadingData.set(false);
+            });
+        }
       });
     } else {
       this.posformService.getPaginatedRangeDate2(
-        this.current_page, this.page_size, this.search,
+        this.current_page(), this.page_size(), this.search(),
         start_date, end_date).subscribe(res => {
-          this.dataList = res.data;
-          this.originalDataList = [...res.data];
-          this.total_pages = res.pagination.total_pages;
-          this.total_records = res.pagination.total_records;
+          this.dataList.set(res.data);
+          this.originalDataList.set([...res.data]);
+          this.total_pages.set(res.pagination.total_pages);
+          this.total_records.set(res.pagination.total_records);
           this.updateUniqueValues();
           this.applyFilters();
           this.getAllRoutePlans();
-          this.isLoadingData = false;
+          this.isLoadingData.set(false);
         });
     }
   }
 
   onSearchChange(search: string) {
-    this.search = search;
-    this.current_page = 1; // Reset à la première page lors de la recherche
-    this.fetchProducts(this.name, this.territoire_uuid, this.start_date, this.end_date);
+    this.search.set(search);
+    this.current_page.set(1); // Reset à la première page lors de la recherche
+    this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
   }
 
 
   public sortData(sort: Sort) {
-    const data = this.dataList.slice();
+    const data = this.dataList().slice();
     if (!sort.active || sort.direction === '') {
-      this.dataList = data;
+      this.dataList.set(data);
     } else {
-      this.dataList = data.sort((a, b) => {
+      const sorted = data.sort((a, b) => {
         const aValue = (a as never)[sort.active];
         const bValue = (b as never)[sort.active];
         return (aValue < bValue ? -1 : 1) * (sort.direction === 'asc' ? 1 : -1);
       });
+      this.dataList.set(sorted);
     }
   }
 
@@ -657,69 +674,69 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
    * Afficher/masquer les filtres avancés
    */
   toggleAdvancedFilters(): void {
-    this.showAdvancedFilters = !this.showAdvancedFilters;
+    this.showAdvancedFilters.update(val => !val);
   }
 
   /**
    * Mettre à jour les valeurs uniques pour tous les filtres
    */
   updateUniqueValues(): void {
+    const dataList = this.originalDataList();
+    
     // Valeurs géographiques
-    this.uniqueCountries = [...new Set(this.originalDataList
-      .map(item => item.Country?.name)
-      .filter(name => name))] as string[];
+    this.uniqueCountries.set([...new Set(dataList
+      .map((item: IPosForm) => item.Country?.name)
+      .filter((name: string | undefined) => name))] as string[]);
 
-    this.uniqueProvinces = [...new Set(this.originalDataList
-      .map(item => item.Province?.name)
-      .filter(name => name))] as string[];
+    this.uniqueProvinces.set([...new Set(dataList
+      .map((item: IPosForm) => item.Province?.name)
+      .filter((name: string | undefined) => name))] as string[]);
 
-    this.uniqueAreas = [...new Set(this.originalDataList
-      .map(item => item.Area?.name)
-      .filter(name => name))] as string[];
+    this.uniqueAreas.set([...new Set(dataList
+      .map((item: IPosForm) => item.Area?.name)
+      .filter((name: string | undefined) => name))] as string[]);
 
-    this.uniqueSubAreas = [...new Set(this.originalDataList
-      .map(item => item.SubArea?.name)
-      .filter(name => name))] as string[];
+    this.uniqueSubAreas.set([...new Set(dataList
+      .map((item: IPosForm) => item.SubArea?.name)
+      .filter((name: string | undefined) => name))] as string[]);
 
-    this.uniqueCommunes = [...new Set(this.originalDataList
-      .map(item => item.Commune?.name)
-      .filter(name => name))] as string[];
+    this.uniqueCommunes.set([...new Set(dataList
+      .map((item: IPosForm) => item.Commune?.name)
+      .filter((name: string | undefined) => name))] as string[]);
 
     // Valeurs de prix
-    this.uniquePrices = [...new Set(this.originalDataList
-      .map(item => item.price)
-      .filter(price => price !== null && price !== undefined))]
-      .sort((a, b) => a - b);
+    this.uniquePrices.set([...new Set(dataList
+      .map((item: IPosForm) => item.price)
+      .filter((price: number | null | undefined) => price !== null && price !== undefined))]
+      .sort((a, b) => (a as number) - (b as number)) as number[]);
 
     // Types de points de vente
-    this.uniquePosTypes = [...new Set(this.originalDataList
-      .map(item => item.Pos?.shop)
-      .filter(shop => shop))] as string[];
+    this.uniquePosTypes.set([...new Set(dataList
+      .map((item: IPosForm) => item.Pos?.shop)
+      .filter((shop: string | undefined) => shop))] as string[]);
 
     // Hiérarchie commerciale
-    this.uniqueAsms = [...new Set(this.originalDataList
-      .map(item => item.asm)
-      .filter(asm => asm))] as string[];
+    this.uniqueAsms.set([...new Set(dataList
+      .map((item: IPosForm) => item.asm)
+      .filter((asm: string | undefined) => asm))] as string[]);
 
-    this.uniqueSupervisors = [...new Set(this.originalDataList
-      .map(item => item.sup)
-      .filter(sup => sup))] as string[];
+    this.uniqueSupervisors.set([...new Set(dataList
+      .map((item: IPosForm) => item.sup)
+      .filter((sup: string | undefined) => sup))] as string[]);
 
-    this.uniqueDrs = [...new Set(this.originalDataList
-      .map(item => item.dr)
-      .filter(dr => dr))] as string[];
+    this.uniqueDrs.set([...new Set(dataList
+      .map((item: IPosForm) => item.dr)
+      .filter((dr: string | undefined) => dr))] as string[]);
 
-    this.uniqueCyclos = [...new Set(this.originalDataList
-      .map(item => item.cyclo)
-      .filter(cyclo => cyclo))] as string[];
+    this.uniqueCyclos.set([...new Set(dataList
+      .map((item: IPosForm) => item.cyclo)
+      .filter((cyclo: string | undefined) => cyclo))] as string[]);
 
     // Initialiser les listes filtrées pour la hiérarchie commerciale
-    this.filteredAsms = [...this.uniqueAsms];
-    this.filteredSupervisors = [...this.uniqueSupervisors];
-    this.filteredDrs = [...this.uniqueDrs];
-    this.filteredCyclos = [...this.uniqueCyclos];
-    this.filteredDrs = this.uniqueDrs;
-    this.filteredCyclos = this.uniqueCyclos;
+    this.filteredAsms.set([...this.uniqueAsms()]);
+    this.filteredSupervisors.set([...this.uniqueSupervisors()]);
+    this.filteredDrs.set([...this.uniqueDrs()]);
+    this.filteredCyclos.set([...this.uniqueCyclos()]);
 
     // Debug: Afficher les valeurs uniques dans la console
     console.log('🔍 Filtres hiérarchie commerciale mis à jour:');
@@ -734,15 +751,15 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
    */
   applyFilters(): void {
     // Au lieu de filtrer côté client, on déclenche un nouveau fetch avec les filtres
-    this.current_page = 1; // Reset à la première page lors de l'application de filtres
-    this.fetchProducts(this.name, this.territoire_uuid, this.start_date, this.end_date);
+    this.current_page.set(1); // Reset à la première page lors de l'application de filtres
+    this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
   }
 
   /**
    * Méthode héritée pour le filtrage côté client (utilisée comme fallback)
    */
   applyClientSideFilters(): void {
-    let filteredData = [...this.originalDataList];
+    let filteredData = [...this.originalDataList()];
 
     // Filtre par pays
     if (this.filters.country) {
@@ -888,7 +905,7 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
     }
 
     // Mettre à jour les données filtrées
-    this.filteredDataList = filteredData;
+    this.filteredDataList.set(filteredData);
     this.dataSource.data = filteredData;
   }
 
@@ -919,10 +936,10 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
     };
 
     // Réinitialiser les listes filtrées
-    this.filteredAsms = [...this.uniqueAsms];
-    this.filteredSupervisors = [...this.uniqueSupervisors];
-    this.filteredDrs = [...this.uniqueDrs];
-    this.filteredCyclos = [...this.uniqueCyclos];
+    this.filteredAsms.set([...this.uniqueAsms()]);
+    this.filteredSupervisors.set([...this.uniqueSupervisors()]);
+    this.filteredDrs.set([...this.uniqueDrs()]);
+    this.filteredCyclos.set([...this.uniqueCyclos()]);
 
     // Déclencher un nouveau fetch sans filtres
     this.applyFilters();
@@ -953,7 +970,7 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
    * Obtenir le nombre d'éléments filtrés
    */
   getFilteredCount(): number {
-    return this.dataList.length;
+    return this.dataList().length;
   }
 
   /**
@@ -970,7 +987,8 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
    * Méthode pour vérifier si l'utilisateur actuel est le créateur du posform
    */
   isCurrentUserCreator(posform: IPosForm): boolean {
-    return this.currentUser && posform.user_uuid === this.currentUser.uuid;
+    const user = this.currentUser();
+    return user !== null && posform.user_uuid === user.uuid;
   }
 
   /**
@@ -1014,9 +1032,9 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
     });
 
     // Déclencher le changement de date
-    this.start_date = formatDate(startDate, 'yyyy-MM-dd', 'en-US');
-    this.end_date = formatDate(endDate, 'yyyy-MM-dd', 'en-US');
-    this.fetchProducts(this.name, this.territoire_uuid, this.start_date, this.end_date);
+    this.start_date.set(formatDate(startDate, 'yyyy-MM-dd', 'en-US'));
+    this.end_date.set(formatDate(endDate, 'yyyy-MM-dd', 'en-US'));
+    this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
   }
 
   /**
@@ -1024,7 +1042,7 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
    */
   exportToExcel(): void {
     try {
-      const dataToExport = this.filteredDataList.map(item => ({
+      const dataToExport = this.filteredDataList().map(item => ({
         'Date de visite': formatDate(item.CreatedAt || new Date(), 'dd/MM/yyyy HH:mm', 'en-US'),
         'Point de vente': item.Pos?.name || 'Non renseigné',
         'Type de magasin': item.Pos?.shop || '--',
@@ -1088,7 +1106,7 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
           <div class="header">
             <h2>📋 Rapports de visite</h2>
             <p>Exporté le ${formatDate(new Date(), 'dd/MM/yyyy HH:mm', 'en-US')}</p>
-            <p class="summary">Total: ${this.getFilteredCount()} rapport(s) sur ${this.total_records}</p>
+            <p class="summary">Total: ${this.getFilteredCount()} rapport(s) sur ${this.total_records()}</p>
           </div>
           <table>
             <thead>
@@ -1105,7 +1123,7 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
             <tbody>
       `;
 
-      this.filteredDataList.forEach(item => {
+      this.filteredDataList().forEach((item: IPosForm) => {
         const location = [item.Province?.name, item.Area?.name, item.Commune?.name]
           .filter(l => l && l !== '--')
           .join(', ') || '--';
@@ -1173,39 +1191,39 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
 
   findValue(uuid: string): void {
     console.log('🔍 findValue appelé avec uuid:', uuid);
-    this.uuidItem = uuid;
+    this.uuidItem.set(uuid);
     // Chercher d'abord dans les données filtrées, puis dans les données originales
-    const foundItem = this.filteredDataList.find(item => item.uuid === uuid) ||
-      this.originalDataList.find(item => item.uuid === uuid) ||
-      this.dataList.find(item => item.uuid === uuid);
+    const foundItem = this.filteredDataList().find(item => item.uuid === uuid) ||
+      this.originalDataList().find(item => item.uuid === uuid) ||
+      this.dataList().find(item => item.uuid === uuid);
 
     if (foundItem) {
-      this.dataItem = foundItem;
-      console.log('✅ Élément trouvé:', this.dataItem);
+      this.dataItem.set(foundItem);
+      console.log('✅ Élément trouvé:', this.dataItem());
       this.getAllPosFormItem(uuid);
 
       // Pré-remplir le formulaire d'édition
       this.formGroup.patchValue({
-        pos_uuid: this.dataItem.pos_uuid || '',
-        price: this.dataItem.price || '',
-        comment: this.dataItem.comment || ''
+        pos_uuid: this.dataItem()?.pos_uuid || '',
+        price: this.dataItem()?.price || '',
+        comment: this.dataItem()?.comment || ''
       });
 
       // Si c'est un rapport incomplet (sans POS), adapter l'interface
-      if (!this.dataItem.pos_uuid || this.dataItem.pos_uuid.trim() === '') {
+      if (!this.dataItem()?.pos_uuid || this.dataItem()?.pos_uuid?.trim() === '') {
         console.log('📝 Rapport incomplet détecté, préparation pour complétion...');
-        this.isCompletingReport = true;
+        this.isCompletingReport.set(true);
         // Réinitialiser les sélections de POS pour permettre une nouvelle sélection
-        this.posUUID = '';
-        this.posName = '';
+        this.posUUID.set('');
+        this.posName.set('');
         this.formGroup.patchValue({
           pos_uuid: ''
         });
       } else {
         console.log('✅ Rapport complet détecté pour modification...');
-        this.isCompletingReport = false;
+        this.isCompletingReport.set(false);
         // Si le rapport a déjà un POS, on garde les valeurs existantes
-        this.posUUID = this.dataItem.pos_uuid;
+        this.posUUID.set(this.dataItem()?.pos_uuid || '');
       }
 
       // Forcer la détection des changements pour s'assurer que l'offcanvas se met à jour
@@ -1219,57 +1237,64 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
 
   // Creation de rapport de visite
   async onSubmitInit() {
-    this.isLoading = true;
+    this.isLoading.set(true);
+    const user = this.currentUser();
+    if (!user) {
+      this.toastr.error('Utilisateur non connecté', 'Erreur');
+      this.isLoading.set(false);
+      return;
+    }
+    
     var body: IPosForm = {
       // uuid: uuidv4(),
       price: 50,
       comment: 'Rien à signaler',
-      latitude: this.latitude,
-      longitude: this.longitude,
+      latitude: this.latitude(),
+      longitude: this.longitude(),
       pos_uuid: '', // This will be set later
-      country_uuid: this.currentUser.country_uuid || '',
-      province_uuid: this.currentUser.province_uuid || '',
-      area_uuid: this.currentUser.area_uuid || '',
-      sub_area_uuid: this.currentUser.sub_area_uuid || '',
-      commune_uuid: this.currentUser.commune_uuid || '',
-      asm_uuid: this.currentUser.asm_uuid || '',
-      asm: this.currentUser.asm || '',
-      sup_uuid: this.currentUser.sup_uuid || '',
-      sup: this.currentUser.sup || '',
-      dr_uuid: this.currentUser.dr_uuid || '',
-      dr: this.currentUser.dr || '',
-      cyclo_uuid: this.currentUser.cyclo_uuid || '',
-      cyclo: this.currentUser.cyclo || '',
-      user_uuid: this.currentUser.uuid,
-      signature: this.currentUser.fullname, // Added signature property
+      country_uuid: user.country_uuid || '',
+      province_uuid: user.province_uuid || '',
+      area_uuid: user.area_uuid || '',
+      sub_area_uuid: user.sub_area_uuid || '',
+      commune_uuid: user.commune_uuid || '',
+      asm_uuid: user.asm_uuid || '',
+      asm: user.asm || '',
+      sup_uuid: user.sup_uuid || '',
+      sup: user.sup || '',
+      dr_uuid: user.dr_uuid || '',
+      dr: user.dr || '',
+      cyclo_uuid: user.cyclo_uuid || '',
+      cyclo: user.cyclo || '',
+      user_uuid: user.uuid,
+      signature: user.fullname, // Added signature property
       // sync: true,
     };
     this.posformService.create(body).subscribe({
       next: (res) => {
         this.logActivity.activity(
           'PosForm',
-          this.currentUser.uuid,
+          user.uuid,
           'created',
           `Created Posform uuid: ${res.data.uuid!}`, // 
-          this.currentUser.fullname
+          user.fullname
         ).subscribe({
           next: () => {
             this.formGroup.reset();
-            this.dataListPosFormItem = []; // Réinitialiser la liste des items
-            this.fetchProducts(this.name, this.territoire_uuid, this.start_date, this.end_date);
+            this.dataListPosFormItem.set([]); // Réinitialiser la liste des items
+            this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
             this.toastr.success('Nouveau rapport créé avec succès!', 'Succès');
-            this.uuidItem = res.data.uuid!; // Définir l'UUID pour les ajouts d'items
-            this.isLoading = false;
+            this.uuidItem.set(res.data.uuid!); // Définir l'UUID pour les ajouts d'items
+            this.isLoading.set(false);
           },
           error: (err) => {
-            this.isLoading = false;
+            this.isLoading.set(false);
             this.toastr.error(`${err.error.message}`, 'Oupss!');
             console.log(err);
           }
         });
       },
       error: (err) => {
-        this.isLoading = false;
+        this.isLoading.set(false);
         this.toastr.error(`${err.error.message}`, 'Oupss!');
         console.log(err);
       }
@@ -1284,36 +1309,45 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
     }
 
     if (this.formGroup.valid) {
-      this.isLoading = true;
+      this.isLoading.set(true);
+
+      const currentUserValue = this.currentUser();
+      if (!currentUserValue) {
+        this.toastr.error('Utilisateur non connect é', 'Erreur');
+        this.isLoading.set(false);
+        return;
+      }
 
       const formData = {
         // ...this.formGroup.value,
         price: parseInt(this.formGroup.value.price) || 50,
         comment: this.formGroup.value.comment || '',
-        pos_uuid: this.posUUID,
-        country_uuid: this.currentUser.country_uuid || '',
-        province_uuid: this.currentUser.province_uuid || '',
-        area_uuid: this.currentUser.area_uuid || '',
-        sub_area_uuid: this.currentUser.sub_area_uuid || '',
-        commune_uuid: this.currentUser.commune_uuid || '',
-        asm_uuid: this.currentUser.asm_uuid || '',
-        asm: this.currentUser.asm || '',
-        sup_uuid: this.currentUser.sup_uuid || '',
-        sup: this.currentUser.sup || '',
-        dr_uuid: this.currentUser.dr_uuid || '',
-        dr: this.currentUser.dr || '',
-        cyclo_uuid: this.currentUser.cyclo_uuid || '',
-        cyclo: this.currentUser.cyclo || '',
-        user_uuid: this.currentUser.uuid,
+        pos_uuid: this.posUUID(),
+        country_uuid: currentUserValue.country_uuid || '',
+        province_uuid: currentUserValue.province_uuid || '',
+        area_uuid: currentUserValue.area_uuid || '',
+        sub_area_uuid: currentUserValue.sub_area_uuid || '',
+        commune_uuid: currentUserValue.commune_uuid || '',
+        asm_uuid: currentUserValue.asm_uuid || '',
+        asm: currentUserValue.asm || '',
+        sup_uuid: currentUserValue.sup_uuid || '',
+        sup: currentUserValue.sup || '',
+        dr_uuid: currentUserValue.dr_uuid || '',
+        dr: currentUserValue.dr || '',
+        cyclo_uuid: currentUserValue.cyclo_uuid || '',
+        cyclo: currentUserValue.cyclo || '',
+        user_uuid: currentUserValue.uuid,
+        signature: '',
       };
-      this.posformService.update(this.uuidItem, formData).subscribe({
+      this.posformService.update(this.uuidItem(), formData).subscribe({
         next: (res) => {
           // Si un pos_uuid est fourni, mettre à jour le statut du routePlanItem à true
-          if (this.posUUID && this.posUUID.trim() !== '') {
-            this.routePlanItemService.update(this.routePlanItemUUID, { status: true })
+          const posUUIDValue = this.posUUID();
+          if (posUUIDValue && posUUIDValue.trim() !== '') {
+            this.routePlanItemService.update(this.routePlanItemUUID(), { status: true })
               .subscribe({
                 next: () => {
-                  console.log('Statut du RoutePlanItem mis à jour à true pour pos_uuid:', this.posUUID);
+                  console.log('Statut du RoutePlanItem mis à jour à true pour pos_uuid:', posUUIDValue);
                   this.getAllRoutePlans(); // Rafraîchir la liste des route plans
                 },
                 error: (err) => {
@@ -1324,25 +1358,25 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
           }
           this.logActivity.activity(
             'PosForm',
-            this.currentUser.uuid,
+            currentUserValue.uuid,
             'updated',
-            `Updated PosForm uuid: ${this.uuidItem}`,
-            this.currentUser.fullname
+            `Updated PosForm uuid: ${this.uuidItem()}`,
+            currentUserValue.fullname
           ).subscribe({
             next: () => {
               this.toastr.success('Rapport modifié avec succès!', 'Succès');
-              this.fetchProducts(this.name, this.territoire_uuid, this.start_date, this.end_date);
-              this.isLoading = false;
+              this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
+              this.isLoading.set(false);
             },
             error: (err) => {
-              this.isLoading = false;
+              this.isLoading.set(false);
               this.toastr.error('Erreur lors de la sauvegarde du log', 'Erreur');
               console.error(err);
             }
           });
         },
         error: (err) => {
-          this.isLoading = false;
+          this.isLoading.set(false);
           this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
           console.error(err);
         }
@@ -1359,33 +1393,42 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
       return;
     }
     if (this.formGroup.valid) {
-      this.isLoading = true;
+      this.isLoading.set(true);
+
+      const currentUserValue = this.currentUser();
+      if (!currentUserValue) {
+        this.toastr.error('Utilisateur non connecté', 'Erreur');
+        this.isLoading.set(false);
+        return;
+      }
 
       const formData = {
         // ...this.formGroup.value,
         price: parseInt(this.formGroup.value.price) || 50,
         comment: this.formGroup.value.comment || '',
-        pos_uuid: this.posUUID,
-        country_uuid: this.currentUser.country_uuid || '',
-        province_uuid: this.currentUser.province_uuid || '',
-        area_uuid: this.currentUser.area_uuid || '',
-        sub_area_uuid: this.currentUser.sub_area_uuid || '',
-        commune_uuid: this.currentUser.commune_uuid || '',
-        asm_uuid: this.currentUser.asm_uuid || '',
-        asm: this.currentUser.asm || '',
-        sup_uuid: this.currentUser.sup_uuid || '',
-        sup: this.currentUser.sup || '',
-        dr_uuid: this.currentUser.dr_uuid || '',
-        dr: this.currentUser.dr || '',
-        cyclo_uuid: this.currentUser.cyclo_uuid || '',
-        cyclo: this.currentUser.cyclo || '',
-        user_uuid: this.currentUser.uuid,
+        pos_uuid: this.posUUID(),
+        country_uuid: currentUserValue.country_uuid || '',
+        province_uuid: currentUserValue.province_uuid || '',
+        area_uuid: currentUserValue.area_uuid || '',
+        sub_area_uuid: currentUserValue.sub_area_uuid || '',
+        commune_uuid: currentUserValue.commune_uuid || '',
+        asm_uuid: currentUserValue.asm_uuid || '',
+        asm: currentUserValue.asm || '',
+        sup_uuid: currentUserValue.sup_uuid || '',
+        sup: currentUserValue.sup || '',
+        dr_uuid: currentUserValue.dr_uuid || '',
+        dr: currentUserValue.dr || '',
+        cyclo_uuid: currentUserValue.cyclo_uuid || '',
+        cyclo: currentUserValue.cyclo || '',
+        user_uuid: currentUserValue.uuid,
+        signature: '',
       };
-      this.posformService.update(this.uuidItem, formData).subscribe({
+      this.posformService.update(this.uuidItem(), formData).subscribe({
         next: (res) => {
           // Si un pos_uuid est fourni, mettre à jour le statut du routePlanItem à true
-          if (this.posUUID && this.posUUID.trim() !== '') {
-            this.routePlanItemService.update(this.routePlanItemUUID, { status: true })
+          const posUUIDValue = this.posUUID();
+          if (posUUIDValue && posUUIDValue.trim() !== '') {
+            this.routePlanItemService.update(this.routePlanItemUUID(), { status: true })
               .subscribe({
                 next: () => {
                   this.getAllRoutePlans(); // Rafraîchir la liste des route plans
@@ -1399,25 +1442,25 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
 
           this.logActivity.activity(
             'PosForm',
-            this.currentUser.uuid,
+            currentUserValue.uuid,
             'updated',
-            `Updated PosForm uuid: ${this.uuidItem}`,
-            this.currentUser.fullname
+            `Updated PosForm uuid: ${this.uuidItem()}`,
+            currentUserValue.fullname
           ).subscribe({
             next: () => {
               this.toastr.success('Rapport modifié avec succès!', 'Succès');
-              this.fetchProducts(this.name, this.territoire_uuid, this.start_date, this.end_date);
-              this.isLoading = false;
+              this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
+              this.isLoading.set(false);
             },
             error: (err) => {
-              this.isLoading = false;
+              this.isLoading.set(false);
               this.toastr.error('Erreur lors de la sauvegarde du log', 'Erreur');
               console.error(err);
             }
           });
         },
         error: (err) => {
-          this.isLoading = false;
+          this.isLoading.set(false);
           this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
           console.error(err);
         }
@@ -1432,58 +1475,68 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
  * Compléter un rapport existant en ajoutant un POS
  */
   completeReport(): void {
-    if (this.formGroup.valid && this.posUUID) {
-      this.isLoading = true;
+    const posUUIDValue = this.posUUID();
+    if (this.formGroup.valid && posUUIDValue) {
+      this.isLoading.set(true);
+
+      const currentUserValue = this.currentUser();
+      if (!currentUserValue) {
+        this.toastr.error('Utilisateur non connecté', 'Erreur');
+        this.isLoading.set(false);
+        return;
+      }
 
       const formData = {
         price: parseInt(this.formGroup.value.price) || 50,
         comment: this.formGroup.value.comment || '',
-        pos_uuid: this.posUUID,
-        country_uuid: this.currentUser.country_uuid || '',
-        province_uuid: this.currentUser.province_uuid || '',
-        area_uuid: this.currentUser.area_uuid || '',
-        sub_area_uuid: this.currentUser.sub_area_uuid || '',
-        commune_uuid: this.currentUser.commune_uuid || '',
-        asm_uuid: this.currentUser.asm_uuid || '',
-        asm: this.currentUser.asm || '',
-        sup_uuid: this.currentUser.sup_uuid || '',
-        sup: this.currentUser.sup || '',
-        dr_uuid: this.currentUser.dr_uuid || '',
-        dr: this.currentUser.dr || '',
-        cyclo_uuid: this.currentUser.cyclo_uuid || '',
-        cyclo: this.currentUser.cyclo || '',
-        user_uuid: this.currentUser.uuid,
+        pos_uuid: posUUIDValue,
+        country_uuid: currentUserValue.country_uuid || '',
+        province_uuid: currentUserValue.province_uuid || '',
+        area_uuid: currentUserValue.area_uuid || '',
+        sub_area_uuid: currentUserValue.sub_area_uuid || '',
+        commune_uuid: currentUserValue.commune_uuid || '',
+        asm_uuid: currentUserValue.asm_uuid || '',
+        asm: currentUserValue.asm || '',
+        sup_uuid: currentUserValue.sup_uuid || '',
+        sup: currentUserValue.sup || '',
+        dr_uuid: currentUserValue.dr_uuid || '',
+        dr: currentUserValue.dr || '',
+        cyclo_uuid: currentUserValue.cyclo_uuid || '',
+        cyclo: currentUserValue.cyclo || '',
+        user_uuid: currentUserValue.uuid,
+        signature: '',
       };
       console.log('Form Data pour la complétion du rapport:', formData);
 
       // Mettre à jour le rapport avec le POS sélectionné
-      this.posformService.update(this.uuidItem, formData).subscribe({
+      this.posformService.update(this.uuidItem(), formData).subscribe({
         next: (res) => {
           // ✅ Utiliser l'UUID du routePlanItem au lieu du pos_uuid
-          if (this.routePlanItemUUID) {
-            console.log('Mise à jour du RoutePlanItem avec UUID:', this.routePlanItemUUID);
-            this.routePlanItemService.update(this.routePlanItemUUID, { status: true })
+          const routePlanItemUUIDValue = this.routePlanItemUUID();
+          if (routePlanItemUUIDValue) {
+            console.log('Mise à jour du RoutePlanItem avec UUID:', routePlanItemUUIDValue);
+            this.routePlanItemService.update(routePlanItemUUIDValue, { status: true })
               .subscribe({
                 next: () => {
                   this.logActivity.activity(
                     'PosForm',
-                    this.currentUser.uuid,
+                    currentUserValue.uuid,
                     'completed',
-                    `Completed PosForm uuid: ${this.uuidItem} with POS: ${this.posUUID}`,
-                    this.currentUser.fullname
+                    `Completed PosForm uuid: ${this.uuidItem()} with POS: ${posUUIDValue}`,
+                    currentUserValue.fullname
                   ).subscribe({
                     next: () => {
                       this.toastr.success('🎉 Rapport complété avec succès! Le point de vente a été assigné.', 'Succès');
-                      this.fetchProducts(this.name, this.territoire_uuid, this.start_date, this.end_date);
-                      this.isLoading = false;
+                      this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
+                      this.isLoading.set(false);
 
                       // Réinitialiser les variables
-                      this.posUUID = '';
-                      this.posName = '';
+                      this.posUUID.set('');
+                      this.posName.set('');
                       this.formGroup.reset();
                     },
                     error: (err) => {
-                      this.isLoading = false;
+                      this.isLoading.set(false);
                       this.toastr.error('Erreur lors de la sauvegarde du log', 'Erreur');
                       console.error(err);
                     }
@@ -1496,17 +1549,17 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
                   // Continuer même en cas d'erreur de mise à jour du statut
                   this.logActivity.activity(
                     'PosForm',
-                    this.currentUser.uuid,
+                    currentUserValue.uuid,
                     'completed',
-                    `Completed PosForm uuid: ${this.uuidItem} with POS: ${this.posUUID}`,
-                    this.currentUser.fullname
+                    `Completed PosForm uuid: ${this.uuidItem()} with POS: ${posUUIDValue}`,
+                    currentUserValue.fullname
                   ).subscribe({
                     next: () => {
-                      this.fetchProducts(this.name, this.territoire_uuid, this.start_date, this.end_date);
-                      this.isLoading = false;
+                      this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
+                      this.isLoading.set(false);
                     },
                     error: (logErr) => {
-                      this.isLoading = false;
+                      this.isLoading.set(false);
                       console.error(logErr);
                     }
                   });
@@ -1515,7 +1568,7 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
           }
         },
         error: (err) => {
-          this.isLoading = false;
+          this.isLoading.set(false);
           this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
           console.error(err);
         }
@@ -1529,33 +1582,33 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   // PosFormItem Create
   onSubmitItem(): void {
     if (this.formGroupPosFormItem.valid && this.brandUUID) {
-      this.isLoadingPosFormItem = true;
+      this.isLoadingPosFormItem.set(true);
 
       const itemData = {
         ...this.formGroupPosFormItem.value,
-        posform_uuid: this.uuidItem,
-        brand_uuid: this.brandUUID,
-        brand_name: this.brandName
+        posform_uuid: this.uuidItem(),
+        brand_uuid: this.brandUUID(),
+        brand_name: this.brandName()
       };
 
       this.posformItemService.create(itemData).subscribe({
         next: (res) => {
           this.toastr.success('Marque ajoutée avec succès!', 'Succès');
-          this.getAllPosFormItem(this.uuidItem); // Rafraîchir la liste
+          this.getAllPosFormItem(this.uuidItem()); // Rafraîchir la liste
           this.formGroupPosFormItem.reset();
           this.formGroupPosFormItem.patchValue({ sold: 0 });
-          this.brandUUID = '';
-          this.brandName = '';
+          this.brandUUID.set('');
+          this.brandName.set('');
 
           // Vider le champ de l'autocomplete brand
           if (this.brand_uuid && this.brand_uuid.nativeElement) {
             this.brand_uuid.nativeElement.value = '';
           }
 
-          this.isLoadingPosFormItem = false;
+          this.isLoadingPosFormItem.set(false);
         },
         error: (err) => {
-          this.isLoadingPosFormItem = false;
+          this.isLoadingPosFormItem.set(false);
           this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
           console.error(err);
         }
@@ -1571,7 +1624,7 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
       this.posformItemService.delete(uuid).subscribe({
         next: () => {
           this.toastr.success('Marque supprimée avec succès!', 'Succès');
-          this.getAllPosFormItem(this.uuidItem); // Rafraîchir la liste
+          this.getAllPosFormItem(this.uuidItem()); // Rafraîchir la liste
         },
         error: (err) => {
           this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
@@ -1583,15 +1636,15 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
 
   // PosFormItem
   getAllPosFormItem(uuid: string) {
-    this.isLoadingPosFormItem = true;
+    this.isLoadingPosFormItem.set(true);
     this.posformItemService.getAllById(uuid).subscribe({
       next: (res) => {
-        this.dataListPosFormItem = res.data;
-        console.log('PosFormItem List:', this.dataListPosFormItem);
+        this.dataListPosFormItem.set(res.data);
+        console.log('PosFormItem List:', this.dataListPosFormItem());
         this.getAllBrand(); // Refresh brand list to exclude used brands
-        this.isLoadingPosFormItem = false;
+        this.isLoadingPosFormItem.set(false);
       }, error: (err) => {
-        this.isLoadingPosFormItem = false;
+        this.isLoadingPosFormItem.set(false);
         this.toastr.error(`${err.error.message}`, 'Oupss!');
         console.log(err);
       }
@@ -1600,12 +1653,18 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
 
   // Méthode pour vérifier si le bouton "Add New PosForm" doit être activé
   canAddNewPosForm(): boolean {
-    if (!this.dataList || this.dataList.length === 0) {
+    const dataList = this.dataList();
+    if (!dataList || dataList.length === 0) {
       return true; // Si la liste est vide, permettre l'ajout
     }
 
     // Filtrer les rapports créés par l'utilisateur connecté
-    const currentUserReports = this.dataList.filter(item => item.user_uuid === this.currentUser.uuid);
+    const currentUserValue = this.currentUser();
+    if (!currentUserValue) {
+      return true; // Si pas d'utilisateur connecté, permettre l'ajout
+    }
+    
+    const currentUserReports = dataList.filter(item => item.user_uuid === currentUserValue.uuid);
 
     if (currentUserReports.length === 0) {
       return true; // Si l'utilisateur n'a pas encore de rapport, permettre l'ajout
@@ -1620,43 +1679,51 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
 
 
   delete(): void {
-    this.routePlanItemService.update(this.dataItem.pos_uuid!, { status: false })
+    const dataItemValue = this.dataItem();
+    const currentUserValue = this.currentUser();
+    
+    if (!dataItemValue || !currentUserValue) {
+      this.toastr.error('Données manquantes', 'Erreur');
+      return;
+    }
+
+    this.routePlanItemService.update(dataItemValue.pos_uuid!, { status: false })
       .subscribe({
         next: () => {
           this.posformService
-            .delete(this.uuidItem)
+            .delete(this.uuidItem())
             .subscribe({
               next: () => {
                 this.logActivity.activity(
                   'Posform',
-                  this.currentUser.uuid,
+                  currentUserValue.uuid,
                   'deleted',
-                  `Delete posform uuid: ${this.uuidItem}`,
-                  this.currentUser.fullname
+                  `Delete posform uuid: ${this.uuidItem()}`,
+                  currentUserValue.fullname
                 ).subscribe({
                   next: () => {
                     this.formGroup.reset();
                     this.getAllRoutePlans(); // Refresh route plans to exclude used POS
-                    this.fetchProducts(this.name, this.territoire_uuid, this.start_date, this.end_date);
+                    this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
                     this.toastr.info('Supprimé avec succès!', 'Success!');
-                    this.isLoading = false;
+                    this.isLoading.set(false);
                   },
                   error: (err) => {
-                    this.isLoading = false;
+                    this.isLoading.set(false);
                     this.toastr.error(`${err.error.message}`, 'Oupss!');
                     console.log(err);
                   }
                 });
               },
               error: err => {
-                this.isLoading = false;
+                this.isLoading.set(false);
                 this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
                 console.log(err);
               }
             });
         },
         error: (err) => {
-          this.isLoading = false;
+          this.isLoading.set(false);
           this.toastr.error(`${err.error.message}`, 'Oupss!');
           console.log(err);
         }
@@ -1684,12 +1751,12 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
    */
   filterAsmOptions(searchTerm: string): void {
     if (!searchTerm || searchTerm.trim() === '') {
-      this.filteredAsms = [...this.uniqueAsms];
+      this.filteredAsms.set([...this.uniqueAsms()]);
     } else {
       const search = searchTerm.toLowerCase();
-      this.filteredAsms = this.uniqueAsms.filter(asm =>
+      this.filteredAsms.set(this.uniqueAsms().filter(asm =>
         asm.toLowerCase().includes(search)
-      );
+      ));
     }
   }
 
@@ -1697,7 +1764,7 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
    * Obtenir les ASMs filtrés
    */
   getFilteredAsms(): string[] {
-    return this.filteredAsms;
+    return this.filteredAsms();
   }
 
   /**
@@ -1705,12 +1772,12 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
    */
   filterSupervisorOptions(searchTerm: string): void {
     if (!searchTerm || searchTerm.trim() === '') {
-      this.filteredSupervisors = [...this.uniqueSupervisors];
+      this.filteredSupervisors.set([...this.uniqueSupervisors()]);
     } else {
       const search = searchTerm.toLowerCase();
-      this.filteredSupervisors = this.uniqueSupervisors.filter(supervisor =>
+      this.filteredSupervisors.set(this.uniqueSupervisors().filter(supervisor =>
         supervisor.toLowerCase().includes(search)
-      );
+      ));
     }
   }
 
@@ -1718,7 +1785,7 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
    * Obtenir les Supervisors filtrés
    */
   getFilteredSupervisors(): string[] {
-    return this.filteredSupervisors;
+    return this.filteredSupervisors();
   }
 
   /**
@@ -1726,12 +1793,12 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
    */
   filterDrOptions(searchTerm: string): void {
     if (!searchTerm || searchTerm.trim() === '') {
-      this.filteredDrs = [...this.uniqueDrs];
+      this.filteredDrs.set([...this.uniqueDrs()]);
     } else {
       const search = searchTerm.toLowerCase();
-      this.filteredDrs = this.uniqueDrs.filter(dr =>
+      this.filteredDrs.set(this.uniqueDrs().filter(dr =>
         dr.toLowerCase().includes(search)
-      );
+      ));
     }
   }
 
@@ -1739,7 +1806,7 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
    * Obtenir les DRs filtrés
    */
   getFilteredDrs(): string[] {
-    return this.filteredDrs;
+    return this.filteredDrs();
   }
 
   /**
@@ -1747,12 +1814,12 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
    */
   filterCycloOptions(searchTerm: string): void {
     if (!searchTerm || searchTerm.trim() === '') {
-      this.filteredCyclos = [...this.uniqueCyclos];
+      this.filteredCyclos.set([...this.uniqueCyclos()]);
     } else {
       const search = searchTerm.toLowerCase();
-      this.filteredCyclos = this.uniqueCyclos.filter(cyclo =>
+      this.filteredCyclos.set(this.uniqueCyclos().filter(cyclo =>
         cyclo.toLowerCase().includes(search)
-      );
+      ));
     }
   }
 
@@ -1760,7 +1827,7 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
    * Obtenir les Cyclos filtrés
    */
   getFilteredCyclos(): string[] {
-    return this.filteredCyclos;
+    return this.filteredCyclos();
   }
 
   /**
@@ -1769,15 +1836,15 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   debugFilters(): void {
     console.log('🔍 État actuel des filtres:', {
       filters: this.filters,
-      search: this.search,
+      search: this.search(),
       hasActiveFilters: this.hasActiveFilters(),
       activeFiltersCount: this.getActiveFiltersCount(),
-      currentPage: this.current_page,
-      pageSize: this.page_size,
-      startDate: this.start_date,
-      endDate: this.end_date,
-      currentUser: this.currentUser?.role,
-      totalRecords: this.total_records
+      currentPage: this.current_page(),
+      pageSize: this.page_size(),
+      startDate: this.start_date(),
+      endDate: this.end_date(),
+      currentUser: this.currentUser()?.role,
+      totalRecords: this.total_records()
     });
   }
 }

@@ -1,4 +1,4 @@
-import { Component, ElementRef, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit, inject, signal, WritableSignal } from '@angular/core';
 import { GeolocationService } from '@ng-web-apis/geolocation';
 import { MatTableDataSource } from '@angular/material/table';
 import { Router } from '@angular/router';
@@ -32,21 +32,35 @@ import { RouteplanItemService } from '../../routeplan/routeplanitem.service';
   styleUrl: './postform-list.component.scss'
 })
 export class PostformListComponent implements OnInit, AfterViewInit {
-  isLoadingData = false;
+  // Services injectés
+  private readonly geolocation$ = inject(GeolocationService);
+  private readonly router = inject(Router);
+  private readonly _formBuilder = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  private readonly posformService = inject(PosformService);
+  private readonly posformItemService = inject(PosformItemService);
+  private readonly brandService = inject(BrandService);
+  private readonly routePlanService = inject(RouteplanService);
+  private readonly routePlanItemService = inject(RouteplanItemService);
+  private readonly logActivity = inject(LogsService);
+  private readonly toastr = inject(ToastrService);
+  private readonly cdr = inject(ChangeDetectorRef);
+
+  // Signals
+  isLoadingData = signal(false);
   public routes = routes;
 
   dateRange!: FormGroup;
-  start_date!: string;
-  end_date!: string;
+  start_date = signal('');
+  end_date = signal('');
   rangeDate: any[] = [];
 
-  dataList: IPosForm[] = [];
-  total_pages: number = 0;
-  page_size: number = 15;
-  current_page: number = 1;
-  total_records: number = 0;
+  dataList = signal<IPosForm[]>([]);
+  total_pages = signal(0);
+  page_size = signal(15);
+  current_page = signal(1);
+  total_records = signal(0);
 
-  // Table
   // Table
   displayedColumns: string[] = [
     'createdat',
@@ -60,15 +74,15 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     'comment',
     'action'
   ];
-  dataSource = new MatTableDataSource<IPosForm>(this.dataList);
+  dataSource = new MatTableDataSource<IPosForm>([]);
 
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
-  public search = '';
+  public search = signal('');
 
   // Propriétés pour les filtres avancés
-  showAdvancedFilters = false;
+  showAdvancedFilters = signal(false);
 
   // Objet contenant tous les filtres
   filters = {
@@ -94,104 +108,89 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   };
 
   // Listes des valeurs uniques pour les filtres
-  uniqueCountries: string[] = [];
-  uniqueProvinces: string[] = [];
-  uniqueAreas: string[] = [];
-  uniqueSubAreas: string[] = [];
-  uniqueCommunes: string[] = [];
-  uniquePrices: number[] = [];
-  uniquePosTypes: string[] = [];
-  uniqueAsms: string[] = [];
-  uniqueSupervisors: string[] = [];
-  uniqueDrs: string[] = [];
-  uniqueCyclos: string[] = [];
+  uniqueCountries = signal<string[]>([]);
+  uniqueProvinces = signal<string[]>([]);
+  uniqueAreas = signal<string[]>([]);
+  uniqueSubAreas = signal<string[]>([]);
+  uniqueCommunes = signal<string[]>([]);
+  uniquePrices = signal<number[]>([]);
+  uniquePosTypes = signal<string[]>([]);
+  uniqueAsms = signal<string[]>([]);
+  uniqueSupervisors = signal<string[]>([]);
+  uniqueDrs = signal<string[]>([]);
+  uniqueCyclos = signal<string[]>([]);
 
   // Listes filtrées pour la hiérarchie commerciale
-  filteredAsms: string[] = [];
-  filteredSupervisors: string[] = [];
-  filteredDrs: string[] = [];
-  filteredCyclos: string[] = [];
+  filteredAsms = signal<string[]>([]);
+  filteredSupervisors = signal<string[]>([]);
+  filteredDrs = signal<string[]>([]);
+  filteredCyclos = signal<string[]>([]);
 
   // Données originales et filtrées
-  originalDataList: IPosForm[] = [];
-  filteredDataList: IPosForm[] = [];
+  originalDataList = signal<IPosForm[]>([]);
+  filteredDataList = signal<IPosForm[]>([]);
 
   // Flag pour indiquer si on est en train de compléter un rapport
-  isCompletingReport = false;
-  submissionInProgress = false;
+  isCompletingReport = signal(false);
+  submissionInProgress = signal(false);
 
   // Forms posform
-  uuidItem: string = ''; // UUID of the item to be edited or deleted
-  dataItem!: IPosForm; // Single data 
+  uuidItem = signal(''); // UUID of the item to be edited or deleted
+  dataItem = signal<IPosForm | null>(null); // Single data 
 
   // posformItem
-  uuidPosformItem: string = ''; // UUID of the posformitem to be edited or deleted
-  dataPosformItem!: IPosFormItem; // Single data
+  uuidPosformItem = signal(''); // UUID of the posformitem to be edited or deleted
+  dataPosformItem = signal<IPosFormItem | null>(null); // Single data
 
   // PosFormItem list
-  dataListPosFormItem: IPosFormItem[] = [];
-
+  dataListPosFormItem = signal<IPosFormItem[]>([]);
 
   // FormGroup for the main form posform
   formGroup!: FormGroup;
-  currentUser!: IUser;
-  isLoading = false;
+  currentUser = signal<IUser | null>(null);
+  isLoading = signal(false);
 
   // FormGroup for the posformitem
   formGroupPosFormItem!: FormGroup;
-  isLoadingPosFormItem = false;
+  isLoadingPosFormItem = signal(false);
 
   // Geolocation
-  latitude!: number;
-  longitude!: number;
+  latitude = signal(0);
+  longitude = signal(0);
 
-  priceList: string[] = ['50', '100', '150', '200', '250', '300'];
+  priceList: string[] = ['100', '125', '150', '200', '250', '300'];
 
   // Get single Routeplan
-  routePlan!: IRoutePlan;
-  routePlanItemList: IRoutePlanItem[] = [];
-  routePlanItemListFilter: IRoutePlanItem[] = [];
-  filteredOptions: IRoutePlanItem[] = [];
+  routePlan = signal<IRoutePlan | null>(null);
+  routePlanItemList = signal<IRoutePlanItem[]>([]);
+  routePlanItemListFilter = signal<IRoutePlanItem[]>([]);
+  filteredOptions = signal<IRoutePlanItem[]>([]);
 
   @ViewChild('pos_uuid') pos_uuid!: ElementRef<HTMLInputElement>;
-  isload = false;
-  posUUID: string = '';
-  posName: string = '';
+  isload = signal(false);
+  posUUID = signal('');
+  posName = signal('');
 
   // Liste brands
-  brandList: IBrand[] = [];
-  brandListFilter: IBrand[] = [];
-  filteredOptionBrand: IBrand[] = [];
-  isLoadingBrand = false;
+  brandList = signal<IBrand[]>([]);
+  brandListFilter = signal<IBrand[]>([]);
+  filteredOptionBrand = signal<IBrand[]>([]);
+  isLoadingBrand = signal(false);
 
   @ViewChild('brand_uuid') brand_uuid!: ElementRef<HTMLInputElement>;
-  isloadBrand = false;
-  brandUUID: string = '';
-  brandName: string = '';
+  isloadBrand = signal(false);
+  brandUUID = signal('');
+  brandName = signal('');
 
   // Ajouter une nouvelle propriété pour stocker l'UUID du routePlanItem
-  routePlanItemUUID: string = '';
+  routePlanItemUUID = signal('');
 
 
-  constructor(
-    private readonly geolocation$: GeolocationService,
-    private router: Router,
-    private _formBuilder: FormBuilder,
-    private authService: AuthService,
-    private posformService: PosformService,
-    private posformItemService: PosformItemService,
-    private brandService: BrandService,
-    private routePlanService: RouteplanService,
-    private routePlanItemService: RouteplanItemService,
-    private logActivity: LogsService,
-    private toastr: ToastrService,
-    private cdr: ChangeDetectorRef // Inject ChangeDetectorRef
-  ) {
-
+  constructor() {
     this.geolocation$.subscribe((position) => {
-      this.latitude = position.coords.latitude;
-      this.longitude = position.coords.longitude;
-      console.log('Latitude:', this.latitude, 'Longitude:', this.longitude);
+      this.latitude.set(position.coords.latitude);
+      this.longitude.set(position.coords.longitude);
+      console.log('Latitude:', this.latitude(), 'Longitude:', this.longitude());
     });
   }
 
@@ -206,38 +205,44 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     this.dateRange = this._formBuilder.group({
       rangeValue: new FormControl(this.rangeDate),
     });
-    this.start_date = formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US');
-    this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
+    this.start_date.set(formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US'));
+    this.end_date.set(formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US'));
 
     this.authService.user().subscribe({
       next: (user) => {
-        this.currentUser = user;
+        this.currentUser.set(user);
         this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
         this.dataSource.sort = this.sort; // Bind sort to dataSource 
         this.cdr.detectChanges(); // Trigger change detection
 
-        if (this.currentUser.province_uuid != '') {
+        const currentUserValue = this.currentUser();
+        if (currentUserValue && currentUserValue.province_uuid != '') {
           this.getAllRoutePlans();
           this.getAllBrand();
         }
 
         this.posformService.refreshDataList$.subscribe(() => {
-          this.fetchProducts(this.currentUser, this.start_date, this.end_date);
+          const currentUser = this.currentUser();
+          if (currentUser) {
+            this.fetchProducts(currentUser, this.start_date(), this.end_date());
+          }
         });
-        this.fetchProducts(this.currentUser, this.start_date, this.end_date);
+        if (currentUserValue) {
+          this.fetchProducts(currentUserValue, this.start_date(), this.end_date());
+        }
 
         this.onChanges();
 
         this.geolocation$.subscribe((position) => {
-          this.latitude = position.coords.latitude;
-          this.longitude = position.coords.longitude;
+          this.latitude.set(position.coords.latitude);
+          this.longitude.set(position.coords.longitude);
           // console.log('Latitude:', position.coords.latitude);
           // console.log('Longitude:', position.coords.longitude);
         });
 
       },
       error: (error) => {
-        this.isLoadingData = false;
+        this.isLoadingData.set(false);
         this.router.navigate(['/auth/login']);
         console.log(error);
       }
@@ -246,7 +251,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   }
 
   ngOnInit() {
-    this.isLoadingData = true;
+    this.isLoadingData.set(true);
 
     this.formGroup = this._formBuilder.group({
       pos_uuid: ['', Validators.required],
@@ -263,16 +268,20 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   // Pour obtenir la liste des pos pour le plan de route
   getAllRoutePlans(): void {
     const filterValue = this.pos_uuid?.nativeElement.value.toLowerCase() || '';
-    this.isload = true;
+    this.isload.set(true);
 
-    this.routePlanService.getByUserUUID(this.currentUser.uuid).subscribe({
+    const currentUserValue = this.currentUser();
+    if (!currentUserValue) return;
+
+    this.routePlanService.getByUserUUID(currentUserValue.uuid).subscribe({
       next: (res) => {
-        this.routePlan = res.data;
-        console.log('Route Plan:', this.routePlan);
-        if (this.routePlan.uuid != '') {
-          this.routePlanItemService.getAllById(this.routePlan.uuid!).subscribe({
+        this.routePlan.set(res.data);
+        console.log('Route Plan:', this.routePlan());
+        const routePlanValue = this.routePlan();
+        if (routePlanValue && routePlanValue.uuid != '') {
+          this.routePlanItemService.getAllById(routePlanValue.uuid!).subscribe({
             next: (r) => {
-              this.routePlanItemList = r.data;
+              this.routePlanItemList.set(r.data);
 
               // Extraire les pos_uuid déjà utilisés dans les posforms existants
               // Mais exclure le pos_uuid actuel si on modifie un rapport existant
@@ -281,10 +290,10 @@ export class PostformListComponent implements OnInit, AfterViewInit {
               const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
               const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
 
-              const usedPosUuids = this.dataList
+              const usedPosUuids = this.dataList()
                 .filter(posform => {
                   // Exclure le rapport actuel
-                  if (posform.uuid === this.uuidItem) return false;
+                  if (posform.uuid === this.uuidItem()) return false;
 
                   // Filtrer uniquement les posforms d'aujourd'hui
                   if (posform.CreatedAt) {
@@ -297,26 +306,26 @@ export class PostformListComponent implements OnInit, AfterViewInit {
                 .filter(uuid => uuid !== null && uuid !== undefined);
 
               // Filtrer les items du route plan pour exclure ceux qui ont le status false ET qui ne sont pas déjà utilisés
-              this.routePlanItemListFilter = this.routePlanItemList.filter(pos =>
+              this.routePlanItemListFilter.set(this.routePlanItemList().filter(pos =>
                 pos.uuid &&
                 pos.status == false &&
                 !usedPosUuids.includes(pos.pos_uuid)
-              );
+              ));
 
-              this.filteredOptions = this.routePlanItemListFilter.filter(o => o.Pos!.name.toLowerCase().includes(filterValue));
-              this.isload = false;
+              this.filteredOptions.set(this.routePlanItemListFilter().filter(o => o.Pos!.name.toLowerCase().includes(filterValue)));
+              this.isload.set(false);
             },
             error: (error) => {
-              this.isload = false;
+              this.isload.set(false);
               console.error('Error fetching route plan items:', error);
               this.toastr.info('Veuillez créer un plan de route.', 'Plan de route inexistant');
             }
           });
         };
-        this.isload = false;
+        this.isload.set(false);
       },
       error: (error) => {
-        this.isload = false;
+        this.isload.set(false);
         console.error('Error fetching route plans:', error);
         this.toastr.error('Erreur lors de la récupération des plans de route.', 'Oupss!');
       }
@@ -332,35 +341,38 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   // Modifier la méthode optionSelected pour capturer l'UUID du routePlanItem
   optionSelected(event: MatAutocompleteSelectedEvent) {
     const selectedOption = event.option.value;
-    this.posUUID = selectedOption.pos_uuid;
-    this.posName = selectedOption.pos_name;
+    this.posUUID.set(selectedOption.pos_uuid);
+    this.posName.set(selectedOption.pos_name);
     // ✅ Capturer l'UUID du routePlanItem sélectionné
-    this.routePlanItemUUID = selectedOption.uuid; // Ceci est l'UUID du routePlanItem, pas du POS
+    this.routePlanItemUUID.set(selectedOption.uuid); // Ceci est l'UUID du routePlanItem, pas du POS
   }
 
   // Pour obtenir la liste des marques visitées
   getAllBrand(): void {
     const filterValue = this.brand_uuid?.nativeElement.value.toLowerCase();
-    this.isloadBrand = true;
+    this.isloadBrand.set(true);
 
-    this.brandService.getAllByASM(this.currentUser.province_uuid).subscribe({
+    const currentUserValue = this.currentUser();
+    if (!currentUserValue) return;
+
+    this.brandService.getAllByASM(currentUserValue.province_uuid).subscribe({
       next: (res) => {
-        this.brandList = res.data;
+        this.brandList.set(res.data);
 
         // Extraire les brand_uuid déjà utilisés dans les posformItems existants
-        const usedBrandUuids = this.dataListPosFormItem.map(item => item.brand_uuid).filter(uuid => uuid !== null && uuid !== undefined);
+        const usedBrandUuids = this.dataListPosFormItem().map(item => item.brand_uuid).filter(uuid => uuid !== null && uuid !== undefined);
 
         // Filtrer les brands pour exclure ceux qui sont déjà utilisés
-        this.brandListFilter = this.brandList.filter(brand =>
+        this.brandListFilter.set(this.brandList().filter(brand =>
           brand.uuid &&
           !usedBrandUuids.includes(brand.uuid)
-        );
+        ));
 
-        this.filteredOptionBrand = this.brandListFilter.filter(o => o.name!.toLowerCase().includes(filterValue));
-        this.isloadBrand = false;
+        this.filteredOptionBrand.set(this.brandListFilter().filter(o => o.name!.toLowerCase().includes(filterValue)));
+        this.isloadBrand.set(false);
       },
       error: (error) => {
-        this.isloadBrand = false;
+        this.isloadBrand.set(false);
         console.error('Error fetching brand items:', error);
         this.toastr.error('Erreur lors de la récupération des marques.', 'Oupss!');
       }
@@ -374,42 +386,47 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
   optionSelectedBrand(event: MatAutocompleteSelectedEvent) {
     const selectedOption = event.option.value;
-    this.brandUUID = selectedOption.uuid;
-    this.brandName = selectedOption.name;
+    this.brandUUID.set(selectedOption.uuid);
+    this.brandName.set(selectedOption.name);
 
     // Utilisez id et fullName comme vous le souhaitez
-    console.log('brand_uuid:', this.brandUUID);
+    console.log('brand_uuid:', this.brandUUID());
   }
 
 
   // Méthode onChanges
   onChanges(): void {
     this.dateRange.valueChanges.subscribe((val) => {
-      this.start_date = formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US');
+      this.start_date.set(formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US'));
 
       val.rangeValue[1].setDate(val.rangeValue[1].getDate() + 1);
-      this.end_date = formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US');
+      this.end_date.set(formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US'));
 
-
-      this.fetchProducts(this.currentUser, this.start_date, this.end_date);
+      const currentUser = this.currentUser();
+      if (currentUser) {
+        this.fetchProducts(currentUser, this.start_date(), this.end_date());
+      }
 
     });
   }
 
   onPageChange(event: PageEvent): void {
-    this.isLoadingData = true;
-    this.current_page = event.pageIndex + 1; // Adjust for 1-based page index
-    this.page_size = event.pageSize;
+    this.isLoadingData.set(true);
+    this.current_page.set(event.pageIndex + 1); // Adjust for 1-based page index
+    this.page_size.set(event.pageSize);
 
-    this.fetchProducts(this.currentUser, this.start_date, this.end_date);
+    const currentUser = this.currentUser();
+    if (currentUser) {
+      this.fetchProducts(currentUser, this.start_date(), this.end_date());
+    }
   }
 
   fetchProducts(currentUser: IUser, start_date: string, end_date: string): void {
-    this.isLoadingData = true;
+    this.isLoadingData.set(true);
 
     // Construire l'objet de filtres pour l'API
     const apiFilters = {
-      search: this.search,
+      search: this.search(),
       // Filtres géographiques
       country: this.filters.country,
       province: this.filters.province,
@@ -439,32 +456,32 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     // Les filtres côté serveur sont appliqués selon le rôle dans le backend
     this.posformService.getPaginatedWithAdvancedFilters(
       currentUser,
-      this.current_page,
-      this.page_size,
+      this.current_page(),
+      this.page_size(),
       start_date,
       end_date,
       apiFilters
     ).subscribe({
       next: (res) => {
-        this.dataList = res.data;
-        this.originalDataList = [...res.data]; // Sauvegarder les données originales
-        this.filteredDataList = [...res.data]; // Initialiser les données filtrées
-        this.total_pages = res.pagination.total_pages;
-        this.total_records = res.pagination.total_records;
+        this.dataList.set(res.data);
+        this.originalDataList.set([...res.data]); // Sauvegarder les données originales
+        this.filteredDataList.set([...res.data]); // Initialiser les données filtrées
+        this.total_pages.set(res.pagination.total_pages);
+        this.total_records.set(res.pagination.total_records);
 
         // Mettre à jour les valeurs uniques pour les filtres frontend (si nécessaire)
         this.updateUniqueValues();
 
         // Puisque les filtres sont maintenant appliqués côté serveur,
         // nous n'avons plus besoin d'appliquer les filtres côté client
-        this.dataSource.data = this.dataList;
+        this.dataSource.data = this.dataList();
 
         this.getAllRoutePlans(); // Refresh route plans to exclude used POS
-        this.isLoadingData = false;
+        this.isLoadingData.set(false);
       },
       error: (error) => {
         console.error('Erreur lors de la récupération des posforms:', error);
-        this.isLoadingData = false;
+        this.isLoadingData.set(false);
 
         // Fallback : utiliser les anciennes méthodes selon le rôle
         this.fetchProductsFallback(currentUser, start_date, end_date);
@@ -477,107 +494,110 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    */
   private fetchProductsFallback(currentUser: IUser, start_date: string, end_date: string): void {
     if (currentUser.role == 'Manager') {
-      this.posformService.getPaginatedRangeDate2(this.current_page, this.page_size, this.search,
+      this.posformService.getPaginatedRangeDate2(this.current_page(), this.page_size(), this.search(),
         start_date, end_date).subscribe(res => {
-          this.dataList = res.data;
-          this.originalDataList = [...res.data];
-          this.filteredDataList = [...res.data]; // Initialiser les données filtrées
-          this.total_pages = res.pagination.total_pages;
-          this.total_records = res.pagination.total_records;
+          this.dataList.set(res.data);
+          this.originalDataList.set([...res.data]);
+          this.filteredDataList.set([...res.data]); // Initialiser les données filtrées
+          this.total_pages.set(res.pagination.total_pages);
+          this.total_records.set(res.pagination.total_records);
           this.updateUniqueValues();
           this.applyFilters();
           this.getAllRoutePlans();
-          this.isLoadingData = false;
+          this.isLoadingData.set(false);
         });
     } else if (currentUser.role == 'ASM') {
       this.posformService.getPaginatedRangeDateByProvinceId(
-        currentUser.province_uuid, this.current_page, this.page_size, this.search,
+        currentUser.province_uuid, this.current_page(), this.page_size(), this.search(),
         start_date, end_date).subscribe(res => {
-          this.dataList = res.data;
-          this.originalDataList = [...res.data];
-          this.filteredDataList = [...res.data]; // Initialiser les données filtrées
-          this.total_pages = res.pagination.total_pages;
-          this.total_records = res.pagination.total_records;
+          this.dataList.set(res.data);
+          this.originalDataList.set([...res.data]);
+          this.filteredDataList.set([...res.data]); // Initialiser les données filtrées
+          this.total_pages.set(res.pagination.total_pages);
+          this.total_records.set(res.pagination.total_records);
           this.updateUniqueValues();
           this.applyFilters();
           this.getAllRoutePlans();
-          this.isLoadingData = false;
+          this.isLoadingData.set(false);
         });
     } else if (currentUser.role == 'Supervisor') {
       this.posformService.getPaginatedRangeDateByAreaId(
-        currentUser.area_uuid, this.current_page, this.page_size, this.search,
+        currentUser.area_uuid, this.current_page(), this.page_size(), this.search(),
         start_date, end_date).subscribe(res => {
-          this.dataList = res.data;
-          this.originalDataList = [...res.data];
-          this.filteredDataList = [...res.data]; // Initialiser les données filtrées
-          this.total_pages = res.pagination.total_pages;
-          this.total_records = res.pagination.total_records;
+          this.dataList.set(res.data);
+          this.originalDataList.set([...res.data]);
+          this.filteredDataList.set([...res.data]); // Initialiser les données filtrées
+          this.total_pages.set(res.pagination.total_pages);
+          this.total_records.set(res.pagination.total_records);
           this.updateUniqueValues();
           this.applyFilters();
           this.getAllRoutePlans();
-          this.isLoadingData = false;
+          this.isLoadingData.set(false);
         });
     } else if (currentUser.role == 'DR') {
       this.posformService.getPaginatedRangeDateBySubAreaId(
-        currentUser.sub_area_uuid, this.current_page, this.page_size, this.search,
+        currentUser.sub_area_uuid, this.current_page(), this.page_size(), this.search(),
         start_date, end_date).subscribe(res => {
-          this.dataList = res.data;
-          this.originalDataList = [...res.data];
-          this.filteredDataList = [...res.data]; // Initialiser les données filtrées
-          this.total_pages = res.pagination.total_pages;
-          this.total_records = res.pagination.total_records;
+          this.dataList.set(res.data);
+          this.originalDataList.set([...res.data]);
+          this.filteredDataList.set([...res.data]); // Initialiser les données filtrées
+          this.total_pages.set(res.pagination.total_pages);
+          this.total_records.set(res.pagination.total_records);
           this.updateUniqueValues();
           this.applyFilters();
           this.getAllRoutePlans();
-          this.isLoadingData = false;
+          this.isLoadingData.set(false);
         });
     } else if (currentUser.role == 'Cyclo') {
       this.posformService.getPaginatedRangeDateByCommuneId(
-        currentUser.uuid, this.current_page, this.page_size, this.search,
+        currentUser.uuid, this.current_page(), this.page_size(), this.search(),
         start_date, end_date).subscribe(res => {
-          this.dataList = res.data;
-          this.originalDataList = [...res.data];
-          this.filteredDataList = [...res.data]; // Initialiser les données filtrées
-          this.total_pages = res.pagination.total_pages;
-          this.total_records = res.pagination.total_records;
+          this.dataList.set(res.data);
+          this.originalDataList.set([...res.data]);
+          this.filteredDataList.set([...res.data]); // Initialiser les données filtrées
+          this.total_pages.set(res.pagination.total_pages);
+          this.total_records.set(res.pagination.total_records);
           this.updateUniqueValues();
           this.applyFilters();
           this.getAllRoutePlans();
-          this.isLoadingData = false;
+          this.isLoadingData.set(false);
         });
     } else {
-      this.posformService.getPaginatedRangeDate2(this.current_page, this.page_size, this.search,
+      this.posformService.getPaginatedRangeDate2(this.current_page(), this.page_size(), this.search(),
         start_date, end_date).subscribe(res => {
-          this.dataList = res.data;
-          this.originalDataList = [...res.data];
-          this.filteredDataList = [...res.data]; // Initialiser les données filtrées
-          this.total_pages = res.pagination.total_pages;
-          this.total_records = res.pagination.total_records;
+          this.dataList.set(res.data);
+          this.originalDataList.set([...res.data]);
+          this.filteredDataList.set([...res.data]); // In itialiser les données filtrées
+          this.total_pages.set(res.pagination.total_pages);
+          this.total_records.set(res.pagination.total_records);
           this.updateUniqueValues();
           this.applyFilters();
           this.getAllRoutePlans();
-          this.isLoadingData = false;
+          this.isLoadingData.set(false);
         });
     }
   }
 
   onSearchChange(search: string) {
-    this.search = search;
-    this.current_page = 1; // Reset à la première page lors de la recherche
-    this.fetchProducts(this.currentUser, this.start_date, this.end_date);
+    this.search.set(search);
+    this.current_page.set(1); // Reset à la première page lors de la recherche
+    const currentUser = this.currentUser();
+    if (currentUser) {
+      this.fetchProducts(currentUser, this.start_date(), this.end_date());
+    }
   }
 
 
   public sortData(sort: Sort) {
-    const data = this.dataList.slice();
+    const data = this.dataList().slice();
     if (!sort.active || sort.direction === '') {
-      this.dataList = data;
+      this.dataList.set(data);
     } else {
-      this.dataList = data.sort((a, b) => {
+      this.dataList.set(data.sort((a, b) => {
         const aValue = (a as never)[sort.active];
         const bValue = (b as never)[sort.active];
         return (aValue < bValue ? -1 : 1) * (sort.direction === 'asc' ? 1 : -1);
-      });
+      }));
     }
   }
 
@@ -592,76 +612,76 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    * Afficher/masquer les filtres avancés
    */
   toggleAdvancedFilters(): void {
-    this.showAdvancedFilters = !this.showAdvancedFilters;
+    this.showAdvancedFilters.set(!this.showAdvancedFilters());
   }
 
   /**
    * Mettre à jour les valeurs uniques pour tous les filtres
    */
   updateUniqueValues(): void {
+    const originalDataListValue = this.originalDataList();
+    
     // Valeurs géographiques
-    this.uniqueCountries = [...new Set(this.originalDataList
+    this.uniqueCountries.set([...new Set(originalDataListValue
       .map(item => item.Country?.name)
-      .filter(name => name))] as string[];
+      .filter(name => name))] as string[]);
 
-    this.uniqueProvinces = [...new Set(this.originalDataList
+    this.uniqueProvinces.set([...new Set(originalDataListValue
       .map(item => item.Province?.name)
-      .filter(name => name))] as string[];
+      .filter(name => name))] as string[]);
 
-    this.uniqueAreas = [...new Set(this.originalDataList
+    this.uniqueAreas.set([...new Set(originalDataListValue
       .map(item => item.Area?.name)
-      .filter(name => name))] as string[];
+      .filter(name => name))] as string[]);
 
-    this.uniqueSubAreas = [...new Set(this.originalDataList
+    this.uniqueSubAreas.set([...new Set(originalDataListValue
       .map(item => item.SubArea?.name)
-      .filter(name => name))] as string[];
+      .filter(name => name))] as string[]);
 
-    this.uniqueCommunes = [...new Set(this.originalDataList
+    this.uniqueCommunes.set([...new Set(originalDataListValue
       .map(item => item.Commune?.name)
-      .filter(name => name))] as string[];
+      .filter(name => name))] as string[]);
 
     // Valeurs de prix
-    this.uniquePrices = [...new Set(this.originalDataList
+    this.uniquePrices.set([...new Set(originalDataListValue
       .map(item => item.price)
       .filter(price => price !== null && price !== undefined))]
-      .sort((a, b) => a - b);
+      .sort((a, b) => a - b));
 
     // Types de points de vente
-    this.uniquePosTypes = [...new Set(this.originalDataList
+    this.uniquePosTypes.set([...new Set(originalDataListValue
       .map(item => item.Pos?.shop)
-      .filter(shop => shop))] as string[];
+      .filter(shop => shop))] as string[]);
 
     // Hiérarchie commerciale
-    this.uniqueAsms = [...new Set(this.originalDataList
+    this.uniqueAsms.set([...new Set(originalDataListValue
       .map(item => item.asm)
-      .filter(asm => asm))] as string[];
+      .filter(asm => asm))] as string[]);
 
-    this.uniqueSupervisors = [...new Set(this.originalDataList
+    this.uniqueSupervisors.set([...new Set(originalDataListValue
       .map(item => item.sup)
-      .filter(sup => sup))] as string[];
+      .filter(sup => sup))] as string[]);
 
-    this.uniqueDrs = [...new Set(this.originalDataList
+    this.uniqueDrs.set([...new Set(originalDataListValue
       .map(item => item.dr)
-      .filter(dr => dr))] as string[];
+      .filter(dr => dr))] as string[]);
 
-    this.uniqueCyclos = [...new Set(this.originalDataList
+    this.uniqueCyclos.set([...new Set(originalDataListValue
       .map(item => item.cyclo)
-      .filter(cyclo => cyclo))] as string[];
+      .filter(cyclo => cyclo))] as string[]);
 
     // Initialiser les listes filtrées pour la hiérarchie commerciale
-    this.filteredAsms = [...this.uniqueAsms];
-    this.filteredSupervisors = [...this.uniqueSupervisors];
-    this.filteredDrs = [...this.uniqueDrs];
-    this.filteredCyclos = [...this.uniqueCyclos];
-    this.filteredDrs = this.uniqueDrs;
-    this.filteredCyclos = this.uniqueCyclos;
+    this.filteredAsms.set([...this.uniqueAsms()]);
+    this.filteredSupervisors.set([...this.uniqueSupervisors()]);
+    this.filteredDrs.set([...this.uniqueDrs()]);
+    this.filteredCyclos.set([...this.uniqueCyclos()]);
 
     // Debug: Afficher les valeurs uniques dans la console
     console.log('🔍 Filtres hiérarchie commerciale mis à jour:');
-    console.log('  - ASMs:', this.uniqueAsms);
-    console.log('  - Supervisors:', this.uniqueSupervisors);
-    console.log('  - DRs:', this.uniqueDrs);
-    console.log('  - Cyclos:', this.uniqueCyclos);
+    console.log('  - ASMs:', this.uniqueAsms());
+    console.log('  - Supervisors:', this.uniqueSupervisors());
+    console.log('  - DRs:', this.uniqueDrs());
+    console.log('  - Cyclos:', this.uniqueCyclos());
   }
 
   /**
@@ -669,15 +689,18 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    */
   applyFilters(): void {
     // Au lieu de filtrer côté client, on déclenche un nouveau fetch avec les filtres
-    this.current_page = 1; // Reset à la première page lors de l'application de filtres
-    this.fetchProducts(this.currentUser, this.start_date, this.end_date);
+    this.current_page.set(1); // Reset à la première page lors de l'application de filtres
+    const currentUser = this.currentUser();
+    if (currentUser) {
+      this.fetchProducts(currentUser, this.start_date(), this.end_date());
+    }
   }
 
   /**
    * Méthode héritée pour le filtrage côté client (utilisée comme fallback)
    */
   applyClientSideFilters(): void {
-    let filteredData = [...this.originalDataList];
+    let filteredData = [...this.originalDataList()];
 
     // Filtre par pays
     if (this.filters.country) {
@@ -823,7 +846,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     }
 
     // Mettre à jour les données filtrées
-    this.filteredDataList = filteredData;
+    this.filteredDataList.set(filteredData);
     this.dataSource.data = filteredData;
   }
 
@@ -854,10 +877,10 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     };
 
     // Réinitialiser les listes filtrées
-    this.filteredAsms = [...this.uniqueAsms];
-    this.filteredSupervisors = [...this.uniqueSupervisors];
-    this.filteredDrs = [...this.uniqueDrs];
-    this.filteredCyclos = [...this.uniqueCyclos];
+    this.filteredAsms.set([...this.uniqueAsms()]);
+    this.filteredSupervisors.set([...this.uniqueSupervisors()]);
+    this.filteredDrs.set([...this.uniqueDrs()]);
+    this.filteredCyclos.set([...this.uniqueCyclos()]);
 
     // Déclencher un nouveau fetch sans filtres
     this.applyFilters();
@@ -905,7 +928,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    * Méthode pour vérifier si l'utilisateur actuel est le créateur du posform
    */
   isCurrentUserCreator(posform: IPosForm): boolean {
-    return this.currentUser && posform.user_uuid === this.currentUser.uuid;
+    return !!(this.currentUser() && posform.user_uuid === this.currentUser()!.uuid);
   }
 
   /**
@@ -949,9 +972,9 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     });
 
     // Déclencher le changement de date
-    this.start_date = formatDate(startDate, 'yyyy-MM-dd', 'en-US');
-    this.end_date = formatDate(endDate, 'yyyy-MM-dd', 'en-US');
-    this.fetchProducts(this.currentUser, this.start_date, this.end_date);
+    this.start_date.set(formatDate(startDate, 'yyyy-MM-dd', 'en-US'));
+    this.end_date.set(formatDate(endDate, 'yyyy-MM-dd', 'en-US'));
+    this.fetchProducts(this.currentUser()!, this.start_date(), this.end_date());
   }
 
   /**
@@ -960,7 +983,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   exportToExcel(): void {
     try {
       // Utiliser les données actuellement affichées dans le tableau
-      const sourceData = this.filteredDataList.length > 0 ? this.filteredDataList : this.dataSource.data;
+      const sourceData = this.filteredDataList().length > 0 ? this.filteredDataList() : this.dataSource.data;
       
       if (!sourceData || sourceData.length === 0) {
         this.toastr.warning('Aucune donnée à exporter', 'Attention');
@@ -1050,7 +1073,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
             <tbody>
       `;
 
-      this.filteredDataList.forEach(item => {
+      this.filteredDataList().forEach(item => {
         const location = [item.Province?.name, item.Area?.name, item.Commune?.name]
           .filter(l => l && l !== '--')
           .join(', ') || '--';
@@ -1129,39 +1152,39 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
   findValue(uuid: string): void {
     console.log('🔍 findValue appelé avec uuid:', uuid);
-    this.uuidItem = uuid;
+    this.uuidItem.set(uuid);
     // Chercher d'abord dans les données filtrées, puis dans les données originales
-    const foundItem = this.filteredDataList.find(item => item.uuid === uuid) ||
-      this.originalDataList.find(item => item.uuid === uuid) ||
-      this.dataList.find(item => item.uuid === uuid);
+    const foundItem = this.filteredDataList().find(item => item.uuid === uuid) ||
+      this.originalDataList().find(item => item.uuid === uuid) ||
+      this.dataList().find(item => item.uuid === uuid);
 
     if (foundItem) {
-      this.dataItem = foundItem;
+      this.dataItem.set(foundItem);
       console.log('✅ Élément trouvé:', this.dataItem);
       this.getAllPosFormItem(uuid);
 
       // Pré-remplir le formulaire d'édition
       this.formGroup.patchValue({
-        pos_uuid: this.dataItem.pos_uuid || '',
-        price: this.dataItem.price || '',
-        comment: this.dataItem.comment || ''
+        pos_uuid: this.dataItem()?.pos_uuid || '',
+        price: this.dataItem()?.price || '',
+        comment: this.dataItem()?.comment || ''
       });
 
       // Si c'est un rapport incomplet (sans POS), adapter l'interface
-      if (!this.dataItem.pos_uuid || this.dataItem.pos_uuid.trim() === '') {
+      if (!this.dataItem()?.pos_uuid || this.dataItem()!.pos_uuid!.trim() === '') {
         console.log('📝 Rapport incomplet détecté, préparation pour complétion...');
-        this.isCompletingReport = true;
+        this.isCompletingReport.set(true);
         // Réinitialiser les sélections de POS pour permettre une nouvelle sélection
-        this.posUUID = '';
-        this.posName = '';
+        this.posUUID.set('');
+        this.posName.set('');
         this.formGroup.patchValue({
           pos_uuid: ''
         });
       } else {
         console.log('✅ Rapport complet détecté pour modification...');
-        this.isCompletingReport = false;
+        this.isCompletingReport.set(false);
         // Si le rapport a déjà un POS, on garde les valeurs existantes
-        this.posUUID = this.dataItem.pos_uuid;
+        this.posUUID.set(this.dataItem()!.pos_uuid!);
       }
 
       // Forcer la détection des changements pour s'assurer que l'offcanvas se met à jour
@@ -1175,57 +1198,57 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
   // Creation de rapport de visite
   async onSubmitInit() {
-    this.isLoading = true;
+    this.isLoading.set(true);
     var body: IPosForm = {
       // uuid: uuidv4(),
       price: 100,
       comment: 'Rien à signaler',
-      latitude: this.latitude,
-      longitude: this.longitude,
+      latitude: this.latitude(),
+      longitude: this.longitude(),
       pos_uuid: '', // This will be set later
-      country_uuid: this.currentUser.country_uuid || '',
-      province_uuid: this.currentUser.province_uuid || '',
-      area_uuid: this.currentUser.area_uuid || '',
-      sub_area_uuid: this.currentUser.sub_area_uuid || '',
-      commune_uuid: this.currentUser.commune_uuid || '',
-      asm_uuid: this.currentUser.asm_uuid || '',
-      asm: this.currentUser.asm || '',
-      sup_uuid: this.currentUser.sup_uuid || '',
-      sup: this.currentUser.sup || '',
-      dr_uuid: this.currentUser.dr_uuid || '',
-      dr: this.currentUser.dr || '',
-      cyclo_uuid: this.currentUser.cyclo_uuid || '',
-      cyclo: this.currentUser.cyclo || '',
-      user_uuid: this.currentUser.uuid,
-      signature: this.currentUser.fullname, // Added signature property
+      country_uuid: this.currentUser()?.country_uuid || '',
+      province_uuid: this.currentUser()?.province_uuid || '',
+      area_uuid: this.currentUser()?.area_uuid || '',
+      sub_area_uuid: this.currentUser()?.sub_area_uuid || '',
+      commune_uuid: this.currentUser()?.commune_uuid || '',
+      asm_uuid: this.currentUser()?.asm_uuid || '',
+      asm: this.currentUser()?.asm || '',
+      sup_uuid: this.currentUser()?.sup_uuid || '',
+      sup: this.currentUser()?.sup || '',
+      dr_uuid: this.currentUser()?.dr_uuid || '',
+      dr: this.currentUser()?.dr || '',
+      cyclo_uuid: this.currentUser()?.cyclo_uuid || '',
+      cyclo: this.currentUser()?.cyclo || '',
+      user_uuid: this.currentUser()!.uuid,
+      signature: this.currentUser()!.fullname, // Added signature property
       // sync: true,
     };
     this.posformService.create(body).subscribe({
       next: (res) => {
         this.logActivity.activity(
           'PosForm',
-          this.currentUser.uuid,
+          this.currentUser()!.uuid,
           'created',
           `Created Posform uuid: ${res.data.uuid!}`, // 
-          this.currentUser.fullname
+          this.currentUser()!.fullname
         ).subscribe({
           next: () => {
             this.formGroup.reset();
-            this.dataListPosFormItem = []; // Réinitialiser la liste des items
-            this.fetchProducts(this.currentUser, this.start_date, this.end_date);
+            this.dataListPosFormItem.set([]); // Réinitialiser la liste des items
+            this.fetchProducts(this.currentUser()!, this.start_date(), this.end_date());
             this.toastr.success('Nouveau rapport créé avec succès!', 'Succès');
-            this.uuidItem = res.data.uuid!; // Définir l'UUID pour les ajouts d'items
-            this.isLoading = false;
+            this.uuidItem.set(res.data.uuid!); // Définir l'UUID pour les ajouts d'items
+            this.isLoading.set(false);
           },
           error: (err) => {
-            this.isLoading = false;
+            this.isLoading.set(false);
             this.toastr.error(`${err.error.message}`, 'Oupss!');
             console.log(err);
           }
         });
       },
       error: (err) => {
-        this.isLoading = false;
+        this.isLoading.set(false);
         this.toastr.error(`${err.error.message}`, 'Oupss!');
         console.log(err);
       }
@@ -1240,38 +1263,38 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     }
 
     if (this.formGroup.valid) {
-      this.isLoading = true;
+      this.isLoading.set(true);
 
       const formData = {
-        latitude: this.latitude,
-        longitude: this.longitude,
+        latitude: this.latitude(),
+        longitude: this.longitude(),
         price: parseInt(this.formGroup.value.price) || 100,
         comment: this.formGroup.value.comment || '',
-        pos_uuid: this.posUUID,
-        country_uuid: this.currentUser.country_uuid || '',
-        province_uuid: this.currentUser.province_uuid || '',
-        area_uuid: this.currentUser.area_uuid || '',
-        sub_area_uuid: this.currentUser.sub_area_uuid || '',
-        commune_uuid: this.currentUser.commune_uuid || '',
-        asm_uuid: this.currentUser.asm_uuid || '',
-        asm: this.currentUser.asm || '',
-        sup_uuid: this.currentUser.sup_uuid || '',
-        sup: this.currentUser.sup || '',
-        dr_uuid: this.currentUser.dr_uuid || '',
-        dr: this.currentUser.dr || '',
-        cyclo_uuid: this.currentUser.cyclo_uuid || '',
-        cyclo: this.currentUser.cyclo || '',
-        user_uuid: this.currentUser.uuid,
-        signature: this.currentUser.fullname,
+        pos_uuid: this.posUUID(),
+        country_uuid: this.currentUser()?.country_uuid || '',
+        province_uuid: this.currentUser()?.province_uuid || '',
+        area_uuid: this.currentUser()?.area_uuid || '',
+        sub_area_uuid: this.currentUser()?.sub_area_uuid || '',
+        commune_uuid: this.currentUser()?.commune_uuid || '',
+        asm_uuid: this.currentUser()?.asm_uuid || '',
+        asm: this.currentUser()?.asm || '',
+        sup_uuid: this.currentUser()?.sup_uuid || '',
+        sup: this.currentUser()?.sup || '',
+        dr_uuid: this.currentUser()?.dr_uuid || '',
+        dr: this.currentUser()?.dr || '',
+        cyclo_uuid: this.currentUser()?.cyclo_uuid || '',
+        cyclo: this.currentUser()?.cyclo || '',
+        user_uuid: this.currentUser()!.uuid,
+        signature: this.currentUser()!.fullname,
       };
-      this.posformService.update(this.uuidItem, formData).subscribe({
+      this.posformService.update(this.uuidItem(), formData).subscribe({
         next: (res) => {
           // Si un pos_uuid est fourni, mettre à jour le statut du routePlanItem à true
-          if (this.posUUID && this.posUUID.trim() !== '') {
-            this.routePlanItemService.update(this.routePlanItemUUID, { status: true })
+          if (this.posUUID() && this.posUUID().trim() !== '') {
+            this.routePlanItemService.update(this.routePlanItemUUID(), { status: true })
               .subscribe({
                 next: () => {
-                  console.log('Statut du RoutePlanItem mis à jour à true pour pos_uuid:', this.posUUID);
+                  console.log('Statut du RoutePlanItem mis à jour à true pour pos_uuid:', this.posUUID());
                   this.getAllRoutePlans(); // Rafraîchir la liste des route plans
                 },
                 error: (err) => {
@@ -1282,25 +1305,25 @@ export class PostformListComponent implements OnInit, AfterViewInit {
           }
           this.logActivity.activity(
             'PosForm',
-            this.currentUser.uuid,
+            this.currentUser()!.uuid,
             'updated',
-            `Updated PosForm uuid: ${this.uuidItem}`,
-            this.currentUser.fullname
+            `Updated PosForm uuid: ${this.uuidItem()}`,
+            this.currentUser()!.fullname
           ).subscribe({
             next: () => {
               this.toastr.success('Rapport modifié avec succès!', 'Succès');
-              this.fetchProducts(this.currentUser, this.start_date, this.end_date);
-              this.isLoading = false;
+              this.fetchProducts(this.currentUser()!, this.start_date(), this.end_date());
+              this.isLoading.set(false);
             },
             error: (err) => {
-              this.isLoading = false;
+              this.isLoading.set(false);
               this.toastr.error('Erreur lors de la sauvegarde du log', 'Erreur');
               console.error(err);
             }
           });
         },
         error: (err) => {
-          this.isLoading = false;
+          this.isLoading.set(false);
           this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
           console.error(err);
         }
@@ -1317,35 +1340,35 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       return;
     }
     if (this.formGroup.valid) {
-      this.isLoading = true;
+      this.isLoading.set(true);
 
       const formData = {
-        latitude: this.latitude,
-        longitude: this.longitude,
+        latitude: this.latitude(),
+        longitude: this.longitude(),
         price: parseInt(this.formGroup.value.price) || 100,
         comment: this.formGroup.value.comment || '',
-        pos_uuid: this.posUUID,
-        country_uuid: this.currentUser.country_uuid || '',
-        province_uuid: this.currentUser.province_uuid || '',
-        area_uuid: this.currentUser.area_uuid || '',
-        sub_area_uuid: this.currentUser.sub_area_uuid || '',
-        commune_uuid: this.currentUser.commune_uuid || '',
-        asm_uuid: this.currentUser.asm_uuid || '',
-        asm: this.currentUser.asm || '',
-        sup_uuid: this.currentUser.sup_uuid || '',
-        sup: this.currentUser.sup || '',
-        dr_uuid: this.currentUser.dr_uuid || '',
-        dr: this.currentUser.dr || '',
-        cyclo_uuid: this.currentUser.cyclo_uuid || '',
-        cyclo: this.currentUser.cyclo || '',
-        user_uuid: this.currentUser.uuid,
-        signature: this.currentUser.fullname,
+        pos_uuid: this.posUUID(),
+        country_uuid: this.currentUser()?.country_uuid || '',
+        province_uuid: this.currentUser()?.province_uuid || '',
+        area_uuid: this.currentUser()?.area_uuid || '',
+        sub_area_uuid: this.currentUser()?.sub_area_uuid || '',
+        commune_uuid: this.currentUser()?.commune_uuid || '',
+        asm_uuid: this.currentUser()?.asm_uuid || '',
+        asm: this.currentUser()?.asm || '',
+        sup_uuid: this.currentUser()?.sup_uuid || '',
+        sup: this.currentUser()?.sup || '',
+        dr_uuid: this.currentUser()?.dr_uuid || '',
+        dr: this.currentUser()?.dr || '',
+        cyclo_uuid: this.currentUser()?.cyclo_uuid || '',
+        cyclo: this.currentUser()?.cyclo || '',
+        user_uuid: this.currentUser()!.uuid,
+        signature: this.currentUser()!.fullname,
       };
-      this.posformService.update(this.uuidItem, formData).subscribe({
+      this.posformService.update(this.uuidItem(), formData).subscribe({
         next: (res) => {
           // Si un pos_uuid est fourni, mettre à jour le statut du routePlanItem à true
-          if (this.posUUID && this.posUUID.trim() !== '') {
-            this.routePlanItemService.update(this.routePlanItemUUID, { status: true })
+          if (this.posUUID() && this.posUUID().trim() !== '') {
+            this.routePlanItemService.update(this.routePlanItemUUID(), { status: true })
               .subscribe({
                 next: () => {
                   this.getAllRoutePlans(); // Rafraîchir la liste des route plans
@@ -1359,25 +1382,25 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
           this.logActivity.activity(
             'PosForm',
-            this.currentUser.uuid,
+            this.currentUser()!.uuid,
             'updated',
-            `Updated PosForm uuid: ${this.uuidItem}`,
-            this.currentUser.fullname
+            `Updated PosForm uuid: ${this.uuidItem()}`,
+            this.currentUser()!.fullname
           ).subscribe({
             next: () => {
               this.toastr.success('Rapport modifié avec succès!', 'Succès');
-              this.fetchProducts(this.currentUser, this.start_date, this.end_date);
-              this.isLoading = false;
+              this.fetchProducts(this.currentUser()!, this.start_date(), this.end_date());
+              this.isLoading.set(false);
             },
             error: (err) => {
-              this.isLoading = false;
+              this.isLoading.set(false);
               this.toastr.error('Erreur lors de la sauvegarde du log', 'Erreur');
               console.error(err);
             }
           });
         },
         error: (err) => {
-          this.isLoading = false;
+          this.isLoading.set(false);
           this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
           console.error(err);
         }
@@ -1394,15 +1417,15 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   completeReport(): void {
     console.log('🔄 completeReport() appelée - État:', {
       isValid: this.formGroup.valid,
-      posUUID: this.posUUID,
-      uuidItem: this.uuidItem,
-      dataItem: this.dataItem,
-      isLoading: this.isLoading,
-      submissionInProgress: this.submissionInProgress
+      posUUID: this.posUUID(),
+      uuidItem: this.uuidItem(),
+      dataItem: this.dataItem(),
+      isLoading: this.isLoading(),
+      submissionInProgress: this.submissionInProgress()
     });
 
     // Éviter les soumissions multiples
-    if (this.submissionInProgress) {
+    if (this.submissionInProgress()) {
       console.log('⚠️ Soumission déjà en cours, abandon');
       return;
     }
@@ -1410,64 +1433,64 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     // Ne pas vérifier canAddNewPosForm() pour la complétion - c'est un cas spécial
     if (this.formGroup.valid && this.posUUID) {
       // Vérifier que nous sommes en mode complétion
-      if (!this.dataItem || !this.uuidItem) {
+      if (!this.dataItem() || !this.uuidItem()) {
         this.toastr.error('Erreur: Aucun rapport à compléter trouvé.', 'Erreur');
         return;
       }
 
-      this.submissionInProgress = true;
-      this.isLoading = true;
+      this.submissionInProgress.set(true);
+      this.isLoading.set(true);
 
       const formData = {
-        latitude: this.latitude,
-        longitude: this.longitude,
+        latitude: this.latitude(),
+        longitude: this.longitude(),
         price: parseInt(this.formGroup.value.price) || 100,
         comment: this.formGroup.value.comment || '',
-        pos_uuid: this.posUUID,
-        country_uuid: this.currentUser.country_uuid || '',
-        province_uuid: this.currentUser.province_uuid || '',
-        area_uuid: this.currentUser.area_uuid || '',
-        sub_area_uuid: this.currentUser.sub_area_uuid || '',
-        commune_uuid: this.currentUser.commune_uuid || '',
-        asm_uuid: this.currentUser.asm_uuid || '',
-        asm: this.currentUser.asm || '',
-        sup_uuid: this.currentUser.sup_uuid || '',
-        sup: this.currentUser.sup || '',
-        dr_uuid: this.currentUser.dr_uuid || '',
-        dr: this.currentUser.dr || '',
-        cyclo_uuid: this.currentUser.cyclo_uuid || '',
-        cyclo: this.currentUser.cyclo || '',
-        user_uuid: this.currentUser.uuid,
-        signature: this.currentUser.fullname,
+        pos_uuid: this.posUUID(),
+        country_uuid: this.currentUser()?.country_uuid || '',
+        province_uuid: this.currentUser()?.province_uuid || '',
+        area_uuid: this.currentUser()?.area_uuid || '',
+        sub_area_uuid: this.currentUser()?.sub_area_uuid || '',
+        commune_uuid: this.currentUser()?.commune_uuid || '',
+        asm_uuid: this.currentUser()?.asm_uuid || '',
+        asm: this.currentUser()?.asm || '',
+        sup_uuid: this.currentUser()?.sup_uuid || '',
+        sup: this.currentUser()?.sup || '',
+        dr_uuid: this.currentUser()?.dr_uuid || '',
+        dr: this.currentUser()?.dr || '',
+        cyclo_uuid: this.currentUser()?.cyclo_uuid || '',
+        cyclo: this.currentUser()?.cyclo || '',
+        user_uuid: this.currentUser()!.uuid,
+        signature: this.currentUser()!.fullname,
       };
       console.log('Form Data pour la complétion du rapport:', formData);
 
       // Mettre à jour le rapport avec le POS sélectionné
-      this.posformService.update(this.uuidItem, formData).subscribe({
+      this.posformService.update(this.uuidItem(), formData).subscribe({
         next: (res) => {
           // ✅ Utiliser l'UUID du routePlanItem au lieu du pos_uuid
-          if (this.routePlanItemUUID) {
-            console.log('Mise à jour du RoutePlanItem avec UUID:', this.routePlanItemUUID);
-            this.routePlanItemService.update(this.routePlanItemUUID, { status: true })
+          if (this.routePlanItemUUID()) {
+            console.log('Mise à jour du RoutePlanItem avec UUID:', this.routePlanItemUUID());
+            this.routePlanItemService.update(this.routePlanItemUUID(), { status: true })
               .subscribe({
                 next: () => {
                   this.logActivity.activity(
                     'PosForm',
-                    this.currentUser.uuid,
+                    this.currentUser()!.uuid,
                     'completed',
-                    `Completed PosForm uuid: ${this.uuidItem} with POS: ${this.posUUID}`,
-                    this.currentUser.fullname
+                    `Completed PosForm uuid: ${this.uuidItem()} with POS: ${this.posUUID()}`,
+                    this.currentUser()!.fullname
                   ).subscribe({
                     next: () => {
                       this.toastr.success('🎉 Rapport complété avec succès! Le point de vente a été assigné.', 'Succès');
-                      this.fetchProducts(this.currentUser, this.start_date, this.end_date);
-                      this.isLoading = false;
+                      this.fetchProducts(this.currentUser()!, this.start_date(), this.end_date());
+                      this.isLoading.set(false);
 
                       // Réinitialiser complètement l'état du formulaire
                       this.resetFormState();
                     },
                     error: (err) => {
-                      this.isLoading = false;
+                      this.isLoading.set(false);
                       this.toastr.error('Erreur lors de la sauvegarde du log', 'Erreur');
                       console.error(err);
                     }
@@ -1480,18 +1503,18 @@ export class PostformListComponent implements OnInit, AfterViewInit {
                   // Continuer même en cas d'erreur de mise à jour du statut
                   this.logActivity.activity(
                     'PosForm',
-                    this.currentUser.uuid,
+                    this.currentUser()!.uuid,
                     'completed',
-                    `Completed PosForm uuid: ${this.uuidItem} with POS: ${this.posUUID}`,
-                    this.currentUser.fullname
+                    `Completed PosForm uuid: ${this.uuidItem()} with POS: ${this.posUUID()}`,
+                    this.currentUser()!.fullname
                   ).subscribe({
                     next: () => {
-                      this.fetchProducts(this.currentUser, this.start_date, this.end_date);
-                      this.isLoading = false;
+                      this.fetchProducts(this.currentUser()!, this.start_date(), this.end_date());
+                      this.isLoading.set(false);
                       this.resetFormState(); // Réinitialiser l'état même en cas d'erreur de route plan
                     },
                     error: (logErr) => {
-                      this.isLoading = false;
+                      this.isLoading.set(false);
                       console.error(logErr);
                     }
                   });
@@ -1500,14 +1523,14 @@ export class PostformListComponent implements OnInit, AfterViewInit {
           }
         },
         error: (err) => {
-          this.isLoading = false;
-          this.submissionInProgress = false;
+          this.isLoading.set(false);
+          this.submissionInProgress.set(false);
           this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
           console.error(err);
         }
       });
     } else {
-      this.submissionInProgress = false;
+      this.submissionInProgress.set(false);
       this.toastr.warning('Veuillez remplir tous les champs et sélectionner un point de vente', 'Attention');
     }
   }
@@ -1516,7 +1539,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   // PosFormItem Create
   onSubmitItem(): void {
     if (this.formGroupPosFormItem.valid && this.brandUUID) {
-      this.isLoadingPosFormItem = true;
+      this.isLoadingPosFormItem.set(true);
 
       const itemData = {
         ...this.formGroupPosFormItem.value,
@@ -1528,21 +1551,21 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       this.posformItemService.create(itemData).subscribe({
         next: (res) => {
           this.toastr.success('Marque ajoutée avec succès!', 'Succès');
-          this.getAllPosFormItem(this.uuidItem); // Rafraîchir la liste
+          this.getAllPosFormItem(this.uuidItem()); // Rafraîchir la liste
           this.formGroupPosFormItem.reset();
           this.formGroupPosFormItem.patchValue({ sold: 0 });
-          this.brandUUID = '';
-          this.brandName = '';
+          this.brandUUID.set('');
+          this.brandName.set('');
 
           // Vider le champ de l'autocomplete brand
           if (this.brand_uuid && this.brand_uuid.nativeElement) {
             this.brand_uuid.nativeElement.value = '';
           }
 
-          this.isLoadingPosFormItem = false;
+          this.isLoadingPosFormItem.set(false);
         },
         error: (err) => {
-          this.isLoadingPosFormItem = false;
+          this.isLoadingPosFormItem.set(false);
           this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
           console.error(err);
         }
@@ -1558,7 +1581,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       this.posformItemService.delete(uuid).subscribe({
         next: () => {
           this.toastr.success('Marque supprimée avec succès!', 'Succès');
-          this.getAllPosFormItem(this.uuidItem); // Rafraîchir la liste
+          this.getAllPosFormItem(this.uuidItem()); // Rafraîchir la liste
         },
         error: (err) => {
           this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
@@ -1570,15 +1593,15 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
   // PosFormItem
   getAllPosFormItem(uuid: string) {
-    this.isLoadingPosFormItem = true;
+    this.isLoadingPosFormItem.set(true);
     this.posformItemService.getAllById(uuid).subscribe({
       next: (res) => {
-        this.dataListPosFormItem = res.data;
+        this.dataListPosFormItem.set(res.data);
         console.log('PosFormItem List:', this.dataListPosFormItem);
         this.getAllBrand(); // Refresh brand list to exclude used brands
-        this.isLoadingPosFormItem = false;
+        this.isLoadingPosFormItem.set(false);
       }, error: (err) => {
-        this.isLoadingPosFormItem = false;
+        this.isLoadingPosFormItem.set(false);
         this.toastr.error(`${err.error.message}`, 'Oupss!');
         console.log(err);
       }
@@ -1587,12 +1610,12 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
   // Méthode pour vérifier si le bouton "Add New PosForm" doit être activé
   canAddNewPosForm(): boolean {
-    if (!this.dataList || this.dataList.length === 0) {
+    if (!this.dataList() || this.dataList().length === 0) {
       return true; // Si la liste est vide, permettre l'ajout
     }
 
     // Filtrer les rapports créés par l'utilisateur connecté
-    const currentUserReports = this.dataList.filter(item => item.user_uuid === this.currentUser.uuid);
+    const currentUserReports = this.dataList().filter(item => item.user_uuid === this.currentUser()!.uuid);
 
     if (currentUserReports.length === 0) {
       return true; // Si l'utilisateur n'a pas encore de rapport, permettre l'ajout
@@ -1610,22 +1633,22 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    */
   resetFormState(): void {
     // Réinitialiser les variables liées au POS
-    this.posUUID = '';
-    this.posName = '';
-    this.routePlanItemUUID = '';
+    this.posUUID.set('');
+    this.posName.set('');
+    this.routePlanItemUUID.set('');
     
     // Réinitialiser les variables liées aux marques
-    this.brandUUID = '';
-    this.brandName = '';
-    this.dataListPosFormItem = [];
+    this.brandUUID.set('');
+    this.brandName.set('');
+    this.dataListPosFormItem.set([]);
     
     // Réinitialiser les variables de l'item sélectionné
-    this.dataItem = {} as IPosForm;
-    this.uuidItem = '';
+    this.dataItem.set(null);
+    this.uuidItem.set('');
     
     // Réinitialiser les variables d'état
-    this.isCompletingReport = false;
-    this.submissionInProgress = false;
+    this.isCompletingReport.set(false);
+    this.submissionInProgress.set(false);
     
     // Réinitialiser le formulaire
     this.formGroup.reset();
@@ -1642,52 +1665,52 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    */
   isCompletionMode(): boolean {
     // Mode complétion si la variable interne l'indique ou si les conditions sont remplies
-    return this.isCompletingReport || 
-           !!(this.dataItem && 
-              this.uuidItem && 
-              this.uuidItem.trim() !== '' && 
-              (!this.dataItem.pos_uuid || this.dataItem.pos_uuid.trim() === ''));
+    return this.isCompletingReport() || 
+           !!(this.dataItem() && 
+              this.uuidItem() && 
+              this.uuidItem().trim() !== '' && 
+              (!this.dataItem()?.pos_uuid || this.dataItem()!.pos_uuid!.trim() === ''));
   }
 
 
   delete(): void {
-    this.routePlanItemService.update(this.dataItem.pos_uuid!, { status: false })
+    this.routePlanItemService.update(this.dataItem()?.pos_uuid!, { status: false })
       .subscribe({
         next: () => {
           this.posformService
-            .delete(this.uuidItem)
+            .delete(this.uuidItem())
             .subscribe({
               next: () => {
                 this.logActivity.activity(
                   'Posform',
-                  this.currentUser.uuid,
+                  this.currentUser()!.uuid,
                   'deleted',
-                  `Delete posform uuid: ${this.uuidItem}`,
-                  this.currentUser.fullname
+                  `Delete posform uuid: ${this.uuidItem()}`,
+                  this.currentUser()!.fullname
                 ).subscribe({
                   next: () => {
                     this.formGroup.reset();
                     this.getAllRoutePlans(); // Refresh route plans to exclude used POS
-                    this.fetchProducts(this.currentUser, this.start_date, this.end_date);
+                    this.fetchProducts(this.currentUser()!, this.start_date(), this.end_date());
                     this.toastr.info('Supprimé avec succès!', 'Success!');
-                    this.isLoading = false;
+                    this.isLoading.set(false);
                   },
                   error: (err) => {
-                    this.isLoading = false;
+                    this.isLoading.set(false);
                     this.toastr.error(`${err.error.message}`, 'Oupss!');
                     console.log(err);
                   }
                 });
               },
               error: err => {
-                this.isLoading = false;
+                this.isLoading.set(false);
                 this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
                 console.log(err);
               }
             });
         },
         error: (err) => {
-          this.isLoading = false;
+          this.isLoading.set(false);
           this.toastr.error(`${err.error.message}`, 'Oupss!');
           console.log(err);
         }
@@ -1715,12 +1738,12 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    */
   filterAsmOptions(searchTerm: string): void {
     if (!searchTerm || searchTerm.trim() === '') {
-      this.filteredAsms = [...this.uniqueAsms];
+      this.filteredAsms.set([...this.uniqueAsms()]);
     } else {
       const search = searchTerm.toLowerCase();
-      this.filteredAsms = this.uniqueAsms.filter(asm =>
+      this.filteredAsms.set(this.uniqueAsms().filter(asm =>
         asm.toLowerCase().includes(search)
-      );
+      ));
     }
   }
 
@@ -1728,7 +1751,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    * Obtenir les ASMs filtrés
    */
   getFilteredAsms(): string[] {
-    return this.filteredAsms;
+    return this.filteredAsms();
   }
 
   /**
@@ -1736,12 +1759,12 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    */
   filterSupervisorOptions(searchTerm: string): void {
     if (!searchTerm || searchTerm.trim() === '') {
-      this.filteredSupervisors = [...this.uniqueSupervisors];
+      this.filteredSupervisors.set([...this.uniqueSupervisors()]);
     } else {
       const search = searchTerm.toLowerCase();
-      this.filteredSupervisors = this.uniqueSupervisors.filter(supervisor =>
+      this.filteredSupervisors.set(this.uniqueSupervisors().filter(supervisor =>
         supervisor.toLowerCase().includes(search)
-      );
+      ));
     }
   }
 
@@ -1749,7 +1772,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    * Obtenir les Supervisors filtrés
    */
   getFilteredSupervisors(): string[] {
-    return this.filteredSupervisors;
+    return this.filteredSupervisors();
   }
 
   /**
@@ -1757,12 +1780,12 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    */
   filterDrOptions(searchTerm: string): void {
     if (!searchTerm || searchTerm.trim() === '') {
-      this.filteredDrs = [...this.uniqueDrs];
+      this.filteredDrs.set([...this.uniqueDrs()]);
     } else {
       const search = searchTerm.toLowerCase();
-      this.filteredDrs = this.uniqueDrs.filter(dr =>
+      this.filteredDrs.set(this.uniqueDrs().filter(dr =>
         dr.toLowerCase().includes(search)
-      );
+      ));
     }
   }
 
@@ -1770,7 +1793,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    * Obtenir les DRs filtrés
    */
   getFilteredDrs(): string[] {
-    return this.filteredDrs;
+    return this.filteredDrs();
   }
 
   /**
@@ -1778,12 +1801,12 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    */
   filterCycloOptions(searchTerm: string): void {
     if (!searchTerm || searchTerm.trim() === '') {
-      this.filteredCyclos = [...this.uniqueCyclos];
+      this.filteredCyclos.set([...this.uniqueCyclos()]);
     } else {
       const search = searchTerm.toLowerCase();
-      this.filteredCyclos = this.uniqueCyclos.filter(cyclo =>
+      this.filteredCyclos.set(this.uniqueCyclos().filter(cyclo =>
         cyclo.toLowerCase().includes(search)
-      );
+      ));
     }
   }
 
@@ -1791,24 +1814,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
    * Obtenir les Cyclos filtrés
    */
   getFilteredCyclos(): string[] {
-    return this.filteredCyclos;
+    return this.filteredCyclos();
   }
-
-  /**
-   * Méthode de debug pour vérifier les filtres
-   */
-  debugFilters(): void {
-    console.log('🔍 État actuel des filtres:', {
-      filters: this.filters,
-      search: this.search,
-      hasActiveFilters: this.hasActiveFilters(),
-      activeFiltersCount: this.getActiveFiltersCount(),
-      currentPage: this.current_page,
-      pageSize: this.page_size,
-      startDate: this.start_date,
-      endDate: this.end_date,
-      currentUser: this.currentUser?.role,
-      totalRecords: this.total_records
-    });
-  }
+ 
 }

@@ -121,7 +121,7 @@ export class PosformsComponent implements OnInit, AfterViewInit {
 
   // Table 
   displayedColumns = signal<string[]>(['createdat', 'price', 'asm', 'sup', 'dr', 'cyclo', 'brand', 'comment', 'action']);
-  dataSource = signal(new MatTableDataSource<IPosForm>([]));
+  dataSource = new MatTableDataSource<IPosForm>([]);
 
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -167,8 +167,8 @@ export class PosformsComponent implements OnInit, AfterViewInit {
      this.authService.user().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
           next: (user) => {
             this.currentUser.set(user);
-            this.dataSource().paginator = this.paginator; // Bind paginator to dataSource
-            this.dataSource().sort = this.sort; // Bind sort to dataSource
+            this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
+            this.dataSource.sort = this.sort; // Bind sort to dataSource
             this.cdr.detectChanges(); // Trigger change detection
 
             // Initialiser les marques si l'utilisateur a une province
@@ -248,9 +248,9 @@ export class PosformsComponent implements OnInit, AfterViewInit {
         this.originalDataList.set([...res.data]); // Sauvegarder les données originales
         this.total_pages.set(res.pagination.total_pages);
         this.total_records.set(res.pagination.total_records);
-        this.dataSource().data = this.dataList(); // Update dataSource data
-        this.dataSource().paginator = this.paginator; // Bind paginator to dataSource
-        this.dataSource().sort = this.sort; // Bind sort to dataSource
+        this.dataSource.data = this.dataList(); // Update dataSource data
+        this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
+        this.dataSource.sort = this.sort; // Bind sort to dataSource
         
         // Mettre à jour les valeurs uniques pour les filtres
         this.updateUniqueValues();
@@ -286,7 +286,7 @@ export class PosformsComponent implements OnInit, AfterViewInit {
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource().filter = filterValue.trim().toLowerCase();
+    this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
 
@@ -527,7 +527,7 @@ export class PosformsComponent implements OnInit, AfterViewInit {
     }
 
     this.filteredDataList.set(filteredData);
-    this.dataSource().data = this.filteredDataList();
+    this.dataSource.data = this.filteredDataList();
   }
 
   /**
@@ -839,3 +839,4 @@ export class PosformsComponent implements OnInit, AfterViewInit {
     this.filters.update(f => ({ ...f, [key]: value }));
   }
 }
+

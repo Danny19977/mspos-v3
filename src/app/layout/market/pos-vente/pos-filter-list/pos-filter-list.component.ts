@@ -77,7 +77,7 @@ export class PosFilterListComponent implements OnInit {
     'posforms',
     'action'
   ];
-  dataSource = signal(new MatTableDataSource<IPos>([]));
+  dataSource = new MatTableDataSource<IPos>([]);
 
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
@@ -191,8 +191,8 @@ export class PosFilterListComponent implements OnInit {
       this.authService.user().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
         next: (user) => {
           this.currentUser.set(user);
-          this.dataSource().paginator = this.paginator;
-          this.dataSource().sort = this.sort;
+          this.dataSource.paginator = this.paginator;
+          this.dataSource.sort = this.sort;
           this.cdr.detectChanges();
 
           this.posVenteService.refreshDataList$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
@@ -249,7 +249,7 @@ export class PosFilterListComponent implements OnInit {
             this.originalDataList.set([...res.data]); // Conserver une copie des données originales
             this.total_pages.set(res.pagination.total_pages);
             this.total_records.set(res.pagination.total_records);
-            this.dataSource().data = this.dataList();
+            this.dataSource.data = this.dataList();
             this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
             this.isLoadingData.set(false);
           },
@@ -282,7 +282,7 @@ export class PosFilterListComponent implements OnInit {
             this.originalDataList.set([...res.data]); // Conserver une copie des données originales
             this.total_pages.set(res.pagination.total_pages);
             this.total_records.set(res.pagination.total_records);
-            this.dataSource().data = this.dataList();
+            this.dataSource.data = this.dataList();
             this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
             this.isLoadingData.set(false);
           },
@@ -315,7 +315,7 @@ export class PosFilterListComponent implements OnInit {
             this.originalDataList.set([...res.data]); // Conserver une copie des données originales
             this.total_pages.set(res.pagination.total_pages);
             this.total_records.set(res.pagination.total_records);
-            this.dataSource().data = this.dataList();
+            this.dataSource.data = this.dataList();
             this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
             this.isLoadingData.set(false);
           },
@@ -348,7 +348,7 @@ export class PosFilterListComponent implements OnInit {
             this.originalDataList.set([...res.data]); // Conserver une copie des données originales
             this.total_pages.set(res.pagination.total_pages);
             this.total_records.set(res.pagination.total_records);
-            this.dataSource().data = this.dataList();
+            this.dataSource.data = this.dataList();
             this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
             this.isLoadingData.set(false);
           },
@@ -381,7 +381,7 @@ export class PosFilterListComponent implements OnInit {
             this.originalDataList.set([...res.data]); // Conserver une copie des données originales
             this.total_pages.set(res.pagination.total_pages);
             this.total_records.set(res.pagination.total_records);
-            this.dataSource().data = this.dataList();
+            this.dataSource.data = this.dataList();
             this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
             this.isLoadingData.set(false);
           },
@@ -408,7 +408,7 @@ export class PosFilterListComponent implements OnInit {
           console.log("dataList", this.dataList());
           this.total_pages.set(res.pagination.total_pages);
           this.total_records.set(res.pagination.total_records);
-          this.dataSource().data = this.dataList();
+          this.dataSource.data = this.dataList();
           this.updateUniqueValues();
           this.isLoadingData.set(false);
         });
@@ -424,7 +424,7 @@ export class PosFilterListComponent implements OnInit {
           this.originalDataList.set([...res.data]);
           this.total_pages.set(res.pagination.total_pages);
           this.total_records.set(res.pagination.total_records);
-          this.dataSource().data = this.dataList();
+          this.dataSource.data = this.dataList();
           this.updateUniqueValues();
           this.isLoadingData.set(false);
         });
@@ -439,7 +439,7 @@ export class PosFilterListComponent implements OnInit {
           this.originalDataList.set([...res.data]);
           this.total_pages.set(res.pagination.total_pages);
           this.total_records.set(res.pagination.total_records);
-          this.dataSource().data = this.dataList();
+          this.dataSource.data = this.dataList();
           this.updateUniqueValues();
           this.isLoadingData.set(false);
         });
@@ -455,7 +455,7 @@ export class PosFilterListComponent implements OnInit {
           this.originalDataList.set([...res.data]);
           this.total_pages.set(res.pagination.total_pages);
           this.total_records.set(res.pagination.total_records);
-          this.dataSource().data = this.dataList();
+          this.dataSource.data = this.dataList();
           this.updateUniqueValues();
           this.isLoadingData.set(false);
         });
@@ -660,7 +660,7 @@ export class PosFilterListComponent implements OnInit {
 
   applyFilter(event: Event) {
     const filterValue = (event.target as HTMLInputElement).value;
-    this.dataSource().filter = filterValue.trim().toLowerCase();
+    this.dataSource.filter = filterValue.trim().toLowerCase();
   }
 
   findValue(value: string) {
@@ -884,3 +884,4 @@ export class PosFilterListComponent implements OnInit {
     this.filterCyclos();
   }
 }
+

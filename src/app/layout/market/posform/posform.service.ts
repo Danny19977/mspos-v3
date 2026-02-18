@@ -1,16 +1,34 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ApiService } from '../../../shared/services/api.service';
 import { environment } from '../../../../environments/environment';
 import { HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { ApiResponse2 } from '../../../shared/model/api-response.model';
 import { IUser } from '../../management/user/models/user.model';
+import { IPosForm } from './models/posform.model';
+import { NetworkService } from '../../../services/network.service';
+import { SyncQueueService } from '../../../shared/services/sync-queue.service';
+import { db } from '../../../shared/services/db';
+import { v4 as uuidv4 } from 'uuid';
 
+/**
+ * PosformService - Mode OFFLINE FIRST
+ * 
+ * - Les Posforms sont stockés localement et accessibles hors ligne
+ * - Les opérations CRUD se font d'abord en local
+ * - La synchronisation avec le serveur se fait en arrière-plan
+ * - En mode offline, les opérations sont mises en file d'attente
+ */
 @Injectable({
   providedIn: 'root'
 })
 export class PosformService extends ApiService {
   endpoint: string = `${environment.apiUrl}/posforms`;
+  
+  // Modern Angular inject pattern
+  private networkService = inject(NetworkService);
+  private syncQueue = inject(SyncQueueService);
 
   getPaginatedRangeDateByUserUUID(uuid: string, page: number, pageSize: number, search: string,
     startDateStr: string, endDateStr: string
@@ -310,5 +328,240 @@ export class PosformService extends ApiService {
       .set("start_date", startDateStr)
       .set("end_date", endDateStr)
     return this.http.get<any>(`${this.endpoint}/all/paginate/commune/${user_uuid}`, { params });
+  }
+
+  /**
+   * Crée un nouveau Posform - OFFLINE FIRST
+   */
+  override create(data: IPosForm): Observable<any> {
+    const tempUuid = uuidv4();
+    const posformData: IPosForm = {
+      ...data,
+      uuid: tempUuid,
+      sync_status: 'pending',
+      temp_id: tempUuid,
+      CreatedAt: new Date(),
+      UpdatedAt: new Date()
+    };
+
+    return from(this.createPosformLocally(posformData)).pipe(
+      switchMap(async (localPosform) => {
+        // Mettre en file d'attente pour synchronisation
+        await this.syncQueue.enqueue({
+          operationId: uuidv4(),
+          entityType: 'posform',
+          operation: 'create',
+          endpoint: this.endpoint,
+          data: posformData,
+          tempId: tempUuid,
+          timestamp: new Date(),
+          retryCount: 0,
+          status: 'pending',
+          userId: data.user_uuid
+        });
+
+        console.log('✅ Posform créé localement et mis en file de synchronisation');
+        
+        return {
+          data: localPosform,
+          offline: !this.networkService.isOnline(),
+          message: this.networkService.isOnline() 
+            ? 'Posform créé, synchronisation en cours...' 
+            : 'Posform créé localement, sera synchronisé à la reconnexion'
+        };
+      })
+    );
+  }
+
+  /**
+   * Met à jour un Posform - OFFLINE FIRST
+   */
+  override update(uuid: string, data: Partial<IPosForm>): Observable<any> {
+    const posformData: Partial<IPosForm> = {
+      ...data,
+      uuid,
+      sync_status: 'pending',
+      UpdatedAt: new Date()
+    };
+
+    return from(this.updatePosformLocally(uuid, posformData)).pipe(
+      switchMap(async (updatedPosform) => {
+        // Mettre en file d'attente pour synchronisation
+        await this.syncQueue.enqueue({
+          operationId: uuidv4(),
+          entityType: 'posform',
+          operation: 'update',
+          endpoint: `${this.endpoint}/${uuid}`,
+          data: posformData,
+          timestamp: new Date(),
+          retryCount: 0,
+          status: 'pending',
+          userId: data.user_uuid
+        });
+
+        console.log('✅ Posform modifié localement et mis en file de synchronisation');
+        
+        return {
+          data: updatedPosform,
+          offline: !this.networkService.isOnline(),
+          message: this.networkService.isOnline() 
+            ? 'Posform modifié, synchronisation en cours...' 
+            : 'Posform modifié localement, sera synchronisé à la reconnexion'
+        };
+      })
+    );
+  }
+
+  /**
+   * Supprime un Posform - OFFLINE FIRST
+   */
+  override delete(uuid: string): Observable<any> {
+    return from(this.markPosformAsDeleted(uuid)).pipe(
+      switchMap(async () => {
+        // Mettre en file d'attente pour synchronisation
+        await this.syncQueue.enqueue({
+          operationId: uuidv4(),
+          entityType: 'posform',
+          operation: 'delete',
+          endpoint: `${this.endpoint}/${uuid}`,
+          data: { uuid },
+          timestamp: new Date(),
+          retryCount: 0,
+          status: 'pending'
+        });
+
+        console.log('✅ Posform marqué comme supprimé et mis en file de synchronisation');
+        
+        return {
+          offline: !this.networkService.isOnline(),
+          message: this.networkService.isOnline()
+            ? 'Posform supprimé, synchronisation en cours...'
+            : 'Posform supprimé localement, sera synchronisé à la reconnexion'
+        };
+      })
+    );
+  }
+
+  /**
+   * Crée un Posform en local (IndexedDB)
+   */
+  private async createPosformLocally(data: IPosForm): Promise<IPosForm> {
+    const id = await db.posForms.add({
+      uuid: data.uuid!,
+      price: data.price,
+      comment: data.comment,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      pos_uuid: data.pos_uuid,
+      user_uuid: data.user_uuid,
+      country_uuid: data.country_uuid,
+      province_uuid: data.province_uuid,
+      area_uuid: data.area_uuid,
+      sub_area_uuid: data.sub_area_uuid,
+      commune_uuid: data.commune_uuid,
+      asm_uuid: data.asm_uuid,
+      asm: data.asm,
+      sup_uuid: data.sup_uuid,
+      sup: data.sup,
+      dr_uuid: data.dr_uuid,
+      dr: data.dr,
+      cyclo_uuid: data.cyclo_uuid,
+      cyclo: data.cyclo,
+      signature: data.signature,
+      sync_status: data.sync_status,
+      temp_id: data.temp_id,
+      CreatedAt: data.CreatedAt,
+      UpdatedAt: data.UpdatedAt
+    } as any);
+
+    console.log(`💾 Posform créé localement avec ID: ${id}`);
+    return { ...data, id } as IPosForm;
+  }
+
+  /**
+   * Met à jour un Posform en local (IndexedDB)
+   */
+  private async updatePosformLocally(uuid: string, data: Partial<IPosForm>): Promise<Partial<IPosForm>> {
+    // Utiliser as any pour éviter les références circulaires avec Dexie
+    await (db.posForms.where('uuid').equals(uuid) as any).modify({
+      price: data.price,
+      comment: data.comment,
+      latitude: data.latitude,
+      longitude: data.longitude,
+      pos_uuid: data.pos_uuid,
+      signature: data.signature,
+      sync_status: data.sync_status,
+      UpdatedAt: data.UpdatedAt
+    });
+
+    console.log(`💾 Posform ${uuid} mis à jour localement`);
+    return data;
+  }
+
+  /**
+   * Marque un Posform comme supprimé en local
+   */
+  private async markPosformAsDeleted(uuid: string): Promise<void> {
+    // Utiliser as any pour éviter les références circulaires avec Dexie
+    await (db.posForms.where('uuid').equals(uuid) as any).modify({
+      sync_status: 'pending'
+    });
+
+    console.log(`💾 Posform ${uuid} marqué comme supprimé`);
+  }
+
+  /**
+   * Récupère les Posforms depuis le cache local
+   */
+  async getFromLocalCache(filters: any = {}): Promise<IPosForm[]> {
+    let collection = db.posForms.toCollection();
+    
+    // Appliquer les filtres
+    if (filters.user_uuid) {
+      collection = db.posForms.where('cyclo_uuid').equals(filters.user_uuid);
+    }
+    
+    const posforms = await collection.toArray();
+    console.log(`📦 ${posforms.length} Posforms récupérés du cache local`);
+    return posforms;
+  }
+
+  /**
+   * Met à jour le cache local avec les données du serveur
+   */
+  async updateLocalCache(posforms: IPosForm[]): Promise<void> {
+    try {
+      const posformsToStore = posforms.map(pf => ({
+        uuid: pf.uuid!,
+        price: pf.price,
+        comment: pf.comment,
+        latitude: pf.latitude,
+        longitude: pf.longitude,
+        pos_uuid: pf.pos_uuid,
+        user_uuid: pf.user_uuid,
+        country_uuid: pf.country_uuid,
+        province_uuid: pf.province_uuid,
+        area_uuid: pf.area_uuid,
+        sub_area_uuid: pf.sub_area_uuid,
+        commune_uuid: pf.commune_uuid,
+        asm_uuid: pf.asm_uuid,
+        asm: pf.asm,
+        sup_uuid: pf.sup_uuid,
+        sup: pf.sup,
+        dr_uuid: pf.dr_uuid,
+        dr: pf.dr,
+        cyclo_uuid: pf.cyclo_uuid,
+        cyclo: pf.cyclo,
+        signature: pf.signature,
+        sync_status: 'synced' as const,
+        CreatedAt: pf.CreatedAt,
+        UpdatedAt: pf.UpdatedAt
+      }));
+      
+      await db.posForms.bulkPut(posformsToStore as any);
+      console.log(`💾 ${posformsToStore.length} Posforms mis à jour dans le cache local`);
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour du cache local:', error);
+    }
   }
 }
