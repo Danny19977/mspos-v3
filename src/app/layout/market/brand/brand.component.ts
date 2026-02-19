@@ -74,6 +74,9 @@ export class BrandComponent implements OnInit {
   readonly dataListLocal = signal<IBrand[]>([]);
   readonly isOnLine = signal(navigator.onLine);
 
+  /** Flag pour éviter de re-télécharger tous les Brands à chaque appel de fetchProducts */
+  private hasDownloadedAllBrands = false;
+
 
   ngAfterViewInit(): void {
     this.authService.user().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -116,7 +119,13 @@ export class BrandComponent implements OnInit {
     this.fetchProducts(this.currentUser()!);
   }
 
-  fetchProducts(currentUser: IUser) { 
+  fetchProducts(currentUser: IUser) {
+    // Télécharger l'intégralité des Brands autorisés vers le cache local (une seule fois par session)
+    if (!this.hasDownloadedAllBrands) {
+      this.hasDownloadedAllBrands = true;
+      this.brandService.downloadAllCloudBrandsToLocal(currentUser);
+    }
+
     if (currentUser.role == 'Manager') {
       this.brandService.getBrandsPaginated(this.current_page(), this.page_size(), this.search()).subscribe({
         next: (res) => {

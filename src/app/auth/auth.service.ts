@@ -1,6 +1,6 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, tap, from, throwError, of } from 'rxjs';
+import { Observable, tap, from, throwError, of, firstValueFrom } from 'rxjs';
 import { switchMap, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { IUser } from '../layout/management/user/models/user.model';
@@ -99,10 +99,12 @@ export class AuthService {
     password: string
   ): Promise<{ success: boolean; token?: string; userData?: any }> {
     try {
-      const localUser = await this.localDb.getAuthenticatedUser(identifier);
+      // Normaliser l'identifier en lowercase pour la recherche
+      const normalizedIdentifier = identifier.toLowerCase();
+      const localUser = await this.localDb.getAuthenticatedUser(normalizedIdentifier);
       
       if (!localUser) {
-        console.warn('⚠️ Aucun utilisateur local trouvé pour:', identifier);
+        console.warn('⚠️ Aucun utilisateur local trouvé pour:', normalizedIdentifier);
         return { success: false };
       }
 
@@ -110,6 +112,7 @@ export class AuthService {
       const passwordHash = await this.cryptoService.hashPassword(password);
       
       if (passwordHash === localUser.passwordHash) {
+        console.log('✅ Mot de passe correct pour l\'utilisateur local:', normalizedIdentifier);
         return {
           success: true,
           token: localUser.token,
@@ -134,22 +137,41 @@ export class AuthService {
     token: string
   ): Promise<void> {
     try {
-      const passwordHash = await this.cryptoService.hashPassword(password);
+      console.log('🔄 Début de la sauvegarde locale pour:', identifier);
       
-      // Récupérer les données utilisateur depuis le backend
+      // 1. Hasher le mot de passe
+      const passwordHash = await this.cryptoService.hashPassword(password);
+      console.log('✅ Mot de passe hashé');
+      
+      // 2. Récupérer les données utilisateur depuis le backend
       const userData = await this.getUserData(token);
       
-      // Sauvegarder dans IndexedDB
+      if (!userData) {
+        console.error('❌ Impossible de récupérer les données utilisateur');
+        throw new Error('Données utilisateur non récupérées');
+      }
+      console.log('✅ Données utilisateur récupérées:', userData);
+      
+      // 3. Sauvegarder dans IndexedDB
       await this.localDb.saveAuthenticatedUser(
         identifier,
         passwordHash,
         token,
         userData
       );
+      console.log('✅ Utilisateur sauvegardé dans IndexedDB:', identifier);
       
-      console.log('✅ Utilisateur sauvegardé localement:', identifier);
+      // 4. Vérifier que la sauvegarde a réussi
+      const savedUser = await this.localDb.getAuthenticatedUser(identifier);
+      if (savedUser) {
+        console.log('✅ Vérification: utilisateur bien présent dans IndexedDB');
+      } else {
+        console.error('❌ ERREUR: utilisateur non trouvé après sauvegarde!');
+      }
     } catch (error) {
       console.error('❌ Erreur lors de la sauvegarde locale:', error);
+      // On ne bloque pas le login même si la sauvegarde locale échoue
+      // mais on log l'erreur pour diagnostic
     }
   }
 
@@ -161,15 +183,20 @@ export class AuthService {
       let params = new HttpParams();
       params = params.set("token", token);
       
-      const user = await this.http.get<IUser>(
-        `${environment.apiUrl}/auth/user`,
-        { params }
-      ).toPromise();
+      console.log('🔄 Récupération des données utilisateur avec le token...');
       
+      const user = await firstValueFrom(
+        this.http.get<IUser>(
+          `${environment.apiUrl}/auth/user`,
+          { params }
+        )
+      );
+      
+      console.log('✅ Données utilisateur récupérées depuis le backend');
       return user;
     } catch (error) {
       console.error('❌ Erreur lors de la récupération des données utilisateur:', error);
-      return null;
+      throw error; // Relancer l'erreur au lieu de retourner null
     }
   }
 

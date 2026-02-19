@@ -17,6 +17,8 @@ import { IPos } from '../pos-vente/models/pos.model';
 import { PosVenteService } from '../pos-vente/pos-vente.service';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { NetworkService } from '../../../services/network.service';
+import { db } from '../../../shared/services/db';
 
 @Component({
   selector: 'app-routeplan',
@@ -35,11 +37,14 @@ export class RouteplanComponent implements OnInit {
   private readonly toastr = inject(ToastrService);
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly networkService = inject(NetworkService);
 
   readonly isLoadingData = signal(false);
   readonly isLoadingDataItem = signal(false);
+  readonly isOnline = signal(true);
   public routes = routes;
   readonly dataList = signal<IRoutePlan[]>([]);
+  readonly dataListLocal = signal<IRoutePlan[]>([]);
   readonly dataListItem = signal<IRoutePlanItem[]>([]);
   readonly total_pages = signal(0);
   readonly page_size = signal(15);
@@ -79,9 +84,21 @@ export class RouteplanComponent implements OnInit {
   ngOnInit() {
     this.isLoadingData.set(true);
 
+    // Suivre l'état de la connexion
+    this.networkService.getNetworkStatus()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(status => {
+        this.isOnline.set(status);
+        // Recharger les données quand la connexion change
+        if (this.currentUser()) {
+          this.fetchProducts(this.currentUser()!);
+        }
+      });
+
     this.authService.user().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (user) => {
         this.currentUser.set(user);
+        this.isOnline.set(this.networkService.isOnline());
         this.dataSource().paginator = this.paginator;
         this.dataSource().sort = this.sort;
         this.cdr.detectChanges();
@@ -104,6 +121,15 @@ export class RouteplanComponent implements OnInit {
 
 
 
+  /** Retourne l'UUID territoire principal selon le rôle de l'utilisateur */
+  private getTerritoryUuid(user: IUser): string {
+    if (user.role === 'ASM') return user.province_uuid;
+    if (user.role === 'Supervisor') return user.area_uuid;
+    if (user.role === 'DR') return user.sub_area_uuid;
+    if (user.role === 'Cyclo') return user.commune_uuid;
+    return '';
+  }
+
   getAllPos(currentUser: IUser): void {
     const filterValue = this.pos_uuid?.nativeElement?.value || '';
 
@@ -118,6 +144,25 @@ export class RouteplanComponent implements OnInit {
 
     this.isload.set(true);
 
+    // Mode OFFLINE : charger les POS depuis le cache IndexedDB local
+    if (!this.isOnline()) {
+      const territoryUuid = this.getTerritoryUuid(currentUser);
+      this.routeplanService.getLocalPosForRoutePlan(currentUser.uuid, currentUser.role, territoryUuid).subscribe(res => {
+        let posList: IPos[] = res.data || [];
+        if (filterValue) {
+          const f = filterValue.toLowerCase();
+          posList = posList.filter(p =>
+            p.name?.toLowerCase().includes(f) ||
+            p.shop?.toLowerCase().includes(f) ||
+            p.gerant?.toLowerCase().includes(f)
+          );
+        }
+        processPosList(posList);
+      });
+      return;
+    }
+
+    // Mode ONLINE : appels API selon le rôle
     if (currentUser.role == 'Manager') {
       this.posVenteService.getPaginated2(1, 15, filterValue
       ).subscribe(res => {
@@ -197,68 +242,106 @@ export class RouteplanComponent implements OnInit {
   }
 
   fetchProducts(currentUser: IUser) {
-    if (currentUser.role == 'Manager') {
-      this.routeplanService.getPaginated2(this.current_page(), this.page_size(), this.search()).subscribe(res => {
-        this.dataList.set(res.data);
-        this.total_pages.set(res.pagination.total_pages);
-        this.total_records.set(res.pagination.total_records);
-        this.dataSource().data = res.data;
-        this.isLoadingData.set(false);
-      });
-    } else if (currentUser.role == 'ASM') {
-      this.routeplanService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page(), this.page_size(), this.search()).subscribe(res => {
-        this.dataList.set(res.data);
-        console.log("data 22 ", res.data);
-        this.total_pages.set(res.pagination.total_pages);
-        this.total_records.set(res.pagination.total_records);
-        this.dataSource().data = res.data;
-        this.isLoadingData.set(false);
-      });
-    } else if (currentUser.role == 'Supervisor') {
-      this.routeplanService.getPaginatedByAreaId(currentUser.area_uuid, this.current_page(), this.page_size(), this.search()).subscribe(res => {
-        this.dataList.set(res.data);
-        this.total_pages.set(res.pagination.total_pages);
-        this.total_records.set(res.pagination.total_records);
-        this.dataSource().data = res.data;
-        this.isLoadingData.set(false);
-      });
-    } else if (currentUser.role == 'DR') {
-      console.log("currentUser.sub_area_uuid", currentUser.sub_area_uuid);
-      this.routeplanService.getPaginatedBySubAreaId(currentUser.sub_area_uuid, this.current_page(), this.page_size(), this.search()).subscribe(res => {
-        this.dataList.set(res.data);
-        this.total_pages.set(res.pagination.total_pages);
-        this.total_records.set(res.pagination.total_records);
-        this.dataSource().data = res.data
-        this.isLoadingData.set(false);
-      });
-    } else if (currentUser.role == 'Cyclo') {
-      this.routeplanService.getPaginatedByUserId(currentUser.uuid, this.current_page(), this.page_size(), this.search()).subscribe(res => {
-        this.dataList.set(res.data);
-        this.total_pages.set(res.pagination.total_pages);
-        this.total_records.set(res.pagination.total_records);
-        this.dataSource().data = res.data;
+    // Réinitialiser l'état avant chaque chargement
+    this.isRoutePlanCreatedRecently.set(false);
 
-        const now = new Date();
-        const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
-        const wasCreatedRecently = res.data.some((plan: any) => {
-          if (plan.created) {
-            const createdDate = new Date(plan.created);
-            return !isNaN(createdDate.getTime()) && createdDate > twentyFourHoursAgo;
+    // Toujours charger les données locales en attente de sync
+    this.routeplanService.getLocalPendingRoutePlans(currentUser.uuid).then(localPending => {
+      // Enrichir les plans locaux avec les données de l'utilisateur courant
+      const enrichedLocalPlans: IRoutePlan[] = localPending.map(plan => ({
+        ...plan,
+        sync_status: 'pending',
+        Country:  plan.Country  || currentUser.Country  || { name: '...' },
+        Province: plan.Province || currentUser.Province || { name: '...' },
+        Area:     plan.Area     || currentUser.Area     || { name: '...' },
+        SubArea:  (plan as any).SubArea  || (plan as any).Subarea || currentUser.SubArea || { name: '...' },
+        Commune:  plan.Commune  || currentUser.Commune  || { name: '...' },
+        User:     plan.User     || { fullname: currentUser.fullname || '--' } as IUser,
+      }));
+
+      this.dataListLocal.set(enrichedLocalPlans);
+
+      // Vérifier si un plan a déjà été créé aujourd'hui (00h00 - 23h59) pour cet utilisateur
+      // Inclut les plans locaux en attente + les plans serveur
+      const todayStart = new Date();
+      todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date();
+      todayEnd.setHours(23, 59, 59, 999);
+
+      const hasTodayLocalPlan = enrichedLocalPlans.some(plan => {
+        const d = new Date(plan.CreatedAt!);
+        return d >= todayStart && d <= todayEnd && plan.user_uuid === currentUser.uuid;
+      });
+
+      if (hasTodayLocalPlan) {
+        this.isRoutePlanCreatedRecently.set(true);
+      }
+
+      const mergeWithLocal = (serverData: IRoutePlan[]) => {
+        // Filtrer les plans locaux qui ne sont pas déjà dans les données serveur
+        const serverUuids = new Set(serverData.map(p => p.uuid));
+        const pendingNotOnServer = enrichedLocalPlans.filter(
+          p => p.temp_id && !serverUuids.has(p.temp_id) && !serverUuids.has(p.uuid)
+        );
+        // Données locales d'abord, puis données serveur
+        return [...pendingNotOnServer, ...serverData];
+      };
+
+      if (this.networkService.isOnline()) {
+        // Mode ONLINE : charger depuis le serveur puis fusionner
+        let apiCall$;
+        if (currentUser.role === 'Manager') {
+          apiCall$ = this.routeplanService.getPaginated2(this.current_page(), this.page_size(), this.search());
+        } else if (currentUser.role === 'ASM') {
+          apiCall$ = this.routeplanService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page(), this.page_size(), this.search());
+        } else if (currentUser.role === 'Supervisor') {
+          apiCall$ = this.routeplanService.getPaginatedByAreaId(currentUser.area_uuid, this.current_page(), this.page_size(), this.search());
+        } else if (currentUser.role === 'DR') {
+          apiCall$ = this.routeplanService.getPaginatedBySubAreaId(currentUser.sub_area_uuid, this.current_page(), this.page_size(), this.search());
+        } else if (currentUser.role === 'Cyclo') {
+          apiCall$ = this.routeplanService.getPaginatedByUserId(currentUser.uuid, this.current_page(), this.page_size(), this.search());
+        } else {
+          apiCall$ = this.routeplanService.getPaginated2(this.current_page(), this.page_size(), this.search());
+        }
+
+        apiCall$.subscribe({
+          next: (res) => {
+            const merged = mergeWithLocal(res.data || []);
+            this.dataList.set(res.data || []);
+            this.total_pages.set(res.pagination?.total_pages || 0);
+            this.total_records.set((res.pagination?.total_records || 0) + enrichedLocalPlans.length);
+            this.dataSource().data = merged;
+
+            // Vérifier si un plan du jour (00h-23h59) existe pour cet utilisateur (tous rôles)
+            if (!hasTodayLocalPlan) {
+              const serverHasToday = (res.data || []).some((plan: any) => {
+                if (plan.user_uuid !== currentUser.uuid) return false;
+                const d = new Date(plan.CreatedAt || plan.created);
+                return !isNaN(d.getTime()) && d >= todayStart && d <= todayEnd;
+              });
+              this.isRoutePlanCreatedRecently.set(serverHasToday);
+            }
+            this.isLoadingData.set(false);
+            this.cdr.detectChanges();
+          },
+          error: (err) => {
+            console.error('❌ Erreur chargement server, affichage données locales:', err);
+            this.dataList.set([]);
+            this.dataSource().data = enrichedLocalPlans;
+            this.total_records.set(enrichedLocalPlans.length);
+            this.isLoadingData.set(false);
+            this.cdr.detectChanges();
           }
-          return false;
         });
-        this.isRoutePlanCreatedRecently.set(wasCreatedRecently);
+      } else {
+        // Mode OFFLINE : afficher uniquement les données locales
+        this.dataList.set([]);
+        this.dataSource().data = enrichedLocalPlans;
+        this.total_records.set(enrichedLocalPlans.length);
         this.isLoadingData.set(false);
-      });
-    } else {
-      this.routeplanService.getPaginated2(this.current_page(), this.page_size(), this.search()).subscribe(res => {
-        this.dataList.set(res.data);
-        this.total_pages.set(res.pagination.total_pages);
-        this.total_records.set(res.pagination.total_records);
-        this.dataSource().data = res.data;
-        this.isLoadingData.set(false);
-      });
-    }
+        this.cdr.detectChanges();
+      }
+    });
   }
 
 
@@ -309,29 +392,89 @@ export class RouteplanComponent implements OnInit {
     this.dataSource().filter = filterValue.trim().toLowerCase();
   }
 
-  // Get All routeplamitems
+  // Get All routeplamitems (online)
   getAllRoutePlanItems(value: string) {
     this.isLoadingDataItem.set(true);
     this.uuidRoutePlanItem.set(value);
-    this.routePlanItemService.getAllById(this.uuidRoutePlanItem()).subscribe((res) => {
-      this.dataListItem.set(res.data);
-      console.log("dataListItem", this.dataListItem());
-      this.isLoadingDataItem.set(false);
+    this.routePlanItemService.getAllById(this.uuidRoutePlanItem()).subscribe({
+      next: (res) => {
+        this.dataListItem.set(res.data || []);
+        console.log("dataListItem", this.dataListItem());
+        this.isLoadingDataItem.set(false);
+      },
+      error: (err) => {
+        console.error('❌ Erreur chargement items (API), fallback local:', err);
+        // Fallback : charger depuis le cache local
+        this.getAllRoutePlanItemsLocal(value);
+      }
     });
   }
 
-  // Get value RoutePlan api
+  // Get All routeplanitems depuis le cache local (offline)
+  async getAllRoutePlanItemsLocal(routeplanUuid: string) {
+    this.isLoadingDataItem.set(true);
+    this.uuidRoutePlanItem.set(routeplanUuid);
+    try {
+      // Interroger par l'index Dexie (sans 'e')
+      let items = await db.routePlanItems
+        .where('routplan_uuid').equals(routeplanUuid)
+        .toArray();
+
+        console.log(`📦 Items locaux (index) pour ${routeplanUuid}:`, items.length);
+
+      // Fallback : items du serveur mis en cache avec routeplan_uuid (avec 'e')
+      if (items.length === 0) {
+        items = await db.routePlanItems
+          .filter(item => (item as any).routeplan_uuid === routeplanUuid)
+          .toArray();
+      }
+
+      // Enrichir chaque item avec les données POS depuis le cache local
+      const enrichedItems: IRoutePlanItem[] = await Promise.all(
+        items.map(async item => {
+          const pos = await db.pos.where('uuid').equals(item.pos_uuid).first();
+          return {
+            ...item,
+            Pos: pos || { uuid: item.pos_uuid, name: item.pos_uuid, shop: '--', postype: '--', gerant: '--' } as IPos
+          };
+        })
+      );
+
+      this.dataListItem.set(enrichedItems);
+    } catch (err) {
+      console.error('❌ Erreur chargement items locaux:', err);
+      this.dataListItem.set([]);
+    }
+    this.isLoadingDataItem.set(false);
+  }
+
+  // Get value RoutePlan (gère local + serveur)
   findValue(value: any) {
     this.uuidItem.set(value);
+
+    // Vérifier d'abord si c'est un plan local en attente de sync
+    const localPlan = this.dataListLocal().find(
+      p => p.uuid === value || (p as any).temp_id === value
+    );
+    if (localPlan) {
+      this.dataItem.set(localPlan);
+      this.getAllRoutePlanItemsLocal(localPlan.uuid || value);
+      setTimeout(() => this.getAllPos(this.currentUser()!), 100);
+      return;
+    }
+
+    // Plan serveur : appel API normal
     this.routeplanService.get(this.uuidItem()).subscribe(item => {
       this.dataItem.set(item.data);
-      this.routePlanItemService.refreshDataList$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      // Utiliser les RoutePlanItems déjà embarqués dans la réponse si disponibles
+      const embeddedItems = this.dataItem()?.RoutePlanItems;
+      if (embeddedItems && embeddedItems.length > 0) {
+        this.dataListItem.set(embeddedItems);
+        this.isLoadingDataItem.set(false);
+      } else {
+        // Fallback : second appel API dédié
         this.getAllRoutePlanItems(this.dataItem()!.uuid!);
-        setTimeout(() => {
-          this.getAllPos(this.currentUser()!);
-        }, 100);
-      });
-      this.getAllRoutePlanItems(this.dataItem()!.uuid!);
+      }
       setTimeout(() => {
         this.getAllPos(this.currentUser()!);
       }, 100);
@@ -347,9 +490,20 @@ export class RouteplanComponent implements OnInit {
   }
 
 
-  // Get value RoutePlanItem api
+  // Get value RoutePlanItem (gère local + serveur)
   findValueItem(value: string) {
     this.uuidRoutePlanItem.set(value);
+
+    // Si offline ou item local, chercher dans le cache
+    if (!this.isOnline()) {
+      db.routePlanItems.where('uuid').equals(value).first().then(item => {
+        if (item) {
+          this.dataRoutePlanItem.set(item as any);
+        }
+      });
+      return;
+    }
+
     this.routePlanItemService.get(this.uuidRoutePlanItem()).subscribe(item => {
       this.dataRoutePlanItem.set(item.data);
       this.formGroup().patchValue({
@@ -383,19 +537,15 @@ export class RouteplanComponent implements OnInit {
             `Create RoutePlan uuid: ${body.uuid}`,
             this.currentUser()!.fullname
           ).subscribe({
-            next: () => {
-              this.toastr.success('Ajouter avec succès!', 'Success!');
-              this.isLoading.set(false);
-            }, error: (err) => {
-              this.isLoading.set(false);
-              this.toastr.error(`${err.error.message}`, 'Oupss!');
-              console.log(err);
-            }
+            next: () => {},
+            error: (err) => { console.log('logActivity error:', err); }
           });
+          this.toastr.success('Ajouter avec succès!', 'Success!');
+          this.isLoading.set(false);
         },
         error: (err) => {
           this.isLoading.set(false);
-          this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+          this.toastr.error(`${err?.error?.message || 'Une erreur s\'est produite'}`, 'Oupss!');
           console.log(err);
         }
       });
@@ -410,6 +560,13 @@ export class RouteplanComponent implements OnInit {
   onSubmitItem() {
     try {
       if (this.formGroup().valid) {
+        // Vérifier si ce POS est déjà dans le plan
+        const alreadyExists = this.dataListItem().some(item => item.pos_uuid === this.posuuId());
+        if (alreadyExists) {
+          this.toastr.warning('Ce POS est déjà dans le plan de route!', 'Doublon détecté');
+          return;
+        }
+
         this.isLoadingItem.set(true);
         var body: IRoutePlanItem = {
           routeplan_uuid: this.dataItem()!.uuid!,
@@ -418,30 +575,23 @@ export class RouteplanComponent implements OnInit {
         };
         this.routePlanItemService.create(body).subscribe({
           next: (res) => {
-            this.logActivity.activity(
-              'RoutePlanItem',
-              this.currentUser()!.uuid,
-              'created',
-              `Create RoutePlanItem uuid: ${res.data.uuid}`,
-              this.currentUser()!.fullname
-            ).subscribe({
-              next: () => {
-                this.formGroup().reset();
-                this.pos_uuid.nativeElement.value = '';
-                this.getAllRoutePlanItems(this.dataItem()!.uuid!);
-                this.getAllPos(this.currentUser()!);
-                this.toastr.success('POS Ajouter avec succès!', 'Success!');
-                this.isLoadingItem.set(false);
-              }, error: (err) => {
-                this.isLoadingItem.set(false);
-                this.toastr.error(`${err.error.message}`, 'Oupss!');
-                console.log(err);
-              }
-            });
+            this.formGroup().reset();
+            this.pos_uuid.nativeElement.value = '';
+            // Si online et plan serveur: recharger depuis l'API (données complètes)
+            // Si offline ou plan local (pending): recharger depuis le cache local
+            const isLocalPlan = (this.dataItem() as any)?.sync_status === 'pending';
+            if (!res.offline && !isLocalPlan) {
+              this.getAllRoutePlanItems(this.dataItem()!.uuid!);
+            } else {
+              this.getAllRoutePlanItemsLocal(this.dataItem()!.uuid!);
+            }
+            this.getAllPos(this.currentUser()!);
+            this.toastr.success('POS Ajouté avec succès!', 'Success!');
+            this.isLoadingItem.set(false);
           },
           error: (err) => {
             this.isLoadingItem.set(false);
-            this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+            this.toastr.error(`${err?.error?.message || 'Une erreur s\'est produite'}`, 'Oupss!');
             console.log(err);
           }
         });
@@ -471,15 +621,11 @@ export class RouteplanComponent implements OnInit {
               `Update RoutePlanItem uuid: ${body.uuid}`,
               this.currentUser()!.fullname
             ).subscribe({
-              next: () => {
-                this.toastr.success('POS Modifier avec succès!', 'Success!');
-                this.isLoadingItem.set(false);
-              }, error: (err) => {
-                this.isLoadingItem.set(false);
-                this.toastr.error(`${err.error.message}`, 'Oupss!');
-                console.log(err);
-              }
+              next: () => {},
+              error: (err) => { console.log('logActivity error:', err); }
             });
+            this.toastr.success('POS Modifier avec succès!', 'Success!');
+            this.isLoadingItem.set(false);
           },
           error: (err) => {
             this.isLoadingItem.set(false);
@@ -510,19 +656,14 @@ export class RouteplanComponent implements OnInit {
             `Delete RoutePlan uuid: ${this.uuidItem()}`,
             this.currentUser()!.fullname
           ).subscribe({
-            next: () => {
-              this.toastr.info('Supprimé avec succès!', 'Success!');
-              this.isLoading.set(false);
-            },
-            error: (err) => {
-              this.isLoading.set(false);
-              this.toastr.error(`${err.error.message}`, 'Oupss!');
-              console.log(err);
-            }
+            next: () => {},
+            error: (err) => { console.log('logActivity error:', err); }
           });
+          this.toastr.info('Supprimé avec succès!', 'Success!');
+          this.isLoading.set(false);
         },
         error: err => {
-          this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+          this.toastr.error(`${err?.error?.message || 'Une erreur s\'est produite'}`, 'Oupss!');
           console.log(err);
         }
       }
@@ -536,25 +677,23 @@ export class RouteplanComponent implements OnInit {
       .delete(this.uuidRoutePlanItem())
       .subscribe({
         next: () => {
-          this.logActivity.activity(
-            'RoutePlanItem',
-            this.currentUser()!.uuid,
-            'deleted',
-            `Delete RoutePlanItem uuid: ${this.uuidRoutePlanItem()}`,
-            this.currentUser()!.fullname
-          ).subscribe({
-            next: () => {
-              this.getAllRoutePlanItems(this.dataItem()!.uuid!);
-              this.getAllPos(this.currentUser()!);
-              this.toastr.info('POS Supprimé avec succès!', 'Success!');
-              this.isLoading.set(false);
-            },
-            error: (err) => {
-              this.isLoading.set(false);
-              this.toastr.error(`${err.error.message}`, 'Oupss!');
-              console.log(err);
-            }
-          });
+          // Le service supprime toujours localement en premier — recharger depuis le cache
+          this.getAllRoutePlanItemsLocal(this.dataItem()!.uuid!);
+          if (this.isOnline()) {
+            this.logActivity.activity(
+              'RoutePlanItem',
+              this.currentUser()!.uuid,
+              'deleted',
+              `Delete RoutePlanItem uuid: ${this.uuidRoutePlanItem()}`,
+              this.currentUser()!.fullname
+            ).subscribe({
+              next: () => {},
+              error: (err) => { console.log('logActivity error:', err); }
+            });
+          }
+          this.getAllPos(this.currentUser()!);
+          this.toastr.info('POS Supprimé avec succès!', 'Success!');
+          this.isLoading.set(false);
         },
         error: err => {
           this.toastr.error('Une erreur s\'est produite!', 'Oupss!');

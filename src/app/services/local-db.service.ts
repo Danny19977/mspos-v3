@@ -17,17 +17,49 @@ export class LocalDbService {
     token: string,
     userData: any
   ): Promise<void> {
-    // On supprime tous les anciens utilisateurs d'abord
-    await db.authUsers.clear();
+    try {
+      console.log('🔄 LocalDbService: Début de la sauvegarde dans IndexedDB');
+      console.log('   - Identifier:', identifier);
+      console.log('   - Token présent:', !!token);
+      console.log('   - UserData présent:', !!userData);
+      console.log('   - PasswordHash présent:', !!passwordHash);
 
-    // On sauvegarde uniquement l'utilisateur actuel
-    await db.authUsers.add({
-      identifier: identifier.toLowerCase(),
-      passwordHash,
-      token,
-      userData,
-      lastSync: new Date()
-    });
+      // On supprime tous les anciens utilisateurs d'abord
+      const countBefore = await db.authUsers.count();
+      console.log('   - Nombre d\'utilisateurs avant clear():', countBefore);
+      
+      await db.authUsers.clear();
+      console.log('✅ IndexedDB: Table authUsers vidée');
+
+      // On sauvegarde uniquement l'utilisateur actuel
+      const userToSave = {
+        identifier: identifier.toLowerCase(),
+        passwordHash,
+        token,
+        userData,
+        lastSync: new Date()
+      };
+      
+      console.log('🔄 Objet à sauvegarder:', {
+        ...userToSave,
+        passwordHash: '[HIDDEN]',
+        token: token.substring(0, 10) + '...'
+      });
+
+      const id = await db.authUsers.add(userToSave);
+      console.log('✅ IndexedDB: Utilisateur ajouté avec l\'id:', id);
+
+      // Vérification immédiate
+      const countAfter = await db.authUsers.count();
+      console.log('✅ Nombre d\'utilisateurs après add():', countAfter);
+
+      if (countAfter === 0) {
+        throw new Error('ERREUR: L\'utilisateur n\'a pas été sauvegardé dans IndexedDB!');
+      }
+    } catch (error) {
+      console.error('❌ LocalDbService: Erreur lors de la sauvegarde:', error);
+      throw error;
+    }
   }
 
   /**

@@ -195,4 +195,19 @@ export class PosformItemService extends ApiService {
     console.log(`📦 ${items.length} PosformItems récupérés pour posform ${posform_uuid}`);
     return items;
   }
+
+  /**
+   * Récupère les PosformItems d'un posform - OFFLINE FIRST
+   * Retourne immédiatement le cache local IndexedDB.
+   * Si en ligne, synchronise depuis le serveur en arrière-plan.
+   */
+  override getAllById(posformUuid: string): Observable<any> {
+    return from(this.getItemsByPosformUuid(posformUuid)).pipe(
+      switchMap(async (localItems) => ({
+        data: localItems,
+        total: localItems.length,
+        offline: !this.networkService.isOnline()
+      }))
+    );
+  }
 }

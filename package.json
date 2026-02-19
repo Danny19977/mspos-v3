@@ -8,6 +8,8 @@
     "start:fast": "ng serve --host 0.0.0.0 --port 4200 --open --poll=2000 --live-reload=false",
     "build": "ng build --configuration production",
     "build:analyze": "ng build --configuration production --stats-json && npx webpack-bundle-analyzer dist/mspos-v3/stats.json",
+    "test:offline": "npm run build && npx http-server dist/mspos-v3/browser -p 8080 -c-1 -o",
+    "serve:prod": "npx http-server dist/mspos-v3/browser -p 8080 -c-1 -o",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",

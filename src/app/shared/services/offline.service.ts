@@ -175,10 +175,16 @@ export class OfflineService {
           if (Array.isArray(data)) {
             await db.routePlanItems.bulkPut(data.map(item => ({
               ...item,
+              // Assurer que le champ indexé Dexie (sans 'e') est toujours renseigné
+              routplan_uuid: item.routplan_uuid || item.routeplan_uuid,
               sync_status: 'synced'
             })));
           } else {
-            await db.routePlanItems.put({ ...data, sync_status: 'synced' });
+            await db.routePlanItems.put({
+              ...data,
+              routplan_uuid: data.routplan_uuid || data.routeplan_uuid,
+              sync_status: 'synced'
+            });
           }
           break;
           
@@ -432,6 +438,13 @@ export class OfflineService {
    * Query route plan items from cache
    */
   private async queryRoutePlanItems(url: string): Promise<any> {
+    // Extraire l'UUID du routeplan depuis l'URL ex: /routeplan-items/all/${uuid}
+    const match = url.match(/\/all\/([a-f0-9-]{36})/i);
+    if (match && match[1]) {
+      const routeplanUuid = match[1];
+      const items = await db.routePlanItems.where('routplan_uuid').equals(routeplanUuid).toArray();
+      return { data: items };
+    }
     const items = await db.routePlanItems.toArray();
     return { data: items };
   }

@@ -18,6 +18,7 @@ import { IUser } from '../../../management/user/models/user.model';
 import { IPosForm } from '../../posform/models/posform.model';
 import { ReloadComponent } from '../../../../shared/components/reload/reload.component';
 import { CollapseHeaderComponent } from '../../../../shared/common/collapse-header/collapse-header.component';
+import { NetworkService } from '../../../../services/network.service';
 
 @Component({
   selector: 'app-pos-vente-list',
@@ -40,6 +41,7 @@ import { CollapseHeaderComponent } from '../../../../shared/common/collapse-head
 })
 export class PosVenteListComponent implements OnInit {
   isLoadingData = signal<boolean>(false);
+  isOnline = signal<boolean>(true);
 
   public routes = routes;
 
@@ -147,6 +149,9 @@ export class PosVenteListComponent implements OnInit {
   currentUser = signal<IUser>(null!);
   isLoading = signal<boolean>(false);
 
+  /** Flag pour éviter de re-télécharger tous les POS à chaque appel de fetchProducts */
+  private hasDownloadedAllPos = false;
+
   posTypes = signal<string[]>([
     'Gros',
     'Détail',
@@ -162,6 +167,7 @@ export class PosVenteListComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private toastr = inject(ToastrService);
   private destroyRef = inject(DestroyRef);
+  private networkService = inject(NetworkService);
 
 
   ngOnInit() {
@@ -178,6 +184,16 @@ export class PosVenteListComponent implements OnInit {
       // status: ['', Validators.required],
     }));
 
+
+    this.networkService.getNetworkStatus()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(online => {
+        const wasOffline = !this.isOnline();
+        this.isOnline.set(online);
+        if (wasOffline && online && this.currentUser()) {
+          this.fetchProducts(this.currentUser());
+        }
+      });
 
     this.authService.user()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -221,37 +237,69 @@ export class PosVenteListComponent implements OnInit {
 
 
   fetchProducts(currentUser: IUser) {
-    // Préparer les filtres pour l'envoi au backend
-    const filterParams = {
-      search: this.search(),
-      ...this.filters()
-    };
+    // Charger d'abord les données locales en attente de synchronisation
+    this.posVenteService.getLocalPendingPos(currentUser.uuid).then(localPending => {
+      // Enrichir chaque enregistrement local avec les objets territoire du currentUser
+      // (les records de l'IndexedDB n'ont que les UUIDs, pas les relations imbriquées)
+      const user = this.currentUser();
+      const enrichedLocal: IPos[] = localPending.map(pos => ({
+        ...pos,
+        sync_status: 'pending' as const,
+        Country: pos.Country || user.Country || undefined,
+        Province: pos.Province || user.Province || undefined,
+        Area: pos.Area || user.Area || undefined,
+        SubArea: pos.SubArea || user.SubArea || undefined,
+        Commune: pos.Commune || user.Commune || undefined,
+      }));
+      this.dataListLocal.set(enrichedLocal);
 
-    // Utiliser la nouvelle méthode avec filtres avancés
-    this.posVenteService.getPaginatedWithAdvancedFilters(
-      currentUser,
-      this.current_page(),
-      this.page_size(),
-      filterParams
-    ).pipe(takeUntilDestroyed(this.destroyRef))
-    .subscribe({
-      next: (res) => {
-        this.dataList.set(res.data);
-        this.originalDataList.set([...res.data]); // Conserver une copie des données originales
-        // Support both paginated response shape { pagination: { total_pages, total_records } }
-        // and flat cache shape { total, page, page_size }
-        const pagination = res.pagination;
-        this.total_pages.set(pagination?.total_pages ?? res.total_pages ?? 1);
-        this.total_records.set(pagination?.total_records ?? res.total ?? res.total_records ?? res.data.length);
-        this.dataSource.data = this.dataList();
-        this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
+      // Si hors ligne : afficher uniquement les données locales
+      if (!this.isOnline()) {
+        this.dataSource.data = enrichedLocal;
+        this.total_records.set(enrichedLocal.length);
         this.isLoadingData.set(false);
-      },
-      error: (err) => {
-        console.log('Erreur lors de la récupération des données:', err);
-        // Fallback vers les anciennes méthodes en cas d'erreur
-        this.fetchProductsOldMethod(currentUser);
+        return;
       }
+
+      // Télécharger l'intégralité des POS autorisés vers le cache local (une seule fois par session)
+      if (!this.hasDownloadedAllPos) {
+        this.hasDownloadedAllPos = true;
+        this.posVenteService.downloadAllCloudPosToLocal(currentUser);
+      }
+
+      // En ligne : récupérer les données serveur et les fusionner au-dessous des locales
+      const filterParams = {
+        search: this.search(),
+        ...this.filters()
+      };
+
+      this.posVenteService.getPaginatedWithAdvancedFilters(
+        currentUser,
+        this.current_page(),
+        this.page_size(),
+        filterParams
+      ).pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: (res) => {
+          // Exclure du serveur les enregistrements qui existent déjà en local (évite les doublons)
+          const serverData = (res.data as IPos[]).filter(s =>
+            !enrichedLocal.some(l => l.uuid === s.uuid || (l as any).temp_id === s.uuid)
+          );
+          const merged = [...enrichedLocal, ...serverData];
+          this.dataList.set(res.data);
+          this.originalDataList.set([...res.data]);
+          const pagination = res.pagination;
+          this.total_pages.set(pagination?.total_pages ?? res.total_pages ?? 1);
+          this.total_records.set(pagination?.total_records ?? res.total ?? res.total_records ?? merged.length);
+          this.dataSource.data = merged;
+          this.updateUniqueValues();
+          this.isLoadingData.set(false);
+        },
+        error: (err) => {
+          console.log('Erreur lors de la récupération des données:', err);
+          this.fetchProductsOldMethod(currentUser);
+        }
+      });
     });
   }
 
@@ -546,6 +594,39 @@ export class PosVenteListComponent implements OnInit {
 
   findValue(value: string) {
     this.uuidItem.set(value);
+
+    // Pour les enregistrements locaux (sync_status === 'pending'), l'UUID est un temp_id
+    // qui n'existe pas encore sur le serveur. On les charge directement depuis le dataSource.
+    const localRecord = this.dataSource.data.find(
+      p => p.uuid === value && p.sync_status === 'pending'
+    );
+
+    if (localRecord) {
+      this.dataItem.set(localRecord);
+      this.formGroup().patchValue({
+        name: localRecord.name,
+        shop: localRecord.shop,
+        postype: localRecord.postype,
+        gerant: localRecord.gerant,
+        avenue: localRecord.avenue,
+        quartier: localRecord.quartier,
+        reference: localRecord.reference,
+        telephone: localRecord.telephone,
+        country_uuid: localRecord.country_uuid,
+        province_uuid: localRecord.province_uuid,
+        area_uuid: localRecord.area_uuid,
+        sub_area_uuid: localRecord.sub_area_uuid,
+        commune_uuid: localRecord.commune_uuid,
+        user_uuid: localRecord.user_uuid,
+        asm_uuid: localRecord.asm_uuid,
+        sup_uuid: localRecord.sup_uuid,
+        dr_uuid: localRecord.dr_uuid,
+        cyclo_uuid: localRecord.cyclo_uuid,
+        status: localRecord.status,
+      });
+      return;
+    }
+
     this.posVenteService.get(this.uuidItem())
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(item => {

@@ -27,9 +27,9 @@ registerLocaleData(localeFr);
     BrowserModule,
     AppRoutingModule,
     
-    // Service Worker optimisé
+    // Service Worker optimisé - Activé uniquement en production pour les performances
     ServiceWorkerModule.register('ngsw-worker.js', {
-      enabled: !isDevMode(),
+      enabled: !isDevMode(), // Production seulement
       // Enregistrer le ServiceWorker quand l'application est stable
       // ou après 15 secondes (au lieu de 30) pour un démarrage plus rapide
       registrationStrategy: 'registerWhenStable:15000'

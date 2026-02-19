@@ -63,43 +63,45 @@
                         <div class="table-responsive custom-table">
                             <table mat-table [dataSource]="dataSource()" matSort (matSortChange)="sortData($event)"
                                 class="mat-elevation-z8">
-                                <!-- country Column -->
+                                <!-- Date + statut sync Column -->
                                 <ng-container matColumnDef="created">
                                     <th mat-header-cell *matHeaderCellDef> Date </th>
                                     <td mat-cell *matCellDef="let element">
-                                        {{ element.CreatedAt | date:'dd/MM/yyyy HH:mm' }}
+                                        <div class="d-flex flex-column gap-1">
+                                            <span>{{ element.CreatedAt | date:'dd/MM/yyyy HH:mm' }}</span>
+                                        </div>
                                     </td>
                                 </ng-container>
 
                                 <!-- country Column -->
                                 <ng-container matColumnDef="country">
                                     <th mat-header-cell *matHeaderCellDef> Pays </th>
-                                    <td mat-cell *matCellDef="let element"> {{element.Country.name }} </td>
+                                    <td mat-cell *matCellDef="let element"> {{element.Country?.name || '--'}} </td>
                                 </ng-container>
 
                                 <!-- province Column -->
                                 <ng-container matColumnDef="province">
                                     <th mat-header-cell *matHeaderCellDef> Province </th>
-                                    <td mat-cell *matCellDef="let element"> {{element.Province.name || '--' }} </td>
+                                    <td mat-cell *matCellDef="let element"> {{element.Province?.name || '--' }} </td>
                                 </ng-container>
 
                                 <!-- area Column -->
                                 <ng-container matColumnDef="area">
                                     <th mat-header-cell *matHeaderCellDef> Province </th>
-                                    <td mat-cell *matCellDef="let element"> {{element.Area.name || '--' }} </td>
+                                    <td mat-cell *matCellDef="let element"> {{element.Area?.name || '--' }} </td>
                                 </ng-container>
 
                                 <!-- subarea Column -->
                                 <ng-container matColumnDef="subarea">
                                     <th mat-header-cell *matHeaderCellDef> SubArea </th>
-                                    <td mat-cell *matCellDef="let element"> {{element.SubArea.name || '--' }} </td>
+                                    <td mat-cell *matCellDef="let element"> {{element.SubArea?.name || element.Subarea?.name || '--' }} </td>
                                 </ng-container>
 
                                 <!-- commune Column -->
                                 <ng-container matColumnDef="commune">
                                     <th mat-header-cell *matHeaderCellDef> Commune </th>
                                     <td mat-cell *matCellDef="let element">
-                                        {{element.Commune.name || '--' }}
+                                        {{element.Commune?.name || '--' }}
                                     </td>
                                 </ng-container>
 
@@ -166,7 +168,8 @@
                                 </ng-container>
                                 <!-- Table Header and Rows -->
                                 <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                                <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                                    [class.local-pending-row]="row.sync_status === 'pending'"></tr>
 
                                 <!-- Row shown when there is no matching data. -->
                                 <tr class="mat-row" *matNoDataRow>
@@ -265,25 +268,43 @@
 
         <!-- Pos List -->
         <div class="task-wrapper">
-            <a href="javascript:void(0);" class="task-accordion" data-bs-toggle="collapse" data-bs-target="#recent">
+            <a href="javascript:void(0);" class="task-accordion" data-bs-toggle="collapse" data-bs-target="#recent-local">
                 <h4>Vos Points de ventes a visiter
-                    <span *ngIf="dataItem()">{{ dataListItem()!.length }}</span>
+                    <span class="badge bg-primary rounded-pill ms-1">{{ dataListItem().length }}</span>
                 </h4>
             </a>
-            <div class="tasks-activity tasks collapse show" id="recent">
+            <div class="tasks-activity tasks collapse show" id="recent-local">
+                @if (isLoadingDataItem()) {
+                <div class="d-flex justify-content-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                </div>
+                } @else if (dataListItem().length === 0) {
+                <div class="text-center text-muted py-4">
+                    <i class="ti ti-map-pin-off fs-24 d-block mb-1"></i>
+                    <small>Aucun POS dans ce plan de route</small>
+                </div>
+                } @else {
                 <ul>
                     @for (item of dataListItem(); track $index) {
                     <li class="task-wrap pending">
                         <div class="task-info">
-                            <!-- <span class="task-icon"><i class="ti ti-grip-vertical"></i></span> -->
                             <div class="task-checkbox">
                                 <label class="checkboxs">
                                     <input type="checkbox" [checked]="item.status" readonly disabled />
                                     <span class="checkmarks"></span>
                                 </label>
                             </div>
-                            <p>{{ item.Pos!.shop }} | {{ item.Pos!.postype }}</p> <br>
-                            <p>{{ item.Pos!.name }} | {{ item.Pos!.gerant }}</p>
+                            <div>
+                                <p class="mb-0">{{ item.Pos?.shop || '--' }} | {{ item.Pos?.postype || '--' }}</p>
+                                <p class="mb-0">{{ item.Pos?.name || item.pos_uuid }} | {{ item.Pos?.gerant || '--' }}</p>
+                                @if ($any(item).sync_status === 'pending') {
+                                <span class="badge bg-warning text-dark mt-1" style="font-size:10px;">
+                                    <i class="ti ti-clock"></i> En attente de sync
+                                </span>
+                                }
+                            </div>
                         </div>
                         <div class="task-actions">
                             <ul>
@@ -308,6 +329,7 @@
                     </li>
                     }
                 </ul>
+                }
             </div>
         </div>
         <!-- /Pos List -->
@@ -330,7 +352,7 @@
         <!-- Pos List -->
         @if (dataItem()) {
         <div class="task-wrapper">
-            <a href="javascript:void(0);" class="task-accordion" data-bs-toggle="collapse" data-bs-target="#recent">
+            <a href="javascript:void(0);" class="task-accordion" data-bs-toggle="collapse" data-bs-target="#recent-api">
                 <h4>Vos POS
                     <span> {{ getRoutePlanItemCount(dataListItem()) }} </span>
                     <span class="bg-blue text-white rounded-pill px-2 ms-2">
@@ -338,7 +360,19 @@
                     </span>
                 </h4>
             </a>
-            <div class="tasks-activity tasks collapse show" id="recent">
+            <div class="tasks-activity tasks collapse show" id="recent-api">
+                @if (isLoadingDataItem()) {
+                <div class="d-flex justify-content-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Chargement...</span>
+                    </div>
+                </div>
+                } @else if (dataListItem().length === 0) {
+                <div class="text-center text-muted py-4">
+                    <i class="ti ti-map-pin-off fs-24 d-block mb-1"></i>
+                    <small>Aucun POS dans ce plan de route</small>
+                </div>
+                } @else {
                 <ul>
                     @for (item of dataListItem(); track $index) {
                     <li class="task-wrap pending">
@@ -350,8 +384,15 @@
                                     <span class="checkmarks"></span>
                                 </label>
                             </div>
-                            <p>{{ item.Pos!.shop }} | {{ item.Pos!.postype }}</p> <br>
-                            <p>{{ item.Pos!.name }} | {{ item.Pos!.gerant }}</p>
+                            <div>
+                                <p class="mb-0">{{ item.Pos?.shop || '--' }} | {{ item.Pos?.postype || '--' }}</p>
+                                <p class="mb-0">{{ item.Pos?.name || item.pos_uuid }} | {{ item.Pos?.gerant || '--' }}</p>
+                                @if ($any(item).sync_status === 'pending') {
+                                <span class="badge bg-warning text-dark mt-1" style="font-size:10px;">
+                                    <i class="ti ti-clock"></i> En attente de sync
+                                </span>
+                                }
+                            </div>
                         </div>
                         <div class="task-actions">
                             <ul>
@@ -376,6 +417,7 @@
                     </li>
                     }
                 </ul>
+                }
             </div>
         </div>
         }

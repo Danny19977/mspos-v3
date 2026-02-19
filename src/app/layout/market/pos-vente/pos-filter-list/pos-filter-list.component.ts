@@ -23,6 +23,7 @@ import { IPosForm } from '../../posform/models/posform.model';
 import { CommuneService } from '../../../territories/commune/commune.service';
 import { ReloadComponent } from '../../../../shared/components/reload/reload.component';
 import { CollapseHeaderComponent } from '../../../../shared/common/collapse-header/collapse-header.component';
+import { NetworkService } from '../../../../services/network.service';
 
 @Component({
   selector: 'app-pos-filter-list',
@@ -46,6 +47,7 @@ import { CollapseHeaderComponent } from '../../../../shared/common/collapse-head
 export class PosFilterListComponent implements OnInit {
   // Signals
   isLoadingData = signal(false);
+  isOnline = signal<boolean>(true);
   routes = signal(routes);
   dataList = signal<IPos[]>([]);
   dataListLocal = signal<IPos[]>([]);
@@ -144,6 +146,9 @@ export class PosFilterListComponent implements OnInit {
   currentUser = signal<IUser>(null!);
   isLoading = signal(false);
 
+  /** Flag pour éviter de re-télécharger tous les POS à chaque appel de fetchProducts */
+  private hasDownloadedAllPos = false;
+
   posTypes: string[] = [
     'Gros',
     'Détail',
@@ -169,6 +174,7 @@ export class PosFilterListComponent implements OnInit {
   private cdr = inject(ChangeDetectorRef);
   private toastr = inject(ToastrService);
   private destroyRef = inject(DestroyRef);
+  private networkService = inject(NetworkService);
 
 
   ngOnInit() {
@@ -183,6 +189,16 @@ export class PosFilterListComponent implements OnInit {
       telephone: ['', Validators.required],
       // status: ['', Validators.required],
     }));
+
+    this.networkService.getNetworkStatus()
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(online => {
+        const wasOffline = !this.isOnline();
+        this.isOnline.set(online);
+        if (wasOffline && online && this.currentUser()) {
+          this.fetchProducts(this.name(), this.territoire_uuid());
+        }
+      });
 
     this.isLoadingData.set(true);
     this.route.params.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(params => {
@@ -227,172 +243,156 @@ export class PosFilterListComponent implements OnInit {
 
 
   fetchProducts(name: string, territoire_uuid: string) {
-    if (name == "country" || name == 'Manager' || name == 'Support') {
-      this.countryService.get(this.territoire_uuid()).subscribe(res => {
-        this.territoire.set(res.data);
-        // Préparer les filtres pour l'envoi au backend
-        const filterParams = {
-          search: this.search(),
-          ...this.filters()
-        };
+    // Charger d'abord les données locales en attente de synchronisation
+    const userId = this.currentUser()?.uuid ?? '';
+    this.posVenteService.getLocalPendingPos(userId).then(localPending => {
+      // Enrichir chaque enregistrement local avec les objets territoire du currentUser
+      // (les records de l'IndexedDB n'ont que les UUIDs, pas les relations imbriquées)
+      const user = this.currentUser();
+      const enrichedLocal: IPos[] = localPending.map(pos => ({
+        ...pos,
+        sync_status: 'pending' as const,
+        Country: pos.Country || user?.Country || undefined,
+        Province: pos.Province || user?.Province || undefined,
+        Area: pos.Area || user?.Area || undefined,
+        SubArea: pos.SubArea || user?.SubArea || undefined,
+        Commune: pos.Commune || user?.Commune || undefined,
+      }));
+      this.dataListLocal.set(enrichedLocal);
 
-        // Utiliser la nouvelle méthode avec filtres avancés
-        this.posVenteService.getPaginatedWithAdvancedFilters2(
-          name,
-          territoire_uuid,
-          this.current_page(),
-          this.page_size(),
-          filterParams
-        ).subscribe({
-          next: (res) => {
-            this.dataList.set(res.data);
-            this.originalDataList.set([...res.data]); // Conserver une copie des données originales
-            this.total_pages.set(res.pagination.total_pages);
-            this.total_records.set(res.pagination.total_records);
-            this.dataSource.data = this.dataList();
-            this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
-            this.isLoadingData.set(false);
-          },
-          error: (err) => {
-            console.log('Erreur lors de la récupération des données:', err);
-            // Fallback vers les anciennes méthodes en cas d'erreur
-            this.fetchProductsOldMethod(name, territoire_uuid);
-          }
-        });
-      });
-    } else if (name == 'province' || name == 'ASM') {
-      this.provinceService.get(this.territoire_uuid()).subscribe(res => {
-        this.territoire.set(res.data);
-        // Préparer les filtres pour l'envoi au backend
-        const filterParams = {
-          search: this.search(),
-          ...this.filters()
-        };
+      // Si hors ligne : afficher uniquement les données locales
+      if (!this.isOnline()) {
+        this.dataSource.data = enrichedLocal;
+        this.total_records.set(enrichedLocal.length);
+        this.isLoadingData.set(false);
+        return;
+      }
 
-        // Utiliser la nouvelle méthode avec filtres avancés
-        this.posVenteService.getPaginatedWithAdvancedFilters2(
-          name,
-          territoire_uuid,
-          this.current_page(),
-          this.page_size(),
-          filterParams
-        ).subscribe({
-          next: (res) => {
-            this.dataList.set(res.data);
-            this.originalDataList.set([...res.data]); // Conserver une copie des données originales
-            this.total_pages.set(res.pagination.total_pages);
-            this.total_records.set(res.pagination.total_records);
-            this.dataSource.data = this.dataList();
-            this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
-            this.isLoadingData.set(false);
-          },
-          error: (err) => {
-            console.log('Erreur lors de la récupération des données:', err);
-            // Fallback vers les anciennes méthodes en cas d'erreur
-            this.fetchProductsOldMethod(name, territoire_uuid);
-          }
-        });
-      });
-    } else if (name == 'area' || name == 'Supervisor') {
-      this.areaService.get(this.territoire_uuid()).subscribe(res => {
-        this.territoire.set(res.data);
-        // Préparer les filtres pour l'envoi au backend
-        const filterParams = {
-          search: this.search(),
-          ...this.filters()
-        };
+      // Télécharger l'intégralité des POS du territoire vers le cache local (une seule fois par session)
+      if (!this.hasDownloadedAllPos) {
+        this.hasDownloadedAllPos = true;
+        this.posVenteService.downloadAllCloudPosByTerritoryToLocal(name, territoire_uuid);
+      }
 
-        // Utiliser la nouvelle méthode avec filtres avancés
-        this.posVenteService.getPaginatedWithAdvancedFilters2(
-          name,
-          territoire_uuid,
-          this.current_page(),
-          this.page_size(),
-          filterParams
-        ).subscribe({
-          next: (res) => {
-            this.dataList.set(res.data);
-            this.originalDataList.set([...res.data]); // Conserver une copie des données originales
-            this.total_pages.set(res.pagination.total_pages);
-            this.total_records.set(res.pagination.total_records);
-            this.dataSource.data = this.dataList();
-            this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
-            this.isLoadingData.set(false);
-          },
-          error: (err) => {
-            console.log('Erreur lors de la récupération des données:', err);
-            // Fallback vers les anciennes méthodes en cas d'erreur
-            this.fetchProductsOldMethod(name, territoire_uuid);
-          }
-        });
-      });
-    } else if (name == 'subarea' || name == 'DR') {
-      this.subAreaService.get(this.territoire_uuid()).subscribe(res => {
-        this.territoire.set(res.data);
-        // Préparer les filtres pour l'envoi au backend
-        const filterParams = {
-          search: this.search(),
-          ...this.filters()
-        };
+      const mergeWithLocal = (serverData: IPos[]) => {
+        const filtered = serverData.filter(s =>
+          !enrichedLocal.some(l => l.uuid === s.uuid || (l as any).temp_id === s.uuid)
+        );
+        return [...enrichedLocal, ...filtered];
+      };
 
-        // Utiliser la nouvelle méthode avec filtres avancés
-        this.posVenteService.getPaginatedWithAdvancedFilters2(
-          name,
-          territoire_uuid,
-          this.current_page(),
-          this.page_size(),
-          filterParams
-        ).subscribe({
-          next: (res) => {
-            this.dataList.set(res.data);
-            this.originalDataList.set([...res.data]); // Conserver une copie des données originales
-            this.total_pages.set(res.pagination.total_pages);
-            this.total_records.set(res.pagination.total_records);
-            this.dataSource.data = this.dataList();
-            this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
-            this.isLoadingData.set(false);
-          },
-          error: (err) => {
-            console.log('Erreur lors de la récupération des données:', err);
-            // Fallback vers les anciennes méthodes en cas d'erreur
-            this.fetchProductsOldMethod(name, territoire_uuid);
-          }
+      if (name == "country" || name == 'Manager' || name == 'Support') {
+        this.countryService.get(this.territoire_uuid()).subscribe(res => {
+          this.territoire.set(res.data);
+          const filterParams = { search: this.search(), ...this.filters() };
+          this.posVenteService.getPaginatedWithAdvancedFilters2(
+            name, territoire_uuid, this.current_page(), this.page_size(), filterParams
+          ).subscribe({
+            next: (res) => {
+              this.dataList.set(res.data);
+              this.originalDataList.set([...res.data]);
+              this.total_pages.set(res.pagination.total_pages);
+              this.total_records.set(res.pagination.total_records);
+              this.dataSource.data = mergeWithLocal(res.data);
+              this.updateUniqueValues();
+              this.isLoadingData.set(false);
+            },
+            error: (err) => {
+              console.log('Erreur lors de la récupération des données:', err);
+              this.fetchProductsOldMethod(name, territoire_uuid);
+            }
+          });
         });
-      });
-    } else if (name == 'commune' || name == 'Cyclo') {
-      this.communeService.get(this.territoire_uuid()).subscribe(res => {
-        this.territoire.set(res.data);
-        // Préparer les filtres pour l'envoi au backend
-        const filterParams = {
-          search: this.search(),
-          ...this.filters()
-        };
-
-        // Utiliser la nouvelle méthode avec filtres avancés
-        this.posVenteService.getPaginatedWithAdvancedFilters2(
-          name,
-          territoire_uuid,
-          this.current_page(),
-          this.page_size(),
-          filterParams
-        ).subscribe({
-          next: (res) => {
-            this.dataList.set(res.data);
-            this.originalDataList.set([...res.data]); // Conserver une copie des données originales
-            this.total_pages.set(res.pagination.total_pages);
-            this.total_records.set(res.pagination.total_records);
-            this.dataSource.data = this.dataList();
-            this.updateUniqueValues(); // Mettre à jour les valeurs uniques pour les filtres
-            this.isLoadingData.set(false);
-          },
-          error: (err) => {
-            console.log('Erreur lors de la récupération des données:', err);
-            // Fallback vers les anciennes méthodes en cas d'erreur
-            this.fetchProductsOldMethod(name, territoire_uuid);
-          }
+      } else if (name == 'province' || name == 'ASM') {
+        this.provinceService.get(this.territoire_uuid()).subscribe(res => {
+          this.territoire.set(res.data);
+          const filterParams = { search: this.search(), ...this.filters() };
+          this.posVenteService.getPaginatedWithAdvancedFilters2(
+            name, territoire_uuid, this.current_page(), this.page_size(), filterParams
+          ).subscribe({
+            next: (res) => {
+              this.dataList.set(res.data);
+              this.originalDataList.set([...res.data]);
+              this.total_pages.set(res.pagination.total_pages);
+              this.total_records.set(res.pagination.total_records);
+              this.dataSource.data = mergeWithLocal(res.data);
+              this.updateUniqueValues();
+              this.isLoadingData.set(false);
+            },
+            error: (err) => {
+              console.log('Erreur lors de la récupération des données:', err);
+              this.fetchProductsOldMethod(name, territoire_uuid);
+            }
+          });
         });
-      });
-    }
+      } else if (name == 'area' || name == 'Supervisor') {
+        this.areaService.get(this.territoire_uuid()).subscribe(res => {
+          this.territoire.set(res.data);
+          const filterParams = { search: this.search(), ...this.filters() };
+          this.posVenteService.getPaginatedWithAdvancedFilters2(
+            name, territoire_uuid, this.current_page(), this.page_size(), filterParams
+          ).subscribe({
+            next: (res) => {
+              this.dataList.set(res.data);
+              this.originalDataList.set([...res.data]);
+              this.total_pages.set(res.pagination.total_pages);
+              this.total_records.set(res.pagination.total_records);
+              this.dataSource.data = mergeWithLocal(res.data);
+              this.updateUniqueValues();
+              this.isLoadingData.set(false);
+            },
+            error: (err) => {
+              console.log('Erreur lors de la récupération des données:', err);
+              this.fetchProductsOldMethod(name, territoire_uuid);
+            }
+          });
+        });
+      } else if (name == 'subarea' || name == 'DR') {
+        this.subAreaService.get(this.territoire_uuid()).subscribe(res => {
+          this.territoire.set(res.data);
+          const filterParams = { search: this.search(), ...this.filters() };
+          this.posVenteService.getPaginatedWithAdvancedFilters2(
+            name, territoire_uuid, this.current_page(), this.page_size(), filterParams
+          ).subscribe({
+            next: (res) => {
+              this.dataList.set(res.data);
+              this.originalDataList.set([...res.data]);
+              this.total_pages.set(res.pagination.total_pages);
+              this.total_records.set(res.pagination.total_records);
+              this.dataSource.data = mergeWithLocal(res.data);
+              this.updateUniqueValues();
+              this.isLoadingData.set(false);
+            },
+            error: (err) => {
+              console.log('Erreur lors de la récupération des données:', err);
+              this.fetchProductsOldMethod(name, territoire_uuid);
+            }
+          });
+        });
+      } else if (name == 'commune' || name == 'Cyclo') {
+        this.communeService.get(this.territoire_uuid()).subscribe(res => {
+          this.territoire.set(res.data);
+          const filterParams = { search: this.search(), ...this.filters() };
+          this.posVenteService.getPaginatedWithAdvancedFilters2(
+            name, territoire_uuid, this.current_page(), this.page_size(), filterParams
+          ).subscribe({
+            next: (res) => {
+              this.dataList.set(res.data);
+              this.originalDataList.set([...res.data]);
+              this.total_pages.set(res.pagination.total_pages);
+              this.total_records.set(res.pagination.total_records);
+              this.dataSource.data = mergeWithLocal(res.data);
+              this.updateUniqueValues();
+              this.isLoadingData.set(false);
+            },
+            error: (err) => {
+              console.log('Erreur lors de la récupération des données:', err);
+              this.fetchProductsOldMethod(name, territoire_uuid);
+            }
+          });
+        });
+      }
+    });
   }
 
   // Méthode de fallback avec l'ancienne logique
@@ -665,6 +665,39 @@ export class PosFilterListComponent implements OnInit {
 
   findValue(value: string) {
     this.uuidItem.set(value);
+
+    // Pour les enregistrements locaux (sync_status === 'pending'), l'UUID est un temp_id
+    // qui n'existe pas encore sur le serveur. On les charge directement depuis le dataSource.
+    const localRecord = this.dataSource.data.find(
+      p => p.uuid === value && p.sync_status === 'pending'
+    );
+
+    if (localRecord) {
+      this.dataItem.set(localRecord);
+      this.formGroup().patchValue({
+        name: localRecord.name,
+        shop: localRecord.shop,
+        postype: localRecord.postype,
+        gerant: localRecord.gerant,
+        avenue: localRecord.avenue,
+        quartier: localRecord.quartier,
+        reference: localRecord.reference,
+        telephone: localRecord.telephone,
+        country_uuid: localRecord.country_uuid,
+        province_uuid: localRecord.province_uuid,
+        area_uuid: localRecord.area_uuid,
+        sub_area_uuid: localRecord.sub_area_uuid,
+        commune_uuid: localRecord.commune_uuid,
+        user_uuid: localRecord.user_uuid,
+        asm_uuid: localRecord.asm_uuid,
+        sup_uuid: localRecord.sup_uuid,
+        dr_uuid: localRecord.dr_uuid,
+        cyclo_uuid: localRecord.cyclo_uuid,
+        status: localRecord.status,
+      });
+      return;
+    }
+
     this.posVenteService.get(this.uuidItem()).subscribe(item => {
       this.dataItem.set(item.data);
       this.formGroup().patchValue({

@@ -1,12 +1,13 @@
 import { Injectable, Injector } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, from, throwError, of } from 'rxjs';
-import { switchMap, catchError } from 'rxjs/operators';
+import { switchMap, catchError, tap } from 'rxjs/operators';
 import { ApiService } from '../../../shared/services/api.service';
 import { environment } from '../../../../environments/environment';
 import { NetworkService } from '../../../services/network.service';
 import { db } from '../../../shared/services/db';
 import { IBrand } from './models/brand.model';
+import { IUser } from '../../management/user/models/user.model';
 
 /**
  * BrandService - Mode ONLINE ONLY
@@ -156,6 +157,167 @@ export class BrandService extends ApiService {
         return response;
       })
     );
+  }
+
+  /**
+   * Récupère les Brands pour l'utilisateur - OFFLINE FIRST
+   * Retourne immédiatement depuis le cache local IndexedDB.
+   * Si en ligne, synchronise depuis le serveur en arrière-plan.
+   * À utiliser dans PostformListComponent à la place de getAllByASM().
+   */
+  getBrandsOfflineFirst(provinceUuid?: string): Observable<any> {
+    return from(
+      provinceUuid
+        ? this.getFromLocalCacheByProvince(provinceUuid, '')
+        : this.getFromLocalCache('')
+    ).pipe(
+      tap(() => {
+        if (this.networkService.isOnline()) {
+          if (provinceUuid) {
+            this.syncBrandsByProvinceInBackground(provinceUuid);
+          } else {
+            this.syncAllBrandsInBackground();
+          }
+        }
+      })
+    );
+  }
+
+  /**
+   * Synchronise les Brands d'une province depuis le serveur en arrière-plan
+   */
+  private syncBrandsByProvinceInBackground(provinceUuid: string): void {
+    this.http.get<any>(`${this.endpoint}/all/provinces/${provinceUuid}`).subscribe({
+      next: (response: any) => {
+        const data: any[] = response?.data ?? [];
+        if (data.length) {
+          this.updateLocalCache(data).then(() =>
+            console.log(`🔄 [syncBrandsByProvinceInBackground] ${data.length} Brands synchronisés`)
+          );
+        }
+      },
+      error: (err: any) => {
+        console.warn('⚠️ Sync brands province arrière-plan (non bloquant):', err.message);
+      }
+    });
+  }
+
+  /**
+   * Synchronise tous les Brands depuis le serveur en arrière-plan
+   */
+  private syncAllBrandsInBackground(): void {
+    this.http.get<any>(`${this.endpoint}/all`).subscribe({
+      next: (response: any) => {
+        const data: any[] = response?.data ?? [];
+        if (data.length) {
+          this.updateLocalCache(data).then(() =>
+            console.log(`🔄 [syncAllBrandsInBackground] ${data.length} Brands synchronisés`)
+          );
+        }
+      },
+      error: (err: any) => {
+        console.warn('⚠️ Sync brands arrière-plan (non bloquant):', err.message);
+      }
+    });
+  }
+
+  /**
+   * Télécharge TOUS les Brands autorisés depuis le cloud vers le cache local IndexedDB.
+   * S'exécute page par page en arrière-plan sans bloquer l'interface.
+   * Respecte les restrictions de territoire basées sur le rôle de l'utilisateur connecté.
+   */
+  downloadAllCloudBrandsToLocal(currentUser: IUser): void {
+    if (!this.networkService.isOnline()) return;
+
+    const PAGE_SIZE = 200;
+
+    const buildUrl = (page: number): string => {
+      if (currentUser.role === 'ASM') {
+        const params = new HttpParams()
+          .set('page', page.toString())
+          .set('page_size', PAGE_SIZE.toString());
+        return `${this.endpoint}/all/paginate/province/${currentUser.province_uuid}?${params.toString()}`;
+      } else {
+        const params = new HttpParams()
+          .set('page', page.toString())
+          .set('limit', PAGE_SIZE.toString());
+        return `${this.endpoint}/all/paginate?${params.toString()}`;
+      }
+    };
+
+    const downloadPage = (page: number) => {
+      this.http.get<any>(buildUrl(page)).subscribe({
+        next: (response: any) => {
+          if (response?.data?.length) {
+            this.updateLocalCache(response.data).then(() => {
+              console.log(`📥 [downloadAllCloudBrandsToLocal] Page ${page}: ${response.data.length} Brands stockés localement`);
+              const totalPages: number = response.pagination?.total_pages ?? 1;
+              if (page < totalPages) {
+                downloadPage(page + 1);
+              } else {
+                console.log(`✅ [downloadAllCloudBrandsToLocal] Téléchargement terminé — ${response.pagination?.total_records ?? '?'} Brands autorisés en cache local`);
+              }
+            });
+          }
+        },
+        error: (error: any) => {
+          console.warn(`⚠️ [downloadAllCloudBrandsToLocal] Erreur page ${page} (non bloquant):`, error.message);
+        }
+      });
+    };
+
+    downloadPage(1);
+  }
+
+  /**
+   * Télécharge TOUS les Brands d'un territoire depuis le cloud vers le cache local IndexedDB.
+   * S'exécute page par page en arrière-plan sans bloquer l'interface.
+   * Utilisé par BrandFilterListComponent qui navigue par territoire (country/province).
+   */
+  downloadAllCloudBrandsByTerritoryToLocal(name: string, territoire_uuid: string): void {
+    if (!this.networkService.isOnline()) return;
+
+    const PAGE_SIZE = 200;
+
+    const buildUrl = (page: number): string => {
+      const params = new HttpParams()
+        .set('page', page.toString())
+        .set('page_size', PAGE_SIZE.toString());
+
+      if (name === 'country') {
+        return `${this.endpoint}/all/paginate/country/${territoire_uuid}?${params.toString()}`;
+      } else if (name === 'province') {
+        return `${this.endpoint}/all/paginate/province/${territoire_uuid}?${params.toString()}`;
+      } else {
+        const globalParams = new HttpParams()
+          .set('page', page.toString())
+          .set('limit', PAGE_SIZE.toString());
+        return `${this.endpoint}/all/paginate?${globalParams.toString()}`;
+      }
+    };
+
+    const downloadPage = (page: number) => {
+      this.http.get<any>(buildUrl(page)).subscribe({
+        next: (response: any) => {
+          if (response?.data?.length) {
+            this.updateLocalCache(response.data).then(() => {
+              console.log(`📥 [downloadAllCloudBrandsByTerritoryToLocal] Page ${page}: ${response.data.length} Brands stockés localement`);
+              const totalPages: number = response.pagination?.total_pages ?? 1;
+              if (page < totalPages) {
+                downloadPage(page + 1);
+              } else {
+                console.log(`✅ [downloadAllCloudBrandsByTerritoryToLocal] Téléchargement terminé — ${response.pagination?.total_records ?? '?'} Brands du territoire "${name}/${territoire_uuid}" en cache local`);
+              }
+            });
+          }
+        },
+        error: (error: any) => {
+          console.warn(`⚠️ [downloadAllCloudBrandsByTerritoryToLocal] Erreur page ${page} (non bloquant):`, error.message);
+        }
+      });
+    };
+
+    downloadPage(1);
   }
 
   /**

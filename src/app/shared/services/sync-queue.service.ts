@@ -5,6 +5,7 @@ import { db } from './db';
 import { QueuedOperation } from './queue-operation.interface';
 import { v4 as uuidv4 } from 'uuid';
 import { environment } from '../../../environments/environment';
+import { NetworkService } from '../../services/network.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,7 +20,7 @@ export class SyncQueueService {
   private _lastSyncTime$ = new BehaviorSubject<Date | null>(null);
   public lastSyncTime$ = this._lastSyncTime$.asObservable();
 
-  constructor(private http: HttpClient) {
+  constructor(private http: HttpClient, private networkService: NetworkService) {
     this.updatePendingCount();
   }
 
@@ -77,6 +78,11 @@ export class SyncQueueService {
   async processQueue(): Promise<{ success: number; failed: number }> {
     if (this._isSyncing$.value) {
       console.log('⏸️ Sync already in progress');
+      return { success: 0, failed: 0 };
+    }
+
+    if (!this.networkService.isOnline()) {
+      console.log('📴 Hors ligne, synchronisation reportée');
       return { success: 0, failed: 0 };
     }
 

@@ -44,6 +44,10 @@ export class AppDB extends Dexie {
       syncQueue: '++id, operationId, entityType, operation, status, timestamp, userId, retryCount',
       authUsers: '++id, identifier',
     });
+    // v7 : ajout de uuid comme index sur la table pos
+    this.version(7).stores({
+      pos: '++id, uuid, name, shop, postype, gerant, avenue, quartier, reference, telephone, country_uuid, country_name, province_uuid, province_name, area_uuid, area_name, sub_area_uuid, subarea_name, commune_uuid, commune_name, asm_uuid, sup_uuid, dr_uuid, cyclo_uuid, user_uuid, user_fullname, status, signature, CreatedAt, UpdatedAt',
+    });
   }
 }
 

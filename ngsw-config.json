@@ -13,17 +13,26 @@
           "/index.html",
           "/manifest.webmanifest",
           "/*.css",
-          "/*.js"
+          "/*.js",
+          "/img/logo.png",
+          "/img/logo.svg",
+          "/offline.html"
+        ],
+        "urls": [
+          "https://fonts.googleapis.com/**",
+          "https://fonts.gstatic.com/**"
         ]
       }
     },
     {
       "name": "assets",
-      "installMode": "lazy",
+      "installMode": "prefetch",
       "updateMode": "prefetch",
       "resources": {
         "files": [
-          "/**/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif|otf|ttf|woff|woff2)"
+          "/img/**/*.(svg|cur|jpg|jpeg|png|apng|webp|avif|gif)",
+          "/fonts/**/*.(otf|ttf|woff|woff2)",
+          "/icons/**/*"
         ]
       }
     }

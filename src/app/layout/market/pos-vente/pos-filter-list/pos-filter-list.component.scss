@@ -1,0 +1,87 @@
+// ============================================================
+// Styles pour l'affichage des données locales (mode offline)
+// ============================================================
+
+.local-data-banner {
+  margin-bottom: 12px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid #f59e0b;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.25);
+
+  .local-data-banner-inner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    flex-wrap: wrap;
+  }
+
+  .local-banner-icon {
+    font-size: 20px;
+    color: #d97706;
+    flex-shrink: 0;
+  }
+
+  .local-banner-text {
+    flex: 1;
+    font-size: 13.5px;
+    color: #92400e;
+    line-height: 1.4;
+  }
+
+  .local-banner-offline {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 10px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 20px;
+    vertical-align: middle;
+  }
+
+  .local-banner-syncing {
+    display: inline-block;
+    margin-left: 8px;
+    padding: 2px 10px;
+    background: #3b82f6;
+    color: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    border-radius: 20px;
+    vertical-align: middle;
+
+    &::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 4px;
+    }
+  }
+}
+
+::ng-deep .local-pending-row {
+  background: linear-gradient(90deg, #fffbeb 0%, #fef9ec 100%) !important;
+  border-left: 4px solid #f59e0b !important;
+
+  td {
+    color: #78350f;
+  }
+
+  &:hover {
+    background: linear-gradient(90deg, #fef3c7 0%, #fef0c0 100%) !important;
+  }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

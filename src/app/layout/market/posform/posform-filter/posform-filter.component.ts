@@ -28,6 +28,7 @@ import { ProvinceService } from '../../../territories/province/province.service'
 import { AreaService } from '../../../territories/areas/area.service';
 import { SubareaService } from '../../../territories/subarea/subarea.service';
 import { CommuneService } from '../../../territories/commune/commune.service';
+import { NetworkService } from '../../../../services/network.service';
 
 
 @Component({
@@ -55,6 +56,7 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   // Table
   // Table
   displayedColumns: string[] = [
+    'sync_status',
     'createdat',
     'pos',
     'price',
@@ -200,6 +202,8 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   private logActivity = inject(LogsService);
   private toastr = inject(ToastrService);
   private cdr = inject(ChangeDetectorRef);
+  private readonly networkService = inject(NetworkService);
+  isOnline = signal(navigator.onLine);
 
   constructor() {
     this.geolocation$.subscribe((position) => {
@@ -246,6 +250,16 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
 
           this.onChanges();
 
+          // Reconnect handler: refresh data when coming back online
+          this.networkService.getNetworkStatus().subscribe(online => {
+            this.isOnline.set(online);
+            if (online) {
+              this.getAllRoutePlans();
+              this.getAllBrand();
+              this.getDataList(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
+            }
+          });
+
           this.geolocation$.subscribe((position) => {
             this.latitude.set(position.coords.latitude);
             this.longitude.set(position.coords.longitude);
@@ -290,12 +304,11 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
     const user = this.currentUser();
     if (!user) return;
 
-    this.routePlanService.getByUserUUID(user.uuid).subscribe({
-      next: (res) => {
-        this.routePlan.set(res.data);
-        const plan = this.routePlan();
+    this.routePlanService.getTodayRoutePlanOfflineFirst(user.uuid).subscribe({
+      next: (plan) => {
+        this.routePlan.set(plan);
         console.log('Route Plan:', plan);
-        if (plan && plan.uuid != '') {
+        if (plan && plan.uuid) {
           this.routePlanItemService.getAllById(plan.uuid!).subscribe({
             next: (r) => {
               this.routePlanItemList.set(r.data);
@@ -368,13 +381,13 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
 
   // Pour obtenir la liste des marques visitées
   getAllBrand(): void {
-    const filterValue = this.brand_uuid?.nativeElement.value.toLowerCase();
+    const filterValue = this.brand_uuid?.nativeElement.value.toLowerCase() ?? '';
     this.isloadBrand.set(true);
 
     const user = this.currentUser();
     if (!user) return;
 
-    this.brandService.getAllByASM(user.province_uuid).subscribe({
+    this.brandService.getBrandsOfflineFirst(user.province_uuid).subscribe({
       next: (res) => {
         this.brandList.set(res.data);
 
@@ -388,7 +401,7 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
         );
         this.brandListFilter.set(filteredList);
 
-        const filteredOpts = filteredList.filter(o => o.name!.toLowerCase().includes(filterValue));
+        const filteredOpts = filteredList.filter(o => (o.name || '').toLowerCase().includes(filterValue));
         this.filteredOptionBrand.set(filteredOpts);
         this.isloadBrand.set(false);
       },
@@ -497,8 +510,36 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
       quickDate: this.filters.quickDate
     };
 
-    // Utiliser la nouvelle méthode avec filtres avancés pour tous les rôles
-    // Les filtres côté serveur sont appliqués selon le rôle dans le backend
+    // Mode OFFLINE : lire depuis le cache local
+    if (!this.isOnline()) {
+      this.posformService.getPaginatedOfflineFirstByTerritory(
+        name,
+        territoire_uuid,
+        this.current_page(),
+        this.page_size(),
+        start_date,
+        end_date,
+        apiFilters
+      ).subscribe({
+        next: (res) => {
+          this.dataList.set(res.data);
+          this.originalDataList.set([...res.data]);
+          this.total_pages.set(res.pagination.total_pages);
+          this.total_records.set(res.pagination.total_records);
+          this.updateUniqueValues();
+          this.dataSource.data = this.dataList();
+          this.getAllRoutePlans();
+          this.isLoadingData.set(false);
+        },
+        error: (err) => {
+          console.error('Erreur cache local posforms:', err);
+          this.isLoadingData.set(false);
+        }
+      });
+      return;
+    }
+
+    // Mode ONLINE : utiliser la nouvelle méthode avec filtres avancés pour tous les rôles
     this.posformService.getPaginatedWithAdvancedFilters2(
       name,
       territoire_uuid,

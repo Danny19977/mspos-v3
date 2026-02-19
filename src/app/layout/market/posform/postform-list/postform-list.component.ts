@@ -23,6 +23,7 @@ import { IBrand } from '../../brand/models/brand.model';
 import { BrandService } from '../../brand/brand.service';
 import { RouteplanService } from '../../routeplan/routeplan.service';
 import { RouteplanItemService } from '../../routeplan/routeplanitem.service';
+import { NetworkService } from '../../../../services/network.service';
 
 
 @Component({
@@ -45,9 +46,11 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   private readonly logActivity = inject(LogsService);
   private readonly toastr = inject(ToastrService);
   private readonly cdr = inject(ChangeDetectorRef);
+  private readonly networkService = inject(NetworkService);
 
   // Signals
   isLoadingData = signal(false);
+  isOnline = signal(navigator.onLine);
   public routes = routes;
 
   dateRange!: FormGroup;
@@ -63,6 +66,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
   // Table
   displayedColumns: string[] = [
+    'sync_status',
     'createdat',
     'pos',
     'price',
@@ -231,6 +235,19 @@ export class PostformListComponent implements OnInit, AfterViewInit {
           this.fetchProducts(currentUserValue, this.start_date(), this.end_date());
         }
 
+        // Gérer les transitions online → offline et offline → online
+        this.networkService.getNetworkStatus().subscribe(online => {
+          this.isOnline.set(online);
+          // À la reconnexion, rafraîchir les données locales depuis le serveur
+          if (online) {
+            const user = this.currentUser();
+            if (user && user.province_uuid) {
+              this.getAllRoutePlans();
+              this.getAllBrand();
+            }
+          }
+        });
+
         this.onChanges();
 
         this.geolocation$.subscribe((position) => {
@@ -273,12 +290,12 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     const currentUserValue = this.currentUser();
     if (!currentUserValue) return;
 
-    this.routePlanService.getByUserUUID(currentUserValue.uuid).subscribe({
-      next: (res) => {
-        this.routePlan.set(res.data);
+    this.routePlanService.getTodayRoutePlanOfflineFirst(currentUserValue.uuid).subscribe({
+      next: (plan) => {
+        this.routePlan.set(plan);
         console.log('Route Plan:', this.routePlan());
-        const routePlanValue = this.routePlan();
-        if (routePlanValue && routePlanValue.uuid != '') {
+        const routePlanValue = plan;
+        if (routePlanValue && routePlanValue.uuid) {
           this.routePlanItemService.getAllById(routePlanValue.uuid!).subscribe({
             next: (r) => {
               this.routePlanItemList.set(r.data);
@@ -349,13 +366,13 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
   // Pour obtenir la liste des marques visitées
   getAllBrand(): void {
-    const filterValue = this.brand_uuid?.nativeElement.value.toLowerCase();
+    const filterValue = this.brand_uuid?.nativeElement.value.toLowerCase() ?? '';
     this.isloadBrand.set(true);
 
     const currentUserValue = this.currentUser();
     if (!currentUserValue) return;
 
-    this.brandService.getAllByASM(currentUserValue.province_uuid).subscribe({
+    this.brandService.getBrandsOfflineFirst(currentUserValue.province_uuid).subscribe({
       next: (res) => {
         this.brandList.set(res.data);
 
@@ -368,7 +385,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
           !usedBrandUuids.includes(brand.uuid)
         ));
 
-        this.filteredOptionBrand.set(this.brandListFilter().filter(o => o.name!.toLowerCase().includes(filterValue)));
+        this.filteredOptionBrand.set(this.brandListFilter().filter(o => (o.name || '').toLowerCase().includes(filterValue)));
         this.isloadBrand.set(false);
       },
       error: (error) => {
@@ -452,8 +469,36 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       quickDate: this.filters.quickDate
     };
 
-    // Utiliser la nouvelle méthode avec filtres avancés pour tous les rôles
-    // Les filtres côté serveur sont appliqués selon le rôle dans le backend
+    // Mode OFFLINE : lire depuis le cache local
+    if (!this.isOnline()) {
+      this.posformService.getPaginatedOfflineFirstByUser(
+        currentUser,
+        this.current_page(),
+        this.page_size(),
+        start_date,
+        end_date,
+        apiFilters
+      ).subscribe({
+        next: (res) => {
+          this.dataList.set(res.data);
+          this.originalDataList.set([...res.data]);
+          this.filteredDataList.set([...res.data]);
+          this.total_pages.set(res.pagination.total_pages);
+          this.total_records.set(res.pagination.total_records);
+          this.updateUniqueValues();
+          this.dataSource.data = this.dataList();
+          this.getAllRoutePlans();
+          this.isLoadingData.set(false);
+        },
+        error: (err) => {
+          console.error('Erreur cache local posforms:', err);
+          this.isLoadingData.set(false);
+        }
+      });
+      return;
+    }
+
+    // Mode ONLINE : utiliser la nouvelle méthode avec filtres avancés pour tous les rôles
     this.posformService.getPaginatedWithAdvancedFilters(
       currentUser,
       this.current_page(),
@@ -1543,9 +1588,9 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
       const itemData = {
         ...this.formGroupPosFormItem.value,
-        posform_uuid: this.uuidItem,
-        brand_uuid: this.brandUUID,
-        brand_name: this.brandName
+        posform_uuid: this.uuidItem(),
+        brand_uuid: this.brandUUID(),
+        brand_name: this.brandName()
       };
 
       this.posformItemService.create(itemData).subscribe({
@@ -1597,7 +1642,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     this.posformItemService.getAllById(uuid).subscribe({
       next: (res) => {
         this.dataListPosFormItem.set(res.data);
-        console.log('PosFormItem List:', this.dataListPosFormItem);
+        console.log('PosFormItem List:', this.dataListPosFormItem());
         this.getAllBrand(); // Refresh brand list to exclude used brands
         this.isLoadingPosFormItem.set(false);
       }, error: (err) => {

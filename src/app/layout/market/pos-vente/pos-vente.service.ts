@@ -306,6 +306,114 @@ export class PosVenteService extends ApiService {
   }
 
   /**
+   * Télécharge TOUS les POS autorisés depuis le cloud vers le cache local IndexedDB.
+   * S'exécute page par page en arrière-plan sans bloquer l'interface.
+   * Respecte les restrictions de territoire basées sur le rôle de l'utilisateur connecté.
+   * À appeler une seule fois au chargement du composant (contrôlé par un flag dans le composant).
+   */
+  downloadAllCloudPosToLocal(currentUser: IUser): void {
+    if (!this.networkService.isOnline()) return;
+
+    const PAGE_SIZE = 200;
+
+    const buildUrl = (page: number): string => {
+      const params = new HttpParams()
+        .set('page', page.toString())
+        .set('page_size', PAGE_SIZE.toString());
+
+      if (currentUser.role === 'ASM') {
+        return `${this.endpoint}/all/paginate/province/${currentUser.province_uuid}?${params.toString()}`;
+      } else if (currentUser.role === 'Supervisor') {
+        return `${this.endpoint}/all/paginate/area/${currentUser.area_uuid}?${params.toString()}`;
+      } else if (currentUser.role === 'DR') {
+        return `${this.endpoint}/all/paginate/subarea/${currentUser.sub_area_uuid}?${params.toString()}`;
+      } else if (currentUser.role === 'Cyclo') {
+        return `${this.endpoint}/all/paginate/commune/${currentUser.uuid}?${params.toString()}`;
+      } else {
+        return `${this.endpoint}/all/paginate?${params.toString()}`;
+      }
+    };
+
+    const downloadPage = (page: number) => {
+      this.http.get<any>(buildUrl(page)).subscribe({
+        next: (response: any) => {
+          if (response?.data?.length) {
+            this.updateLocalPosCache(response.data).then(() => {
+              console.log(`📥 [downloadAllCloudPosToLocal] Page ${page}: ${response.data.length} POS stockés localement`);
+              const totalPages: number = response.pagination?.total_pages ?? 1;
+              if (page < totalPages) {
+                downloadPage(page + 1);
+              } else {
+                console.log(`✅ [downloadAllCloudPosToLocal] Téléchargement terminé — ${response.pagination?.total_records ?? '?'} POS autorisés en cache local`);
+              }
+            });
+          }
+        },
+        error: (error: any) => {
+          console.warn(`⚠️ [downloadAllCloudPosToLocal] Erreur page ${page} (non bloquant):`, error.message);
+        }
+      });
+    };
+
+    downloadPage(1);
+  }
+
+  /**
+   * Télécharge TOUS les POS d'un territoire depuis le cloud vers le cache local IndexedDB.
+   * S'exécute page par page en arrière-plan sans bloquer l'interface.
+   * Utilisé par PosFilterListComponent qui navigue par territoire (country/province/area/subarea/commune).
+   * À appeler une seule fois au chargement du composant pour le territoire courant.
+   */
+  downloadAllCloudPosByTerritoryToLocal(name: string, territoire_uuid: string): void {
+    if (!this.networkService.isOnline()) return;
+
+    const PAGE_SIZE = 200;
+
+    const buildUrl = (page: number): string => {
+      const params = new HttpParams()
+        .set('page', page.toString())
+        .set('page_size', PAGE_SIZE.toString());
+
+      if (name === 'country' || name === 'Manager' || name === 'Support') {
+        return `${this.endpoint}/all/paginate/country/${territoire_uuid}?${params.toString()}`;
+      } else if (name === 'province' || name === 'ASM') {
+        return `${this.endpoint}/all/paginate/province/${territoire_uuid}?${params.toString()}`;
+      } else if (name === 'area' || name === 'Supervisor') {
+        return `${this.endpoint}/all/paginate/area/${territoire_uuid}?${params.toString()}`;
+      } else if (name === 'subarea' || name === 'DR') {
+        return `${this.endpoint}/all/paginate/subarea/${territoire_uuid}?${params.toString()}`;
+      } else if (name === 'commune' || name === 'Cyclo') {
+        return `${this.endpoint}/all/paginate/commune-filter/${territoire_uuid}?${params.toString()}`;
+      } else {
+        return `${this.endpoint}/all/paginate?${params.toString()}`;
+      }
+    };
+
+    const downloadPage = (page: number) => {
+      this.http.get<any>(buildUrl(page)).subscribe({
+        next: (response: any) => {
+          if (response?.data?.length) {
+            this.updateLocalPosCache(response.data).then(() => {
+              console.log(`📥 [downloadAllCloudPosByTerritoryToLocal] Page ${page}: ${response.data.length} POS stockés localement`);
+              const totalPages: number = response.pagination?.total_pages ?? 1;
+              if (page < totalPages) {
+                downloadPage(page + 1);
+              } else {
+                console.log(`✅ [downloadAllCloudPosByTerritoryToLocal] Téléchargement terminé — ${response.pagination?.total_records ?? '?'} POS du territoire "${name}/${territoire_uuid}" en cache local`);
+              }
+            });
+          }
+        },
+        error: (error: any) => {
+          console.warn(`⚠️ [downloadAllCloudPosByTerritoryToLocal] Erreur page ${page} (non bloquant):`, error.message);
+        }
+      });
+    };
+
+    downloadPage(1);
+  }
+
+  /**
    * Crée un nouveau POS - OFFLINE FIRST
    */
   override create(data: IPos): Observable<any> {
@@ -471,6 +579,30 @@ export class PosVenteService extends ApiService {
       .set("start_date", start_date)
       .set("end_date", end_date);
     return this.http.get<any>(`${this.endpoint}/map-pos/${pos_uuid}`, { params });
+  }
+
+  /**
+   * Récupère les POS locaux en attente de synchronisation (sync_status === 'pending')
+   * Utilisé pour afficher les données créées offline dans la liste principale
+   */
+  async getLocalPendingPos(userId: string): Promise<IPos[]> {
+    try {
+      const posList = await db.pos
+        .where('user_uuid')
+        .equals(userId)
+        .filter(pos => pos.sync_status === 'pending')
+        .toArray();
+
+      // Trier par date décroissante (plus récent en premier)
+      posList.sort((a, b) =>
+        new Date((b as any).CreatedAt || 0).getTime() - new Date((a as any).CreatedAt || 0).getTime()
+      );
+
+      return posList;
+    } catch (error) {
+      console.error('❌ Erreur lors de la récupération des POS locaux:', error);
+      return [];
+    }
   }
 }
 

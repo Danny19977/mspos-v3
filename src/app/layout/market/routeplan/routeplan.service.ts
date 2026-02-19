@@ -57,6 +57,20 @@ export class RouteplanService extends ApiService {
   }
 
   /**
+   * Récupère le RoutePlan du jour - OFFLINE FIRST
+   * Retourne immédiatement depuis IndexedDB, synchronise le serveur en arrière-plan si en ligne.
+   */
+  getTodayRoutePlanOfflineFirst(userId: string): Observable<IRoutePlan | null> {
+    return from(this.getTodayRoutePlanFromLocal(userId)).pipe(
+      tap(() => {
+        if (this.networkService.isOnline()) {
+          this.syncRoutePlansInBackground(userId);
+        }
+      })
+    );
+  }
+
+  /**
    * Vérifie si l'utilisateur a déjà créé un Routeplan aujourd'hui
    */
   async hasTodayRoutePlan(userId: string): Promise<boolean> {
@@ -324,6 +338,30 @@ export class RouteplanService extends ApiService {
       console.log(`💾 ${routePlansToStore.length} RoutePlans mis à jour dans le cache local`);
     } catch (error) {
       console.error('Erreur lors de la mise à jour du cache RoutePlans:', error);
+    }
+  }
+
+  /**
+   * Récupère les RoutePlans locaux en attente de synchronisation (sync_status === 'pending')
+   * Utilisé pour afficher les données créées offline dans la liste principale
+   */
+  async getLocalPendingRoutePlans(userId: string): Promise<IRoutePlan[]> {
+    try {
+      const plans = await db.routePlans
+        .where('user_uuid')
+        .equals(userId)
+        .filter(plan => plan.sync_status === 'pending')
+        .toArray();
+
+      // Trier par date décroissante (plus récent en premier)
+      plans.sort((a, b) =>
+        new Date(b.CreatedAt!).getTime() - new Date(a.CreatedAt!).getTime()
+      );
+
+      return plans;
+    } catch (error) {
+      console.error('❌ Erreur lors de la récupération des plans locaux:', error);
+      return [];
     }
   }
 

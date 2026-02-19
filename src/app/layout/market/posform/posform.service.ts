@@ -564,4 +564,130 @@ export class PosformService extends ApiService {
       console.error('Erreur lors de la mise à jour du cache local:', error);
     }
   }
+
+  /**
+   * Retourne les Posforms du cache local paginés, filtrés par rôle utilisateur — OFFLINE FIRST
+   */
+  getPaginatedOfflineFirstByUser(
+    currentUser: IUser,
+    page: number,
+    pageSize: number,
+    startDate: string,
+    endDate: string,
+    filters: any = {}
+  ): Observable<any> {
+    const field = this.getRoleTerritoryField(currentUser);
+    const uuid = this.getRoleTerritoryUuid(currentUser);
+    return from(this.getFromLocalCacheFiltered(field, uuid, page, pageSize, startDate, endDate, filters));
+  }
+
+  /**
+   * Retourne les Posforms du cache local paginés, filtrés par territoire — OFFLINE FIRST
+   */
+  getPaginatedOfflineFirstByTerritory(
+    name: string,
+    territoire_uuid: string,
+    page: number,
+    pageSize: number,
+    startDate: string,
+    endDate: string,
+    filters: any = {}
+  ): Observable<any> {
+    const field = this.getFieldByTerritoireName(name);
+    return from(this.getFromLocalCacheFiltered(field, territoire_uuid, page, pageSize, startDate, endDate, filters));
+  }
+
+  private getRoleTerritoryField(user: IUser): string {
+    switch (user.role) {
+      case 'Manager': case 'Support': return 'country_uuid';
+      case 'ASM': return 'province_uuid';
+      case 'Supervisor': return 'area_uuid';
+      case 'DR': return 'sub_area_uuid';
+      case 'Cyclo': return 'cyclo_uuid';
+      default: return '';
+    }
+  }
+
+  private getRoleTerritoryUuid(user: IUser): string {
+    switch (user.role) {
+      case 'Manager': case 'Support': return user.country_uuid ?? '';
+      case 'ASM': return user.province_uuid ?? '';
+      case 'Supervisor': return user.area_uuid ?? '';
+      case 'DR': return user.sub_area_uuid ?? '';
+      case 'Cyclo': return user.uuid;
+      default: return '';
+    }
+  }
+
+  private getFieldByTerritoireName(name: string): string {
+    switch (name) {
+      case 'country': case 'Manager': case 'Support': return 'country_uuid';
+      case 'province': case 'ASM': return 'province_uuid';
+      case 'area': case 'Supervisor': return 'area_uuid';
+      case 'subarea': case 'DR': return 'sub_area_uuid';
+      case 'commune': case 'Cyclo': return 'commune_uuid';
+      default: return '';
+    }
+  }
+
+  private async getFromLocalCacheFiltered(
+    territoryField: string,
+    territoryUuid: string,
+    page: number,
+    pageSize: number,
+    startDate: string,
+    endDate: string,
+    filters: any = {}
+  ): Promise<any> {
+    let posforms: IPosForm[];
+
+    if (territoryField && territoryUuid) {
+      posforms = await (db.posForms.where(territoryField as any).equals(territoryUuid) as any).toArray();
+    } else {
+      posforms = await db.posForms.toCollection().toArray();
+    }
+
+    // Filtrer par plage de dates
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    posforms = posforms.filter(pf => {
+      if (!pf.CreatedAt) return true;
+      const d = new Date(pf.CreatedAt);
+      return d >= start && d <= end;
+    });
+
+    // Filtrer par recherche
+    if (filters.search) {
+      const s = filters.search.toLowerCase();
+      posforms = posforms.filter(pf =>
+        (pf.comment || '').toLowerCase().includes(s) ||
+        (pf.cyclo || '').toLowerCase().includes(s) ||
+        (pf.asm || '').toLowerCase().includes(s)
+      );
+    }
+
+    // Trier par date décroissante
+    posforms.sort((a, b) => {
+      const da = a.CreatedAt ? new Date(a.CreatedAt).getTime() : 0;
+      const db2 = b.CreatedAt ? new Date(b.CreatedAt).getTime() : 0;
+      return db2 - da;
+    });
+
+    const total_records = posforms.length;
+    const total_pages = Math.max(1, Math.ceil(total_records / pageSize));
+    const offset = (page - 1) * pageSize;
+    const paginated = posforms.slice(offset, offset + pageSize);
+
+    console.log(`📦 Posforms locaux: ${total_records} total, page ${page}/${total_pages}`);
+    return {
+      data: paginated,
+      pagination: {
+        total_pages,
+        total_records,
+        current_page: page,
+        page_size: pageSize
+      },
+      offline: true
+    };
+  }
 }
