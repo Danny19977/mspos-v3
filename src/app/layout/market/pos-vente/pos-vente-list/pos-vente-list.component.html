@@ -9,6 +9,12 @@
                         <div class="col-md-4">
                             <h4 class="page-title">
                                 Point de Vente<span class="count-title">{{total_records()}}</span>
+                                @if (isUploadSyncing()) {
+                                <span class="spinner-border spinner-border-sm text-warning ms-2" title="Envoi en cours..." role="status"></span>
+                                }
+                                @if (isDownloadSyncing()) {
+                                <span class="spinner-border spinner-border-sm text-info ms-1" title="Téléchargement en cours..." role="status"></span>
+                                }
                             </h4>
                         </div>
                         <div class="col-md-8 text-end">
@@ -160,214 +166,14 @@
                                             }
                                         </select>
                                     </div>
-                                    <!-- Filtres spécifiques POS -->
-                                    <div class="col-md-12 mt-4">
-                                        <h6 class="text-primary mb-3">
-                                            <i class="ti ti-building-store me-2"></i>
-                                            Filtres POS
-                                        </h6>
-                                    </div>
-
-                                    <div class="col-md-2">
-                                        <label class="form-label">Type POS</label>
-                                        <select class="form-select" [ngModel]="filters().postype"
-                                            (ngModelChange)="updateFilterAndApply('postype', $event)">
-                                            <option value="">Tous les types</option>
-                            @for (type of uniquePosTypes(); track type) {
-                                            <option [value]="type">{{ type }}</option>
-                                            }
-                                        </select>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <label class="form-label">Statut</label>
-                                        <select class="form-select" [ngModel]="filters().status"
-                                            (ngModelChange)="updateFilterAndApply('status', $event)">
-                                            <option value="">Tous les statuts</option>
-                                            <option value="true">Actif</option>
-                                            <option value="false">Inactif</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-2">
-                                        <label class="form-label">Shop</label>
-                                        <select class="form-select" [ngModel]="filters().shop"
-                                            (ngModelChange)="updateFilterAndApply('shop', $event)">
-                                            <option value="">Tous les shops</option>
-                            @for (shop of uniqueShops(); track shop) {
-                                            <option [value]="shop">{{ shop }}</option>
-                                            }
-                                        </select>
-                                    </div>
-                                    <div class="col-md-2">
-                                        <label class="form-label">Synchronisation</label>
-                                        <select class="form-select" [ngModel]="filters().sync"
-                                            (ngModelChange)="updateFilterAndApply('sync', $event)">
-                                            <option value="">Tous</option>
-                                            <option value="true">Synchronisé</option>
-                                            <option value="false">Non synchronisé</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-2">
-                                        <label class="form-label">Nb PosForm</label>
-                                        <select class="form-select" [ngModel]="filters().posformsCount"
-                                            (ngModelChange)="updateFilterAndApply('posformsCount', $event)">
-                                            <option value="">Tous</option>
-                                            <option value="0">0 PosForm</option>
-                                            <option value="1-5">1-5 PosForm</option>
-                                            <option value="6-10">6-10 PosForm</option>
-                                            <option value="11+">11+ PosForm</option>
-                                        </select>
-                                    </div>
-
-                                    <div class="col-md-2">
-                                        <label class="form-label">Nom POS</label>
-                                        <input type="text" class="form-control" [ngModel]="filters().name"
-                                            (ngModelChange)="updateFilterAndApply('name', $event)" placeholder="Rechercher par nom...">
-                                    </div>
-
-                                    <!-- Filtres hiérarchie commerciale -->
-                                    <div class="col-md-12 mt-4">
-                                        <h6 class="text-primary mb-3">
-                                            <i class="ti ti-users me-2"></i>
-                                            Hiérarchie commerciale
-                                        </h6>
-                                    </div>
-
-                                    <!-- ASM -->
-                                    <div class="col-md-3">
-                                        <label class="form-label">ASM</label>
-                                        <div class="row g-2">
-                                            <div class="col-7">
-                                                <select class="form-select" [ngModel]="filters().asm"
-                                                    (ngModelChange)="updateFilterAndApply('asm', $event)">
-                                                    <option value="">Tous les ASM</option>
-                                                    @for (asm of filteredAsms(); track asm) {
-                                                    <option [value]="asm">{{ asm }}</option>
-                                                    }
-                                                </select>
-                                            </div>
-                                            <div class="col-5">
-                                                <input type="text" class="form-control form-control-sm"
-                                                    [ngModel]="filters().asmSearch" (ngModelChange)="updateAsmSearchAndFilter($event)"
-                                                    placeholder="Rechercher ASM...">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Supervisor -->
-                                    <div class="col-md-3">
-                                        <label class="form-label">Supervisor</label>
-                                        <div class="row g-2">
-                                            <div class="col-7">
-                                                <select class="form-select" [ngModel]="filters().supervisor"
-                                                    (ngModelChange)="updateFilterAndApply('supervisor', $event)">
-                                                    <option value="">Tous les Supervisors</option>
-                                                    @for (sup of filteredSupervisors(); track sup) {
-                                                    <option [value]="sup">{{ sup }}</option>
-                                                    }
-                                                </select>
-                                            </div>
-                                            <div class="col-5">
-                                                <input type="text" class="form-control form-control-sm"
-                                                    [ngModel]="filters().supervisorSearch"
-                                                    (ngModelChange)="updateSupervisorSearchAndFilter($event)"
-                                                    placeholder="Rechercher Sup...">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- DR -->
-                                    <div class="col-md-3">
-                                        <label class="form-label">DR</label>
-                                        <div class="row g-2">
-                                            <div class="col-7">
-                                                <select class="form-select" [ngModel]="filters().dr"
-                                                    (ngModelChange)="updateFilterAndApply('dr', $event)">
-                                                    <option value="">Tous les DR</option>
-                                                    @for (dr of filteredDrs(); track dr) {
-                                                    <option [value]="dr">{{ dr }}</option>
-                                                    }
-                                                </select>
-                                            </div>
-                                            <div class="col-5">
-                                                <input type="text" class="form-control form-control-sm"
-                                                    [ngModel]="filters().drSearch" (ngModelChange)="updateDrSearchAndFilter($event)"
-                                                    placeholder="Rechercher DR...">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Cyclo -->
-                                    <div class="col-md-3">
-                                        <label class="form-label">Cyclo</label>
-                                        <div class="row g-2">
-                                            <div class="col-7">
-                                                <select class="form-select" [ngModel]="filters().cyclo"
-                                                    (ngModelChange)="updateFilterAndApply('cyclo', $event)">
-                                                    <option value="">Tous les Cyclos</option>
-                                                    @for (cyclo of filteredCyclos(); track cyclo) {
-                                                    <option [value]="cyclo">{{ cyclo }}</option>
-                                                    }
-                                                </select>
-                                            </div>
-                                            <div class="col-5">
-                                                <input type="text" class="form-control form-control-sm"
-                                                    [ngModel]="filters().cycloSearch" (ngModelChange)="updateCycloSearchAndFilter($event)"
-                                                    placeholder="Rechercher Cyclo...">
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <!-- Filtres texte additionnels -->
-                                    <div class="col-md-12 mt-4">
-                                        <h6 class="text-primary mb-3">
-                                            <i class="ti ti-search me-2"></i>
-                                            Recherche spécifique
-                                        </h6>
-                                    </div>
-
-                                    <div class="col-md-2">
-                                        <label class="form-label">Gérant</label>
-                                        <input type="text" class="form-control" [ngModel]="filters().gerant"
-                                            (ngModelChange)="updateFilterAndApply('gerant', $event)" placeholder="Rechercher gérant...">
-                                    </div>
-
-                                    <div class="col-md-2">
-                                        <label class="form-label">Téléphone</label>
-                                        <input type="text" class="form-control" [ngModel]="filters().telephone"
-                                            (ngModelChange)="updateFilterAndApply('telephone', $event)" placeholder="Rechercher téléphone...">
-                                    </div>
-
-                                    <div class="col-md-2">
-                                        <label class="form-label">Quartier</label>
-                                        <input type="text" class="form-control" [ngModel]="filters().quartier"
-                                            (ngModelChange)="updateFilterAndApply('quartier', $event)" placeholder="Rechercher quartier...">
-                                    </div>
-
-                                    <div class="col-md-2">
-                                        <label class="form-label">Avenue</label>
-                                        <input type="text" class="form-control" [ngModel]="filters().avenue"
-                                            (ngModelChange)="updateFilterAndApply('avenue', $event)" placeholder="Rechercher avenue...">
-                                    </div>
-
+                                    <!-- Filtre Agent (ASM / Supervisor / DR / Cyclo) -->
                                     <div class="col-md-4">
-                                        <label class="form-label">Référence</label>
-                                        <input type="text" class="form-control" [ngModel]="filters().reference"
-                                            (ngModelChange)="updateFilterAndApply('reference', $event)" placeholder="Rechercher référence...">
+                                        <label class="form-label">Agent (ASM / Supervisor / DR / Cyclo)</label>
+                                        <input type="text" class="form-control" [ngModel]="filters().agent"
+                                            (ngModelChange)="updateFilterAndApply('agent', $event)"
+                                            placeholder="Rechercher par agent...">
                                     </div>
 
-                                    <div class="col-md-3">
-                                        <label class="form-label">Créé par (Nom complet)</label>
-                                        <input type="text" class="form-control" [ngModel]="filters().signature"
-                                            (ngModelChange)="updateFilterAndApply('signature', $event)" placeholder="Rechercher par nom complet..."
-                                            list="signatureList">
-                                        <datalist id="signatureList">
-                                            @for (signature of uniqueSignatures(); track signature) {
-                                            <option [value]="signature">{{ signature }}</option>
-                                            }
-                                        </datalist>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -375,7 +181,7 @@
                     }
                     <!-- /Filtres avancés -->
                 </div>
-                <div class="card-body"> 
+                <div class="card-body">
                     <div class="table-responsive custom-table">
                         <table mat-table [dataSource]="dataSource" matSort (matSortChange)="sortData($event)"
                             class="mat-elevation-z8">

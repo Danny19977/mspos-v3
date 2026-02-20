@@ -19,6 +19,8 @@ import { IPosForm } from '../../posform/models/posform.model';
 import { ReloadComponent } from '../../../../shared/components/reload/reload.component';
 import { CollapseHeaderComponent } from '../../../../shared/common/collapse-header/collapse-header.component';
 import { NetworkService } from '../../../../services/network.service';
+import { SyncQueueService } from '../../../../shared/services/sync-queue.service';
+import { DataSyncService } from '../../../../shared/services/data-sync.service';
 
 @Component({
   selector: 'app-pos-vente-list',
@@ -88,54 +90,23 @@ export class PosVenteListComponent implements OnInit {
   // Propriétés pour les filtres avancés
   showAdvancedFilters = signal<boolean>(false);
 
-  // Objet contenant tous les filtres
+  // Filtres alignés avec le backend Go
+  // Params supportés : search, country, province, area, subarea, commune, agent
   filters = signal({
     country: '',
     province: '',
     area: '',
     subarea: '',
     commune: '',
-    postype: '',
-    status: '',
-    shop: '',
-    name: '',
-    gerant: '',
-    telephone: '',
-    quartier: '',
-    avenue: '',
-    reference: '',
-    signature: '',
-    asm: '',
-    asmSearch: '',
-    supervisor: '',
-    supervisorSearch: '',
-    dr: '',
-    drSearch: '',
-    cyclo: '',
-    cycloSearch: '',
-    sync: '',
-    posformsCount: ''
+    agent: ''
   });
 
-  // Listes des valeurs uniques pour les filtres
+  // Listes des valeurs uniques pour les filtres déroulants
   uniqueCountries = signal<string[]>([]);
   uniqueProvinces = signal<string[]>([]);
   uniqueAreas = signal<string[]>([]);
   uniqueSubAreas = signal<string[]>([]);
   uniqueCommunes = signal<string[]>([]);
-  uniquePosTypes = signal<string[]>([]);
-  uniqueShops = signal<string[]>([]);
-  uniqueSignatures = signal<string[]>([]);
-  uniqueAsms = signal<string[]>([]);
-  uniqueSupervisors = signal<string[]>([]);
-  uniqueDrs = signal<string[]>([]);
-  uniqueCyclos = signal<string[]>([]);
-
-  // Listes filtrées pour la hiérarchie commerciale
-  filteredAsms = signal<string[]>([]);
-  filteredSupervisors = signal<string[]>([]);
-  filteredDrs = signal<string[]>([]);
-  filteredCyclos = signal<string[]>([]);
 
   // Données originales et filtrées
   originalDataList = signal<IPos[]>([]);
@@ -168,6 +139,14 @@ export class PosVenteListComponent implements OnInit {
   private toastr = inject(ToastrService);
   private destroyRef = inject(DestroyRef);
   private networkService = inject(NetworkService);
+  private syncQueueService = inject(SyncQueueService);
+  private dataSyncService = inject(DataSyncService);
+
+  // Sync status signals
+  isUploadSyncing = signal<boolean>(false);
+  isDownloadSyncing = signal<boolean>(false);
+  pendingUploadCount = signal<number>(0);
+  downloadEntity = signal<string>('');
 
 
   ngOnInit() {
@@ -184,6 +163,23 @@ export class PosVenteListComponent implements OnInit {
       // status: ['', Validators.required],
     }));
 
+
+    // Subscribe to upload sync status
+    this.syncQueueService.isSyncing$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(syncing => this.isUploadSyncing.set(syncing));
+
+    this.syncQueueService.pendingCount$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(count => this.pendingUploadCount.set(count));
+
+    // Subscribe to download sync status
+    this.dataSyncService.syncProgress$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(progress => {
+        this.isDownloadSyncing.set(!progress.isComplete && progress.total > 0);
+        this.downloadEntity.set(progress.entity);
+      });
 
     this.networkService.getNetworkStatus()
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -290,7 +286,8 @@ export class PosVenteListComponent implements OnInit {
           this.originalDataList.set([...res.data]);
           const pagination = res.pagination;
           this.total_pages.set(pagination?.total_pages ?? res.total_pages ?? 1);
-          this.total_records.set(pagination?.total_records ?? res.total ?? res.total_records ?? merged.length);
+          const serverTotal = pagination?.total_records ?? res.total ?? res.total_records ?? 0;
+          this.total_records.set(serverTotal + enrichedLocal.length);
           this.dataSource.data = merged;
           this.updateUniqueValues();
           this.isLoadingData.set(false);
@@ -405,7 +402,7 @@ export class PosVenteListComponent implements OnInit {
    * Mettre à jour les valeurs uniques pour tous les filtres
    */
   updateUniqueValues(): void {
-    // Valeurs géographiques
+    // Valeurs géographiques pour les filtres déroulants
     this.uniqueCountries.set([...new Set(this.originalDataList()
       .map(item => item.Country?.name)
       .filter(name => name))] as string[]);
@@ -425,49 +422,6 @@ export class PosVenteListComponent implements OnInit {
     this.uniqueCommunes.set([...new Set(this.originalDataList()
       .map(item => item.Commune?.name)
       .filter(name => name))] as string[]);
-
-    // Valeurs spécifiques aux POS
-    this.uniquePosTypes.set([...new Set(this.originalDataList()
-      .map(item => item.postype)
-      .filter(type => type))] as string[]);
-
-    this.uniqueShops.set([...new Set(this.originalDataList()
-      .map(item => item.shop)
-      .filter(shop => shop))] as string[]);
-
-    // Valeurs de signature/fullname
-    this.uniqueSignatures.set([...new Set(this.originalDataList()
-      .map(item => item.signature)
-      .filter(signature => signature))] as string[]);
-
-    // Hiérarchie commerciale
-    this.uniqueAsms.set([...new Set(this.originalDataList()
-      .map(item => item.asm)
-      .filter(asm => asm))] as string[]);
-
-    this.uniqueSupervisors.set([...new Set(this.originalDataList()
-      .map(item => item.sup)
-      .filter(sup => sup))] as string[]);
-
-    this.uniqueDrs.set([...new Set(this.originalDataList()
-      .map(item => item.dr)
-      .filter(dr => dr))] as string[]);
-
-    this.uniqueCyclos.set([...new Set(this.originalDataList()
-      .map(item => item.cyclo)
-      .filter(cyclo => cyclo))] as string[]);
-
-    // Initialiser les listes filtrées pour la hiérarchie commerciale
-    this.filteredAsms.set([...this.uniqueAsms()]);
-    this.filteredSupervisors.set([...this.uniqueSupervisors()]);
-    this.filteredDrs.set([...this.uniqueDrs()]);
-    this.filteredCyclos.set([...this.uniqueCyclos()]);
-
-    console.log('🔍 Filtres hiérarchie commerciale mis à jour pour POS:');
-    console.log('  - ASMs:', this.uniqueAsms());
-    console.log('  - Supervisors:', this.uniqueSupervisors());
-    console.log('  - DRs:', this.uniqueDrs());
-    console.log('  - Cyclos:', this.uniqueCyclos());
   }
 
   /**
@@ -488,89 +442,10 @@ export class PosVenteListComponent implements OnInit {
       area: '',
       subarea: '',
       commune: '',
-      postype: '',
-      status: '',
-      shop: '',
-      name: '',
-      gerant: '',
-      telephone: '',
-      quartier: '',
-      avenue: '',
-      reference: '',
-      signature: '',
-      asm: '',
-      asmSearch: '',
-      supervisor: '',
-      supervisorSearch: '',
-      dr: '',
-      drSearch: '',
-      cyclo: '',
-      cycloSearch: '',
-      sync: '',
-      posformsCount: ''
+      agent: ''
     });
 
     this.search.set('');
-    this.applyFilters();
-  }
-
-  /**
-   * Filtrer les ASMs en fonction de la recherche
-   */
-  filterAsms(): void {
-    if (this.filters().asmSearch) {
-      const searchTerm = this.filters().asmSearch.toLowerCase();
-      this.filteredAsms.set(this.uniqueAsms().filter(asm =>
-        asm.toLowerCase().includes(searchTerm)
-      ));
-    } else {
-      this.filteredAsms.set([...this.uniqueAsms()]);
-    }
-    this.applyFilters();
-  }
-
-  /**
-   * Filtrer les Supervisors en fonction de la recherche
-   */
-  filterSupervisors(): void {
-    if (this.filters().supervisorSearch) {
-      const searchTerm = this.filters().supervisorSearch.toLowerCase();
-      this.filteredSupervisors.set(this.uniqueSupervisors().filter(sup =>
-        sup.toLowerCase().includes(searchTerm)
-      ));
-    } else {
-      this.filteredSupervisors.set([...this.uniqueSupervisors()]);
-    }
-    this.applyFilters();
-  }
-
-  /**
-   * Filtrer les DRs en fonction de la recherche
-   */
-  filterDrs(): void {
-    if (this.filters().drSearch) {
-      const searchTerm = this.filters().drSearch.toLowerCase();
-      this.filteredDrs.set(this.uniqueDrs().filter(dr =>
-        dr.toLowerCase().includes(searchTerm)
-      ));
-    } else {
-      this.filteredDrs.set([...this.uniqueDrs()]);
-    }
-    this.applyFilters();
-  }
-
-  /**
-   * Filtrer les Cyclos en fonction de la recherche
-   */
-  filterCyclos(): void {
-    if (this.filters().cycloSearch) {
-      const searchTerm = this.filters().cycloSearch.toLowerCase();
-      this.filteredCyclos.set(this.uniqueCyclos().filter(cyclo =>
-        cyclo.toLowerCase().includes(searchTerm)
-      ));
-    } else {
-      this.filteredCyclos.set([...this.uniqueCyclos()]);
-    }
     this.applyFilters();
   }
 
@@ -702,6 +577,7 @@ export class PosVenteListComponent implements OnInit {
                 next: () => {
                   this.formGroup().reset();
                   this.toastr.success('Ajouter avec succès!', 'Success!');
+                  this.fetchProducts(this.currentUser());
                   this.isLoading.set(false);
                 },
                 error: (err) => {
@@ -769,6 +645,7 @@ export class PosVenteListComponent implements OnInit {
               next: () => {
                 this.formGroup().reset();
                 this.toastr.success('Modification enregistré!', 'Success!');
+                this.fetchProducts(this.currentUser());
                 this.isLoading.set(false);
               },
               error: (err) => {
@@ -807,6 +684,7 @@ export class PosVenteListComponent implements OnInit {
             next: () => {
               this.formGroup().reset();
               this.toastr.info('Supprimé avec succès!', 'Success!');
+              this.fetchProducts(this.currentUser());
               this.isLoading.set(false);
             },
             error: (err) => {
@@ -832,25 +710,5 @@ export class PosVenteListComponent implements OnInit {
   updateFilterAndApply(key: string, value: any): void {
     this.updateFilter(key, value);
     this.applyFilters();
-  }
-
-  updateAsmSearchAndFilter(value: string): void {
-    this.updateFilter('asmSearch', value);
-    this.filterAsms();
-  }
-
-  updateSupervisorSearchAndFilter(value: string): void {
-    this.updateFilter('supervisorSearch', value);
-    this.filterSupervisors();
-  }
-
-  updateDrSearchAndFilter(value: string): void {
-    this.updateFilter('drSearch', value);
-    this.filterDrs();
-  }
-
-  updateCycloSearchAndFilter(value: string): void {
-    this.updateFilter('cycloSearch', value);
-    this.filterCyclos();
   }
 }

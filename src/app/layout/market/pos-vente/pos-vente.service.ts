@@ -133,15 +133,17 @@ export class PosVenteService extends ApiService {
   }
 
   /**
-   * Applique les filtres à une liste de POS
+   * Applique les filtres à une liste de POS (cache local)
+   * Les filtres géographiques comparent par nom (cohérent avec le backend ILIKE)
    */
   private applyFiltersToPosList(posList: IPos[], filters: any): IPos[] {
     if (!filters) return posList;
 
     return posList.filter(pos => {
+      // Recherche textuelle globale
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
           pos.name?.toLowerCase().includes(searchLower) ||
           pos.shop?.toLowerCase().includes(searchLower) ||
           pos.gerant?.toLowerCase().includes(searchLower) ||
@@ -150,21 +152,38 @@ export class PosVenteService extends ApiService {
         if (!matchesSearch) return false;
       }
 
-      if (filters.country && pos.country_uuid !== filters.country) return false;
-      if (filters.province && pos.province_uuid !== filters.province) return false;
-      if (filters.area && pos.area_uuid !== filters.area) return false;
-      if (filters.subarea && pos.sub_area_uuid !== filters.subarea) return false;
-      if (filters.commune && pos.commune_uuid !== filters.commune) return false;
-      
-      if (filters.postype && pos.postype !== filters.postype) return false;
-      if (filters.status !== undefined && pos.status !== filters.status) return false;
-      if (filters.shop && !pos.shop?.toLowerCase().includes(filters.shop.toLowerCase())) return false;
-      if (filters.name && !pos.name?.toLowerCase().includes(filters.name.toLowerCase())) return false;
-      if (filters.gerant && !pos.gerant?.toLowerCase().includes(filters.gerant.toLowerCase())) return false;
-      if (filters.telephone && !pos.telephone?.includes(filters.telephone)) return false;
-      if (filters.quartier && !pos.quartier?.toLowerCase().includes(filters.quartier.toLowerCase())) return false;
-      if (filters.avenue && !pos.avenue?.toLowerCase().includes(filters.avenue.toLowerCase())) return false;
-      if (filters.reference && !pos.reference?.toLowerCase().includes(filters.reference.toLowerCase())) return false;
+      // Filtres géographiques par nom (ILIKE côté backend)
+      if (filters.country) {
+        const name = (pos as any).country_name || (pos as any).Country?.name || '';
+        if (!name.toLowerCase().includes(filters.country.toLowerCase())) return false;
+      }
+      if (filters.province) {
+        const name = (pos as any).province_name || (pos as any).Province?.name || '';
+        if (!name.toLowerCase().includes(filters.province.toLowerCase())) return false;
+      }
+      if (filters.area) {
+        const name = (pos as any).area_name || (pos as any).Area?.name || '';
+        if (!name.toLowerCase().includes(filters.area.toLowerCase())) return false;
+      }
+      if (filters.subarea) {
+        const name = (pos as any).subarea_name || (pos as any).sub_area_name || (pos as any).SubArea?.name || '';
+        if (!name.toLowerCase().includes(filters.subarea.toLowerCase())) return false;
+      }
+      if (filters.commune) {
+        const name = (pos as any).commune_name || (pos as any).Commune?.name || '';
+        if (!name.toLowerCase().includes(filters.commune.toLowerCase())) return false;
+      }
+
+      // Filtre agent : cherche dans asm, sup, dr, cyclo simultanément
+      if (filters.agent) {
+        const agentLower = filters.agent.toLowerCase();
+        const matchesAgent =
+          pos.asm?.toLowerCase().includes(agentLower) ||
+          pos.sup?.toLowerCase().includes(agentLower) ||
+          pos.dr?.toLowerCase().includes(agentLower) ||
+          pos.cyclo?.toLowerCase().includes(agentLower);
+        if (!matchesAgent) return false;
+      }
 
       return true;
     });
@@ -172,11 +191,13 @@ export class PosVenteService extends ApiService {
 
   /**
    * Construit les paramètres de filtre pour les requêtes HTTP
+   * Paramètres supportés par le backend : page, limit, search,
+   * country, province, area, subarea, commune (par nom ILIKE), agent
    */
   private buildFilterParams(page: number, pageSize: number, filters: any = {}): HttpParams {
     let params = new HttpParams()
       .set('page', page.toString())
-      .set('page_size', pageSize.toString());
+      .set('limit', pageSize.toString());
 
     if (filters.search) params = params.set('search', filters.search);
     if (filters.country) params = params.set('country', filters.country);
@@ -184,26 +205,7 @@ export class PosVenteService extends ApiService {
     if (filters.area) params = params.set('area', filters.area);
     if (filters.subarea) params = params.set('subarea', filters.subarea);
     if (filters.commune) params = params.set('commune', filters.commune);
-    if (filters.postype) params = params.set('postype', filters.postype);
-    if (filters.status) params = params.set('status', filters.status);
-    if (filters.shop) params = params.set('shop', filters.shop);
-    if (filters.name) params = params.set('name', filters.name);
-    if (filters.gerant) params = params.set('gerant', filters.gerant);
-    if (filters.telephone) params = params.set('telephone', filters.telephone);
-    if (filters.quartier) params = params.set('quartier', filters.quartier);
-    if (filters.avenue) params = params.set('avenue', filters.avenue);
-    if (filters.reference) params = params.set('reference', filters.reference);
-    if (filters.fullname) params = params.set('signature', filters.fullname);
-    if (filters.asm) params = params.set('asm', filters.asm);
-    if (filters.asmSearch) params = params.set('asmSearch', filters.asmSearch);
-    if (filters.supervisor || filters.sup) params = params.set('supervisor', filters.supervisor || filters.sup);
-    if (filters.supervisorSearch || filters.supSearch) params = params.set('supervisorSearch', filters.supervisorSearch || filters.supSearch);
-    if (filters.dr) params = params.set('dr', filters.dr);
-    if (filters.drSearch) params = params.set('drSearch', filters.drSearch);
-    if (filters.cyclo) params = params.set('cyclo', filters.cyclo);
-    if (filters.cycloSearch) params = params.set('cycloSearch', filters.cycloSearch);
-    if (filters.sync !== undefined) params = params.set('sync', filters.sync.toString());
-    if (filters.posformsCount) params = params.set('posformsCount', filters.posformsCount);
+    if (filters.agent) params = params.set('agent', filters.agent);
 
     return params;
   }
@@ -319,7 +321,7 @@ export class PosVenteService extends ApiService {
     const buildUrl = (page: number): string => {
       const params = new HttpParams()
         .set('page', page.toString())
-        .set('page_size', PAGE_SIZE.toString());
+        .set('limit', PAGE_SIZE.toString());
 
       if (currentUser.role === 'ASM') {
         return `${this.endpoint}/all/paginate/province/${currentUser.province_uuid}?${params.toString()}`;
@@ -372,7 +374,7 @@ export class PosVenteService extends ApiService {
     const buildUrl = (page: number): string => {
       const params = new HttpParams()
         .set('page', page.toString())
-        .set('page_size', PAGE_SIZE.toString());
+        .set('limit', PAGE_SIZE.toString());
 
       if (name === 'country' || name === 'Manager' || name === 'Support') {
         return `${this.endpoint}/all/paginate/country/${territoire_uuid}?${params.toString()}`;
@@ -434,7 +436,7 @@ export class PosVenteService extends ApiService {
           operationId: uuidv4(),
           entityType: 'pos',
           operation: 'create',
-          endpoint: this.endpoint,
+          endpoint: `${this.endpoint}/create`,
           data: posData,
           tempId: tempUuid,
           timestamp: new Date(),
@@ -442,6 +444,11 @@ export class PosVenteService extends ApiService {
           status: 'pending',
           userId: data.user_uuid
         });
+
+        // Déclencher la synchronisation immédiatement si en ligne
+        if (this.networkService.isOnline()) {
+          this.syncQueue.processQueue();
+        }
 
         console.log('✅ POS créé localement et mis en file de synchronisation');
         
@@ -474,13 +481,18 @@ export class PosVenteService extends ApiService {
           operationId: uuidv4(),
           entityType: 'pos',
           operation: 'update',
-          endpoint: `${this.endpoint}/${uuid}`,
+          endpoint: `${this.endpoint}/update/${uuid}`,
           data: posData,
           timestamp: new Date(),
           retryCount: 0,
           status: 'pending',
           userId: data.user_uuid
         });
+
+        // Déclencher la synchronisation immédiatement si en ligne
+        if (this.networkService.isOnline()) {
+          this.syncQueue.processQueue();
+        }
 
         console.log('✅ POS modifié localement et mis en file de synchronisation');
         
@@ -506,12 +518,17 @@ export class PosVenteService extends ApiService {
           operationId: uuidv4(),
           entityType: 'pos',
           operation: 'delete',
-          endpoint: `${this.endpoint}/${uuid}`,
+          endpoint: `${this.endpoint}/delete/${uuid}`,
           data: { uuid },
           timestamp: new Date(),
           retryCount: 0,
           status: 'pending'
         });
+
+        // Déclencher la synchronisation immédiatement si en ligne
+        if (this.networkService.isOnline()) {
+          this.syncQueue.processQueue();
+        }
 
         console.log('✅ POS marqué comme supprimé et mis en file de synchronisation');
         

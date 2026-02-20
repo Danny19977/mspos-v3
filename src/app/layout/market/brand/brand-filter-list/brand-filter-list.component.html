@@ -9,6 +9,12 @@
                         <div class="col-md-4">
                             <h4 class="page-title">
                                 Brands <span class="count-title">{{ total_records() }}</span>
+                                @if (isUploadSyncing()) {
+                                <span class="spinner-border spinner-border-sm text-warning ms-2" title="Envoi en cours..." role="status"></span>
+                                }
+                                @if (isDownloadSyncing()) {
+                                <span class="spinner-border spinner-border-sm text-info ms-1" title="Téléchargement en cours..." role="status"></span>
+                                }
                             </h4>
                         </div>
                         <div class="col-md-8 text-end">

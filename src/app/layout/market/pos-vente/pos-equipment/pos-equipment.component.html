@@ -7,7 +7,14 @@
     <div class="card">
         <div class="card-header">
             <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0">Liste des équipements du POS</h5>
+                <h5 class="mb-0">Liste des équipements du POS
+                    @if (isUploadSyncing()) {
+                    <span class="spinner-border spinner-border-sm text-warning ms-2" title="Envoi en cours..." role="status"></span>
+                    }
+                    @if (isDownloadSyncing()) {
+                    <span class="spinner-border spinner-border-sm text-info ms-1" title="Téléchargement en cours..." role="status"></span>
+                    }
+                </h5>
                 <button class="btn btn-success" (click)="addEquipment()">Ajouter un équipement</button>
             </div>
             <div class="row mb-2">

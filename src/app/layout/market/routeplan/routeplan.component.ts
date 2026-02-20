@@ -18,6 +18,8 @@ import { PosVenteService } from '../pos-vente/pos-vente.service';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NetworkService } from '../../../services/network.service';
+import { SyncQueueService } from '../../../shared/services/sync-queue.service';
+import { DataSyncService } from '../../../shared/services/data-sync.service';
 import { db } from '../../../shared/services/db';
 
 @Component({
@@ -38,6 +40,13 @@ export class RouteplanComponent implements OnInit {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
   private readonly networkService = inject(NetworkService);
+  private readonly syncQueueService = inject(SyncQueueService);
+  private readonly dataSyncService = inject(DataSyncService);
+
+  readonly isUploadSyncing = signal<boolean>(false);
+  readonly isDownloadSyncing = signal<boolean>(false);
+  readonly pendingUploadCount = signal<number>(0);
+  readonly downloadEntity = signal<string>('');
 
   readonly isLoadingData = signal(false);
   readonly isLoadingDataItem = signal(false);
@@ -83,6 +92,21 @@ export class RouteplanComponent implements OnInit {
 
   ngOnInit() {
     this.isLoadingData.set(true);
+
+    this.syncQueueService.isSyncing$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(syncing => this.isUploadSyncing.set(syncing));
+
+    this.syncQueueService.pendingCount$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(count => this.pendingUploadCount.set(count));
+
+    this.dataSyncService.syncProgress$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(progress => {
+        this.isDownloadSyncing.set(!progress.isComplete && progress.total > 0);
+        this.downloadEntity.set(progress.entity);
+      });
 
     // Suivre l'état de la connexion
     this.networkService.getNetworkStatus()
@@ -541,6 +565,7 @@ export class RouteplanComponent implements OnInit {
             error: (err) => { console.log('logActivity error:', err); }
           });
           this.toastr.success('Ajouter avec succès!', 'Success!');
+          this.fetchProducts(this.currentUser()!);
           this.isLoading.set(false);
         },
         error: (err) => {

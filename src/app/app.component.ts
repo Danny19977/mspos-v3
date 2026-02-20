@@ -7,6 +7,7 @@ import { Subject } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { PerformanceService } from './core/services/performance.service';
 import { SyncService } from './services/sync.service';
+import { AutoSyncService } from './shared/services/auto-sync.service';
 import { PwaInstallService } from './core/services/pwa-install.service';
 import { PwaInstallDialogComponent } from './shared/pwa-install-dialog/pwa-install-dialog.component';
 
@@ -28,6 +29,7 @@ export class AppComponent implements OnInit, OnDestroy {
     private swUpdate: SwUpdate,
     private performanceService: PerformanceService,
     private syncService: SyncService, // Injection du service de synchronisation
+    private autoSyncService: AutoSyncService,
     private pwaInstallService: PwaInstallService,
     private dialog: MatDialog
   ) {
@@ -86,6 +88,8 @@ export class AppComponent implements OnInit, OnDestroy {
     if (this.syncService.isSyncInProgress()) {
       console.log('⏳ Synchronisation en cours...');
     }
+    // Démarrer la sync automatique (périodique + reconnexion)
+    this.autoSyncService.start();
 
     // Effacer le cache de manière optimisée
     this.clearCacheOptimized();

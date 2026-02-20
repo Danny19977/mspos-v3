@@ -11,6 +11,8 @@ import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { IUser } from '../../../management/user/models/user.model';
 import { AuthService } from '../../../../auth/auth.service';
+import { SyncQueueService } from '../../../../shared/services/sync-queue.service';
+import { DataSyncService } from '../../../../shared/services/data-sync.service';
 
 declare var bootstrap: any;
 
@@ -46,10 +48,24 @@ export class PosEquipmentComponent implements OnInit {
   private authService = inject(AuthService);
   private toastr = inject(ToastrService);
   private destroyRef = inject(DestroyRef);
+  private syncQueueService = inject(SyncQueueService);
+  private dataSyncService = inject(DataSyncService);
+
+  // Sync status signals
+  isUploadSyncing = signal<boolean>(false);
+  isDownloadSyncing = signal<boolean>(false);
 
   private searchSubject = new Subject<string>();
 
   ngOnInit() {
+    this.syncQueueService.isSyncing$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(syncing => this.isUploadSyncing.set(syncing));
+
+    this.dataSyncService.syncProgress$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(progress => this.isDownloadSyncing.set(!progress.isComplete && progress.total > 0));
+
     if (this.posUUId) {
       this.loadEquipments();
     }

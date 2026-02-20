@@ -84,6 +84,9 @@ export class AutoSyncService implements OnDestroy {
     console.log('🔄 Début de la synchronisation...');
 
     try {
+      // Remettre en attente les opérations échouées (max 3 tentatives)
+      await this.syncQueue.retryFailedOperations();
+
       // Traiter la file d'attente
       const result = await this.syncQueue.processQueue();
       

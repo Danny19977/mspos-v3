@@ -17,6 +17,8 @@ import { ProvinceService } from '../../../territories/province/province.service'
 import { CountryService } from '../../../territories/country/country.service';
 import { LogsService } from '../../../management/user-logs/logs.service';
 import { IPosFormItem } from '../../posform/models/posform_item.model';
+import { SyncQueueService } from '../../../../shared/services/sync-queue.service';
+import { DataSyncService } from '../../../../shared/services/data-sync.service';
 
 @Component({
   selector: 'app-brand-filter-list',
@@ -37,6 +39,14 @@ export class BrandFilterListComponent implements OnInit, AfterViewInit {
   private readonly cdr = inject(ChangeDetectorRef);
   private readonly toastr = inject(ToastrService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly syncQueueService = inject(SyncQueueService);
+  private readonly dataSyncService = inject(DataSyncService);
+
+  // Sync status signals
+  readonly isUploadSyncing = signal<boolean>(false);
+  readonly isDownloadSyncing = signal<boolean>(false);
+  readonly pendingUploadCount = signal<number>(0);
+  readonly downloadEntity = signal<string>('');
 
   // Signals pour l'état du composant
   readonly isLoadingData = signal(false);
@@ -107,6 +117,22 @@ export class BrandFilterListComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.isLoadingData.set(true);
+
+    this.syncQueueService.isSyncing$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(syncing => this.isUploadSyncing.set(syncing));
+
+    this.syncQueueService.pendingCount$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(count => this.pendingUploadCount.set(count));
+
+    this.dataSyncService.syncProgress$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(progress => {
+        this.isDownloadSyncing.set(!progress.isComplete && progress.total > 0);
+        this.downloadEntity.set(progress.entity);
+      });
+
     this.formGroup.set(this.formBuilder.group({
       name: ['', Validators.required],
       country_uuid: ['', Validators.required],

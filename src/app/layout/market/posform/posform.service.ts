@@ -56,78 +56,29 @@ export class PosformService extends ApiService {
   ): Observable<any> {
     let params = new HttpParams()
       .set('page', page.toString())
-      .set('page_size', pageSize.toString()) // Utiliser page_size pour être cohérent avec l'API
+      .set('limit', pageSize.toString())
       .set('start_date', startDate)
       .set('end_date', endDate);
 
-    // Ajouter les filtres de recherche générale
+    // Filtres supportés par le backend (ApplyCommonFilters)
     if (filters.search) {
       params = params.set('search', filters.search);
     }
-
-    // Filtres géographiques
-    if (filters.country) {
-      params = params.set('country', filters.country);
-    }
-    if (filters.province) {
-      params = params.set('province', filters.province);
-    }
-    if (filters.area) {
-      params = params.set('area', filters.area);
-    }
-    if (filters.subarea) {
-      params = params.set('subarea', filters.subarea);
-    }
-    if (filters.commune) {
-      params = params.set('commune', filters.commune);
-    }
-
-    // Filtres commerciaux
     if (filters.price) {
       params = params.set('price', filters.price);
     }
-    if (filters.status) {
-      params = params.set('status', filters.status);
-    }
-    if (filters.brandCount) {
-      params = params.set('brandCount', filters.brandCount);
-    }
-    if (filters.posType) {
-      params = params.set('posType', filters.posType);
-    }
-    if (filters.posSearch) {
-      params = params.set('posSearch', filters.posSearch);
-    }
-
-    // Filtres hiérarchie commerciale avec recherche intégrée
     if (filters.asm) {
       params = params.set('asm', filters.asm);
     }
-    if (filters.asmSearch) {
-      params = params.set('asmSearch', filters.asmSearch);
-    }
+    // Note: champ backend = "sup" (pas "supervisor")
     if (filters.supervisor) {
-      params = params.set('supervisor', filters.supervisor);
-    }
-    if (filters.supervisorSearch) {
-      params = params.set('supervisorSearch', filters.supervisorSearch);
+      params = params.set('sup', filters.supervisor);
     }
     if (filters.dr) {
       params = params.set('dr', filters.dr);
     }
-    if (filters.drSearch) {
-      params = params.set('drSearch', filters.drSearch);
-    }
     if (filters.cyclo) {
       params = params.set('cyclo', filters.cyclo);
-    }
-    if (filters.cycloSearch) {
-      params = params.set('cycloSearch', filters.cycloSearch);
-    }
-
-    // Filtres temporels
-    if (filters.quickDate) {
-      params = params.set('quickDate', filters.quickDate);
     }
 
     if (currentUser.role == 'Manager' || currentUser.role == 'Support') {
@@ -167,78 +118,29 @@ export class PosformService extends ApiService {
   ): Observable<any> {
     let params = new HttpParams()
       .set('page', page.toString())
-      .set('page_size', pageSize.toString()) // Utiliser page_size pour être cohérent avec l'API
+      .set('limit', pageSize.toString())
       .set('start_date', startDate)
       .set('end_date', endDate);
 
-    // Ajouter les filtres de recherche générale
+    // Filtres supportés par le backend (ApplyCommonFilters)
     if (filters.search) {
       params = params.set('search', filters.search);
     }
-
-    // Filtres géographiques
-    if (filters.country) {
-      params = params.set('country', filters.country);
-    }
-    if (filters.province) {
-      params = params.set('province', filters.province);
-    }
-    if (filters.area) {
-      params = params.set('area', filters.area);
-    }
-    if (filters.subarea) {
-      params = params.set('subarea', filters.subarea);
-    }
-    if (filters.commune) {
-      params = params.set('commune', filters.commune);
-    }
-
-    // Filtres commerciaux
     if (filters.price) {
       params = params.set('price', filters.price);
     }
-    if (filters.status) {
-      params = params.set('status', filters.status);
-    }
-    if (filters.brandCount) {
-      params = params.set('brandCount', filters.brandCount);
-    }
-    if (filters.posType) {
-      params = params.set('posType', filters.posType);
-    }
-    if (filters.posSearch) {
-      params = params.set('posSearch', filters.posSearch);
-    }
-
-    // Filtres hiérarchie commerciale avec recherche intégrée
     if (filters.asm) {
       params = params.set('asm', filters.asm);
     }
-    if (filters.asmSearch) {
-      params = params.set('asmSearch', filters.asmSearch);
-    }
+    // Note: champ backend = "sup" (pas "supervisor")
     if (filters.supervisor) {
-      params = params.set('supervisor', filters.supervisor);
-    }
-    if (filters.supervisorSearch) {
-      params = params.set('supervisorSearch', filters.supervisorSearch);
+      params = params.set('sup', filters.supervisor);
     }
     if (filters.dr) {
       params = params.set('dr', filters.dr);
     }
-    if (filters.drSearch) {
-      params = params.set('drSearch', filters.drSearch);
-    }
     if (filters.cyclo) {
       params = params.set('cyclo', filters.cyclo);
-    }
-    if (filters.cycloSearch) {
-      params = params.set('cycloSearch', filters.cycloSearch);
-    }
-
-    // Filtres temporels
-    if (filters.quickDate) {
-      params = params.set('quickDate', filters.quickDate);
     }
 
     if (name == "country" || name == 'Manager' || name == 'Support') {
@@ -268,7 +170,7 @@ export class PosformService extends ApiService {
   ): Observable<any> {
     let params = new HttpParams()
       .set("page", page.toString())
-      .set("page_size", pageSize.toString())
+      .set("limit", pageSize.toString())
       .set("search", search)
       .set("start_date", startDateStr)
       .set("end_date", endDateStr)
@@ -279,7 +181,7 @@ export class PosformService extends ApiService {
     startDateStr: string, endDateStr: string): Observable<any> {
     let params = new HttpParams()
       .set("page", page.toString())
-      .set("page_size", pageSize.toString())
+      .set("limit", pageSize.toString())
       .set("search", search)
       .set("start_date", startDateStr)
       .set("end_date", endDateStr)
@@ -290,7 +192,7 @@ export class PosformService extends ApiService {
     startDateStr: string, endDateStr: string): Observable<any> {
     let params = new HttpParams()
       .set("page", page.toString())
-      .set("page_size", pageSize.toString())
+      .set("limit", pageSize.toString())
       .set("search", search)
       .set("start_date", startDateStr)
       .set("end_date", endDateStr)
@@ -301,7 +203,7 @@ export class PosformService extends ApiService {
     startDateStr: string, endDateStr: string): Observable<any> {
     let params = new HttpParams()
       .set("page", page.toString())
-      .set("page_size", pageSize.toString())
+      .set("limit", pageSize.toString())
       .set("search", search)
       .set("start_date", startDateStr)
       .set("end_date", endDateStr)
@@ -312,7 +214,7 @@ export class PosformService extends ApiService {
     startDateStr: string, endDateStr: string): Observable<any> {
     let params = new HttpParams()
       .set("page", page.toString())
-      .set("page_size", pageSize.toString())
+      .set("limit", pageSize.toString())
       .set("search", search)
       .set("start_date", startDateStr)
       .set("end_date", endDateStr)
@@ -323,11 +225,41 @@ export class PosformService extends ApiService {
     startDateStr: string, endDateStr: string): Observable<any> {
     let params = new HttpParams()
       .set("page", page.toString())
-      .set("page_size", pageSize.toString())
+      .set("limit", pageSize.toString())
       .set("search", search)
       .set("start_date", startDateStr)
       .set("end_date", endDateStr)
     return this.http.get<any>(`${this.endpoint}/all/paginate/commune/${user_uuid}`, { params });
+  }
+
+  /**
+   * Exporte les données PosForm en Excel via l'API backend
+   * Utilise l'endpoint GET /posforms/export/excel
+   */
+  exportExcel(filters: any = {}, startDate: string = '', endDate: string = ''): Observable<Blob> {
+    let params = new HttpParams();
+
+    if (startDate) params = params.set('start_date', startDate);
+    if (endDate) params = params.set('end_date', endDate);
+    if (filters.search) params = params.set('search', filters.search);
+    if (filters.country) params = params.set('country', filters.country);
+    if (filters.province) params = params.set('province', filters.province);
+    if (filters.area) params = params.set('area', filters.area);
+    if (filters.subarea) params = params.set('subarea', filters.subarea);
+    if (filters.commune) params = params.set('commune', filters.commune);
+    if (filters.price) params = params.set('price', filters.price);
+    if (filters.status) params = params.set('status', filters.status);
+    if (filters.posType) params = params.set('posType', filters.posType);
+    if (filters.posSearch) params = params.set('posSearch', filters.posSearch);
+    if (filters.asm) params = params.set('asm', filters.asm);
+    if (filters.supervisor) params = params.set('supervisor', filters.supervisor);
+    if (filters.dr) params = params.set('dr', filters.dr);
+    if (filters.cyclo) params = params.set('cyclo', filters.cyclo);
+
+    return this.http.get(`${this.endpoint}/export/excel`, {
+      params,
+      responseType: 'blob'
+    });
   }
 
   /**
@@ -351,7 +283,7 @@ export class PosformService extends ApiService {
           operationId: uuidv4(),
           entityType: 'posform',
           operation: 'create',
-          endpoint: this.endpoint,
+          endpoint: `${this.endpoint}/create`,
           data: posformData,
           tempId: tempUuid,
           timestamp: new Date(),
@@ -391,7 +323,7 @@ export class PosformService extends ApiService {
           operationId: uuidv4(),
           entityType: 'posform',
           operation: 'update',
-          endpoint: `${this.endpoint}/${uuid}`,
+          endpoint: `${this.endpoint}/update/${uuid}`,
           data: posformData,
           timestamp: new Date(),
           retryCount: 0,
@@ -423,7 +355,7 @@ export class PosformService extends ApiService {
           operationId: uuidv4(),
           entityType: 'posform',
           operation: 'delete',
-          endpoint: `${this.endpoint}/${uuid}`,
+          endpoint: `${this.endpoint}/delete/${uuid}`,
           data: { uuid },
           timestamp: new Date(),
           retryCount: 0,

@@ -1,4 +1,5 @@
-import { Component, ElementRef, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit, inject, signal, WritableSignal, computed } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit, inject, signal, WritableSignal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { GeolocationService } from '@ng-web-apis/geolocation';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -29,6 +30,8 @@ import { AreaService } from '../../../territories/areas/area.service';
 import { SubareaService } from '../../../territories/subarea/subarea.service';
 import { CommuneService } from '../../../territories/commune/commune.service';
 import { NetworkService } from '../../../../services/network.service';
+import { SyncQueueService } from '../../../../shared/services/sync-queue.service';
+import { DataSyncService } from '../../../../shared/services/data-sync.service';
 
 
 @Component({
@@ -78,41 +81,22 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   // Propriétés pour les filtres avancés
   showAdvancedFilters = signal(false);
 
-  // Objet contenant tous les filtres
+  // Objet contenant les filtres supportés par le backend
+  // Backend: search (comment), price, asm, sup, dr, cyclo
   filters = {
-    country: '',
-    province: '',
-    area: '',
-    subarea: '',
-    commune: '',
     price: '',
-    status: '',
-    brandCount: '',
-    posType: '',
-    posSearch: '',
-    quickDate: '',
     asm: '',
-    asmSearch: '',
-    supervisor: '',
-    supervisorSearch: '',
+    supervisor: '',  // envoyé comme "sup" au backend
     dr: '',
-    drSearch: '',
-    cyclo: '',
-    cycloSearch: ''
+    cyclo: ''
   };
 
-  // Listes des valeurs uniques pour les filtres
-  uniqueCountries = signal<string[]>([]);
-  uniqueProvinces = signal<string[]>([]);
-  uniqueAreas = signal<string[]>([]);
-  uniqueSubAreas = signal<string[]>([]);
-  uniqueCommunes = signal<string[]>([]);
-  uniquePrices = signal<number[]>([]);
-  uniquePosTypes = signal<string[]>([]);
+  // Listes des valeurs uniques pour les filtres hiérarchie commerciale
   uniqueAsms = signal<string[]>([]);
   uniqueSupervisors = signal<string[]>([]);
   uniqueDrs = signal<string[]>([]);
   uniqueCyclos = signal<string[]>([]);
+  uniquePrices = signal<number[]>([]);
 
   // Listes filtrées pour la hiérarchie commerciale
   filteredAsms = signal<string[]>([]);
@@ -203,6 +187,16 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   private toastr = inject(ToastrService);
   private cdr = inject(ChangeDetectorRef);
   private readonly networkService = inject(NetworkService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly syncQueueService = inject(SyncQueueService);
+  private readonly dataSyncService = inject(DataSyncService);
+
+  // Sync status signals
+  isUploadSyncing = signal<boolean>(false);
+  isDownloadSyncing = signal<boolean>(false);
+  pendingUploadCount = signal<number>(0);
+  downloadEntity = signal<string>('');
+
   isOnline = signal(navigator.onLine);
 
   constructor() {
@@ -283,6 +277,21 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.isLoadingData.set(true);
+
+    this.syncQueueService.isSyncing$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(syncing => this.isUploadSyncing.set(syncing));
+
+    this.syncQueueService.pendingCount$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(count => this.pendingUploadCount.set(count));
+
+    this.dataSyncService.syncProgress$
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe(progress => {
+        this.isDownloadSyncing.set(!progress.isComplete && progress.total > 0);
+        this.downloadEntity.set(progress.entity);
+      });
 
     this.formGroup = this._formBuilder.group({
       pos_uuid: ['', Validators.required],
@@ -482,32 +491,14 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   fetchProducts(name: string, territoire_uuid: string, start_date: string, end_date: string): void {
     this.isLoadingData.set(true);
 
-    // Construire l'objet de filtres pour l'API
+    // Filtres supportés par le backend (ApplyCommonFilters)
     const apiFilters = {
       search: this.search(),
-      // Filtres géographiques
-      country: this.filters.country,
-      province: this.filters.province,
-      area: this.filters.area,
-      subarea: this.filters.subarea,
-      commune: this.filters.commune,
-      // Filtres commerciaux
       price: this.filters.price,
-      status: this.filters.status,
-      brandCount: this.filters.brandCount,
-      posType: this.filters.posType,
-      posSearch: this.filters.posSearch,
-      // Hiérarchie commerciale avec recherche intégrée
       asm: this.filters.asm,
-      asmSearch: this.filters.asmSearch,
-      supervisor: this.filters.supervisor,
-      supervisorSearch: this.filters.supervisorSearch,
+      supervisor: this.filters.supervisor,  // envoyé comme "sup" dans le service
       dr: this.filters.dr,
-      drSearch: this.filters.drSearch,
-      cyclo: this.filters.cyclo,
-      cycloSearch: this.filters.cycloSearch,
-      // Filtres temporels
-      quickDate: this.filters.quickDate
+      cyclo: this.filters.cyclo
     };
 
     // Mode OFFLINE : lire depuis le cache local
@@ -723,40 +714,14 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
    */
   updateUniqueValues(): void {
     const dataList = this.originalDataList();
-    
-    // Valeurs géographiques
-    this.uniqueCountries.set([...new Set(dataList
-      .map((item: IPosForm) => item.Country?.name)
-      .filter((name: string | undefined) => name))] as string[]);
 
-    this.uniqueProvinces.set([...new Set(dataList
-      .map((item: IPosForm) => item.Province?.name)
-      .filter((name: string | undefined) => name))] as string[]);
-
-    this.uniqueAreas.set([...new Set(dataList
-      .map((item: IPosForm) => item.Area?.name)
-      .filter((name: string | undefined) => name))] as string[]);
-
-    this.uniqueSubAreas.set([...new Set(dataList
-      .map((item: IPosForm) => item.SubArea?.name)
-      .filter((name: string | undefined) => name))] as string[]);
-
-    this.uniqueCommunes.set([...new Set(dataList
-      .map((item: IPosForm) => item.Commune?.name)
-      .filter((name: string | undefined) => name))] as string[]);
-
-    // Valeurs de prix
+    // Prix
     this.uniquePrices.set([...new Set(dataList
       .map((item: IPosForm) => item.price)
       .filter((price: number | null | undefined) => price !== null && price !== undefined))]
       .sort((a, b) => (a as number) - (b as number)) as number[]);
 
-    // Types de points de vente
-    this.uniquePosTypes.set([...new Set(dataList
-      .map((item: IPosForm) => item.Pos?.shop)
-      .filter((shop: string | undefined) => shop))] as string[]);
-
-    // Hiérarchie commerciale
+    // Hiérarchie commerciale (colonnes directes supportées par le backend)
     this.uniqueAsms.set([...new Set(dataList
       .map((item: IPosForm) => item.asm)
       .filter((asm: string | undefined) => asm))] as string[]);
@@ -773,18 +738,11 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
       .map((item: IPosForm) => item.cyclo)
       .filter((cyclo: string | undefined) => cyclo))] as string[]);
 
-    // Initialiser les listes filtrées pour la hiérarchie commerciale
+    // Initialiser les listes filtrées
     this.filteredAsms.set([...this.uniqueAsms()]);
     this.filteredSupervisors.set([...this.uniqueSupervisors()]);
     this.filteredDrs.set([...this.uniqueDrs()]);
     this.filteredCyclos.set([...this.uniqueCyclos()]);
-
-    // Debug: Afficher les valeurs uniques dans la console
-    console.log('🔍 Filtres hiérarchie commerciale mis à jour:');
-    console.log('  - ASMs:', this.uniqueAsms);
-    console.log('  - Supervisors:', this.uniqueSupervisors);
-    console.log('  - DRs:', this.uniqueDrs);
-    console.log('  - Cyclos:', this.uniqueCyclos);
   }
 
   /**
@@ -799,153 +757,38 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   /**
    * Méthode héritée pour le filtrage côté client (utilisée comme fallback)
    */
+  /**
+   * Fallback: filtrage côté client (champs supportés par le backend uniquement)
+   */
   applyClientSideFilters(): void {
     let filteredData = [...this.originalDataList()];
 
-    // Filtre par pays
-    if (this.filters.country) {
-      filteredData = filteredData.filter(item =>
-        item.Country?.name === this.filters.country
-      );
-    }
-
-    // Filtre par province
-    if (this.filters.province) {
-      filteredData = filteredData.filter(item =>
-        item.Province?.name === this.filters.province
-      );
-    }
-
-    // Filtre par area
-    if (this.filters.area) {
-      filteredData = filteredData.filter(item =>
-        item.Area?.name === this.filters.area
-      );
-    }
-
-    // Filtre par subarea
-    if (this.filters.subarea) {
-      filteredData = filteredData.filter(item =>
-        item.SubArea?.name === this.filters.subarea
-      );
-    }
-
-    // Filtre par commune
-    if (this.filters.commune) {
-      filteredData = filteredData.filter(item =>
-        item.Commune?.name === this.filters.commune
-      );
-    }
-
-    // Filtre par prix
     if (this.filters.price) {
       filteredData = filteredData.filter(item =>
         item.price === Number(this.filters.price)
       );
     }
-
-    // Filtre par type de POS
-    if (this.filters.posType) {
-      filteredData = filteredData.filter(item =>
-        item.Pos?.shop === this.filters.posType
-      );
-    }
-
-    // Filtre par recherche de POS
-    if (this.filters.posSearch) {
-      const searchTerm = this.filters.posSearch.toLowerCase();
-      filteredData = filteredData.filter(item =>
-        item.Pos?.name?.toLowerCase().includes(searchTerm) ||
-        item.Pos?.shop?.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    // Filtre par statut
-    if (this.filters.status) {
-      if (this.filters.status === 'complete') {
-        filteredData = filteredData.filter(item =>
-          item.pos_uuid && item.pos_uuid.trim() !== ''
-        );
-      } else if (this.filters.status === 'incomplete') {
-        filteredData = filteredData.filter(item =>
-          !item.pos_uuid || item.pos_uuid.trim() === ''
-        );
-      }
-    }
-
-    // Filtre par nombre de marques
-    if (this.filters.brandCount) {
-      filteredData = filteredData.filter(item => {
-        const brandCount = item.PosFormItems?.length || 0;
-        switch (this.filters.brandCount) {
-          case '0':
-            return brandCount === 0;
-          case '5':
-            return brandCount === 5;
-          case '5-10':
-            return brandCount >= 5 && brandCount <= 10;
-          case '11+':
-            return brandCount >= 11;
-          default:
-            return true;
-        }
-      });
-    }
-
-    // Filtres hiérarchie commerciale
     if (this.filters.asm) {
       filteredData = filteredData.filter(item =>
         item.asm === this.filters.asm
       );
     }
-
-    if (this.filters.asmSearch) {
-      const searchTerm = this.filters.asmSearch.toLowerCase();
-      filteredData = filteredData.filter(item =>
-        item.asm?.toLowerCase().includes(searchTerm)
-      );
-    }
-
     if (this.filters.supervisor) {
       filteredData = filteredData.filter(item =>
         item.sup === this.filters.supervisor
       );
     }
-
-    if (this.filters.supervisorSearch) {
-      const searchTerm = this.filters.supervisorSearch.toLowerCase();
-      filteredData = filteredData.filter(item =>
-        item.sup?.toLowerCase().includes(searchTerm)
-      );
-    }
-
     if (this.filters.dr) {
       filteredData = filteredData.filter(item =>
         item.dr === this.filters.dr
       );
     }
-
-    if (this.filters.drSearch) {
-      const searchTerm = this.filters.drSearch.toLowerCase();
-      filteredData = filteredData.filter(item =>
-        item.dr?.toLowerCase().includes(searchTerm)
-      );
-    }
-
     if (this.filters.cyclo) {
       filteredData = filteredData.filter(item =>
         item.cyclo === this.filters.cyclo
       );
     }
 
-    if (this.filters.cycloSearch) {
-      const searchTerm = this.filters.cycloSearch.toLowerCase();
-      filteredData = filteredData.filter(item =>
-        item.cyclo?.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    // Mettre à jour les données filtrées
     this.filteredDataList.set(filteredData);
     this.dataSource.data = filteredData;
   }
@@ -955,34 +798,18 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
    */
   clearAllFilters(): void {
     this.filters = {
-      country: '',
-      province: '',
-      area: '',
-      subarea: '',
-      commune: '',
       price: '',
-      status: '',
-      brandCount: '',
-      posType: '',
-      posSearch: '',
-      quickDate: '',
       asm: '',
-      asmSearch: '',
       supervisor: '',
-      supervisorSearch: '',
       dr: '',
-      drSearch: '',
-      cyclo: '',
-      cycloSearch: ''
+      cyclo: ''
     };
 
-    // Réinitialiser les listes filtrées
     this.filteredAsms.set([...this.uniqueAsms()]);
     this.filteredSupervisors.set([...this.uniqueSupervisors()]);
     this.filteredDrs.set([...this.uniqueDrs()]);
     this.filteredCyclos.set([...this.uniqueCyclos()]);
 
-    // Déclencher un nouveau fetch sans filtres
     this.applyFilters();
   }
 
@@ -1079,49 +906,38 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   }
 
   /**
-   * Exporter les données vers Excel
+   * Exporter les données vers Excel via le backend
    */
   exportToExcel(): void {
-    try {
-      const dataToExport = this.filteredDataList().map(item => ({
-        'Date de visite': formatDate(item.CreatedAt || new Date(), 'dd/MM/yyyy HH:mm', 'en-US'),
-        'Point de vente': item.Pos?.name || 'Non renseigné',
-        'Type de magasin': item.Pos?.shop || '--',
-        'Pays': item.Country?.name || '--',
-        'Province': item.Province?.name || '--',
-        'Area': item.Area?.name || '--',
-        'SubArea': item.SubArea?.name || '--',
-        'Commune': item.Commune?.name || '--',
-        'Coût (FC)': item.price,
-        'ASM': item.asm || '--',
-        'Supervisor': item.sup || '--',
-        'DR': item.dr || '--',
-        'Cyclo': item.cyclo || '--',
-        'Nombre de marques': item.PosFormItems?.length || 0,
-        'Commentaire': item.comment || '--',
-        'Statut': (item.pos_uuid && item.pos_uuid.trim() !== '') ? 'Complet' : 'Incomplet'
-      }));
+    this.toastr.info('Préparation de l\'export Excel...', 'Export');
 
-      // Créer un élément temporaire pour télécharger
-      const csvContent = this.convertToCSV(dataToExport);
-      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-      const link = document.createElement('a');
+    const exportFilters = {
+      search: this.search(),
+      price: this.filters.price,
+      asm: this.filters.asm,
+      sup: this.filters.supervisor,
+      dr: this.filters.dr,
+      cyclo: this.filters.cyclo,
+    };
 
-      if (link.download !== undefined) {
+    this.posformService.exportExcel(exportFilters, this.start_date(), this.end_date()).subscribe({
+      next: (blob: Blob) => {
         const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
         link.setAttribute('href', url);
-        link.setAttribute('download', `rapports_visite_${formatDate(new Date(), 'yyyy-MM-dd_HH-mm', 'en-US')}.csv`);
+        link.setAttribute('download', `rapport_posform_${formatDate(new Date(), 'yyyy-MM-dd_HH-mm', 'en-US')}.xlsx`);
         link.style.visibility = 'hidden';
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        this.toastr.success('Export Excel réussi!', 'Succès');
+      },
+      error: (error) => {
+        console.error('Erreur lors de l\'export Excel:', error);
+        this.toastr.error('Erreur lors de l\'export Excel', 'Erreur');
       }
-
-      this.toastr.success('Export Excel réussi!', 'Succès');
-    } catch (error) {
-      console.error('Erreur lors de l\'export Excel:', error);
-      this.toastr.error('Erreur lors de l\'export Excel', 'Erreur');
-    }
+    });
   }
 
   /**
@@ -1202,28 +1018,6 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
       console.error('Erreur lors de l\'export PDF:', error);
       this.toastr.error('Erreur lors de l\'export PDF', 'Erreur');
     }
-  }
-
-  /**
-   * Convertir les données en format CSV
-   */
-  private convertToCSV(data: any[]): string {
-    if (!data || data.length === 0) return '';
-
-    const headers = Object.keys(data[0]);
-    const csvHeaders = headers.join(',');
-
-    const csvRows = data.map(row =>
-      headers.map(header => {
-        const value = row[header];
-        // Échapper les virgules et guillemets dans les valeurs
-        return typeof value === 'string' && value.includes(',')
-          ? `"${value.replace(/"/g, '""')}"`
-          : value;
-      }).join(',')
-    );
-
-    return [csvHeaders, ...csvRows].join('\n');
   }
 
   /**
@@ -1629,7 +1423,8 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
         ...this.formGroupPosFormItem.value,
         posform_uuid: this.uuidItem(),
         brand_uuid: this.brandUUID(),
-        brand_name: this.brandName()
+        brand_name: this.brandName(),
+        counter: 0  // champ requis par le backend
       };
 
       this.posformItemService.create(itemData).subscribe({

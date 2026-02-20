@@ -88,7 +88,7 @@ export class BrandService extends ApiService {
     if (!this.networkService.isOnline()) {
       return throwError(() => new Error('❌ Connexion Internet requise pour créer un Brand'));
     }
-    return this.http.post(`${this.endpoint}`, data).pipe(
+    return this.http.post(`${this.endpoint}/create`, data).pipe(
       switchMap(async (response: any) => {
         // Ajouter le nouveau Brand au cache local
         if (response?.data) {
@@ -119,7 +119,7 @@ export class BrandService extends ApiService {
     if (!this.networkService.isOnline()) {
       return throwError(() => new Error('❌ Connexion Internet requise pour modifier un Brand'));
     }
-    return this.http.put(`${this.endpoint}/${uuid}`, data).pipe(
+    return this.http.put(`${this.endpoint}/update/${uuid}`, data).pipe(
       switchMap(async (response: any) => {
         // Mettre à jour le Brand dans le cache local
         if (response?.data) {
@@ -150,7 +150,7 @@ export class BrandService extends ApiService {
     if (!this.networkService.isOnline()) {
       return throwError(() => new Error('❌ Connexion Internet requise pour supprimer un Brand'));
     }
-    return this.http.delete(`${this.endpoint}/${uuid}`).pipe(
+    return this.http.delete(`${this.endpoint}/delete/${uuid}`).pipe(
       switchMap(async (response: any) => {
         // Supprimer du cache local
         await db.brands.where('uuid').equals(uuid).delete();

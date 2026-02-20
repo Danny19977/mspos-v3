@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, from, firstValueFrom } from 'rxjs';
 import { db } from './db';
 import { QueuedOperation } from './queue-operation.interface';
@@ -124,17 +124,17 @@ export class SyncQueueService {
    */
   private async syncOperation(operation: QueuedOperation): Promise<any> {
     const token = localStorage.getItem('auth_uuid');
-    const headers = new HttpHeaders({
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    });
+    const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
+
+    // Normalize endpoint: ensure /create, /update/:uuid, /delete/:uuid suffixes
+    const endpoint = this.normalizeEndpoint(operation.endpoint, operation.operation, operation.data?.uuid);
 
     let response: any;
 
     switch (operation.operation) {
       case 'create':
         response = await firstValueFrom(
-          this.http.post(operation.endpoint, operation.data, { headers })
+          this.http.post(`${endpoint}${tokenParam}`, operation.data)
         );
         
         // Update local entity with server-generated UUID
@@ -150,7 +150,7 @@ export class SyncQueueService {
 
       case 'update':
         response = await firstValueFrom(
-          this.http.put(operation.endpoint, operation.data, { headers })
+          this.http.put(`${endpoint}${tokenParam}`, operation.data)
         );
         
         // Update local entity with server data
@@ -165,7 +165,7 @@ export class SyncQueueService {
 
       case 'delete':
         response = await firstValueFrom(
-          this.http.delete(operation.endpoint, { headers })
+          this.http.delete(`${endpoint}${tokenParam}`)
         );
         
         // Remove from local database
@@ -177,6 +177,45 @@ export class SyncQueueService {
     }
 
     return response;
+  }
+
+  /**
+   * Normalize endpoint to ensure correct /create, /update/:uuid, /delete/:uuid suffixes.
+   * Fixes legacy queued operations stored before the endpoint convention was applied.
+   */
+  private normalizeEndpoint(endpoint: string, operation: string, uuid?: string): string {
+    // Strip any existing token query param for clean comparison
+    const base = endpoint.split('?')[0];
+
+    if (operation === 'create') {
+      // Already has /create
+      if (base.endsWith('/create')) return endpoint;
+      // Has /{uuid} suffix by mistake — strip it
+      const withoutUuid = uuid ? base.replace(`/${uuid}`, '') : base;
+      return withoutUuid + '/create';
+    }
+
+    if (operation === 'update') {
+      // Already has /update/
+      if (base.includes('/update/')) return endpoint;
+      // Has /{uuid} but no /update prefix — fix it
+      if (uuid && base.endsWith(`/${uuid}`)) {
+        return base.replace(`/${uuid}`, `/update/${uuid}`);
+      }
+      return base + (uuid ? `/update/${uuid}` : '');
+    }
+
+    if (operation === 'delete') {
+      // Already has /delete/
+      if (base.includes('/delete/')) return endpoint;
+      // Has /{uuid} but no /delete prefix — fix it
+      if (uuid && base.endsWith(`/${uuid}`)) {
+        return base.replace(`/${uuid}`, `/delete/${uuid}`);
+      }
+      return base + (uuid ? `/delete/${uuid}` : '');
+    }
+
+    return endpoint;
   }
 
   /**

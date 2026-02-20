@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, firstValueFrom } from 'rxjs';
 import { db } from './db';
 import { environment } from '../../../environments/environment';
@@ -83,13 +83,10 @@ export class DataSyncService {
   private async downloadBrands(): Promise<void> {
     try {
       const token = localStorage.getItem('auth_uuid');
-      const headers = new HttpHeaders({
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      });
+      const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
 
       const response = await firstValueFrom(
-        this.http.get<any>(`${environment.apiUrl}/brands`, { headers })
+        this.http.get<any>(`${environment.apiUrl}/brands${tokenParam}`)
       );
 
       const brands = response?.data || [];
@@ -118,14 +115,11 @@ export class DataSyncService {
   private async downloadUserPos(userId: string, userRole?: string): Promise<void> {
     try {
       const token = localStorage.getItem('auth_uuid');
-      const headers = new HttpHeaders({
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      });
+      const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
 
       // L'endpoint backend doit filtrer selon le rôle de l'utilisateur
       const response = await firstValueFrom(
-        this.http.get<any>(`${environment.apiUrl}/pos/user/${userId}`, { headers })
+        this.http.get<any>(`${environment.apiUrl}/pos/user/${userId}${tokenParam}`)
       );
 
       const posList = response?.data || [];
@@ -154,13 +148,10 @@ export class DataSyncService {
   private async downloadUserRoutePlans(userId: string): Promise<void> {
     try {
       const token = localStorage.getItem('auth_uuid');
-      const headers = new HttpHeaders({
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      });
+      const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
 
       const response = await firstValueFrom(
-        this.http.get<any>(`${environment.apiUrl}/routeplans/user/${userId}`, { headers })
+        this.http.get<any>(`${environment.apiUrl}/routeplans/user/${userId}${tokenParam}`)
       );
 
       const routePlans = response?.data || [];

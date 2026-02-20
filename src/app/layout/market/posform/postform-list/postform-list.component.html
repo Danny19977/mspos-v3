@@ -16,6 +16,12 @@
                                     {{total_records()}}
                                     }
                                 </span>
+                                @if (isUploadSyncing()) {
+                                <span class="spinner-border spinner-border-sm text-warning ms-2" title="Envoi en cours..." role="status"></span>
+                                }
+                                @if (isDownloadSyncing()) {
+                                <span class="spinner-border spinner-border-sm text-info ms-1" title="Téléchargement en cours..." role="status"></span>
+                                }
                             </h4>
                             @if (hasActiveFilters()) {
                             <small class="text-muted">
@@ -111,194 +117,70 @@
                             </h6>
 
                             <div class="row g-3">
-                                <!-- Filtres géographiques -->
-                                <div class="col-md-3">
-                                    <label class="form-label">🌍 Pays</label>
-                                    <select class="form-select" [(ngModel)]="filters.country"
-                                        (ngModelChange)="applyFilters()">
-                                        <option value="">Tous les pays</option>
-                                        <option *ngFor="let country of uniqueCountries()" [value]="country">{{country}}
-                                        </option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-3">
-                                    <label class="form-label">🏛️ Province</label>
-                                    <select class="form-select" [(ngModel)]="filters.province"
-                                        (ngModelChange)="applyFilters()">
-                                        <option value="">Toutes les provinces</option>
-                                        <option *ngFor="let province of uniqueProvinces()" [value]="province">{{province}}
-                                        </option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-3">
-                                    <label class="form-label">🗺️ Area</label>
-                                    <select class="form-select" [(ngModel)]="filters.area"
-                                        (ngModelChange)="applyFilters()">
-                                        <option value="">Toutes les areas</option>
-                                        <option *ngFor="let area of uniqueAreas()" [value]="area">{{area}}</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-3">
-                                    <label class="form-label">📍 SubArea</label>
-                                    <select class="form-select" [(ngModel)]="filters.subarea"
-                                        (ngModelChange)="applyFilters()">
-                                        <option value="">Toutes les subareas</option>
-                                        <option *ngFor="let subarea of uniqueSubAreas()" [value]="subarea">{{subarea}}
-                                        </option>
-                                    </select>
-                                </div>
-
-                                <!-- Deuxième ligne de filtres -->
-                                <div class="col-md-3">
-                                    <label class="form-label">🏘️ Commune</label>
-                                    <select class="form-select" [(ngModel)]="filters.commune"
-                                        (ngModelChange)="applyFilters()">
-                                        <option value="">Toutes les communes</option>
-                                        <option *ngFor="let commune of uniqueCommunes()" [value]="commune">{{commune}}
-                                        </option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-3">
-                                    <label class="form-label">💰 Coût de visite</label>
+                                <!-- Cout de visite -->
+                                <div class="col-md-2">
+                                    <label class="form-label">Cout de visite</label>
                                     <select class="form-select" [(ngModel)]="filters.price"
                                         (ngModelChange)="applyFilters()">
-                                        <option value="">Tous les coûts</option>
+                                        <option value="">Tous les couts</option>
                                         <option *ngFor="let price of uniquePrices()" [value]="price">{{price}} FC</option>
                                     </select>
                                 </div>
 
-                                <div class="col-md-3">
-                                    <label class="form-label">📊 Statut du rapport</label>
-                                    <select class="form-select" [(ngModel)]="filters.status"
-                                        (ngModelChange)="applyFilters()">
-                                        <option value="">Tous les statuts</option>
-                                        <option value="complete">✅ Complets (avec POS)</option>
-                                        <option value="incomplete">⚠️ Incomplets (sans POS)</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-3">
-                                    <label class="form-label">🏷️ Nombre de marques</label>
-                                    <select class="form-select" [(ngModel)]="filters.brandCount"
-                                        (ngModelChange)="applyFilters()">
-                                        <option value="">Tous</option>
-                                        <option value="0">Aucune marque</option>
-                                        <option value="1">1 marque</option>
-                                        <option value="2-5">2-5 marques</option>
-                                        <option value="6+">6+ marques</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-3">
-                                    <label class="form-label">🏪 Type de point de vente</label>
-                                    <select class="form-select" [(ngModel)]="filters.posType"
-                                        (ngModelChange)="applyFilters()">
-                                        <option value="">Tous les types</option>
-                                        <option *ngFor="let type of uniquePosTypes()" [value]="type">{{type}}</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Troisième ligne de filtres -->
-                            <div class="row g-3 mt-1">
-                                <div class="col-md-4">
-                                    <label class="form-label">🔍 Recherche par point de vente</label>
-                                    <input type="text" class="form-control" [(ngModel)]="filters.posSearch"
-                                        (ngModelChange)="applyFilters()" placeholder="Nom du magasin...">
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label class="form-label">📅 Filtre rapide par date</label>
-                                    <select class="form-select" [(ngModel)]="filters.quickDate"
-                                        (ngModelChange)="applyQuickDateFilter($event)">
-                                        <option value="">Toutes les dates</option>
-                                        <option value="today">Aujourd'hui</option>
-                                        <option value="yesterday">Hier</option>
-                                        <option value="last7days">7 derniers jours</option>
-                                        <option value="last30days">30 derniers jours</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-4">
-                                    <label class="form-label">📊 Export et actions</label>
+                                <!-- Export -->
+                                <div class="col-md-2">
+                                    <label class="form-label">Export</label>
                                     <div class="d-flex gap-2">
                                         <button type="button" class="btn btn-outline-success btn-sm"
                                             (click)="exportToExcel()" data-bs-toggle="tooltip"
-                                            title="Exporter les données filtrées vers Excel">
+                                            title="Exporter vers Excel">
                                             <i class="ti ti-file-spreadsheet me-1"></i>Excel
                                         </button>
                                         <button type="button" class="btn btn-outline-info btn-sm"
                                             (click)="exportToPDF()" data-bs-toggle="tooltip"
-                                            title="Exporter les données filtrées vers PDF">
+                                            title="Exporter vers PDF">
                                             <i class="ti ti-file-text me-1"></i>PDF
                                         </button>
                                     </div>
                                 </div>
                             </div>
 
-                            <!-- Filtres hiérarchie commerciale avec recherche intégrée -->
+                            <!-- Hierarchie commerciale -->
                             <div class="row g-3 mt-2">
-                                <div class="col-12">
-                                    <h6 class="mb-2"><i class="ti ti-users me-2"></i>Hiérarchie commerciale</h6>
+                                <div class="col-md-3">
+                                    <label class="form-label">ASM</label>
+                                    <select class="form-select" [(ngModel)]="filters.asm"
+                                        (ngModelChange)="applyFilters()">
+                                        <option value="">Tous les ASM</option>
+                                        <option *ngFor="let asm of filteredAsms()" [value]="asm">{{asm}}</option>
+                                    </select>
                                 </div>
 
                                 <div class="col-md-3">
-                                    <label class="form-label">👔 ASM</label>
-                                    <div class="dropdown-with-search">
-                                        <input type="text" class="form-control mb-1" [(ngModel)]="filters.asmSearch"
-                                            (ngModelChange)="applyFilters()" placeholder="� Rechercher un ASM...">
-                                        <select class="form-select" [(ngModel)]="filters.asm"
-                                            (ngModelChange)="applyFilters()">
-                                            <option value="">Tous les ASM</option>
-                                            <option *ngFor="let asm of filteredAsms()" [value]="asm">{{asm}}</option>
-                                        </select>
-                                    </div>
+                                    <label class="form-label">Supervisor</label>
+                                    <select class="form-select" [(ngModel)]="filters.supervisor"
+                                        (ngModelChange)="applyFilters()">
+                                        <option value="">Tous les supervisors</option>
+                                        <option *ngFor="let sup of filteredSupervisors()" [value]="sup">{{sup}}</option>
+                                    </select>
                                 </div>
 
                                 <div class="col-md-3">
-                                    <label class="form-label">👨‍💼 Supervisor</label>
-                                    <div class="dropdown-with-search">
-                                        <input type="text" class="form-control mb-1"
-                                            [(ngModel)]="filters.supervisorSearch" (ngModelChange)="applyFilters()"
-                                            placeholder="🔍 Rechercher un supervisor...">
-                                        <select class="form-select" [(ngModel)]="filters.supervisor"
-                                            (ngModelChange)="applyFilters()">
-                                            <option value="">Tous les supervisors</option>
-                                            <option *ngFor="let sup of filteredSupervisors()" [value]="sup">{{sup}}
-                                            </option>
-                                        </select>
-                                    </div>
+                                    <label class="form-label">DR</label>
+                                    <select class="form-select" [(ngModel)]="filters.dr"
+                                        (ngModelChange)="applyFilters()">
+                                        <option value="">Tous les DR</option>
+                                        <option *ngFor="let dr of filteredDrs()" [value]="dr">{{dr}}</option>
+                                    </select>
                                 </div>
 
                                 <div class="col-md-3">
-                                    <label class="form-label">🏢 DR</label>
-                                    <div class="dropdown-with-search">
-                                        <input type="text" class="form-control mb-1" [(ngModel)]="filters.drSearch"
-                                            (ngModelChange)="applyFilters()" placeholder="🔍 Rechercher un DR...">
-                                        <select class="form-select" [(ngModel)]="filters.dr"
-                                            (ngModelChange)="applyFilters()">
-                                            <option value="">Tous les DR</option>
-                                            <option *ngFor="let dr of filteredDrs()" [value]="dr">{{dr}}</option>
-                                        </select>
-                                    </div>
-                                </div>
-
-                                <div class="col-md-3">
-                                    <label class="form-label">� Cyclo</label>
-                                    <div class="dropdown-with-search">
-                                        <input type="text" class="form-control mb-1" [(ngModel)]="filters.cycloSearch"
-                                            (ngModelChange)="applyFilters()" placeholder="🔍 Rechercher un cyclo...">
-                                        <select class="form-select" [(ngModel)]="filters.cyclo"
-                                            (ngModelChange)="applyFilters()">
-                                            <option value="">Tous les cyclos</option>
-                                            <option *ngFor="let cyclo of filteredCyclos()" [value]="cyclo">{{cyclo}}
-                                            </option>
-                                        </select>
-                                    </div>
+                                    <label class="form-label">Cyclo</label>
+                                    <select class="form-select" [(ngModel)]="filters.cyclo"
+                                        (ngModelChange)="applyFilters()">
+                                        <option value="">Tous les cyclos</option>
+                                        <option *ngFor="let cyclo of filteredCyclos()" [value]="cyclo">{{cyclo}}</option>
+                                    </select>
                                 </div>
                             </div>
 
@@ -782,19 +664,19 @@
                 <div class="col-md-6">
                     <div class="mb-3">
                         <label class="col-form-label d-flex align-items-center" for="price">
-                            Prix à la tige <span class="text-danger">*</span>
+                            Prix à la tige Equateur <span class="text-danger">*</span>
                             <button type="button" class="btn btn-link btn-sm p-0 ms-2" data-bs-toggle="tooltip"
                                 title="Sélectionnez le montant correspondant au type de visite effectuée">
                                 <i class="ti ti-help-circle text-primary"></i>
                             </button>
                         </label>
                         <select class="form-control" formControlName="price" required>
-                            <option value="" disabled selected>💰 Choisissez le prix à la tige...</option>
+                            <option value="" disabled selected>💰 Choisissez le prix à la tige Equateur...</option>
                             <option *ngFor="let price of priceList" [value]="price">{{price}} FC</option>
                         </select>
                         <small class="text-muted">Le montant dépend du type de visite (simple, détaillée, etc.)</small>
                         <mat-error *ngIf="formGroup.controls['price'].hasError('required')">
-                            <i class="ti ti-alert-circle me-1"></i>Veuillez sélectionner le prix à la tige
+                            <i class="ti ti-alert-circle me-1"></i>Veuillez sélectionner le prix à la tige Equateur
                         </mat-error>
                     </div>
                 </div>
