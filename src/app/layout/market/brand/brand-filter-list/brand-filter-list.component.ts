@@ -71,9 +71,6 @@ export class BrandFilterListComponent implements OnInit, AfterViewInit {
   readonly territoire_uuid = signal('');
   readonly territoire = signal<any>(undefined);
 
-  /** Flag pour éviter de re-télécharger tous les Brands à chaque appel de fetchProducts */
-  private hasDownloadedAllBrands = false;
-
   @ViewChild(MatSort) sort!: MatSort;
   @ViewChild(MatPaginator) paginator!: MatPaginator;
 
@@ -149,11 +146,8 @@ export class BrandFilterListComponent implements OnInit, AfterViewInit {
   }
 
   fetchProducts(name: string, territoire_uuid: string) {
-    // Télécharger l'intégralité des Brands du territoire vers le cache local (une seule fois par session)
-    if (!this.hasDownloadedAllBrands) {
-      this.hasDownloadedAllBrands = true;
-      this.brandService.downloadAllCloudBrandsByTerritoryToLocal(name, territoire_uuid);
-    }
+    // Télécharger vers le cache local si le TTL de 24 h est dépassé (géré par le service)
+    this.brandService.downloadAllCloudBrandsByTerritoryToLocal(name, territoire_uuid);
 
     console.log("name", name);
     if (name == "country") {

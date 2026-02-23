@@ -235,7 +235,7 @@
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Pays</th>
                                     <td mat-cell *matCellDef="let data">
                                         <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
-                                            {{ data.Country?.name }}
+                                            {{ data.Country?.name || data.country_name }}
                                         </a>
                                     </td>
                                 </ng-container>
@@ -245,7 +245,7 @@
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Province</th>
                                     <td mat-cell *matCellDef="let data">
                                         <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
-                                            {{ data.Province?.name }}
+                                            {{ data.Province?.name || data.province_name }}
                                         </a>
                                     </td>
                                 </ng-container>
@@ -255,7 +255,7 @@
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Area</th>
                                     <td mat-cell *matCellDef="let data">
                                         <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
-                                            {{ data.Area?.name }}
+                                            {{ data.Area?.name || data.area_name }}
                                         </a>
                                     </td>
                                 </ng-container>
@@ -265,7 +265,7 @@
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Subarea</th>
                                     <td mat-cell *matCellDef="let data">
                                         <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
-                                            {{ data.SubArea?.name }}
+                                            {{ data.SubArea?.name || data.subarea_name }}
                                         </a>
                                     </td>
                                 </ng-container>
@@ -275,7 +275,7 @@
                                     <th mat-header-cell *matHeaderCellDef mat-sort-header>Commune</th>
                                     <td mat-cell *matCellDef="let data">
                                         <a [routerLink]="['/web/pos/pos-view', data.uuid, 'posforms']">
-                                            {{ data.Commune?.name }}
+                                            {{ data.Commune?.name || data.commune_name }}
                                         </a>
                                     </td>
                                 </ng-container>

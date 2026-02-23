@@ -90,17 +90,25 @@ export class MapPosComponent implements OnInit {
 
 
     getPosFormList(start_date: string, end_date: string) {
-        console.log("posUUId", this.posUUId);
-        this.posService.getGoogleMap(this.posUUId, start_date, end_date).subscribe((res) => {
-            const dataList = res.data;
-            // const dataListFilter = dataList.filter((item: any) => item.latitude !== 0 && item.longitude !== 0);
-            // this.googleMapList = dataListFilter;
-            if (dataList) {
-                this.googleMapList.set(dataList);
-                console.log("googleMapList", this.googleMapList());
-                this.isLoading.set(false);
-            }
-            this.isLoading.set(false);
-        });
+        this.isLoading.set(true);
+        this.posService.getGoogleMap(this.posUUId, start_date, end_date)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe({
+                next: (res) => {
+                    const dataList: GoogleMapModel[] = res.data || [];
+                    const filtered = dataList.filter(item =>
+                        item.latitude && item.longitude &&
+                        item.latitude !== 0 && item.longitude !== 0
+                    );
+                    this.googleMapList.set(filtered);
+                    this.isLoading.set(false);
+                },
+                error: (err) => {
+                    console.error('Erreur chargement carte:', err);
+                    this.hasMapError.set(true);
+                    this.mapErrorMessage.set('Erreur lors du chargement des données de la carte.');
+                    this.isLoading.set(false);
+                }
+            });
     }
 }

@@ -7,6 +7,7 @@ import { switchMap } from 'rxjs/operators';
 import { ApiResponse2 } from '../../../shared/model/api-response.model';
 import { IUser } from '../../management/user/models/user.model';
 import { IPosForm } from './models/posform.model';
+import { IPosFormItem } from './models/posform_item.model';
 import { NetworkService } from '../../../services/network.service';
 import { SyncQueueService } from '../../../shared/services/sync-queue.service';
 import { db } from '../../../shared/services/db';
@@ -278,21 +279,24 @@ export class PosformService extends ApiService {
 
     return from(this.createPosformLocally(posformData)).pipe(
       switchMap(async (localPosform) => {
-        // Mettre en file d'attente pour synchronisation
-        await this.syncQueue.enqueue({
-          operationId: uuidv4(),
-          entityType: 'posform',
-          operation: 'create',
-          endpoint: `${this.endpoint}/create`,
-          data: posformData,
-          tempId: tempUuid,
-          timestamp: new Date(),
-          retryCount: 0,
-          status: 'pending',
-          userId: data.user_uuid
-        });
-
-        console.log('✅ Posform créé localement et mis en file de synchronisation');
+        // ✅ Ne synchroniser que si le posform a déjà un POS assigné
+        if (posformData.pos_uuid && posformData.pos_uuid.trim() !== '') {
+          await this.syncQueue.enqueue({
+            operationId: uuidv4(),
+            entityType: 'posform',
+            operation: 'create',
+            endpoint: `${this.endpoint}/create`,
+            data: posformData,
+            tempId: tempUuid,
+            timestamp: new Date(),
+            retryCount: 0,
+            status: 'pending',
+            userId: data.user_uuid
+          });
+          console.log('✅ Posform créé localement et mis en file de synchronisation');
+        } else {
+          console.log("⏸️ Posform créé localement sans POS — synchronisation différée jusqu'à l'assignation d'un POS");
+        }
         
         return {
           data: localPosform,
@@ -318,20 +322,23 @@ export class PosformService extends ApiService {
 
     return from(this.updatePosformLocally(uuid, posformData)).pipe(
       switchMap(async (updatedPosform) => {
-        // Mettre en file d'attente pour synchronisation
-        await this.syncQueue.enqueue({
-          operationId: uuidv4(),
-          entityType: 'posform',
-          operation: 'update',
-          endpoint: `${this.endpoint}/update/${uuid}`,
-          data: posformData,
-          timestamp: new Date(),
-          retryCount: 0,
-          status: 'pending',
-          userId: data.user_uuid
-        });
-
-        console.log('✅ Posform modifié localement et mis en file de synchronisation');
+        // ✅ Ne synchroniser que si le posform a déjà un POS assigné
+        if (posformData.pos_uuid && posformData.pos_uuid.trim() !== '') {
+          await this.syncQueue.enqueue({
+            operationId: uuidv4(),
+            entityType: 'posform',
+            operation: 'update',
+            endpoint: `${this.endpoint}/update/${uuid}`,
+            data: posformData,
+            timestamp: new Date(),
+            retryCount: 0,
+            status: 'pending',
+            userId: data.user_uuid
+          });
+          console.log('✅ Posform modifié localement et mis en file de synchronisation');
+        } else {
+          console.log("⏸️ Posform modifié localement sans POS — synchronisation différée jusqu'à l'assignation d'un POS");
+        }
         
         return {
           data: updatedPosform,
@@ -459,39 +466,55 @@ export class PosformService extends ApiService {
   }
 
   /**
-   * Met à jour le cache local avec les données du serveur
+   * Met à jour le cache local avec les données du serveur.
+   *
+   * Stratégie anti-doublons : même logique que BrandService —
+   * on interroge Dexie par uuid avant le bulkPut pour réutiliser l'id local existant.
+   * Seuls les posforms avec uuid défini sont traités.
    */
   async updateLocalCache(posforms: IPosForm[]): Promise<void> {
+    if (!posforms?.length) return;
     try {
-      const posformsToStore = posforms.map(pf => ({
-        uuid: pf.uuid!,
-        price: pf.price,
-        comment: pf.comment,
-        latitude: pf.latitude,
-        longitude: pf.longitude,
-        pos_uuid: pf.pos_uuid,
-        user_uuid: pf.user_uuid,
-        country_uuid: pf.country_uuid,
-        province_uuid: pf.province_uuid,
-        area_uuid: pf.area_uuid,
-        sub_area_uuid: pf.sub_area_uuid,
-        commune_uuid: pf.commune_uuid,
-        asm_uuid: pf.asm_uuid,
-        asm: pf.asm,
-        sup_uuid: pf.sup_uuid,
-        sup: pf.sup,
-        dr_uuid: pf.dr_uuid,
-        dr: pf.dr,
-        cyclo_uuid: pf.cyclo_uuid,
-        cyclo: pf.cyclo,
-        signature: pf.signature,
-        sync_status: 'synced' as const,
-        CreatedAt: pf.CreatedAt,
-        UpdatedAt: pf.UpdatedAt
-      }));
-      
+      // 1. Récupérer les ids locaux correspondant aux uuid entrants
+      const incomingUuids = posforms.map(pf => pf.uuid).filter(Boolean) as string[];
+      const existingRecords = await db.posForms.where('uuid').anyOf(incomingUuids).toArray();
+      const uuidToLocalId = new Map<string, number>();
+      for (const rec of existingRecords) {
+        if (rec.uuid && rec.id != null) uuidToLocalId.set(rec.uuid, rec.id as number);
+      }
+
+      const posformsToStore = posforms
+        .filter(pf => !!pf.uuid)
+        .map(pf => ({
+          ...(uuidToLocalId.has(pf.uuid!) ? { id: uuidToLocalId.get(pf.uuid!) } : {}),
+          uuid: pf.uuid!,
+          price: pf.price,
+          comment: pf.comment,
+          latitude: pf.latitude,
+          longitude: pf.longitude,
+          pos_uuid: pf.pos_uuid,
+          user_uuid: pf.user_uuid,
+          country_uuid: pf.country_uuid,
+          province_uuid: pf.province_uuid,
+          area_uuid: pf.area_uuid,
+          sub_area_uuid: pf.sub_area_uuid,
+          commune_uuid: pf.commune_uuid,
+          asm_uuid: pf.asm_uuid,
+          asm: pf.asm,
+          sup_uuid: pf.sup_uuid,
+          sup: pf.sup,
+          dr_uuid: pf.dr_uuid,
+          dr: pf.dr,
+          cyclo_uuid: pf.cyclo_uuid,
+          cyclo: pf.cyclo,
+          signature: pf.signature,
+          sync_status: 'synced' as const,
+          CreatedAt: pf.CreatedAt,
+          UpdatedAt: pf.UpdatedAt
+        }));
+
       await db.posForms.bulkPut(posformsToStore as any);
-      console.log(`💾 ${posformsToStore.length} Posforms mis à jour dans le cache local`);
+      console.log(`💾 ${posformsToStore.length} Posforms mis à jour dans le cache local (${uuidToLocalId.size} existants, ${posformsToStore.length - uuidToLocalId.size} nouveaux)`);
     } catch (error) {
       console.error('Erreur lors de la mise à jour du cache local:', error);
     }
@@ -610,7 +633,99 @@ export class PosformService extends ApiService {
     const offset = (page - 1) * pageSize;
     const paginated = posforms.slice(offset, offset + pageSize);
 
+    // Hydrater la relation Pos depuis le cache local (db.pos)
+    const posUuids = [...new Set(paginated.map(pf => pf.pos_uuid).filter(Boolean))] as string[];
+    const posMap = new Map<string, any>();
+    if (posUuids.length > 0) {
+      const posRecords = await db.pos.where('uuid').anyOf(posUuids).toArray();
+      posRecords.forEach(pos => { if (pos.uuid) posMap.set(pos.uuid, pos); });
+      // Fallback : si le POS n'est pas dans db.pos, chercher le nom dans db.routePlanItems
+      const missingUuids = posUuids.filter(uuid => !posMap.has(uuid));
+      if (missingUuids.length > 0) {
+        const rpiRecords = await (db.routePlanItems as any).where('pos_uuid').anyOf(missingUuids).toArray();
+        rpiRecords.forEach((rpi: any) => {
+          if (rpi.pos_uuid && !posMap.has(rpi.pos_uuid)) {
+            posMap.set(rpi.pos_uuid, { uuid: rpi.pos_uuid, name: rpi.pos_name });
+          }
+        });
+      }
+    }
+
+    // Hydrater la relation PosFormItems depuis le cache local (db.posformItems)
+    const posformUuids = paginated.map(pf => pf.uuid).filter(Boolean) as string[];
+    const posformItemsMap = new Map<string, IPosFormItem[]>();
+    if (posformUuids.length > 0) {
+      const allItems = await (db.posformItems as any).where('posform_uuid').anyOf(posformUuids).toArray();
+      allItems.forEach((item: IPosFormItem) => {
+        if (item.posform_uuid) {
+          const existing = posformItemsMap.get(item.posform_uuid) || [];
+          existing.push(item);
+          posformItemsMap.set(item.posform_uuid, existing);
+        }
+      });
+    }
+
+    const hydratedPaginated = paginated.map(pf => ({
+      ...pf,
+      Pos: pf.pos_uuid ? (posMap.get(pf.pos_uuid) ?? pf.Pos) : pf.Pos,
+      PosFormItems: pf.uuid ? (posformItemsMap.get(pf.uuid) ?? pf.PosFormItems ?? []) : (pf.PosFormItems ?? [])
+    }));
+
     console.log(`📦 Posforms locaux: ${total_records} total, page ${page}/${total_pages}`);
+    return {
+      data: hydratedPaginated,
+      pagination: {
+        total_pages,
+        total_records,
+        current_page: page,
+        page_size: pageSize
+      },
+      offline: true
+    };
+  }
+
+  /**
+   * Retourne les Posforms du cache local paginés, filtrés par POS UUID — OFFLINE FIRST
+   */
+  getPaginatedOfflineFirstByPosUUID(
+    posUuid: string,
+    page: number,
+    pageSize: number,
+    startDate: string,
+    endDate: string
+  ): Observable<any> {
+    return from(this.getFromLocalCacheByPosUUID(posUuid, page, pageSize, startDate, endDate));
+  }
+
+  private async getFromLocalCacheByPosUUID(
+    posUuid: string,
+    page: number,
+    pageSize: number,
+    startDate: string,
+    endDate: string
+  ): Promise<any> {
+    let posforms = await db.posForms.where('pos_uuid').equals(posUuid).toArray();
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    posforms = posforms.filter(pf => {
+      if (!pf.CreatedAt) return true;
+      const d = new Date(pf.CreatedAt);
+      return d >= start && d <= end;
+    });
+
+    posforms.sort((a, b) => {
+      const da = a.CreatedAt ? new Date(a.CreatedAt).getTime() : 0;
+      const db2 = b.CreatedAt ? new Date(b.CreatedAt).getTime() : 0;
+      return db2 - da;
+    });
+
+    const total_records = posforms.length;
+    const total_pages = Math.max(1, Math.ceil(total_records / pageSize));
+    const offset = (page - 1) * pageSize;
+    const paginated = posforms.slice(offset, offset + pageSize);
+
+    console.log(`📦 Posforms locaux (POS ${posUuid}): ${total_records} total, page ${page}/${total_pages}`);
     return {
       data: paginated,
       pagination: {

@@ -97,14 +97,51 @@ export class SyncQueueService {
 
       for (const operation of operations) {
         try {
-          await this.syncOperation(operation);
-          await this.markCompleted(operation.id!);
+          // Relire les données fraîches depuis db avant l'envoi
+          // (critiques pour les items dont routeplan_uuid vient d'être propagé)
+          const freshOp = await db.syncQueue.get(operation.id!);
+          const opToSync = freshOp ?? operation;
+
+          await this.syncOperation(opToSync);
+          await this.markCompleted(opToSync.id!);
           successCount++;
-          console.log(`✅ Synced: ${operation.operation} ${operation.entityType}`);
+          console.log(`✅ Synced: ${opToSync.operation} ${opToSync.entityType}`);
         } catch (error: any) {
-          await this.markFailed(operation.id!, error.message || 'Unknown error');
-          failedCount++;
-          console.error(`❌ Failed to sync: ${operation.operation} ${operation.entityType}`, error);
+          // Conflit détecté (409 / 422) : l'entité existe déjà sur le serveur.
+          // On marque l'opération comme complétée pour éviter les doublons.
+          const isConflict = error?.status === 409 || error?.status === 422;
+          if (isConflict) {
+            await this.markCompleted(operation.id!);
+            successCount++;
+            console.warn(`⚠️ Conflit (${error.status}) ignoré — déjà présent: ${operation.operation} ${operation.entityType}`);
+          } else {
+            await this.markFailed(operation.id!, error.message || 'Unknown error');
+            failedCount++;
+            console.error(`❌ Failed to sync: ${operation.operation} ${operation.entityType}`, error);
+          }
+        }
+      }
+
+      // Second passage : traiter les opérations ajoutées ou débloquées pendant le cycle
+      // (ex: routeplanItems dont l'UUID a été propagé pendant le traitement du routeplan)
+      const remainingOps = await this.getPendingOperations();
+      for (const op of remainingOps) {
+        try {
+          const fresh = await db.syncQueue.get(op.id!);
+          const opToSync = fresh ?? op;
+          await this.syncOperation(opToSync);
+          await this.markCompleted(opToSync.id!);
+          successCount++;
+          console.log(`✅ [2nd pass] Synced: ${opToSync.operation} ${opToSync.entityType}`);
+        } catch (error: any) {
+          const isConflict = error?.status === 409 || error?.status === 422;
+          if (isConflict) {
+            await this.markCompleted(op.id!);
+            successCount++;
+          } else {
+            await this.markFailed(op.id!, error.message || 'Unknown error');
+            failedCount++;
+          }
         }
       }
 
@@ -145,6 +182,12 @@ export class SyncQueueService {
             response.data.uuid,
             response.data
           );
+
+          // Si c'est un routeplan, propager le nouvel UUID vers tous les
+          // routeplanItems locaux et les entrées en attente dans la queue.
+          if (operation.entityType === 'routeplan') {
+            await this.propagateRoutePlanUuid(operation.tempId, response.data.uuid);
+          }
         }
         break;
 
@@ -216,6 +259,51 @@ export class SyncQueueService {
     }
 
     return endpoint;
+  }
+
+  /**
+   * Après la sync d'un routeplan, met à jour tous les routeplanItems locaux
+   * et les opérations en queue qui référencent l'ancien tempId.
+   */
+  private async propagateRoutePlanUuid(tempId: string, serverUuid: string): Promise<void> {
+    try {
+      // 1. Mettre à jour les items dans IndexedDB (index routplan_uuid)
+      const itemsByIndex = await db.routePlanItems
+        .where('routplan_uuid').equals(tempId)
+        .toArray();
+      for (const item of itemsByIndex) {
+        await (db.routePlanItems as any).update(item.ID!, {
+          routplan_uuid: serverUuid,
+          routeplan_uuid: serverUuid,
+        });
+      }
+
+      // 2. Fallback : items stockés avec routeplan_uuid (avec 'e')
+      const itemsByFilter = await db.routePlanItems
+        .filter(item => (item as any).routeplan_uuid === tempId && (item as any).routplan_uuid !== tempId)
+        .toArray();
+      for (const item of itemsByFilter) {
+        await (db.routePlanItems as any).update(item.ID!, {
+          routplan_uuid: serverUuid,
+          routeplan_uuid: serverUuid,
+        });
+      }
+
+      // 3. Mettre à jour les opérations en attente dans la syncQueue
+      const pendingItems = await db.syncQueue
+        .where('status').equals('pending')
+        .filter(op => op.entityType === 'routeplanItem' && op.data?.routeplan_uuid === tempId)
+        .toArray();
+      for (const op of pendingItems) {
+        await db.syncQueue.update(op.id!, {
+          data: { ...op.data, routeplan_uuid: serverUuid },
+        });
+      }
+
+      console.log(`🔗 UUID propagé routeplan ${tempId} → ${serverUuid}: ${itemsByIndex.length + itemsByFilter.length} items, ${pendingItems.length} queue ops`);
+    } catch (err) {
+      console.error('❌ Erreur propagation UUID routeplan:', err);
+    }
   }
 
   /**

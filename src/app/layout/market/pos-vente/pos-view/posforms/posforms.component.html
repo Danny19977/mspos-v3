@@ -273,7 +273,7 @@
                     </ng-container>
 
                     <tr mat-header-row *matHeaderRowDef="displayedColumns()"></tr>
-                    <tr mat-row *matRowDef="let row; columns: displayedColumns();" class="table-row-hover"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns();" class="table-row-hover" [class.local-pending-row]="row.sync_status === 'pending'"></tr>
 
                     <!-- Row shown when there is no matching data. -->
                     <tr class="mat-row" *matNoDataRow>

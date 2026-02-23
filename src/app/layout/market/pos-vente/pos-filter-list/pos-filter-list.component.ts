@@ -172,7 +172,14 @@ export class PosFilterListComponent implements OnInit {
 
     this.syncQueueService.isSyncing$
       .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(syncing => this.isUploadSyncing.set(syncing));
+      .subscribe(syncing => {
+        const wasUploadSyncing = this.isUploadSyncing();
+        this.isUploadSyncing.set(syncing);
+        // Actualiser le tableau quand la sync upload se termine
+        if (wasUploadSyncing && !syncing && this.currentUser()) {
+          this.fetchProducts(this.name(), this.territoire_uuid());
+        }
+      });
 
     this.syncQueueService.pendingCount$
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -181,8 +188,13 @@ export class PosFilterListComponent implements OnInit {
     this.dataSyncService.syncProgress$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(progress => {
+        const wasDownloadSyncing = this.isDownloadSyncing();
         this.isDownloadSyncing.set(!progress.isComplete && progress.total > 0);
         this.downloadEntity.set(progress.entity);
+        // Actualiser le tableau quand la sync download se termine
+        if (wasDownloadSyncing && progress.isComplete && progress.total > 0 && this.currentUser()) {
+          this.fetchProducts(this.name(), this.territoire_uuid());
+        }
       });
 
     this.networkService.getNetworkStatus()
@@ -252,6 +264,11 @@ export class PosFilterListComponent implements OnInit {
         Area: pos.Area || user?.Area || undefined,
         SubArea: pos.SubArea || user?.SubArea || undefined,
         Commune: pos.Commune || user?.Commune || undefined,
+        country_name: pos.country_name || user?.Country?.name,
+        province_name: pos.province_name || user?.Province?.name,
+        area_name: pos.area_name || user?.Area?.name,
+        subarea_name: pos.subarea_name || user?.SubArea?.name,
+        commune_name: pos.commune_name || user?.Commune?.name,
       }));
       this.dataListLocal.set(enrichedLocal);
 
@@ -263,8 +280,10 @@ export class PosFilterListComponent implements OnInit {
         return;
       }
 
-      // Télécharger l'intégralité des POS du territoire vers le cache local (une seule fois par session)
-      if (!this.hasDownloadedAllPos) {
+      // Télécharger les POS du territoire vers le cache local uniquement pour les rôles terrain
+      // (ASM, Supervisor, DR, Cyclo) — pas pour Manager/Support/country (trop de données, risque de conflits)
+      const isFieldRole = ['ASM', 'Supervisor', 'DR', 'Cyclo', 'province', 'area', 'subarea', 'commune'].includes(name);
+      if (isFieldRole && !this.hasDownloadedAllPos) {
         this.hasDownloadedAllPos = true;
         this.posVenteService.downloadAllCloudPosByTerritoryToLocal(name, territoire_uuid);
       }
@@ -479,23 +498,23 @@ export class PosFilterListComponent implements OnInit {
   updateUniqueValues(): void {
     // Valeurs géographiques pour les filtres déroulants
     this.uniqueCountries.set([...new Set(this.originalDataList()
-      .map(item => item.Country?.name)
+      .map(item => item.Country?.name || item.country_name)
       .filter(name => name))] as string[]);
 
     this.uniqueProvinces.set([...new Set(this.originalDataList()
-      .map(item => item.Province?.name)
+      .map(item => item.Province?.name || item.province_name)
       .filter(name => name))] as string[]);
 
     this.uniqueAreas.set([...new Set(this.originalDataList()
-      .map(item => item.Area?.name)
+      .map(item => item.Area?.name || item.area_name)
       .filter(name => name))] as string[]);
 
     this.uniqueSubAreas.set([...new Set(this.originalDataList()
-      .map(item => item.SubArea?.name)
+      .map(item => item.SubArea?.name || item.subarea_name)
       .filter(name => name))] as string[]);
 
     this.uniqueCommunes.set([...new Set(this.originalDataList()
-      .map(item => item.Commune?.name)
+      .map(item => item.Commune?.name || item.commune_name)
       .filter(name => name))] as string[]);
   }
 
@@ -618,10 +637,15 @@ export class PosFilterListComponent implements OnInit {
           reference: this.formGroup().value.reference,
           telephone: this.formGroup().value.telephone,
           country_uuid: this.currentUser().country_uuid,
+          country_name: this.currentUser().Country?.name,
           province_uuid: this.currentUser().province_uuid,
+          province_name: this.currentUser().Province?.name,
           area_uuid: this.currentUser().area_uuid,
+          area_name: this.currentUser().Area?.name,
           sub_area_uuid: this.currentUser().sub_area_uuid,
+          subarea_name: this.currentUser().SubArea?.name,
           commune_uuid: this.currentUser().commune_uuid,
+          commune_name: this.currentUser().Commune?.name,
           asm_uuid: this.currentUser().asm_uuid,
           asm: this.currentUser().asm,
           sup_uuid: this.currentUser().sup_uuid,
@@ -683,10 +707,15 @@ export class PosFilterListComponent implements OnInit {
         reference: this.formGroup().value.reference,
         telephone: this.formGroup().value.telephone,
         country_uuid: this.currentUser().country_uuid,
+        country_name: this.currentUser().Country?.name,
         province_uuid: this.currentUser().province_uuid,
+        province_name: this.currentUser().Province?.name,
         area_uuid: this.currentUser().area_uuid,
+        area_name: this.currentUser().Area?.name,
         sub_area_uuid: this.currentUser().sub_area_uuid,
+        subarea_name: this.currentUser().SubArea?.name,
         commune_uuid: this.currentUser().commune_uuid,
+        commune_name: this.currentUser().Commune?.name,
         asm_uuid: this.currentUser().asm_uuid,
         asm: this.currentUser().asm,
         sup_uuid: this.currentUser().sup_uuid,

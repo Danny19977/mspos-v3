@@ -144,34 +144,11 @@ export class DataSyncService {
 
   /**
    * Télécharge les RoutePlans de l'utilisateur
+   * NOTE: l'endpoint /routeplans/user/:id retourne 404 — les routeplans
+   * sont gérés localement via syncQueue. On évite de casser downloadInitialData.
    */
   private async downloadUserRoutePlans(userId: string): Promise<void> {
-    try {
-      const token = localStorage.getItem('auth_uuid');
-      const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
-
-      const response = await firstValueFrom(
-        this.http.get<any>(`${environment.apiUrl}/routeplans/user/${userId}${tokenParam}`)
-      );
-
-      const routePlans = response?.data || [];
-
-      // Marquer tous comme synchronisés et stocker en local
-      const routePlansToStore = routePlans.map((plan: any) => ({
-        ...plan,
-        sync_status: 'synced',
-        id: plan.ID || plan.id
-      }));
-
-      // Vider la table et insérer les nouvelles données
-      await db.routePlans.clear();
-      await db.routePlans.bulkPut(routePlansToStore);
-
-      console.log(`✅ ${routePlansToStore.length} RoutePlans téléchargés et stockés`);
-    } catch (error) {
-      console.error('❌ Erreur téléchargement RoutePlans:', error);
-      throw error;
-    }
+    console.log('📦 RoutePlans : source locale uniquement, étape de téléchargement ignorée (endpoint /user/:id non disponible).');
   }
 
   /**

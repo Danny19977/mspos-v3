@@ -1,5 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild, ChangeDetectorRef, AfterViewInit, inject, signal, WritableSignal, computed, DestroyRef } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { pairwise, filter } from 'rxjs/operators';
 import { GeolocationService } from '@ng-web-apis/geolocation';
 import { MatTableDataSource } from '@angular/material/table';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -59,7 +60,6 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   // Table
   // Table
   displayedColumns: string[] = [
-    'sync_status',
     'createdat',
     'pos',
     'price',
@@ -282,6 +282,19 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(syncing => this.isUploadSyncing.set(syncing));
 
+    // ✅ Rafraîchir après la fin de la sync upload (true → false)
+    this.syncQueueService.isSyncing$
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        pairwise(),
+        filter(([prev, curr]) => prev === true && curr === false)
+      )
+      .subscribe(() => {
+        console.log('🔄 Upload sync terminé — rafraîchissement des données');
+        this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
+        this.getAllRoutePlans();
+      });
+
     this.syncQueueService.pendingCount$
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(count => this.pendingUploadCount.set(count));
@@ -291,6 +304,20 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
       .subscribe(progress => {
         this.isDownloadSyncing.set(!progress.isComplete && progress.total > 0);
         this.downloadEntity.set(progress.entity);
+      });
+
+    // ✅ Rafraîchir après la fin de la sync download (isComplete devient true)
+    this.dataSyncService.syncProgress$
+      .pipe(
+        takeUntilDestroyed(this.destroyRef),
+        pairwise(),
+        filter(([prev, curr]) => !prev.isComplete && curr.isComplete && curr.total > 0)
+      )
+      .subscribe(() => {
+        console.log('🔄 Download sync terminé — rafraîchissement des données');
+        this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
+        this.getAllRoutePlans();
+        this.getAllBrand();
       });
 
     this.formGroup = this._formBuilder.group({
@@ -373,19 +400,24 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
     });
   }
 
-  displayFn(item: IRoutePlanItem): any {
+  displayFn(item: IRoutePlanItem | string | null): string {
     if (!item) return '';
-    if (!item.Pos) return '';
-    return item.Pos.name || '';
+    // Si c'est une chaîne (UUID ou nom brut), l'afficher directement
+    if (typeof item === 'string') return item;
+    // Préférer Pos.name, sinon pos_name stocké directement dans le routePlanItem (offline)
+    return item.Pos?.name || (item as any).pos_name || '';
   }
 
   // Modifier la méthode optionSelected pour capturer l'UUID du routePlanItem
   optionSelected(event: MatAutocompleteSelectedEvent) {
     const selectedOption = event.option.value;
     this.posUUID.set(selectedOption.pos_uuid);
-    this.posName.set(selectedOption.pos_name);
+    // Récupérer le nom du POS : préférer Pos.name, sinon pos_name du routePlanItem (offline)
+    this.posName.set(selectedOption.Pos?.name || selectedOption.pos_name || '');
     // ✅ Capturer l'UUID du routePlanItem sélectionné
     this.routePlanItemUUID.set(selectedOption.uuid); // Ceci est l'UUID du routePlanItem, pas du POS
+    // Ne pas appeler patchValue : le matAutocomplete stocke l'objet complet,
+    // displayFn se charge d'afficher le bon nom.
   }
 
   // Pour obtenir la liste des marques visitées
@@ -491,47 +523,17 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   fetchProducts(name: string, territoire_uuid: string, start_date: string, end_date: string): void {
     this.isLoadingData.set(true);
 
-    // Filtres supportés par le backend (ApplyCommonFilters)
     const apiFilters = {
       search: this.search(),
       price: this.filters.price,
       asm: this.filters.asm,
-      supervisor: this.filters.supervisor,  // envoyé comme "sup" dans le service
+      supervisor: this.filters.supervisor,
       dr: this.filters.dr,
       cyclo: this.filters.cyclo
     };
 
-    // Mode OFFLINE : lire depuis le cache local
-    if (!this.isOnline()) {
-      this.posformService.getPaginatedOfflineFirstByTerritory(
-        name,
-        territoire_uuid,
-        this.current_page(),
-        this.page_size(),
-        start_date,
-        end_date,
-        apiFilters
-      ).subscribe({
-        next: (res) => {
-          this.dataList.set(res.data);
-          this.originalDataList.set([...res.data]);
-          this.total_pages.set(res.pagination.total_pages);
-          this.total_records.set(res.pagination.total_records);
-          this.updateUniqueValues();
-          this.dataSource.data = this.dataList();
-          this.getAllRoutePlans();
-          this.isLoadingData.set(false);
-        },
-        error: (err) => {
-          console.error('Erreur cache local posforms:', err);
-          this.isLoadingData.set(false);
-        }
-      });
-      return;
-    }
-
-    // Mode ONLINE : utiliser la nouvelle méthode avec filtres avancés pour tous les rôles
-    this.posformService.getPaginatedWithAdvancedFilters2(
+    // ─── LOCAL FIRST : afficher immédiatement depuis IndexedDB ───────────────
+    this.posformService.getPaginatedOfflineFirstByTerritory(
       name,
       territoire_uuid,
       this.current_page(),
@@ -540,30 +542,62 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
       end_date,
       apiFilters
     ).subscribe({
-      next: (res) => {
-        this.dataList.set(res.data);
-        this.originalDataList.set([...res.data]); // Sauvegarder les données originales
-        this.total_pages.set(res.pagination.total_pages);
-        this.total_records.set(res.pagination.total_records);
-
-        // Mettre à jour les valeurs uniques pour les filtres frontend (si nécessaire)
+      next: (localRes) => {
+        this.dataList.set(localRes.data);
+        this.originalDataList.set([...localRes.data]);
+        this.total_pages.set(localRes.pagination.total_pages);
+        this.total_records.set(localRes.pagination.total_records);
         this.updateUniqueValues();
-
-        // Puisque les filtres sont maintenant appliqués côté serveur,
-        // nous n'avons plus besoin d'appliquer les filtres côté client
         this.dataSource.data = this.dataList();
-
-        this.getAllRoutePlans(); // Refresh route plans to exclude used POS
+        this.getAllRoutePlans();
         this.isLoadingData.set(false);
       },
-      error: (error) => {
-        console.error('Erreur lors de la récupération des posforms:', error);
+      error: (err) => {
+        console.error('Erreur cache local posforms:', err);
         this.isLoadingData.set(false);
-
-        // Fallback : utiliser les anciennes méthodes selon le rôle
-        this.fetchProductsFallback(this.name(), this.territoire_uuid(), start_date, end_date);
       }
     });
+
+    // ─── BACKGROUND SYNC : si en ligne, rafraîchir depuis le serveur ─────────
+    if (this.isOnline()) {
+      this.posformService.getPaginatedWithAdvancedFilters2(
+        name,
+        territoire_uuid,
+        this.current_page(),
+        this.page_size(),
+        start_date,
+        end_date,
+        apiFilters
+      ).subscribe({
+        next: async (serverRes) => {
+          if (serverRes?.data?.length) {
+            await this.posformService.updateLocalCache(serverRes.data);
+          }
+          // Réafficher depuis le local (synced + pending non encore envoyés)
+          this.posformService.getPaginatedOfflineFirstByTerritory(
+            name,
+            territoire_uuid,
+            this.current_page(),
+            this.page_size(),
+            start_date,
+            end_date,
+            apiFilters
+          ).subscribe(refreshed => {
+            this.dataList.set(refreshed.data);
+            this.originalDataList.set([...refreshed.data]);
+            this.total_pages.set(refreshed.pagination.total_pages);
+            this.total_records.set(refreshed.pagination.total_records);
+            this.updateUniqueValues();
+            this.dataSource.data = this.dataList();
+          });
+        },
+        error: (error) => {
+          // Silencieux — le local est déjà affiché
+          console.warn('⚠️ Rafraîchissement serveur posforms (non bloquant):', error.message);
+          this.fetchProductsFallback(this.name(), this.territoire_uuid(), start_date, end_date);
+        }
+      });
+    }
   }
 
   /**
@@ -1343,68 +1377,61 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
       };
       console.log('Form Data pour la complétion du rapport:', formData);
 
+      // Finalisation commune : log + toast + refresh + reset
+      const finalize = () => {
+        this.logActivity.activity(
+          'PosForm',
+          currentUserValue.uuid,
+          'completed',
+          `Completed PosForm uuid: ${this.uuidItem()} with POS: ${posUUIDValue}`,
+          currentUserValue.fullname
+        ).subscribe({
+          next: () => {
+            this.toastr.success('🎉 Rapport complété avec succès! Le point de vente a été assigné.', 'Succès');
+            this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
+            this.isLoading.set(false);
+            this.posUUID.set('');
+            this.posName.set('');
+            this.formGroup.reset();
+          },
+          error: (err) => {
+            this.isLoading.set(false);
+            console.error(err);
+            this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
+            this.posUUID.set('');
+            this.posName.set('');
+            this.formGroup.reset();
+          }
+        });
+      };
+
       // Mettre à jour le rapport avec le POS sélectionné
       this.posformService.update(this.uuidItem(), formData).subscribe({
         next: (res) => {
-          // ✅ Utiliser l'UUID du routePlanItem au lieu du pos_uuid
+          // ✅ Utiliser l'UUID du routePlanItem si disponible
           const routePlanItemUUIDValue = this.routePlanItemUUID();
           if (routePlanItemUUIDValue) {
             console.log('Mise à jour du RoutePlanItem avec UUID:', routePlanItemUUIDValue);
             this.routePlanItemService.update(routePlanItemUUIDValue, { status: true })
               .subscribe({
                 next: () => {
-                  this.logActivity.activity(
-                    'PosForm',
-                    currentUserValue.uuid,
-                    'completed',
-                    `Completed PosForm uuid: ${this.uuidItem()} with POS: ${posUUIDValue}`,
-                    currentUserValue.fullname
-                  ).subscribe({
-                    next: () => {
-                      this.toastr.success('🎉 Rapport complété avec succès! Le point de vente a été assigné.', 'Succès');
-                      this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
-                      this.isLoading.set(false);
-
-                      // Réinitialiser les variables
-                      this.posUUID.set('');
-                      this.posName.set('');
-                      this.formGroup.reset();
-                    },
-                    error: (err) => {
-                      this.isLoading.set(false);
-                      this.toastr.error('Erreur lors de la sauvegarde du log', 'Erreur');
-                      console.error(err);
-                    }
-                  });
+                  this.getAllRoutePlans();
+                  finalize();
                 },
                 error: (err) => {
                   console.error('❌ Erreur lors de la mise à jour du statut RoutePlanItem:', err);
                   this.toastr.warning('Rapport mis à jour mais erreur de statut du plan de route', 'Attention');
-
-                  // Continuer même en cas d'erreur de mise à jour du statut
-                  this.logActivity.activity(
-                    'PosForm',
-                    currentUserValue.uuid,
-                    'completed',
-                    `Completed PosForm uuid: ${this.uuidItem()} with POS: ${posUUIDValue}`,
-                    currentUserValue.fullname
-                  ).subscribe({
-                    next: () => {
-                      this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
-                      this.isLoading.set(false);
-                    },
-                    error: (logErr) => {
-                      this.isLoading.set(false);
-                      console.error(logErr);
-                    }
-                  });
+                  finalize();
                 }
               });
+          } else {
+            // Pas de routePlanItem (POS local sans plan de route) — finaliser directement
+            finalize();
           }
         },
         error: (err) => {
           this.isLoading.set(false);
-          this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
+          this.toastr.error(`Erreur: ${err.error?.message || err.message}`, 'Erreur');
           console.error(err);
         }
       });
@@ -1430,7 +1457,9 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
       this.posformItemService.create(itemData).subscribe({
         next: (res) => {
           this.toastr.success('Marque ajoutée avec succès!', 'Succès');
-          this.getAllPosFormItem(this.uuidItem()); // Rafraîchir la liste
+          this.getAllPosFormItem(this.uuidItem()); // Rafraîchir la liste des items
+          // Rafraîchir le tableau principal (le décompte de marques a changé)
+          this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
           this.formGroupPosFormItem.reset();
           this.formGroupPosFormItem.patchValue({ sold: 0 });
           this.brandUUID.set('');
@@ -1445,7 +1474,7 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
         },
         error: (err) => {
           this.isLoadingPosFormItem.set(false);
-          this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
+          this.toastr.error(`Erreur: ${err.error?.message || err.message}`, 'Erreur');
           console.error(err);
         }
       });
@@ -1460,10 +1489,12 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
       this.posformItemService.delete(uuid).subscribe({
         next: () => {
           this.toastr.success('Marque supprimée avec succès!', 'Succès');
-          this.getAllPosFormItem(this.uuidItem()); // Rafraîchir la liste
+          this.getAllPosFormItem(this.uuidItem()); // Rafraîchir la liste des items
+          // Rafraîchir le tableau principal (le décompte de marques peut avoir changé)
+          this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
         },
         error: (err) => {
-          this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
+          this.toastr.error(`Erreur: ${err.error?.message || err.message}`, 'Erreur');
           console.error(err);
         }
       });
@@ -1517,53 +1548,65 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   delete(): void {
     const dataItemValue = this.dataItem();
     const currentUserValue = this.currentUser();
-    
+
     if (!dataItemValue || !currentUserValue) {
       this.toastr.error('Données manquantes', 'Erreur');
       return;
     }
 
-    this.routePlanItemService.update(dataItemValue.pos_uuid!, { status: false })
-      .subscribe({
-        next: () => {
-          this.posformService
-            .delete(this.uuidItem())
-            .subscribe({
+    // Trouver le routePlanItem correspondant au pos_uuid du posform supprimé
+    // pour réinitialiser son statut à false (POS à nouveau disponible)
+    const matchingRPItem = this.routePlanItemList().find(
+      item => item.pos_uuid === dataItemValue.pos_uuid
+    );
+
+    const doDelete = () => {
+      this.posformService
+        .delete(this.uuidItem())
+        .subscribe({
+          next: () => {
+            this.logActivity.activity(
+              'Posform',
+              currentUserValue.uuid,
+              'deleted',
+              `Delete posform uuid: ${this.uuidItem()}`,
+              currentUserValue.fullname
+            ).subscribe({
               next: () => {
-                this.logActivity.activity(
-                  'Posform',
-                  currentUserValue.uuid,
-                  'deleted',
-                  `Delete posform uuid: ${this.uuidItem()}`,
-                  currentUserValue.fullname
-                ).subscribe({
-                  next: () => {
-                    this.formGroup.reset();
-                    this.getAllRoutePlans(); // Refresh route plans to exclude used POS
-                    this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
-                    this.toastr.info('Supprimé avec succès!', 'Success!');
-                    this.isLoading.set(false);
-                  },
-                  error: (err) => {
-                    this.isLoading.set(false);
-                    this.toastr.error(`${err.error.message}`, 'Oupss!');
-                    console.log(err);
-                  }
-                });
-              },
-              error: err => {
+                this.formGroup.reset();
+                this.getAllRoutePlans();
+                this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
+                this.toastr.info('Supprimé avec succès!', 'Success!');
                 this.isLoading.set(false);
-                this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+              },
+              error: (err) => {
+                this.isLoading.set(false);
+                this.toastr.error(`${err.error?.message || err.message}`, 'Oupss!');
                 console.log(err);
               }
             });
-        },
-        error: (err) => {
-          this.isLoading.set(false);
-          this.toastr.error(`${err.error.message}`, 'Oupss!');
-          console.log(err);
-        }
-      });
+          },
+          error: err => {
+            this.isLoading.set(false);
+            this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
+            console.log(err);
+          }
+        });
+    };
+
+    if (matchingRPItem?.uuid) {
+      // Réinitialiser le statut du RoutePlanItem (POS à nouveau disponible) avant suppression
+      this.routePlanItemService.update(matchingRPItem.uuid, { status: false })
+        .subscribe({
+          next: () => doDelete(),
+          error: () => {
+            console.warn('⚠️ Impossible de réinitialiser le statut RoutePlanItem — suppression quand même');
+            doDelete();
+          }
+        });
+    } else {
+      doDelete();
+    }
   }
 
 

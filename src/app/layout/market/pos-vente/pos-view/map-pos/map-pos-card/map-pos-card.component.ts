@@ -28,7 +28,7 @@ interface Marker {
   templateUrl: './map-pos-card.component.html',
   styleUrl: './map-pos-card.component.scss'
 })
-export class MapPosCardComponent implements OnInit {
+export class MapPosCardComponent implements OnInit, OnChanges {
   // Services avec inject()
   private readonly googleMapsLoader = inject(GoogleMapsLoaderService);
 
@@ -98,9 +98,14 @@ export class MapPosCardComponent implements OnInit {
   }
 
   ngOnChanges(_changes: SimpleChanges): void {
-    if (this.googleMapList && this.googleMapList.length > 0) {
+    const validList = (this.googleMapList || []).filter(item =>
+      item.latitude && item.longitude &&
+      item.latitude !== 0 && item.longitude !== 0
+    );
+
+    if (validList.length > 0) {
       // Update markers
-      this.markers.set(this.googleMapList.map(element => ({
+      this.markers.set(validList.map(element => ({
         position: { lat: element.latitude, lng: element.longitude },
         name: element.pos_name,
         label: element.pos_name,
@@ -113,14 +118,19 @@ export class MapPosCardComponent implements OnInit {
         signature: element.signature,
       })));
 
-      // Update map center to the first position if not already set to a specific location
-      const currentCenter = this.center();
-      if (currentCenter.lat === -4.4419 && currentCenter.lng === 15.2663) {
-        this.center.set({ 
-          lat: this.googleMapList[0].latitude, 
-          lng: this.googleMapList[0].longitude 
-        });
+      // Centrer la carte sur la moyenne des positions pour voir tous les marqueurs
+      const avgLat = validList.reduce((sum, e) => sum + e.latitude, 0) / validList.length;
+      const avgLng = validList.reduce((sum, e) => sum + e.longitude, 0) / validList.length;
+      this.center.set({ lat: avgLat, lng: avgLng });
+
+      // Adapter le zoom selon la dispersion des points
+      if (validList.length === 1) {
+        this.zoom.set(14);
+      } else {
+        this.zoom.set(12);
       }
+    } else {
+      this.markers.set([]);
     }
   }
 

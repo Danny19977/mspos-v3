@@ -20,6 +20,7 @@ import { PosformItemService } from '../../../posform/posformitem.service';
 import { IPosFormItem } from '../../../posform/models/posform_item.model';
 import { IUser } from '../../../../management/user/models/user.model';
 import { routes } from '../../../../../shared/routes/routes';
+import { NetworkService } from '../../../../../services/network.service';
 
 @Component({
   selector: 'app-posforms',
@@ -54,6 +55,7 @@ export class PosformsComponent implements OnInit, AfterViewInit {
   private cdr = inject(ChangeDetectorRef);
   private toastr = inject(ToastrService);
   private destroyRef = inject(DestroyRef);
+  private networkService = inject(NetworkService);
   
   isLoadingData = signal(false);
   public routes = routes;
@@ -241,23 +243,52 @@ export class PosformsComponent implements OnInit, AfterViewInit {
   }
 
   fetchProducts(uuid: string) {
-    this.posformService.getPaginatedRangeDateByUUID(
-      uuid, this.current_page(), this.page_size(), this.search(),
-      this.start_date(), this.end_date()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(res => {
-        this.dataList.set(res.data);
-        this.originalDataList.set([...res.data]); // Sauvegarder les données originales
-        this.total_pages.set(res.pagination.total_pages);
-        this.total_records.set(res.pagination.total_records);
-        this.dataSource.data = this.dataList(); // Update dataSource data
-        this.dataSource.paginator = this.paginator; // Bind paginator to dataSource
-        this.dataSource.sort = this.sort; // Bind sort to dataSource
-        
-        // Mettre à jour les valeurs uniques pour les filtres
-        this.updateUniqueValues();
-        this.applyFilters();
-        
-        this.isLoadingData.set(false);
+    // LOCAL FIRST — lecture immédiate du cache local
+    this.posformService.getPaginatedOfflineFirstByPosUUID(
+      uuid, this.current_page(), this.page_size(),
+      this.start_date(), this.end_date()
+    ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(localRes => {
+      this.dataList.set(localRes.data);
+      this.originalDataList.set([...localRes.data]);
+      this.total_pages.set(localRes.pagination.total_pages);
+      this.total_records.set(localRes.pagination.total_records);
+      this.dataSource.data = this.dataList();
+      this.dataSource.paginator = this.paginator;
+      this.dataSource.sort = this.sort;
+      this.updateUniqueValues();
+      this.applyFilters();
+      this.isLoadingData.set(false);
+    });
+
+    // BACKGROUND SYNC — si en ligne, synchroniser avec le serveur
+    if (this.networkService.isOnline()) {
+      this.posformService.getPaginatedRangeDateByUUID(
+        uuid, this.current_page(), this.page_size(), this.search(),
+        this.start_date(), this.end_date()
+      ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+        next: async (res) => {
+          if (res.data?.length) {
+            await this.posformService.updateLocalCache(res.data);
+          }
+          // Re-lire le cache local pour fusionner synced + pending
+          this.posformService.getPaginatedOfflineFirstByPosUUID(
+            uuid, this.current_page(), this.page_size(),
+            this.start_date(), this.end_date()
+          ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(merged => {
+            this.dataList.set(merged.data);
+            this.originalDataList.set([...merged.data]);
+            this.total_pages.set(merged.pagination.total_pages);
+            this.total_records.set(merged.pagination.total_records);
+            this.dataSource.data = this.dataList();
+            this.dataSource.paginator = this.paginator;
+            this.dataSource.sort = this.sort;
+            this.updateUniqueValues();
+            this.applyFilters();
+          });
+        },
+        error: (err) => console.warn('Sync en arrière-plan échouée:', err)
       });
+    }
   }
 
 
@@ -328,6 +359,7 @@ export class PosformsComponent implements OnInit, AfterViewInit {
             next: () => {
               this.formGroup().reset();
               this.toastr.info('Supprimé avec succès!', 'Success!');
+              this.fetchProducts(this.posUUId);
               this.isLoading.set(false);
             },
             error: (err) => {
@@ -744,6 +776,7 @@ export class PosformsComponent implements OnInit, AfterViewInit {
         next: (res) => {
           this.toastr.success('Marque ajoutée avec succès!', 'Succès');
           this.getAllPosFormItem(this.idItem()); // Rafraîchir la liste
+          this.fetchProducts(this.posUUId);
           this.formGroupPosFormItem().reset();
           this.formGroupPosFormItem().patchValue({ sold: 0 });
           this.brandUUID.set('');
@@ -758,7 +791,7 @@ export class PosformsComponent implements OnInit, AfterViewInit {
         },
         error: (err) => {
           this.isLoadingPosFormItem.set(false);
-          this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
+          this.toastr.error(`Erreur: ${err.error?.message || err.message}`, 'Erreur');
           console.error(err);
         }
       });
@@ -774,9 +807,10 @@ export class PosformsComponent implements OnInit, AfterViewInit {
         next: () => {
           this.toastr.success('Marque supprimée avec succès!', 'Succès');
           this.getAllPosFormItem(this.idItem()); // Rafraîchir la liste
+          this.fetchProducts(this.posUUId);
         },
         error: (err) => {
-          this.toastr.error(`Erreur: ${err.error.message}`, 'Erreur');
+          this.toastr.error(`Erreur: ${err.error?.message || err.message}`, 'Erreur');
           console.error(err);
         }
       });

@@ -14,7 +14,6 @@ import { RouteplanService } from './routeplan.service';
 import { RouteplanItemService } from './routeplanitem.service';
 import { IRoutePlanItem } from './models/routeplanItem.model';
 import { IPos } from '../pos-vente/models/pos.model';
-import { PosVenteService } from '../pos-vente/pos-vente.service';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NetworkService } from '../../../services/network.service';
@@ -34,7 +33,6 @@ export class RouteplanComponent implements OnInit {
   private readonly authService = inject(AuthService);
   private readonly routeplanService = inject(RouteplanService);
   private readonly routePlanItemService = inject(RouteplanItemService);
-  private readonly posVenteService = inject(PosVenteService);
   private readonly logActivity = inject(LogsService);
   private readonly toastr = inject(ToastrService);
   private readonly cdr = inject(ChangeDetectorRef);
@@ -168,78 +166,22 @@ export class RouteplanComponent implements OnInit {
 
     this.isload.set(true);
 
-    // Mode OFFLINE : charger les POS depuis le cache IndexedDB local
-    if (!this.isOnline()) {
-      const territoryUuid = this.getTerritoryUuid(currentUser);
-      this.routeplanService.getLocalPosForRoutePlan(currentUser.uuid, currentUser.role, territoryUuid).subscribe(res => {
-        let posList: IPos[] = res.data || [];
-        if (filterValue) {
-          const f = filterValue.toLowerCase();
-          posList = posList.filter(p =>
-            p.name?.toLowerCase().includes(f) ||
-            p.shop?.toLowerCase().includes(f) ||
-            p.gerant?.toLowerCase().includes(f)
-          );
-        }
-        processPosList(posList);
-      });
-      return;
-    }
-
-    // Mode ONLINE : appels API selon le rôle
-    if (currentUser.role == 'Manager') {
-      this.posVenteService.getPaginated2(1, 15, filterValue
-      ).subscribe(res => {
-        processPosList(res.data);
-      });
-    } else if (currentUser.role == 'ASM') {
-      this.posVenteService.getPaginatedByProvinceId(currentUser.province_uuid, 1, 15, filterValue
-
-      ).subscribe(res => {
-        processPosList(res.data);
-      });
-    } else if (currentUser.role == 'Supervisor') {
-      this.posVenteService.getPaginatedByAreaId(currentUser.area_uuid, 1, 15, filterValue ).subscribe(res => {
-        processPosList(res.data);
-      });
-    } else if (currentUser.role == 'DR') {
-      console.log("sub_area_uuid", currentUser.dr_uuid);
-      this.posVenteService.getPaginatedBySubAreaId(currentUser.sub_area_uuid, 1, 15, filterValue).subscribe(res => {
-        processPosList(res.data);
-      });
-    } else if (currentUser.role == 'Cyclo') {
-      this.posVenteService.getPaginatedByCommuneId(currentUser.uuid, 1, 15, filterValue
-
-      ).subscribe(res => {
-        processPosList(res.data);
-      });
-    } else {
-      this.posVenteService.getPaginated2(1, 15, filterValue).subscribe(res => {
-        processPosList(res.data);
-      });
-    }
-
-    // if (currentUser.role == 'Manager') {
-    //   this.posVenteService.getAll().subscribe(res => {
-    //     processPosList(res.data);
-    //   });
-    // } else if (currentUser.role == 'ASM') {
-    //   this.posVenteService.getAllByASM(currentUser.province_uuid).subscribe(res => {
-    //     processPosList(res.data); 
-    //   });
-    // } else if (currentUser.role == 'Supervisor') {
-    //   this.posVenteService.getAllBySup(currentUser.area_uuid).subscribe(res => {
-    //     processPosList(res.data);
-    //   });
-    // } else if (currentUser.role == 'DR') {
-    //   this.posVenteService.getAllByDR(currentUser.sub_area_uuid).subscribe(res => {
-    //     processPosList(res.data);
-    //   });
-    // } else if (currentUser.role == 'Cyclo') {
-    //   this.posVenteService.getAllByCyclo(currentUser.cyclo_uuid).subscribe(res => {
-    //     processPosList(res.data);
-    //   });
-    // }
+    // LOCAL FIRST : toujours charger les POS depuis le cache IndexedDB local.
+    // Seuls les POS déjà synchronisés localement sont affichés dans le dropdown.
+    // Si online, la synchronisation des POS se fait en arrière-plan via le DataSyncService.
+    const territoryUuid = this.getTerritoryUuid(currentUser);
+    this.routeplanService.getLocalPosForRoutePlan(currentUser.uuid, currentUser.role, territoryUuid).subscribe(res => {
+      let posList: IPos[] = res.data || [];
+      if (filterValue) {
+        const f = filterValue.toLowerCase();
+        posList = posList.filter(p =>
+          p.name?.toLowerCase().includes(f) ||
+          p.shop?.toLowerCase().includes(f) ||
+          p.gerant?.toLowerCase().includes(f)
+        );
+      }
+      processPosList(posList);
+    });
   }
 
   displayFn(pos: IPos): any {
@@ -422,9 +364,22 @@ export class RouteplanComponent implements OnInit {
     this.uuidRoutePlanItem.set(value);
     this.routePlanItemService.getAllById(this.uuidRoutePlanItem()).subscribe({
       next: (res) => {
-        this.dataListItem.set(res.data || []);
-        console.log("dataListItem", this.dataListItem());
+        const items: IRoutePlanItem[] = res.data || [];
+        this.dataListItem.set(items);
         this.isLoadingDataItem.set(false);
+
+        // Si des items sont encore en attente et qu’on est online,
+        // déclencher la sync en arrière-plan puis rafraîchir la liste
+        const hasPending = items.some((i: any) => i.sync_status === 'pending');
+        if (hasPending && this.isOnline()) {
+          this.syncQueueService.processQueue().then(() => {
+            // Re-fetch après sync pour mettre à jour les badges
+            this.routePlanItemService.getAllById(value).subscribe(fresh => {
+              this.dataListItem.set(fresh.data || []);
+              this.cdr.detectChanges();
+            });
+          }).catch(err => console.warn('⚠️ sync items arrière-plan:', err?.message));
+        }
       },
       error: (err) => {
         console.error('❌ Erreur chargement items (API), fallback local:', err);
@@ -490,15 +445,9 @@ export class RouteplanComponent implements OnInit {
     // Plan serveur : appel API normal
     this.routeplanService.get(this.uuidItem()).subscribe(item => {
       this.dataItem.set(item.data);
-      // Utiliser les RoutePlanItems déjà embarqués dans la réponse si disponibles
-      const embeddedItems = this.dataItem()?.RoutePlanItems;
-      if (embeddedItems && embeddedItems.length > 0) {
-        this.dataListItem.set(embeddedItems);
-        this.isLoadingDataItem.set(false);
-      } else {
-        // Fallback : second appel API dédié
-        this.getAllRoutePlanItems(this.dataItem()!.uuid!);
-      }
+      // Toujours passer par getAllRoutePlanItems qui fusionne
+      // les items serveur + items locaux pending non encore soumis
+      this.getAllRoutePlanItems(this.dataItem()!.uuid!);
       setTimeout(() => {
         this.getAllPos(this.currentUser()!);
       }, 100);
@@ -599,17 +548,11 @@ export class RouteplanComponent implements OnInit {
           status: false,
         };
         this.routePlanItemService.create(body).subscribe({
-          next: (res) => {
+          next: (_res) => {
             this.formGroup().reset();
             this.pos_uuid.nativeElement.value = '';
-            // Si online et plan serveur: recharger depuis l'API (données complètes)
-            // Si offline ou plan local (pending): recharger depuis le cache local
-            const isLocalPlan = (this.dataItem() as any)?.sync_status === 'pending';
-            if (!res.offline && !isLocalPlan) {
-              this.getAllRoutePlanItems(this.dataItem()!.uuid!);
-            } else {
-              this.getAllRoutePlanItemsLocal(this.dataItem()!.uuid!);
-            }
+            // Toujours recharger depuis le cache local (local-first)
+            this.getAllRoutePlanItemsLocal(this.dataItem()!.uuid!);
             this.getAllPos(this.currentUser()!);
             this.toastr.success('POS Ajouté avec succès!', 'Success!');
             this.isLoadingItem.set(false);
@@ -666,24 +609,36 @@ export class RouteplanComponent implements OnInit {
   }
 
 
-
-
   // Delete RoutePlan
   delete(): void {
     this.routeplanService
       .delete(this.uuidItem())
       .subscribe({
         next: () => {
-          this.logActivity.activity(
-            'RoutePlan',
-            this.currentUser()!.uuid,
-            'deleted',
-            `Delete RoutePlan uuid: ${this.uuidItem()}`,
-            this.currentUser()!.fullname
-          ).subscribe({
-            next: () => {},
-            error: (err) => { console.log('logActivity error:', err); }
-          });
+          // 1. Rafraîchir immédiatement le tableau depuis le cache local
+          this.fetchProducts(this.currentUser()!);
+
+          // 2. Synchroniser en arrière-plan si online
+          if (this.isOnline()) {
+            this.syncQueueService.processQueue().catch(err =>
+              console.warn('⚠️ Sync arrière-plan delete routeplan (non bloquant):', err?.message)
+            );
+          }
+
+          // 3. Log activité
+          if (this.isOnline()) {
+            this.logActivity.activity(
+              'RoutePlan',
+              this.currentUser()!.uuid,
+              'deleted',
+              `Delete RoutePlan uuid: ${this.uuidItem()}`,
+              this.currentUser()!.fullname
+            ).subscribe({
+              next: () => {},
+              error: (err) => { console.log('logActivity error:', err); }
+            });
+          }
+
           this.toastr.info('Supprimé avec succès!', 'Success!');
           this.isLoading.set(false);
         },
@@ -691,8 +646,7 @@ export class RouteplanComponent implements OnInit {
           this.toastr.error(`${err?.error?.message || 'Une erreur s\'est produite'}`, 'Oupss!');
           console.log(err);
         }
-      }
-      );
+      });
   }
 
 
@@ -702,9 +656,20 @@ export class RouteplanComponent implements OnInit {
       .delete(this.uuidRoutePlanItem())
       .subscribe({
         next: () => {
-          // Le service supprime toujours localement en premier — recharger depuis le cache
+          // 1. Rafraîchir immédiatement la liste des items du panel
           this.getAllRoutePlanItemsLocal(this.dataItem()!.uuid!);
+
+          // 2. Rafraîchir le tableau principal (compteurs total_pos, etc.)
+          this.fetchProducts(this.currentUser()!);
+
+          // 3. Mettre à jour le dropdown POS
+          this.getAllPos(this.currentUser()!);
+
+          // 4. Synchroniser en arrière-plan si online
           if (this.isOnline()) {
+            this.syncQueueService.processQueue().catch(err =>
+              console.warn('⚠️ Sync arrière-plan delete routeplanItem (non bloquant):', err?.message)
+            );
             this.logActivity.activity(
               'RoutePlanItem',
               this.currentUser()!.uuid,
@@ -716,7 +681,7 @@ export class RouteplanComponent implements OnInit {
               error: (err) => { console.log('logActivity error:', err); }
             });
           }
-          this.getAllPos(this.currentUser()!);
+
           this.toastr.info('POS Supprimé avec succès!', 'Success!');
           this.isLoading.set(false);
         },
@@ -724,8 +689,7 @@ export class RouteplanComponent implements OnInit {
           this.toastr.error('Une erreur s\'est produite!', 'Oupss!');
           console.log(err);
         }
-      }
-      );
+      });
   }
 
   isLessThan24HoursOld(created: Date): boolean {

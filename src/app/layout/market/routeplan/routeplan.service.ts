@@ -1,7 +1,7 @@
 import { Injectable, Injector } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, from, throwError } from 'rxjs';
-import { switchMap, tap } from 'rxjs/operators';
+import { switchMap } from 'rxjs/operators';
 import { ApiService } from '../../../shared/services/api.service';
 import { environment } from '../../../../environments/environment';
 import { NetworkService } from '../../../services/network.service';
@@ -38,15 +38,7 @@ export class RouteplanService extends ApiService {
    * Récupère tous les RoutePlans de l'utilisateur - OFFLINE FIRST
    */
   getUserRoutePlans(userId: string): Observable<any> {
-    // Toujours retourner les données locales en premier
-    return from(this.getFromLocalCacheByUser(userId)).pipe(
-      tap(localData => {
-        // Si online, synchroniser en arrière-plan
-        if (this.networkService.isOnline()) {
-          this.syncRoutePlansInBackground(userId);
-        }
-      })
-    );
+    return from(this.getFromLocalCacheByUser(userId));
   }
 
   /**
@@ -61,13 +53,7 @@ export class RouteplanService extends ApiService {
    * Retourne immédiatement depuis IndexedDB, synchronise le serveur en arrière-plan si en ligne.
    */
   getTodayRoutePlanOfflineFirst(userId: string): Observable<IRoutePlan | null> {
-    return from(this.getTodayRoutePlanFromLocal(userId)).pipe(
-      tap(() => {
-        if (this.networkService.isOnline()) {
-          this.syncRoutePlansInBackground(userId);
-        }
-      })
-    );
+    return from(this.getTodayRoutePlanFromLocal(userId));
   }
 
   /**
@@ -122,21 +108,28 @@ export class RouteplanService extends ApiService {
         // Créer en local
         await this.createRoutePlanLocally(routePlanData);
 
-        // Mettre en file d'attente pour synchronisation
-        await this.syncQueue.enqueue({
-          operationId: uuidv4(),
-          entityType: 'routeplan',
-          operation: 'create',
-          endpoint: `${this.endpoint}/create`,
-          data: routePlanData,
-          tempId: tempUuid,
-          timestamp: new Date(),
-          retryCount: 0,
-          status: 'pending',
-          userId: data.user_uuid
-        });
+        // ✅ Ne synchroniser que si le routeplan a plus de 10 items enregistrés
+        const itemCount = await db.routePlanItems
+          .where('routplan_uuid').equals(tempUuid)
+          .count();
 
-        console.log('✅ RoutePlan créé localement et mis en file de synchronisation');
+        if (itemCount > 10) {
+          await this.syncQueue.enqueue({
+            operationId: uuidv4(),
+            entityType: 'routeplan',
+            operation: 'create',
+            endpoint: `${this.endpoint}/create`,
+            data: routePlanData,
+            tempId: tempUuid,
+            timestamp: new Date(),
+            retryCount: 0,
+            status: 'pending',
+            userId: data.user_uuid
+          });
+          console.log('✅ RoutePlan créé localement et mis en file de synchronisation');
+        } else {
+          console.log(`⏸️ RoutePlan créé localement — sync différée (${itemCount}/10 items minimum requis)`);
+        }
         
         return {
           data: routePlanData,
@@ -162,20 +155,27 @@ export class RouteplanService extends ApiService {
 
     return from(this.updateRoutePlanLocally(uuid, routePlanData)).pipe(
       switchMap(async (updatedPlan) => {
-        // Mettre en file d'attente pour synchronisation
-        await this.syncQueue.enqueue({
-          operationId: uuidv4(),
-          entityType: 'routeplan',
-          operation: 'update',
-          endpoint: `${this.endpoint}/update/${uuid}`,
-          data: routePlanData,
-          timestamp: new Date(),
-          retryCount: 0,
-          status: 'pending',
-          userId: data.user_uuid
-        });
+        // ✅ Ne synchroniser que si le routeplan a plus de 10 items enregistrés
+        const itemCount = await db.routePlanItems
+          .where('routplan_uuid').equals(uuid)
+          .count();
 
-        console.log('✅ RoutePlan modifié localement et mis en file de synchronisation');
+        if (itemCount > 10) {
+          await this.syncQueue.enqueue({
+            operationId: uuidv4(),
+            entityType: 'routeplan',
+            operation: 'update',
+            endpoint: `${this.endpoint}/update/${uuid}`,
+            data: routePlanData,
+            timestamp: new Date(),
+            retryCount: 0,
+            status: 'pending',
+            userId: data.user_uuid
+          });
+          console.log('✅ RoutePlan modifié localement et mis en file de synchronisation');
+        } else {
+          console.log(`⏸️ RoutePlan modifié localement — sync différée (${itemCount}/10 items minimum requis)`);
+        }
         
         return {
           data: updatedPlan,
@@ -252,24 +252,6 @@ export class RouteplanService extends ApiService {
       offline: true,
       message: `${posList.length} POS disponibles localement pour créer votre plan de route`
     };
-  }
-
-  /**
-   * Synchronise les RoutePlans en arrière-plan
-   */
-  private syncRoutePlansInBackground(userId: string): void {
-    this.http.get(`${this.endpoint}/user/${userId}`).subscribe({
-      next: (response: any) => {
-        if (response?.data) {
-          this.updateLocalRoutePlanCache(response.data).then(() => {
-            console.log('🔄 RoutePlans synchronisés en arrière-plan');
-          });
-        }
-      },
-      error: (error: any) => {
-        console.log('⚠️ Erreur sync arrière-plan (non bloquant):', error.message);
-      }
-    });
   }
 
   /**
