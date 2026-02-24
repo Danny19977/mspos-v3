@@ -1,0 +1,327 @@
+<div class="page-wrapper">
+  <div class="content container-fluid">
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PAGE HEADER
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col-8">
+          <h4 class="page-title">
+            Observations Terrain
+            <span class="count-title" *ngIf="pagination()">{{ pagination()!.total_records | number }}</span>
+          </h4>
+        </div>
+        <div class="col-4 text-end">
+          <div class="head-icons">
+            <!-- View toggle: cards -->
+            <a
+              href="javascript:void(0);"
+              [class.active]="viewMode() === 'cards'"
+              title="Vue cartes"
+              (click)="setView('cards')"
+            ><i class="ti ti-layout-grid"></i></a>
+            <!-- View toggle: table -->
+            <a
+              href="javascript:void(0);"
+              [class.active]="viewMode() === 'table'"
+              title="Vue liste"
+              (click)="setView('table')"
+            ><i class="ti ti-list"></i></a>
+            <!-- Refresh -->
+            <a
+              href="javascript:void(0);"
+              title="Actualiser"
+              (click)="refresh()"
+            ><i class="ti ti-refresh" [class.obs-spin]="isLoading()"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         FILTERS BAR
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div class="card obs-filter-card mb-4">
+      <div class="card-body py-3">
+        <form [formGroup]="filterForm" class="row g-3 align-items-end">
+
+          <!-- Quick period selector -->
+          <div class="col-12">
+            <label class="form-label obs-label">
+              <i class="ti ti-calendar me-1"></i>Période
+            </label>
+            <div class="obs-period-group" role="group">
+              <button
+                *ngFor="let p of periods"
+                type="button"
+                class="obs-period-btn"
+                [class.active]="selectedPeriod() === p.key"
+                (click)="setPeriod(p.key)"
+              >
+                {{ p.label }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Search -->
+          <div class="col-md-4 col-lg-5">
+            <label class="form-label obs-label">
+              <i class="ti ti-search me-1"></i>Recherche
+            </label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="ti ti-search"></i></span>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                placeholder="Nom du POS, agent, commentaire..."
+                formControlName="search"
+              />
+            </div>
+          </div>
+
+          <!-- Items per page -->
+          <div class="col-md-2 col-lg-2">
+            <label class="form-label obs-label">
+              <i class="ti ti-adjustments me-1"></i>Par page
+            </label>
+            <select class="form-select form-select-sm" formControlName="limit">
+              <option [value]="10">10</option>
+              <option [value]="15">15</option>
+              <option [value]="25">25</option>
+              <option [value]="50">50</option>
+            </select>
+          </div>
+
+          <!-- Reset -->
+          <div class="col-md-2 col-lg-2 d-flex align-items-end">
+            <button
+              type="button"
+              class="btn btn-outline-secondary btn-sm w-100"
+              (click)="filterForm.reset({ limit: 15, search: '' }); setPeriod('1month')"
+            >
+              <i class="ti ti-x me-1"></i>Réinitialiser
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         LOADING SKELETON
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div *ngIf="isLoading()" class="row g-3 mb-4">
+      <div class="col-md-6 col-xl-4" *ngFor="let _ of [1,2,3,4,5,6]">
+        <div class="card obs-skeleton-card">
+          <div class="obs-skeleton obs-skeleton-header"></div>
+          <div class="card-body">
+            <div class="obs-skeleton obs-skeleton-line w-100 mb-2"></div>
+            <div class="obs-skeleton obs-skeleton-line w-75 mb-2"></div>
+            <div class="obs-skeleton obs-skeleton-line w-50"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         EMPTY STATE
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div *ngIf="!isLoading() && !hasData()" class="obs-empty-state text-center py-5">
+      <div class="obs-empty-icon mb-3">
+        <i class="ti ti-message-circle"></i>
+      </div>
+      <h6 class="text-muted">Aucune observation trouvée</h6>
+      <p class="text-muted small">Modifiez les filtres ou la période pour trouver des observations.</p>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         CARDS VIEW
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div *ngIf="!isLoading() && hasData() && viewMode() === 'cards'" class="row g-3 mb-4">
+      <div
+        class="col-md-6 col-xl-4"
+        *ngFor="let obs of observations(); trackBy: trackByUuid"
+      >
+        <div class="card obs-card h-100" [ngClass]="'obs-role-' + obs.user_role.toLowerCase()">
+
+          <!-- Card header: agent + date -->
+          <div class="obs-card-header d-flex align-items-center justify-content-between px-3 pt-3 pb-2">
+            <div class="d-flex align-items-center gap-2">
+              <div class="obs-avatar">
+                <i [class]="'ti ' + roleBadge(obs.user_role).icon"></i>
+              </div>
+              <div>
+                <div class="obs-agent-name">{{ obs.user_fullname }}</div>
+                <span class="badge {{ roleBadge(obs.user_role).bg }} obs-role-badge">
+                  {{ obs.user_role }}
+                </span>
+              </div>
+            </div>
+            <span class="obs-date-pill" [title]="obs.updated_at | date:'dd/MM/yyyy HH:mm'">
+              <i class="ti ti-clock me-1"></i>{{ formatRelativeDate(obs.updated_at) }}
+            </span>
+          </div>
+
+          <!-- Comment body -->
+          <div class="obs-comment-body px-3 py-2">
+            <blockquote class="obs-blockquote mb-0">
+              <p class="obs-comment-text">{{ obs.comment }}</p>
+            </blockquote>
+          </div>
+
+          <!-- Card footer: metadata grid -->
+          <div class="obs-card-footer px-3 pb-3 pt-2">
+            <!-- POS -->
+            <div class="obs-meta-row">
+              <span class="obs-meta-icon"><i class="ti ti-map-pin"></i></span>
+              <span class="obs-meta-label">POS</span>
+              <span class="obs-meta-value fw-semibold">{{ obs.pos_name }}</span>
+            </div>
+
+            <!-- Territory breadcrumb -->
+            <div class="obs-meta-row">
+              <span class="obs-meta-icon"><i class="ti ti-world"></i></span>
+              <span class="obs-meta-label">Zone</span>
+              <span class="obs-meta-value obs-territory-path">
+                <span class="obs-territory-chip">{{ obs.province_name }}</span>
+                <i class="ti ti-chevron-right obs-sep"></i>
+                <span class="obs-territory-chip">{{ obs.area_name }}</span>
+                <ng-container *ngIf="obs.commune_name">
+                  <i class="ti ti-chevron-right obs-sep"></i>
+                  <span class="obs-territory-chip">{{ obs.commune_name }}</span>
+                </ng-container>
+              </span>
+            </div>
+
+            <!-- Agent chain -->
+            <div class="obs-meta-row" *ngIf="obs.dr">
+              <span class="obs-meta-icon"><i class="ti ti-user-check"></i></span>
+              <span class="obs-meta-label">DR</span>
+              <span class="obs-meta-value">{{ obs.dr }}</span>
+            </div>
+            <div class="obs-meta-row" *ngIf="obs.sup">
+              <span class="obs-meta-icon"><i class="ti ti-users"></i></span>
+              <span class="obs-meta-label">Sup</span>
+              <span class="obs-meta-value">{{ obs.sup }}</span>
+            </div>
+            <div class="obs-meta-row" *ngIf="obs.asm">
+              <span class="obs-meta-icon"><i class="ti ti-layers"></i></span>
+              <span class="obs-meta-label">ASM</span>
+              <span class="obs-meta-value">{{ obs.asm }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         TABLE VIEW
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div *ngIf="!isLoading() && hasData() && viewMode() === 'table'" class="card mb-4">
+      <div class="card-body p-0">
+        <div class="table-responsive">
+          <table class="table table-hover obs-table mb-0">
+            <thead class="obs-table-head">
+              <tr>
+                <th>Agent</th>
+                <th>Observation</th>
+                <th>Point de vente</th>
+                <th>Territoire</th>
+                <th>Hiérarchie</th>
+                <th class="text-end">Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let obs of observations(); trackBy: trackByUuid">
+                <!-- Agent -->
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="obs-avatar obs-avatar-sm">
+                      <i [class]="'ti ' + roleBadge(obs.user_role).icon"></i>
+                    </div>
+                    <div>
+                      <div class="fw-semibold obs-text-sm">{{ obs.user_fullname }}</div>
+                      <span class="badge {{ roleBadge(obs.user_role).bg }}">{{ obs.user_role }}</span>
+                    </div>
+                  </div>
+                </td>
+                <!-- Comment -->
+                <td class="obs-comment-cell">
+                  <span class="obs-table-comment">{{ obs.comment }}</span>
+                </td>
+                <!-- POS -->
+                <td>
+                  <i class="ti ti-map-pin text-muted me-1"></i>
+                  <span class="obs-text-sm fw-semibold">{{ obs.pos_name }}</span>
+                </td>
+                <!-- Territory -->
+                <td class="obs-text-sm">
+                  <div>{{ obs.province_name }}</div>
+                  <div class="text-muted">{{ obs.area_name }}</div>
+                  <div class="text-muted" *ngIf="obs.commune_name">{{ obs.commune_name }}</div>
+                </td>
+                <!-- Hierarchy -->
+                <td class="obs-text-sm">
+                  <div *ngIf="obs.asm">
+                    <span class="text-muted">ASM:</span> {{ obs.asm }}
+                  </div>
+                  <div *ngIf="obs.sup">
+                    <span class="text-muted">Sup:</span> {{ obs.sup }}
+                  </div>
+                  <div *ngIf="obs.dr">
+                    <span class="text-muted">DR:</span> {{ obs.dr }}
+                  </div>
+                </td>
+                <!-- Date -->
+                <td class="text-end obs-text-sm text-muted" [title]="obs.updated_at | date:'dd/MM/yyyy HH:mm'">
+                  {{ formatRelativeDate(obs.updated_at) }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PAGINATION
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div *ngIf="!isLoading() && hasData() && pagination()" class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+      <span class="text-muted small">
+        Page <strong>{{ pagination()!.current_page }}</strong> sur <strong>{{ pagination()!.total_pages }}</strong>
+        &mdash; {{ pagination()!.total_records | number }} résultat{{ pagination()!.total_records !== 1 ? 's' : '' }}
+      </span>
+
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          <li class="page-item" [class.disabled]="pagination()!.current_page === 1">
+            <a class="page-link" href="javascript:void(0);" (click)="onPageChange(pagination()!.current_page - 1)">
+              <i class="ti ti-chevron-left"></i>
+            </a>
+          </li>
+          <ng-container *ngFor="let p of pages()">
+            <li
+              class="page-item"
+              *ngIf="p === 1 || p === pagination()!.total_pages || (p >= pagination()!.current_page - 2 && p <= pagination()!.current_page + 2)"
+              [class.active]="p === pagination()!.current_page"
+            >
+              <a class="page-link" href="javascript:void(0);" (click)="onPageChange(p)">{{ p }}</a>
+            </li>
+            <li
+              class="page-item disabled"
+              *ngIf="(p === pagination()!.current_page - 3 || p === pagination()!.current_page + 3) && p > 1 && p < pagination()!.total_pages"
+            >
+              <span class="page-link">…</span>
+            </li>
+          </ng-container>
+          <li class="page-item" [class.disabled]="pagination()!.current_page === pagination()!.total_pages">
+            <a class="page-link" href="javascript:void(0);" (click)="onPageChange(pagination()!.current_page + 1)">
+              <i class="ti ti-chevron-right"></i>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /page-wrapper -->

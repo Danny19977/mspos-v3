@@ -46,10 +46,9 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   isLoadingData = signal(false);
   public routes = routes;
 
-  dateRange!: FormGroup;
   start_date = signal<string>('');
   end_date = signal<string>('');
-  rangeDate: any[] = [];
+  selectedPeriod = signal<string>('TODAY');
 
   dataList = signal<IPosForm[]>([]);
   total_pages = signal(0);
@@ -209,17 +208,7 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
 
 
   ngAfterViewInit(): void {
-    const date = new Date();
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1); // First day of the current month
-    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 1); // First day of the next month
-    lastDay.setDate(lastDay.getDate() + 1); // Add 1 day to the last day
-    this.rangeDate = [firstDay, lastDay];
-
-    this.dateRange = this._formBuilder.group({
-      rangeValue: new FormControl(this.rangeDate),
-    });
-    this.start_date.set(formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US'));
-    this.end_date.set(formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US'));
+    this.applyPeriod('TODAY');
 
     this.route.params.subscribe(params => {
       this.name.set(params['name']);
@@ -469,19 +458,35 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
   }
 
 
-  // Méthode onChanges
-  onChanges(): void {
-    this.dateRange.valueChanges.subscribe((val) => {
-      this.start_date.set(formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US'));
+  /** Calcule start/end à partir d'une période prédéfinie */
+  applyPeriod(period: string): void {
+    const today = new Date();
+    const end = new Date(today);
+    end.setHours(23, 59, 59, 999);
+    const start = new Date(today);
+    start.setHours(0, 0, 0, 0);
 
-      val.rangeValue[1].setDate(val.rangeValue[1].getDate() + 1);
-      this.end_date.set(formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US'));
+    switch (period) {
+      case 'TODAY': break;
+      case '1W':  start.setDate(start.getDate() - 7); break;
+      case '1M':  start.setMonth(start.getMonth() - 1); break;
+      case '3M':  start.setMonth(start.getMonth() - 3); break;
+      case '6M':  start.setMonth(start.getMonth() - 6); break;
+      case '1Y':  start.setFullYear(start.getFullYear() - 1); break;
+    }
 
-
-      this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
-
-    });
+    this.start_date.set(formatDate(start, 'yyyy-MM-dd', 'en-US'));
+    this.end_date.set(formatDate(end, 'yyyy-MM-dd', 'en-US'));
   }
+
+  onPeriodChange(period: string): void {
+    this.selectedPeriod.set(period);
+    this.applyPeriod(period);
+    this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());
+  }
+
+  // Méthode onChanges — conservée pour rétrocompatibilité
+  onChanges(): void {}
 
   onPageChange(event: PageEvent): void {
     this.isLoadingData.set(true);
@@ -928,12 +933,7 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
         return;
     }
 
-    // Mettre à jour le FormControl de dateRange
-    this.dateRange.patchValue({
-      rangeValue: [startDate, endDate]
-    });
-
-    // Déclencher le changement de date
+    // Mettre à jour les dates
     this.start_date.set(formatDate(startDate, 'yyyy-MM-dd', 'en-US'));
     this.end_date.set(formatDate(endDate, 'yyyy-MM-dd', 'en-US'));
     this.fetchProducts(this.name(), this.territoire_uuid(), this.start_date(), this.end_date());

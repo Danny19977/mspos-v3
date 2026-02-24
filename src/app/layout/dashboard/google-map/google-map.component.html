@@ -1,45 +1,104 @@
 <div class="page-wrapper">
   <div class="content">
-    <div class="row">
-      <div class="col-md-12">
-        <div class="page-header">
-          <div class="row align-items-center">
-            <div class="col-12 col-md-4 mb-3 mb-md-0">
-              <h3 class="page-title">Map DR</h3>
-            </div>
-            <!-- <div class="col-12 col-md-8">
-              <form [formGroup]="dateRange">
-                <div class="row g-2">
-                  <div class="col-12 col-md-12 col-lg-3">
-                    <div class="form-sort">
-                      <i class="ti ti-search"></i>
-                      <input type="text" class="form-control" placeholder="Rechercher (ASM, SUP, DR, Cyclo)" 
-                        formControlName="search" />
-                    </div>
-                  </div>
-                  <div class="col-12 col-md-12 col-lg-9">
-                    <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center">
-                      <div class="form-sort me-0 me-sm-2 mb-2 mb-sm-0 flex-grow-1">
-                        <i class="ti ti-calendar"></i>
-                        <input type="text" class="form-control date-range bookingrange" bsDaterangepicker
-                          [bsConfig]="{ adaptivePosition: true }"  formControlName="rangeValue" />
-                      </div>
-                      <div class="head-icons mb-0 d-flex justify-content-end">
-                        <app-reload></app-reload>
-                        <app-collapse-header></app-collapse-header>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </form> 
-            </div> -->
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         PAGE HEADER
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col-8">
+          <h4 class="page-title">
+            <i class="ti ti-map-pin me-1"></i>Carte des visites
+            <span class="count-title ms-2">{{ googleMapList().length | number }}</span>
+          </h4>
+        </div>
+        <div class="col-4 text-end">
+          <div class="head-icons">
+            <a href="javascript:void(0);" title="Actualiser" (click)="refresh()">
+              <i class="ti ti-refresh" [class.gm-spin]="isLoading()"></i>
+            </a>
           </div>
         </div>
       </div>
-    </div> 
-    
-    <app-map-card [isLoading]="isLoading" [googleMapList]="googleMapList"></app-map-card> 
-   
-    
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════
+         FILTER BAR
+    ══════════════════════════════════════════════════════════════════════ -->
+    <div class="card gm-filter-card mb-4">
+      <div class="card-body py-3">
+        <form [formGroup]="filterForm" class="row g-3 align-items-end">
+
+          <!-- Quick period selector -->
+          <div class="col-12">
+            <label class="form-label gm-label">
+              <i class="ti ti-calendar me-1"></i>Période
+            </label>
+            <div class="obs-period-group" role="group">
+              <button
+                *ngFor="let p of periods"
+                type="button"
+                class="obs-period-btn"
+                [class.active]="selectedPeriod() === p.key"
+                (click)="setPeriod(p.key)"
+              >{{ p.label }}</button>
+            </div>
+          </div>
+
+          <!-- Search -->
+          <div class="col-md-4">
+            <label class="form-label gm-label">
+              <i class="ti ti-search me-1"></i>Recherche
+            </label>
+            <div class="input-group">
+              <span class="input-group-text"><i class="ti ti-search"></i></span>
+              <input
+                type="text"
+                class="form-control form-control-sm"
+                placeholder="ASM, Superviseur, DR, Cyclo…"
+                formControlName="search"
+              />
+            </div>
+          </div>
+
+          <!-- Province -->
+          <div class="col-md-4">
+            <label class="form-label gm-label">
+              <i class="ti ti-map me-1"></i>Province
+            </label>
+            <select class="form-select form-select-sm" formControlName="province_uuid">
+              <option value="">Toutes les provinces</option>
+              <option *ngFor="let prov of provinceList()" [value]="prov.uuid">
+                {{ prov.name }}
+              </option>
+            </select>
+          </div>
+
+          <!-- User type -->
+          <div class="col-md-4">
+            <label class="form-label gm-label">
+              <i class="ti ti-users me-1"></i>Rôle
+            </label>
+            <select class="form-select form-select-sm" formControlName="user_type">
+              <option *ngFor="let ut of userTypes" [value]="ut.key">{{ ut.label }}</option>
+            </select>
+          </div>
+
+        </form>
+      </div>
+    </div>
+
+    <!-- Map error state -->
+    <div *ngIf="hasMapError()" class="alert alert-danger d-flex align-items-center" role="alert">
+      <i class="ti ti-alert-triangle me-2 fs-5"></i>
+      <div>{{ mapErrorMsg() }}</div>
+    </div>
+
+    <!-- Map card -->
+    <app-map-card
+      [isLoading]="isLoading()"
+      [googleMapList]="googleMapList()"
+    ></app-map-card>
+
   </div>
 </div>

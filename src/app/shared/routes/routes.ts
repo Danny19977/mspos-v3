@@ -69,6 +69,12 @@ export class routes {
   public static get kpiDashboard(): string {
     return this.dashboard + '/key-performance-indicators';
   }
+  public static get kpiUserVisitSummary(): string {
+    return this.kpiDashboard + '/user-summary';
+  }
+  public static get observationsDashboard(): string {
+    return this.dashboard + '/observations';
+  }
 
   
 

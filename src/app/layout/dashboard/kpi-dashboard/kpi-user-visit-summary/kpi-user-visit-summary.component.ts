@@ -1,60 +1,59 @@
 ﻿import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { formatDate } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
 import { ICountry } from '../../../territories/country/models/country.model';
-import { KPITableViewPriceModel } from '../../models/dashboard.models';
-import { CountryService } from '../../../territories/country/country.service';
+import { KpiUserVisitSummaryModel } from '../../models/dashboard.models';
 import { AuthService } from '../../../../auth/auth.service';
+import { CountryService } from '../../../territories/country/country.service';
 import { KpiService } from '../../services/kpi.service';
 import { PERIOD_OPTIONS, PeriodKey, computeDateRange } from '../kpi-period.utils';
 
-// Displays flat per-user KPI aggregated at country level.
-// Route: country/:country  |  No geographic drill-down.
-
 @Component({
-  selector: 'app-kpi-table-view-country',
+  selector: 'app-kpi-user-visit-summary',
   standalone: false,
-  templateUrl: './kpi-table-view-country.component.html',
-  styleUrl: './kpi-table-view-country.component.scss',
+  templateUrl: './kpi-user-visit-summary.component.html',
+  styleUrl: './kpi-user-visit-summary.component.scss',
 })
-export class KpiTableViewCountryComponent implements OnInit, OnDestroy {
+export class KpiUserVisitSummaryComponent implements OnInit, OnDestroy {
 
-  // DI
-  private route          = inject(ActivatedRoute);
+  //  DI 
   private authService    = inject(AuthService);
   private countryService = inject(CountryService);
   private kpiService     = inject(KpiService);
 
-  // Signals
-  isLoading      = signal(false);
-  countryList    = signal<ICountry[]>([]);
+  //  Signals 
+  isLoading       = signal(false);
+  countryList     = signal<ICountry[]>([]);
   selectedCountry = signal<ICountry | undefined>(undefined);
-  tableViewList  = signal<KPITableViewPriceModel[]>([]);
-  searchTerm     = signal('');
-  selectedTitle  = signal('');
-  selectedPeriod = signal<PeriodKey>('month');
-  customStart    = signal('');
-  customEnd      = signal('');
+  summaryList     = signal<KpiUserVisitSummaryModel[]>([]);
+  searchTerm      = signal('');
+  selectedTitle   = signal('');
+  selectedPeriod  = signal<PeriodKey>('month');
+  customStart     = signal('');
+  customEnd       = signal('');
 
-  // Computed
+  //  Computed 
   filteredList = computed(() => {
-    let data = this.tableViewList();
+    let data = this.summaryList();
     const title = this.selectedTitle();
     const term  = this.searchTerm().toLowerCase().trim();
     if (title) data = data.filter(i => i.title === title);
-    if (term)  data = data.filter(i => i.signature.toLowerCase().includes(term));
+    if (term)  data = data.filter(i =>
+      i.name.toLowerCase().includes(term) || i.title.toLowerCase().includes(term));
     return data;
   });
 
-  totalAgents = computed(() => this.filteredList().length);
-  totalVisits = computed(() => this.filteredList().reduce((s, i) => s + i.total_visits, 0));
-  avgObjectif = computed(() => {
+  totalAgents       = computed(() => this.filteredList().length);
+  totalDailyVisits  = computed(() => this.filteredList().reduce((s, i) => s + i.daily_visits,   0));
+  totalMonthlyVisits= computed(() => this.filteredList().reduce((s, i) => s + i.monthly_visits, 0));
+  totalYearlyVisits = computed(() => this.filteredList().reduce((s, i) => s + i.yearly_visits,  0));
+  totalRangeVisits  = computed(() => this.filteredList().reduce((s, i) => s + i.total_visits,   0));
+  avgRangePct       = computed(() => {
     const list = this.filteredList();
     if (!list.length) return 0;
-    return Math.round(list.reduce((s, i) => s + i.objectif, 0) / list.length * 100) / 100;
+    return Math.round(list.reduce((s, i) => s + i.range_pct, 0) / list.length * 100) / 100;
   });
 
-  // Config
+  //  Config 
   readonly periodOptions = PERIOD_OPTIONS;
   readonly titleOptions  = ['ASM', 'Supervisor', 'DR', 'Cyclo'];
 
@@ -63,21 +62,19 @@ export class KpiTableViewCountryComponent implements OnInit, OnDestroy {
   private country_uuid  = '';
   private autoRefreshId?: ReturnType<typeof setInterval>;
 
-  // Lifecycle
+  //  Lifecycle 
   ngOnInit(): void {
     this.applyPeriod('month');
 
     this.authService.user().subscribe({
       next: (user) => {
-        const routeCountry = this.route.snapshot.params['country'];
         this.countryService.getAll().subscribe({
           next: (res) => {
             const list: ICountry[] = res.data ?? [];
             this.countryList.set(list);
-            const preferred = routeCountry
-              || (user.role === 'Managers' || user.role === 'Support' ? user.country_uuid : null)
-              || list[0]?.uuid;
-            const country = list.find(c => c.uuid === preferred) ?? list[0];
+            const country = (user.role === 'Managers' || user.role === 'Support')
+              ? (list.find(c => c.uuid === user.country_uuid) ?? list[0])
+              : list[0];
             if (country) {
               this.selectedCountry.set(country);
               this.country_uuid = country.uuid;
@@ -99,7 +96,7 @@ export class KpiTableViewCountryComponent implements OnInit, OnDestroy {
     if (this.autoRefreshId) clearInterval(this.autoRefreshId);
   }
 
-  // Period
+  //  Period 
   applyPeriod(key: PeriodKey): void {
     this.selectedPeriod.set(key);
     if (key !== 'custom') {
@@ -124,7 +121,7 @@ export class KpiTableViewCountryComponent implements OnInit, OnDestroy {
     }
   }
 
-  // Country selector
+  //  Country selector 
   onCountryChange(event: any): void {
     const country: ICountry = event.value;
     this.selectedCountry.set(country);
@@ -132,17 +129,20 @@ export class KpiTableViewCountryComponent implements OnInit, OnDestroy {
     this.loadData();
   }
 
-  // Data
+  //  Data 
   loadData(): void {
     if (!this.country_uuid || !this.start_date || !this.end_date) return;
     this.isLoading.set(true);
-    this.kpiService.TableViewCountry(this.country_uuid, this.start_date, this.end_date).subscribe({
-      next:  (res) => { this.tableViewList.set(res?.data ?? []); this.isLoading.set(false); },
-      error: ()    => { this.tableViewList.set([]); this.isLoading.set(false); },
+    this.kpiService.UserVisitSummary(
+      this.country_uuid, this.start_date, this.end_date,
+      { title: this.selectedTitle() },
+    ).subscribe({
+      next:  (res) => { this.summaryList.set(res?.data ?? []); this.isLoading.set(false); },
+      error: (err) => { console.error(err); this.summaryList.set([]); this.isLoading.set(false); },
     });
   }
 
-  // Helpers
+  //  Badge helpers 
   getPctClass(pct: number): string {
     return pct >= 100 ? 'bg-success' : pct >= 75 ? 'bg-warning text-dark' : 'bg-danger';
   }
@@ -155,17 +155,29 @@ export class KpiTableViewCountryComponent implements OnInit, OnDestroy {
     return map[title] ?? 'bg-info';
   }
 
+  //  Export 
   exportToCSV(): void {
     const list = this.filteredList();
     if (!list.length) return;
-    const headers = ['Agent', 'Role', 'Visites', 'Cible', '% Objectif'];
-    const rows = list.map(i =>
-      [i.signature, i.title, i.total_visits, i.target, i.objectif].join(','));
+    const headers = [
+      'Nom', 'Titre',
+      'Visites Jour', 'Cible Jour', '% Jour',
+      'Visites Mois', 'Cible Mois', '% Mois',
+      'Visites Annee', 'Cible Annee', '% Annee',
+      'Visites Periode', 'Cible Periode', '% Periode',
+    ];
+    const rows = list.map(i => [
+      i.name, i.title,
+      i.daily_visits,   i.daily_target,   i.daily_pct,
+      i.monthly_visits, i.monthly_target, i.monthly_pct,
+      i.yearly_visits,  i.yearly_target,  i.yearly_pct,
+      i.total_visits,   i.range_target,   i.range_pct,
+    ].join(','));
     const link = document.createElement('a');
     link.href = URL.createObjectURL(
       new Blob([[headers.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' }),
     );
-    link.download = `kpi-pays-${formatDate(new Date(), 'yyyy-MM-dd', 'en-US')}.csv`;
+    link.download = `kpi-user-summary-${formatDate(new Date(), 'yyyy-MM-dd', 'en-US')}.csv`;
     link.style.visibility = 'hidden';
     document.body.appendChild(link); link.click(); document.body.removeChild(link);
   }

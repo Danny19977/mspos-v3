@@ -778,6 +778,7 @@ export class PosFilterListComponent implements OnInit {
             next: () => {
               this.formGroup().reset();
               this.toastr.info('Supprimé avec succès!', 'Success!');
+              this.fetchProducts(this.name(), this.territoire_uuid());
               this.isLoading.set(false);
             },
             error: (err) => {

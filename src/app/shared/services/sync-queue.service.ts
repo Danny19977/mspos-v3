@@ -460,4 +460,23 @@ export class SyncQueueService {
     await db.syncQueue.delete(id);
     await this.updatePendingCount();
   }
+
+  /**
+   * Annule toutes les opérations en attente (pending) liées à une entité donnée.
+   * Utilisé pour éviter les créations fantômes quand on supprime un item jamais synchronisé.
+   */
+  async cancelPendingOperationsForEntity(entityType: string, uuid: string): Promise<number> {
+    const ops = await db.syncQueue
+      .where('status').equals('pending')
+      .filter(op => op.entityType === entityType && (op.tempId === uuid || op.data?.uuid === uuid))
+      .toArray();
+
+    for (const op of ops) {
+      if (op.id != null) await db.syncQueue.delete(op.id);
+    }
+
+    await this.updatePendingCount();
+    console.log(`🗑️ ${ops.length} opération(s) annulée(s) pour ${entityType} uuid=${uuid}`);
+    return ops.length;
+  }
 }

@@ -188,6 +188,12 @@ export class RouteplanComponent implements OnInit {
     return pos && pos.name ? pos.name : '';
   }
 
+  getAreaName(pos: IPos): string {
+    return pos.area_name
+      || (typeof (pos.Area as any)?.name === 'string' ? (pos.Area as any).name : '')
+      || '';
+  }
+
   optionSelected(event: MatAutocompleteSelectedEvent) {
     const selectedOption = event.option.value;
     this.posuuId.set(selectedOption.uuid);
@@ -212,7 +218,7 @@ export class RouteplanComponent implements OnInit {
     this.isRoutePlanCreatedRecently.set(false);
 
     // Toujours charger les données locales en attente de sync
-    this.routeplanService.getLocalPendingRoutePlans(currentUser.uuid).then(localPending => {
+    this.routeplanService.getLocalPendingRoutePlans(currentUser.uuid).then(async localPending => {
       // Enrichir les plans locaux avec les données de l'utilisateur courant
       const enrichedLocalPlans: IRoutePlan[] = localPending.map(plan => ({
         ...plan,
@@ -239,7 +245,11 @@ export class RouteplanComponent implements OnInit {
         return d >= todayStart && d <= todayEnd && plan.user_uuid === currentUser.uuid;
       });
 
-      if (hasTodayLocalPlan) {
+      // Vérifier aussi les plans synchronisés (sync_status = 'synced') dans IndexedDB
+      // hasTodayRoutePlan() cherche TOUS les plans du jour sans filtre sur sync_status
+      const hasTodaySyncedLocalPlan = await this.routeplanService.hasTodayRoutePlan(currentUser.uuid);
+
+      if (hasTodayLocalPlan || hasTodaySyncedLocalPlan) {
         this.isRoutePlanCreatedRecently.set(true);
       }
 
@@ -279,7 +289,9 @@ export class RouteplanComponent implements OnInit {
             this.dataSource().data = merged;
 
             // Vérifier si un plan du jour (00h-23h59) existe pour cet utilisateur (tous rôles)
-            if (!hasTodayLocalPlan) {
+            // Ne faire la vérification serveur que si aucun plan local du jour n'a été trouvé
+            // (ni en pending ni en synced dans IndexedDB)
+            if (!hasTodayLocalPlan && !hasTodaySyncedLocalPlan) {
               const serverHasToday = (res.data || []).some((plan: any) => {
                 if (plan.user_uuid !== currentUser.uuid) return false;
                 const d = new Date(plan.CreatedAt || plan.created);

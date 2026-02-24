@@ -1,22 +1,10 @@
-import { Component, computed, OnInit, signal } from '@angular/core';
-import { IUser } from '../../../management/user/models/user.model';
-import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
-import { IProvince } from '../../../territories/province/models/province.model';
-import { SETableViewModel, SETableViewPriceModel } from '../../models/dashboard.models';
-import { ProvinceService } from '../../../territories/province/province.service';
-import { AuthService } from '../../../../auth/auth.service';
+import { Component, input, signal, effect, inject } from '@angular/core';
 import { SaleEvolutionService } from '../../services/sale-evolution.service';
-import { formatDate } from '@angular/common';
+import { SETypePosTableModel, SEPriceTableModel } from '../../models/dashboard.models';
 import {
-  ApexAxisChartSeries,
-  ApexChart, 
-  ApexDataLabels,
-  ApexXAxis,
-  ApexPlotOptions,
+  ApexAxisChartSeries, ApexChart,
+  ApexDataLabels, ApexXAxis, ApexPlotOptions, ApexYAxis, ApexTooltip, ApexLegend,
 } from 'ng-apexcharts';
-import { ICountry } from '../../../territories/country/models/country.model';
-import { CountryService } from '../../../territories/country/country.service';
-
 
 export interface ChartOptions {
   series: ApexAxisChartSeries | any;
@@ -24,221 +12,112 @@ export interface ChartOptions {
   dataLabels: ApexDataLabels | any;
   plotOptions: ApexPlotOptions | any;
   xaxis: ApexXAxis | any;
+  yaxis: ApexYAxis | any;
+  tooltip: ApexTooltip | any;
+  legend: ApexLegend | any;
+  colors: any;
 }
 
 @Component({
   selector: 'app-se-table-view-province',
   standalone: false,
   templateUrl: './se-table-view-province.component.html',
-  styleUrl: './se-table-view-province.component.scss'
+  styleUrl: './se-table-view-province.component.scss',
 })
-export class SeTableViewProvinceComponent implements OnInit {
-  isLoading = false;
-  currentUser!: IUser;
+export class SeTableViewProvinceComponent {
+  private seService = inject(SaleEvolutionService);
 
-  dateRange!: FormGroup;
-  start_date!: string;
-  end_date!: string;
+  // Signal inputs
+  country_uuid = input('');
+  province_uuid = input('');
+  start_date = input('');
+  end_date = input('');
 
-  // Filtre
-  rangeDate: any[] = [];
+  // State signals
+  isLoadingTypePos = signal(false);
+  isLoadingPrice = signal(false);
+  typePosData = signal<SETypePosTableModel[]>([]);
+  priceData = signal<SEPriceTableModel[]>([]);
+  activeTab = signal<'typepos' | 'price'>('typepos');
 
+  public chartTypePosOptions: Partial<ChartOptions> | any;
+  public chartPriceOptions: Partial<ChartOptions> | any;
 
-  provinceList: IProvince[] = [];
-  province!: IProvince;
-
-  tableViewList: SETableViewModel[] = [];
-  tableViewPriceList: SETableViewPriceModel[] = [];
-
-
-  countrySearch = signal<string>('');
-  countryList = signal<ICountry[]>([]);
-  filteredCountryList = computed(() =>
-    this.countryList().filter((country) =>
-      country.name.toLowerCase().includes(this.countrySearch().toLowerCase())
-    )
-  );
-  selectedProvince: string | null = null; // Declare the property with an initial value
-
-  public chartOptions3: Partial<ChartOptions> | any;
-  public chartOptions4: Partial<ChartOptions> | any;
-
-  constructor(
-    private _formBuilder: FormBuilder,
-    private countryService: CountryService,
-    private provinceService: ProvinceService,
-    private authService: AuthService,
-    private saleEvolutionService: SaleEvolutionService,
-  ) {
-  }
-
-
-  ngOnInit(): void {
-    this.isLoading = true;
-    const date = new Date();
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
-    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
-    this.rangeDate = [firstDay, lastDay];
-
-    this.dateRange = this._formBuilder.group({
-      country: new FormControl(''),
-      rangeValue: new FormControl(this.rangeDate),
-    });
-    this.start_date = formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US');
-    this.end_date = formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US');
-
-
-    this.authService.user().subscribe({
-      next: (user) => {
-        this.currentUser = user;
-
-        this.countryService.getAll().subscribe((res) => {
-          this.countryList.set(res.data);
-          this.provinceService.getAll().subscribe((pr) => {
-            this.provinceList = pr.data;
-            if (this.currentUser.role != 'Managers' && this.currentUser.role != 'Support') {
-              this.getTableView(this.countryList()[0].uuid, this.provinceList[0].uuid);
-              this.getTableViewPrice(this.countryList()[0].uuid, this.provinceList[0].uuid, this.start_date, this.end_date);
-            } else {
-              this.getTableView(this.currentUser.country_uuid, this.currentUser.province_uuid);
-              this.getTableViewPrice(this.currentUser.country_uuid, this.currentUser.province_uuid, this.start_date, this.end_date);
-            }
-          });
-        });
-
-      },
-      error: (error) => {
-        console.log(error);
-      }
-    });
-
-    this.onChanges();
-  }
-
-
-  updateSearch(event: Event): void {
-    const input = event.target as HTMLInputElement; // Cast explicite
-    this.countrySearch.set(input.value); // Met à jour le signal avec la valeur de l'input
-  }
-
-  onCheckboxCountryChange(event: any, item: ICountry) {
-    if (event.target.checked) {
-      console.log('item:', item);
-      this.getTableView(item.uuid, this.provinceList[0].uuid);
-      this.getTableViewPrice(item.uuid, this.provinceList[0].uuid, this.start_date, this.end_date);
-    }
-  }
-
-
-  onChanges(): void {
-    this.dateRange.valueChanges.subscribe((val) => {
-      this.start_date = formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US');
-
-      val.rangeValue[1].setDate(val.rangeValue[1].getDate() + 1);
-      this.end_date = formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US');
-
-      if (this.currentUser.role != 'Managers' && this.currentUser.role != 'Support') {
-        this.getTableView(this.countryList()[0].uuid, this.provinceList[0].uuid);
-        this.getTableViewPrice(this.currentUser.country_uuid, this.currentUser.province_uuid, this.start_date, this.end_date);
-      } else {
-        this.getTableView(this.currentUser.country_uuid, this.currentUser.province_uuid);
-        this.getTableViewPrice(this.currentUser.country_uuid, this.currentUser.province_uuid, this.start_date, this.end_date);
-      }
+  constructor() {
+    effect(() => {
+      const c = this.country_uuid();
+      const p = this.province_uuid();
+      const s = this.start_date();
+      const e = this.end_date();
+      if (c && p && s && e) { this.loadData(); }
     });
   }
 
-
-  onProvinceChange(event: any) {
-    this.isLoading = true;
-    this.province = event.value;
-    console.log('province:', this.province);
-    this.getTableView(this.province.country_uuid, this.province.uuid);
-    this.getTableViewPrice(this.province.country_uuid, this.province.uuid, this.start_date, this.end_date);
+  loadData(): void {
+    this.loadTypePos();
+    this.loadPrice();
   }
 
-
-  getTableView(country_uuid: string, province_uuid: string) {
-    this.saleEvolutionService.TableViewProvince(country_uuid, province_uuid).subscribe((res) => {
-      this.tableViewList = res.data;
-      this.getPieChartData();
-      this.isLoading = false;
-    });
-  }
-
-  getTableViewPrice(country_uuid: string, province_uuid: string, start_date: string, end_date: string) {
-    this.saleEvolutionService.TableViewProvincePrice(country_uuid, province_uuid, start_date, end_date).subscribe((res) => {
-      this.tableViewPriceList = res.data;
-      this.getPieChartDataPrix();
-      this.isLoading = false;
-    });
-  }
-
-  getPieChartData() { 
-    const series = (this.tableViewList || []).map((item) => item.total_pos);
-    const labels = (this.tableViewList || []).map((item) => item.type_pos);
-
-    console.log('series:', series);
-    console.log('labels:', labels);
-
-    this.chartOptions3 = {
-      series: series,
-      chart: {
-        width: 400,
-        type: 'pie',
-      },
-      legend: {
-        position: 'bottom',
-        formatter: function (val: any, opts: any) {
-          return val + ' - ' + opts.w.globals.series[opts.seriesIndex];
+  loadTypePos(): void {
+    this.isLoadingTypePos.set(true);
+    this.seService.TableViewProvince(this.country_uuid(), this.province_uuid(), this.start_date(), this.end_date())
+      .subscribe({
+        next: (res) => {
+          this.typePosData.set(res.data || []);
+          this.buildTypePosChart();
+          this.isLoadingTypePos.set(false);
         },
-      },
-      labels: labels,
-      responsive: [
-        {
-          breakpoint: 480,
-          options: {
-            chart: {
-              width: 275,
-            },
-            legend: {
-              position: 'right',
-            },
-          },
+        error: () => { this.isLoadingTypePos.set(false); }
+      });
+  }
+
+  loadPrice(): void {
+    this.isLoadingPrice.set(true);
+    this.seService.TableViewProvincePrice(this.country_uuid(), this.province_uuid(), this.start_date(), this.end_date())
+      .subscribe({
+        next: (res) => {
+          this.priceData.set(res.data || []);
+          this.buildPriceChart();
+          this.isLoadingPrice.set(false);
         },
+        error: () => { this.isLoadingPrice.set(false); }
+      });
+  }
+
+  buildTypePosChart(): void {
+    const data = this.typePosData();
+    const categories = data.map(d => d.pos_type);
+    this.chartTypePosOptions = {
+      series: [
+        { name: 'Farde', data: data.map(d => d.total_farde) },
+        { name: 'Sold', data: data.map(d => d.total_sold) },
       ],
+      chart: { type: 'bar', height: 260, toolbar: { show: false } },
+      colors: ['#4361ee', '#f72585'],
+      plotOptions: { bar: { horizontal: false, columnWidth: '50%', borderRadius: 4 } },
+      dataLabels: { enabled: false },
+      xaxis: { categories, labels: { rotate: -30 } },
+      yaxis: { title: { text: 'Quantité' } },
+      legend: { position: 'top' },
+      tooltip: { shared: true, intersect: false },
     };
   }
 
-  getPieChartDataPrix() {
-    const series = (this.tableViewPriceList || []).map((item) => item.count_price);
-    const labels = (this.tableViewPriceList || []).map((item) => item.price);
-
-    this.chartOptions4 = {
-      series: series,
-      chart: {
-        width: 400,
-        type: 'pie',
-      },
-      legend: {
-        position: 'bottom',
-        formatter: function (val: any, opts: any) {
-          return val + ' - ' + opts.w.globals.series[opts.seriesIndex];
-        },
-      },
-      labels: labels,
-      responsive: [
-        {
-          breakpoint: 480,
-          options: {
-            chart: {
-              width: 275,
-            },
-            legend: {
-              position: 'right',
-            },
-          },
-        },
+  buildPriceChart(): void {
+    const data = this.priceData();
+    const categories = data.map(d => d.brand_name);
+    this.chartPriceOptions = {
+      series: [
+        { name: 'Revenu total', data: data.map(d => d.total_revenue) },
+        { name: 'Prix moyen', data: data.map(d => d.avg_price) },
       ],
+      chart: { type: 'bar', height: 260, toolbar: { show: false } },
+      colors: ['#06d6a0', '#ffd166'],
+      plotOptions: { bar: { horizontal: true, barHeight: '60%', borderRadius: 4 } },
+      dataLabels: { enabled: false },
+      xaxis: { categories },
+      legend: { position: 'top' },
+      tooltip: { shared: true, intersect: false },
     };
   }
 }

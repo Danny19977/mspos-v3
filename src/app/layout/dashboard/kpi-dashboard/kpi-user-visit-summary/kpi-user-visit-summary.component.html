@@ -1,0 +1,227 @@
+﻿<div class="row">
+  <div class="col-md-12 d-flex">
+    <div class="card w-100">
+
+      <div class="card-header border-0 pb-0">
+        <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
+          <h4><i class="ti ti-table-alias me-1"></i>Résumé KPI par Utilisateur</h4>
+
+          <div class="d-flex align-items-center justify-content-center flex-wrap row-gap-2 gap-2">
+
+            <!-- Country selector -->
+            <mat-form-field appearance="fill" style="min-width:160px;">
+              <mat-label>Pays</mat-label>
+              <mat-select [value]="selectedCountry()" (selectionChange)="onCountryChange($event)">
+                @for (c of countryList(); track c.uuid) {
+                  <mat-option [value]="c">{{ c.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <!-- Role filter -->
+            <mat-form-field appearance="fill" style="min-width:130px;">
+              <mat-label>Rôle</mat-label>
+              <mat-select [value]="selectedTitle()" (selectionChange)="selectedTitle.set($event.value); loadData()">
+                <mat-option value="">Tous</mat-option>
+                @for (t of titleOptions; track t) {
+                  <mat-option [value]="t">{{ t }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+
+            <!-- Period dropdown -->
+            <select class="form-select form-select-sm" style="min-width:145px;"
+              [ngModel]="selectedPeriod()" (ngModelChange)="onPeriodChange($event)">
+              @for (p of periodOptions; track p.key) {
+                <option [value]="p.key">{{ p.label }}</option>
+              }
+            </select>
+
+            @if (selectedPeriod() === 'custom') {
+              <input type="date" class="form-control form-control-sm" style="min-width:145px;"
+                placeholder="Date debut"
+                [ngModel]="customStart()" (ngModelChange)="customStart.set($event); onCustomDateChange()">
+              <input type="date" class="form-control form-control-sm" style="min-width:145px;"
+                placeholder="Date fin"
+                [ngModel]="customEnd()" (ngModelChange)="customEnd.set($event); onCustomDateChange()">
+            }
+
+            <button type="button" class="btn btn-outline-primary btn-sm"
+              (click)="loadData()" [disabled]="isLoading()" title="Actualiser">
+              <i class="ti ti-refresh" [class.spin-animation]="isLoading()"></i>
+              <span class="ms-1">Actualiser</span>
+            </button>
+
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body">
+
+        @if (isLoading()) {
+          <div class="text-center d-flex justify-content-center align-items-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+          </div>
+        } @else {
+
+          <!-- Stat cards -->
+          <div class="row mb-4">
+            <div class="col-lg-2 col-md-4 mb-3">
+              <div class="card bg-primary text-white h-100">
+                <div class="card-body d-flex flex-column justify-content-center">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div><h6 class="mb-1">Agents</h6><h3 class="mb-0 fw-bold">{{ totalAgents() }}</h3></div>
+                    <i class="ti ti-users" style="font-size:2rem;opacity:.7;"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-2 col-md-4 mb-3">
+              <div class="card bg-info text-white h-100">
+                <div class="card-body d-flex flex-column justify-content-center">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div><h6 class="mb-1">Visites Jour</h6><h3 class="mb-0 fw-bold">{{ totalDailyVisits() }}</h3></div>
+                    <i class="ti ti-calendar-day" style="font-size:2rem;opacity:.7;"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-2 col-md-4 mb-3">
+              <div class="card bg-secondary text-white h-100">
+                <div class="card-body d-flex flex-column justify-content-center">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div><h6 class="mb-1">Visites Mois</h6><h3 class="mb-0 fw-bold">{{ totalMonthlyVisits() }}</h3></div>
+                    <i class="ti ti-calendar-month" style="font-size:2rem;opacity:.7;"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-2 col-md-4 mb-3">
+              <div class="card bg-dark text-white h-100">
+                <div class="card-body d-flex flex-column justify-content-center">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div><h6 class="mb-1">Visites Année</h6><h3 class="mb-0 fw-bold">{{ totalYearlyVisits() }}</h3></div>
+                    <i class="ti ti-calendar-stats" style="font-size:2rem;opacity:.7;"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-2 col-md-4 mb-3">
+              <div class="card bg-success text-white h-100">
+                <div class="card-body d-flex flex-column justify-content-center">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div><h6 class="mb-1">Visites Période</h6><h3 class="mb-0 fw-bold">{{ totalRangeVisits() }}</h3></div>
+                    <i class="ti ti-chart-line" style="font-size:2rem;opacity:.7;"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-lg-2 col-md-4 mb-3">
+              <div class="card bg-warning text-dark h-100">
+                <div class="card-body d-flex flex-column justify-content-center">
+                  <div class="d-flex align-items-center justify-content-between">
+                    <div><h6 class="mb-1">% Moy. Période</h6><h3 class="mb-0 fw-bold">{{ avgRangePct() | number:'1.0-2' }} %</h3></div>
+                    <i class="ti ti-target" style="font-size:2rem;opacity:.7;"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Search + export -->
+          <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="search-box" [class.has-value]="searchTerm()" style="min-width:260px;">
+              <input type="text" class="form-control"
+                placeholder="Rechercher par nom ou rôle..."
+                [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" autocomplete="off">
+              <i class="ti ti-search search-icon"></i>
+              @if (searchTerm()) {
+                <button class="btn btn-sm btn-link clear-search" (click)="searchTerm.set('')" title="Effacer">
+                  <i class="ti ti-x"></i>
+                </button>
+              }
+            </div>
+            <button class="btn btn-outline-success btn-sm" (click)="exportToCSV()">
+              <i class="ti ti-download me-1"></i>Exporter CSV
+            </button>
+          </div>
+
+          @if (searchTerm()) {
+            <div class="mb-2 small text-muted">
+              <span class="fw-bold">{{ filteredList().length }}</span> résultat(s) pour "{{ searchTerm() }}"
+            </div>
+          }
+
+          <!-- Table -->
+          <div class="table-responsive custom-table">
+            <table class="table table-bordered table-hover align-middle dataTable">
+              <thead class="thead-light">
+                <tr>
+                  <th rowspan="2" class="align-middle">Nom</th>
+                  <th rowspan="2" class="align-middle text-center">Rôle</th>
+                  <th colspan="3" class="text-center table-info">Journalier</th>
+                  <th colspan="3" class="text-center table-success">Mensuel</th>
+                  <th colspan="3" class="text-center table-warning">Annuel</th>
+                  <th colspan="3" class="text-center table-primary">Période sélectionnée</th>
+                </tr>
+                <tr>
+                  <th class="text-center table-info">Visites</th>
+                  <th class="text-center table-info">Cible</th>
+                  <th class="text-center table-info">%</th>
+                  <th class="text-center table-success">Visites</th>
+                  <th class="text-center table-success">Cible</th>
+                  <th class="text-center table-success">%</th>
+                  <th class="text-center table-warning">Visites</th>
+                  <th class="text-center table-warning">Cible</th>
+                  <th class="text-center table-warning">%</th>
+                  <th class="text-center table-primary">Visites</th>
+                  <th class="text-center table-primary">Cible</th>
+                  <th class="text-center table-primary">%</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of filteredList(); track item.user_uuid) {
+                  <tr>
+                    <td class="fw-semibold">{{ item.name }}</td>
+                    <td class="text-center">
+                      <span class="badge {{ getTitleBadgeClass(item.title) }}">{{ item.title }}</span>
+                    </td>
+                    <td class="text-center">{{ item.daily_visits }}</td>
+                    <td class="text-center text-muted">{{ item.daily_target }}</td>
+                    <td class="text-center">
+                      <span class="badge {{ getPctClass(item.daily_pct) }}">{{ item.daily_pct | number:'1.0-1' }}%</span>
+                    </td>
+                    <td class="text-center">{{ item.monthly_visits }}</td>
+                    <td class="text-center text-muted">{{ item.monthly_target }}</td>
+                    <td class="text-center">
+                      <span class="badge {{ getPctClass(item.monthly_pct) }}">{{ item.monthly_pct | number:'1.0-1' }}%</span>
+                    </td>
+                    <td class="text-center">{{ item.yearly_visits }}</td>
+                    <td class="text-center text-muted">{{ item.yearly_target }}</td>
+                    <td class="text-center">
+                      <span class="badge {{ getPctClass(item.yearly_pct) }}">{{ item.yearly_pct | number:'1.0-1' }}%</span>
+                    </td>
+                    <td class="text-center fw-bold">{{ item.total_visits }}</td>
+                    <td class="text-center text-muted">{{ item.range_target }}</td>
+                    <td class="text-center">
+                      <span class="badge {{ getPctClass(item.range_pct) }}">{{ item.range_pct | number:'1.0-1' }}%</span>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="14" class="text-center text-muted py-4">
+                      <i class="ti ti-database-off me-2"></i>Aucune donnée disponible.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+        }
+      </div>
+    </div>
+  </div>
+</div>

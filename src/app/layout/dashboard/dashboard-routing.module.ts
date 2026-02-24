@@ -13,6 +13,7 @@ import { SeDashboardComponent } from './se-dashboard/se-dashboard.component';
 import { GoogleMapComponent } from './google-map/google-map.component';
 import { KpiDashboardComponent } from './kpi-dashboard/kpi-dashboard.component';
 import { SummaryDashboardComponent } from './summary-dashboard/summary-dashboard.component';
+import { DataObservationsComponent } from './data-observations/data-observations.component';
 import { NdTableViewAreaComponent } from './nd-dashboard/nd-table-view-area/nd-table-view-area.component';
 import { NdTableViewSubareaComponent } from './nd-dashboard/nd-table-view-subarea/nd-table-view-subarea.component';
 import { NdTableViewCommuneComponent } from './nd-dashboard/nd-table-view-commune/nd-table-view-commune.component';
@@ -25,15 +26,12 @@ import { OosTableViewProvinceComponent } from './oos-dashboard/oos-table-view-pr
 import { OosTableViewAreaComponent } from './oos-dashboard/oos-table-view-area/oos-table-view-area.component';
 import { OosTableViewSubareaComponent } from './oos-dashboard/oos-table-view-subarea/oos-table-view-subarea.component';
 import { OosTableViewCommuneComponent } from './oos-dashboard/oos-table-view-commune/oos-table-view-commune.component';
-import { SeTableViewProvinceComponent } from './se-dashboard/se-table-view-province/se-table-view-province.component';
-import { SeTableViewAreaComponent } from './se-dashboard/se-table-view-area/se-table-view-area.component';
-import { SeTableViewSubareaComponent } from './se-dashboard/se-table-view-subarea/se-table-view-subarea.component';
-import { SeTableViewCommuneComponent } from './se-dashboard/se-table-view-commune/se-table-view-commune.component';
 import { KpiTableViewProvinceComponent } from './kpi-dashboard/kpi-table-view-province/kpi-table-view-province.component';
 import { KpiTableViewAreaComponent } from './kpi-dashboard/kpi-table-view-area/kpi-table-view-area.component';
 import { KpiTableViewCommuneComponent } from './kpi-dashboard/kpi-table-view-commune/kpi-table-view-commune.component';
 import { KpiTableViewSubareaComponent } from './kpi-dashboard/kpi-table-view-subarea/kpi-table-view-subarea.component'; 
 import { KpiTableViewCountryComponent } from './kpi-dashboard/kpi-table-view-country/kpi-table-view-country.component';
+import { KpiUserVisitSummaryComponent } from './kpi-dashboard/kpi-user-visit-summary/kpi-user-visit-summary.component';
 
 const routes: Routes = [
   {
@@ -134,28 +132,7 @@ const routes: Routes = [
       {
         path: 'sales-evolution',
         component: SeDashboardComponent,
-        children: [
-          {
-            path: 'province/:country',
-            component: SeTableViewProvinceComponent,
-          },
-          {
-            path: 'area/:province_uuid',
-            component: SeTableViewAreaComponent,
-          },
-          {
-            path: 'subarea/:area_uuid',
-            component: SeTableViewSubareaComponent,
-          },
-          {
-            path: 'commune/:subarea_uuid',
-            component: SeTableViewCommuneComponent,
-          },
-          {
-            path: '',
-            component: SeTableViewProvinceComponent
-          }
-        ]
+        children: []
       },
       { 
         path: 'key-performance-indicators',
@@ -182,6 +159,10 @@ const routes: Routes = [
             component: KpiTableViewCommuneComponent,
           },
           {
+            path: 'user-summary',
+            component: KpiUserVisitSummaryComponent,
+          },
+          {
             path: '',
             component: KpiTableViewProvinceComponent
           }
@@ -204,6 +185,10 @@ const routes: Routes = [
       {
         path: 'summary',
         component: SummaryDashboardComponent,
+      },
+      {
+        path: 'observations',
+        component: DataObservationsComponent,
       },
       
     ],

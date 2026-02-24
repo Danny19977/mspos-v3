@@ -60,4 +60,30 @@ export class KpiService extends ApiService {
     return this.http.get<any>(`${this.endpoint}/total-visits-by-commune`, { params });
   }
 
+  UserVisitSummary(
+    country_uuid: string,
+    start_date: string,
+    end_date: string,
+    filters: {
+      province_uuid?: string;
+      area_uuid?: string;
+      sub_area_uuid?: string;
+      commune_uuid?: string;
+      title?: string;
+      user_uuid?: string;
+    } = {}
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set('country_uuid', country_uuid)
+      .set('start_date', start_date)
+      .set('end_date', end_date);
+    if (filters.province_uuid)  { params = params.set('province_uuid',  filters.province_uuid); }
+    if (filters.area_uuid)      { params = params.set('area_uuid',      filters.area_uuid); }
+    if (filters.sub_area_uuid)  { params = params.set('sub_area_uuid',  filters.sub_area_uuid); }
+    if (filters.commune_uuid)   { params = params.set('commune_uuid',   filters.commune_uuid); }
+    if (filters.title)          { params = params.set('title',          filters.title); }
+    if (filters.user_uuid)      { params = params.set('user_uuid',      filters.user_uuid); }
+    return this.http.get<any>(`${this.endpoint}/user-visit-summary`, { params });
+  }
+
 }

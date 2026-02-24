@@ -248,7 +248,7 @@
                                 <mat-autocomplete requireSelection #autopos1="matAutocomplete"
                                     (optionSelected)="optionSelected($event)" [displayWith]="displayFn">
                                     @for (item of filteredOptions(); track item) {
-                                    <mat-option [value]="item">{{item.name}} | {{item.shop}}</mat-option>
+                                    <mat-option [value]="item">{{item.name}} | {{item.shop}} | {{getAreaName(item)}} </mat-option>
                                     }
                                 </mat-autocomplete>
                             </div>

@@ -41,10 +41,6 @@ import { OosTableViewCommuneComponent } from './oos-dashboard/oos-table-view-com
 import { OosTableViewSubareaComponent } from './oos-dashboard/oos-table-view-subarea/oos-table-view-subarea.component';
 import { OosTableViewAreaComponent } from './oos-dashboard/oos-table-view-area/oos-table-view-area.component';
 import { OosTableViewProvinceComponent } from './oos-dashboard/oos-table-view-province/oos-table-view-province.component';
-import { SeTableViewProvinceComponent } from './se-dashboard/se-table-view-province/se-table-view-province.component';
-import { SeTableViewAreaComponent } from './se-dashboard/se-table-view-area/se-table-view-area.component';
-import { SeTableViewSubareaComponent } from './se-dashboard/se-table-view-subarea/se-table-view-subarea.component';
-import { SeTableViewCommuneComponent } from './se-dashboard/se-table-view-commune/se-table-view-commune.component';
 import { KpiTableViewAreaComponent } from './kpi-dashboard/kpi-table-view-area/kpi-table-view-area.component';
 import { KpiTableViewCommuneComponent } from './kpi-dashboard/kpi-table-view-commune/kpi-table-view-commune.component';
 import { KpiTableViewProvinceComponent } from './kpi-dashboard/kpi-table-view-province/kpi-table-view-province.component';
@@ -58,7 +54,14 @@ import { SosService } from './services/sos.service';
 import { SummaryService } from './services/summary.service';
 import { SummaryDashboardService } from './services/summary-dashboard.service';
 import { KpiTableViewCountryComponent } from './kpi-dashboard/kpi-table-view-country/kpi-table-view-country.component';
+import { KpiUserVisitSummaryComponent } from './kpi-dashboard/kpi-user-visit-summary/kpi-user-visit-summary.component';
 import { SummaryDashboardComponent } from './summary-dashboard/summary-dashboard.component';
+import { DataObservationsComponent } from './data-observations/data-observations.component';
+import { ObservationService } from './services/observation.service';
+import { SeTableViewProvinceComponent } from './se-dashboard/se-table-view-province/se-table-view-province.component';
+import { SeTableViewAreaComponent } from './se-dashboard/se-table-view-area/se-table-view-area.component';
+import { SeTableViewSubareaComponent } from './se-dashboard/se-table-view-subarea/se-table-view-subarea.component';
+import { SeTableViewCommuneComponent } from './se-dashboard/se-table-view-commune/se-table-view-commune.component';
 
 @NgModule({
   declarations: [
@@ -99,16 +102,18 @@ import { SummaryDashboardComponent } from './summary-dashboard/summary-dashboard
     OosTableViewSubareaComponent,
     OosTableViewAreaComponent,
     OosTableViewProvinceComponent,
-    SeTableViewProvinceComponent,
-    SeTableViewAreaComponent,
-    SeTableViewSubareaComponent,
-    SeTableViewCommuneComponent,
     KpiTableViewAreaComponent,
     KpiTableViewCommuneComponent,
     KpiTableViewProvinceComponent,
     KpiTableViewSubareaComponent,
     KpiTableViewCountryComponent,
+    KpiUserVisitSummaryComponent,
     SummaryDashboardComponent,
+    DataObservationsComponent,
+    SeTableViewProvinceComponent,
+    SeTableViewAreaComponent,
+    SeTableViewSubareaComponent,
+    SeTableViewCommuneComponent,
   ],
   imports: [
     CommonModule,
@@ -125,6 +130,7 @@ import { SummaryDashboardComponent } from './summary-dashboard/summary-dashboard
     SosService,
     SummaryService,
     SummaryDashboardService,
+    ObservationService,
   ]
 })
 export class DashboardModule { }

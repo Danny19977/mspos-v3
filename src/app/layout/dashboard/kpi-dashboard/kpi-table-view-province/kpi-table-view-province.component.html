@@ -1,422 +1,152 @@
-<div class="row">
-    <div class="col-md-12 d-flex">
-
-        <div class="card w-100">
-            <div class="card-header border-0 pb-0">
-                <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
-                    <h4><i class="ti ti-grip-vertical me-1"></i>Table KPI Province</h4>
-                    <div class="d-flex align-items-center justify-content-center flex-wrap row-gap-2">
-
-                        <mat-form-field appearance="fill" class="me-2">
-                            <mat-label>Select Province</mat-label>
-                            <mat-select (selectionChange)="onProvinceChange($event)">
-                                <mat-option *ngFor="let item of provinceList" [value]="item">
-                                    {{ item.name }}
-                                </mat-option>
-                            </mat-select>
-                        </mat-form-field>
-
-                        <div class="daterange-picker mb-3">
-
-                            <form [formGroup]="dateRange">
-                                <div class="form-sorts dropdown">
-                                    <a href="javascript:void(0);" data-bs-toggle="dropdown"
-                                        data-bs-auto-close="outside"><i class="ti ti-filter-share"></i>Filter</a>
-                                    <div class="filter-dropdown-menu dropdown-menu dropdown-menu-md-end p-3">
-                                        <div class="filter-set-view">
-                                            <div class="filter-set-head">
-                                                <h4><i class="ti ti-filter-share"></i>Filter</h4>
-                                            </div> 
-
-                                            <div class="filter-set-head">
-                                                <div class="form-sort me-2">
-                                                    <i class="ti ti-calendar"></i>
-                                                    <input type="text" class="form-control date-range bookingrange"
-                                                        bsDaterangepicker [bsConfig]="{ adaptivePosition: true }"
-                                                        formControlName="rangeValue" />
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-
-                        </div>
-
-                        <!-- Bouton de synchronisation manuelle -->
-                        <div class="manual-sync-controls d-flex align-items-center gap-2 ms-3">
-                            <button 
-                                type="button" 
-                                class="btn btn-outline-primary btn-sm"
-                                (click)="manualSync()"
-                                [disabled]="isLoading"
-                                title="Actualiser les données">
-                                <i class="ti ti-refresh" [class.spin-animation]="isLoading"></i>
-                                <span class="ms-2">Actualiser</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card-body">
-                @if (isLoading) {
-                <div class=" text-center d-flex justify-content-center align-items-center ">
-                    <div class="spinner-border bs-primary" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
-                } @else {
-                <!-- Résumé Statistique -->
-                <div class="row mb-4">
-                    <div class="col-lg-4 col-md-6 mb-3">
-                        <div class="card bg-primary text-white h-100">
-                            <div class="card-body d-flex flex-column justify-content-center">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <h6 class="mb-2">Total Agents</h6>
-                                        <h3 class="mb-0 fw-bold">{{ getTotalAgents() }}</h3>
-                                    </div>
-                                    <div class="text-end">
-                                        <i class="ti ti-users" style="font-size: 2.5rem; opacity: 0.7;"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-6 mb-3">
-                        <div class="card bg-success text-white h-100">
-                            <div class="card-body d-flex flex-column justify-content-center">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <h6 class="mb-2">Total Visites</h6>
-                                        <h3 class="mb-0 fw-bold">{{ getTotalVisits() }}</h3>
-                                    </div>
-                                    <div class="text-end">
-                                        <i class="ti ti-chart-line" style="font-size: 2.5rem; opacity: 0.7;"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-lg-4 col-md-12 mb-3">
-                        <div class="card bg-info text-white h-100">
-                            <div class="card-body d-flex flex-column justify-content-center">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div>
-                                        <h6 class="mb-2">Objectif Total</h6>
-                                        <h3 class="mb-0 fw-bold">{{ getTotalObjective() | number:'1.0-2' }} %</h3>
-                                    </div>
-                                    <div class="text-end">
-                                        <i class="ti ti-target" style="font-size: 2.5rem; opacity: 0.7;"></i>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Champ de recherche -->
-                <div class="mb-3">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="search-box" [class.has-value]="searchTerm">
-                                <input 
-                                    type="text" 
-                                    class="form-control" 
-                                    placeholder="Rechercher par nom, titre, ou pays..." 
-                                    [(ngModel)]="searchTerm"
-                                    (input)="onSearch()"
-                                    autocomplete="off"
-                                    #searchInput>
-                                <i class="ti ti-search search-icon"></i>
-                                @if (searchTerm) {
-                                <button 
-                                    class="btn btn-sm btn-link clear-search" 
-                                    (click)="clearSearch()"
-                                    title="Effacer la recherche">
-                                    <i class="ti ti-x"></i>
-                                </button>
-                                }
-                            </div>
-                        </div>
-                        @if (searchTerm) {
-                        <div class="col-md-6">
-                            <div class="search-results-count">
-                                <span class="count-highlight">{{ getFilteredDataCount() }}</span> résultat(s) trouvé(s) pour "{{ searchTerm }}"
-                            </div>
-                        </div>
-                        }
-                    </div>
-                </div>
-
-                <!-- Actions -->
-                <div class="mb-3 d-flex justify-content-between align-items-center">
-                    <div>
-                        <button class="btn btn-outline-primary me-2" (click)="toggleHierarchicalView()">
-                            <i class="ti ti-hierarchy-2"></i>
-                            {{ isHierarchicalView ? 'Vue Normale' : 'Vue Hiérarchique' }}
-                        </button>
-                        <button class="btn btn-outline-success" (click)="exportToCSV()">
-                            <i class="ti ti-download"></i>
-                            Exporter CSV
-                        </button>
-                    </div>
-                    @if (isHierarchicalView) {
-                    <div>
-                        <button class="btn btn-sm btn-outline-info me-1" (click)="expandAll()">
-                            <i class="ti ti-plus"></i> Développer Tout
-                        </button>
-                        <button class="btn btn-sm btn-outline-warning" (click)="collapseAll()">
-                            <i class="ti ti-minus"></i> Réduire Tout
-                        </button>
-                    </div>
-                    }
-                </div>
-
-                @if (isHierarchicalView) {
-                <!-- Vue Hiérarchique -->
-                <div class="table-responsive custom-table">
-                    <table class="table dataTable" id="deals-project-hierarchical">
-                        <thead class="thead-light">
-                            <tr>
-                                <th style="width: 50%;">Hiérarchie</th>
-                                <th>Objectifs</th>
-                                <th>Target</th>
-                                <th>Visites</th>
-                                <!-- <th>Visites Équipe</th> -->
-                                <!-- <th>Total Visites</th> -->
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (group of filteredGroupedData; track group.groupKey) {
-                                <!-- Niveau Principal -->
-                                <tr [class]="'hierarchy-level-' + group.level + (group.level === 0 ? ' table-primary' : group.level === 1 ? ' table-success' : group.level === 2 ? ' table-warning' : ' table-light')">
-                                    <td [style.padding-left.px]="group.level * 25">
-                                        <div class="d-flex align-items-center">
-                                            @if (group.children && group.children.length > 0) {
-                                            <button class="btn btn-sm btn-link expand-toggle p-0 me-2" 
-                                                    (click)="toggleExpansion(group)">
-                                                <i [class]="group.isExpanded ? 'ti ti-chevron-down' : 'ti ti-chevron-right'"></i>
-                                            </button>
-                                            } @else {
-                                            <span class="me-4"></span>
-                                            }
-                                            <div class="hierarchy-info">
-                                                <div class="d-flex align-items-center">
-                                                    <span class="badge me-2" [class]="getBadgeClass(group.level)">
-                                                        {{ getLevelLabel(group.level) }}
-                                                    </span>
-                                                    <strong>{{ group.title || group.signature }}</strong>
-                                                </div>
-                                                @if (group.children && group.children.length > 0) {
-                                                <small class="text-muted">{{ group.children.length }} membre(s)</small>
-                                                }
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <!-- {{ group.objectif | number:'1.0-2' }} % -->
-                                    </td>
-                                    <td>
-                                        <!-- {{ group.target | number:'1.0-2' }} -->
-                                    </td>
-                                      <!-- <td>
-                                      <span class="text-primary">{{ group.personalVisits || 0 }}</span>  
-                                    </td>
-                                    <td>
-                                     <span class="text-success">{{ group.teamVisits || 0 }}</span>
-                                    </td> -->
-                                    <td>
-                                        <!-- <strong>{{ group.total_visits }}</strong> -->
-                                    </td>
-                                    <td>
-                                        <!-- <button class="btn btn-sm btn-outline-info" 
-                                                (click)="viewDetails(group)">
-                                            <i class="ti ti-eye"></i>
-                                        </button> -->
-                                    </td>
-                                </tr>
-                                
-                                <!-- Enfants -->
-                                @if (group.isExpanded && group.children) {
-                                    @for (child of group.children; track child.groupKey) {
-                                        <tr [class]="'hierarchy-level-' + child.level + (child.level === 1 ? ' table-success' : child.level === 2 ? ' table-warning' : ' table-light')">
-                                            <td [style.padding-left.px]="child.level * 25">
-                                                <div class="d-flex align-items-center">
-                                                    @if (child.children && child.children.length > 0) {
-                                                    <button class="btn btn-sm btn-link expand-toggle p-0 me-2" 
-                                                            (click)="toggleExpansion(child)">
-                                                        <i [class]="child.isExpanded ? 'ti ti-chevron-down' : 'ti ti-chevron-right'"></i>
-                                                    </button>
-                                                    } @else {
-                                                    <span class="me-4"></span>
-                                                    }
-                                                    <div class="hierarchy-info">
-                                                        <div class="d-flex align-items-center">
-                                                            <!-- <span class="badge me-2" [class]="getBadgeClass(child.level)">
-                                                                {{ getLevelLabel(child.level) }}
-                                                            </span> -->
-                                                            {{ child.title || child.signature }}
-                                                        </div>
-                                                        @if (child.children && child.children.length > 0) {
-                                                        <small class="text-muted">{{ child.children.length }} membre(s)</small>
-                                                        }
-                                                    </div>
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <span class="text-success">{{ child.objectif | number:'1.0-2' }} %</span>
-                                            </td>
-                                            <td>
-                                                <span class="text-primary">{{ child.target | number:'1.0-2' }}</span>
-                                            </td>
-                                            <!--  <td>
-                                               <span class="text-primary">{{ child.personalVisits || 0 }}</span>  
-                                            </td>
-                                            <td>
-                                                <span class="text-success">{{ child.teamVisits || 0 }}</span>
-                                            </td> -->
-                                            <td>
-                                                <strong>{{ child.total_visits }}</strong>
-                                            </td>
-                                            <td>
-                                                <button class="btn btn-sm btn-outline-info" 
-                                                        (click)="viewDetails(child)">
-                                                    <i class="ti ti-eye"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        
-                                        <!-- Petits-enfants -->
-                                        @if (child.isExpanded && child.children) {
-                                            @for (grandChild of child.children; track grandChild.groupKey) {
-                                                <tr [class]="'hierarchy-level-' + grandChild.level + (grandChild.level === 2 ? ' table-warning' : ' table-light')">
-                                                    <td [style.padding-left.px]="grandChild.level * 25">
-                                                        <div class="d-flex align-items-center">
-                                                            @if (grandChild.children && grandChild.children.length > 0) {
-                                                            <button class="btn btn-sm btn-link expand-toggle p-0 me-2" 
-                                                                    (click)="toggleExpansion(grandChild)">
-                                                                <i [class]="grandChild.isExpanded ? 'ti ti-chevron-down' : 'ti ti-chevron-right'"></i>
-                                                            </button>
-                                                            } @else {
-                                                            <span class="me-4"></span>
-                                                            }
-                                                            <div class="hierarchy-info">
-                                                                <div class="d-flex align-items-center">
-                                                                    <span class="badge me-2" [class]="getBadgeClass(grandChild.level)">
-                                                                        {{ getLevelLabel(grandChild.level) }}
-                                                                    </span>
-                                                                    {{ grandChild.title || grandChild.signature }}
-                                                                </div>
-                                                                @if (grandChild.children && grandChild.children.length > 0) {
-                                                                <small class="text-muted">{{ grandChild.children.length }} membre(s)</small>
-                                                                }
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    <td>{{ grandChild.objectif | number:'1.0-2' }} %</td>
-                                                    <td>{{ grandChild.target | number:'1.0-2' }}</td>
-                                                    <td>
-                                                        <span class="text-primary">{{ grandChild.personalVisits || 0 }}</span>
-                                                    </td>
-                                                    <td>
-                                                        <span class="text-success">{{ grandChild.teamVisits || 0 }}</span>
-                                                    </td>
-                                                    <td>{{ grandChild.total_visits }}</td>
-                                                    <td>
-                                                        <!-- <button class="btn btn-sm btn-outline-info" 
-                                                                (click)="viewDetails(grandChild)">
-                                                            <i class="ti ti-eye"></i>
-                                                        </button> -->
-                                                        --
-                                                    </td>
-                                                </tr>
-                                                
-                                                <!-- Arrière-petits-enfants (Cyclo) -->
-                                                @if (grandChild.isExpanded && grandChild.children) {
-                                                    @for (greatGrandChild of grandChild.children; track greatGrandChild.groupKey) {
-                                                        <tr class="hierarchy-level-3 table-light">
-                                                            <td [style.padding-left.px]="greatGrandChild.level * 25">
-                                                                <div class="d-flex align-items-center">
-                                                                    <span class="me-4"></span>
-                                                                    <div class="hierarchy-info">
-                                                                        <div class="d-flex align-items-center">
-                                                                            <span class="badge me-2 badge-secondary">
-                                                                                {{ getLevelLabel(greatGrandChild.level) }}
-                                                                            </span>
-                                                                            {{ greatGrandChild.title || greatGrandChild.signature }}
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </td>
-                                                            <td>{{ greatGrandChild.objectif | number:'1.0-2' }} %</td>
-                                                            <td>{{ greatGrandChild.target | number:'1.0-2' }}</td>
-                                                            <td>
-                                                                <span class="text-primary">{{ greatGrandChild.personalVisits || greatGrandChild.total_visits }}</span>
-                                                            </td>
-                                                            <td>
-                                                                <span class="text-muted">0</span>
-                                                            </td>
-                                                            <td>{{ greatGrandChild.total_visits }}</td>
-                                                            <td>
-                                                                <button class="btn btn-sm btn-outline-info" 
-                                                                        (click)="viewDetails(greatGrandChild)">
-                                                                    <i class="ti ti-eye"></i>
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    }
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        </tbody>
-                    </table>
-                </div>
-                } @else {
-                <!-- Vue Normale -->
-                <div class="table-responsive custom-table">
-                    <table class="table dataTable" id="deals-project">
-                        <thead class="thead-light">
-                            <tr>
-                                <th>Pays</th>
-                                <th>Fullname</th>
-                                <th>Titre</th> 
-                                <th>Objectifs</th>
-                                <th>Total Visits</th>
-                                <th>Target</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (item of filteredTableViewList; track $index) {
-                            <tr class="odd">
-                                <td>
-                                    <a [routerLink]="['/web/dashboard/key-performance-indicators/area', item.uuid]">
-                                        {{ item.name }}
-                                    </a>
-                                </td>
-                                <td>{{ item.signature }}</td>
-                                <td>
-                                    <span class="badge" [class]="getTitleBadgeClass(item.title)">
-                                        {{ item.title }}
-                                    </span>
-                                </td> 
-                                <td>{{ item.objectif | number:'1.0-2' }}</td>
-                                <td>{{ item.total_visits }}</td>
-                                <td>{{ item.target | number:'1.0-2' }}</td>
-                            </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-                }
-                }
-            </div>
+﻿<!-- PAGE HEADER -->
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col-8">
+          <h4 class="page-title">
+            <i class="ti ti-map-pin me-1"></i>KPI par Province
+            @if (selectedProvince()) {
+              <span class="count-title ms-2">{{ selectedProvince()!.name }}</span>
+            }
+          </h4>
         </div>
-
+        <div class="col-4 text-end">
+          <div class="head-icons">
+            <a href="javascript:void(0);" title="Actualiser" (click)="loadData()">
+              <i class="ti ti-refresh" [class.spin-animation]="isLoading()"></i>
+            </a>
+          </div>
+        </div>
+      </div>
     </div>
-</div>
+
+    <!-- FILTER CARD -->
+    <div class="card kpi-filter-card mb-4">
+      <div class="card-body py-3">
+        <div class="row g-3 align-items-end">
+
+          <!-- Period button group -->
+          <div class="col-12">
+            <label class="form-label kpi-label"><i class="ti ti-calendar me-1"></i>Période</label>
+            <div class="obs-period-group" role="group">
+              @for (p of periodOptions; track p.key) {
+                <button type="button" class="obs-period-btn"
+                  [class.active]="selectedPeriod() === p.key"
+                  (click)="onPeriodChange(p.key)">{{ p.label }}</button>
+              }
+            </div>
+          </div>
+
+          <!-- Custom date range -->
+          @if (selectedPeriod() === 'custom') {
+            <div class="col-md-3">
+              <label class="form-label">Date début</label>
+              <input type="date" class="form-control form-control-sm"
+                [ngModel]="customStart()" (ngModelChange)="customStart.set($event); onCustomDateChange()">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Date fin</label>
+              <input type="date" class="form-control form-control-sm"
+                [ngModel]="customEnd()" (ngModelChange)="customEnd.set($event); onCustomDateChange()">
+            </div>
+          }
+
+          <!-- Province selector -->
+          <div class="col-md-3">
+            <mat-form-field appearance="fill" class="w-100">
+              <mat-label>Province</mat-label>
+              <mat-select [value]="selectedProvince()" (selectionChange)="onProvinceChange($event)">
+                @for (p of provinceList(); track p.uuid) {
+                  <mat-option [value]="p">{{ p.name }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+          <!-- Role filter -->
+          <div class="col-md-3">
+            <mat-form-field appearance="fill" class="w-100">
+              <mat-label>Rôle</mat-label>
+              <mat-select [value]="selectedTitle()" (selectionChange)="selectedTitle.set($event.value); loadData()">
+                <mat-option value="">Tous</mat-option>
+                @for (t of titleOptions; track t) {
+                  <mat-option [value]="t">{{ t }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- DATA CARD -->
+    <div class="card">
+      <div class="card-body">
+        @if (isLoading()) {
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+          </div>
+        } @else {
+
+          <!-- Search + CSV -->
+          <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="search-box" [class.has-value]="searchTerm()" style="min-width:260px;">
+              <input type="text" class="form-control" placeholder="Rechercher agent ou province..."
+                [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" autocomplete="off">
+              <i class="ti ti-search search-icon"></i>
+              @if (searchTerm()) {
+                <button class="btn btn-sm btn-link clear-search" (click)="searchTerm.set('')">
+                  <i class="ti ti-x"></i>
+                </button>
+              }
+            </div>
+            <button class="btn btn-outline-success btn-sm" (click)="exportToCSV()">
+              <i class="ti ti-download me-1"></i>CSV
+            </button>
+          </div>
+
+          <!-- Table -->
+          <div class="table-responsive custom-table">
+            <table class="table table-hover align-middle dataTable">
+              <thead class="thead-light">
+                <tr>
+                  <th>Province</th>
+                  <th>Agent</th>
+                  <th>Role</th>
+                  <th class="text-center">Visites</th>
+                  <th class="text-center">Cible</th>
+                  <th class="text-center">% Objectif</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of filteredList(); track item.signature + item.name) {
+                  <tr>
+                    <td>
+                      <a class="zone-link" (click)="navigateToArea(item.province_uuid)">
+                        {{ item.name }}
+                      </a>
+                    </td>
+                    <td>{{ item.signature }}</td>
+                    <td><span class="badge {{ getTitleBadgeClass(item.title) }}">{{ item.title }}</span></td>
+                    <td class="text-center fw-bold">{{ item.total_visits }}</td>
+                    <td class="text-center text-muted">{{ item.target }}</td>
+                    <td class="text-center">
+                      <span class="badge {{ getPctClass(item.objectif) }}">{{ item.objectif | number:'1.0-1' }}%</span>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                      <i class="ti ti-database-off me-2"></i>Aucune donnee disponible.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+        }
+      </div>
+    </div>

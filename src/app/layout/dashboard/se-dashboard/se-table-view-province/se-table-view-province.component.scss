@@ -1,0 +1,85 @@
+// ── Tab pills ────────────────────────────────────────────────────────────────
+.se-tab-pills {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.se-pill {
+  all: unset;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 16px;
+  border-radius: 8px;
+  font-size: .8rem;
+  font-weight: 600;
+  color: #64748b;
+  background: #f8fafc;
+  border: 1.5px solid #e2e8f0;
+  transition: all .15s;
+  white-space: nowrap;
+  line-height: 1;
+
+  &:hover { background: #e2e8f0; color: #1e293b; border-color: #cbd5e1; }
+  &.active {
+    background: #6366f1;
+    color: #fff;
+    border-color: #6366f1;
+    box-shadow: 0 2px 8px rgba(99,102,241,.25);
+  }
+}
+
+// ── Table ─────────────────────────────────────────────────────────────────────
+.se-table {
+  font-size: .82rem;
+
+  .se-thead th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    font-size: .7rem;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    border-bottom: 2px solid #e2e8f0;
+    padding: 10px 12px;
+    white-space: nowrap;
+  }
+
+  tbody td {
+    padding: 9px 12px;
+    vertical-align: middle;
+  }
+}
+
+// ── Badge type POS ────────────────────────────────────────────────────────────
+.se-badge-type {
+  display: inline-block;
+  background: #ccfbf1;
+  color: #0f766e;
+  font-weight: 700;
+  font-size: .67rem;
+  border-radius: 6px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  padding: 3px 8px;
+}
+
+// ── Progress bar ──────────────────────────────────────────────────────────────
+.se-progress {
+  height: 6px;
+  border-radius: 999px;
+  background: #e2e8f0;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+// ── Card ──────────────────────────────────────────────────────────────────────
+.card {
+  border-radius: 10px !important;
+  .card-header {
+    background: transparent;
+    h6 { font-size: .85rem; color: #334155; }
+  }
+}

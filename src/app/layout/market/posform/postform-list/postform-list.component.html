@@ -67,16 +67,16 @@
                                         }
                                     </button>
 
-                                    <form [formGroup]="dateRange">
-                                        <div class="daterange-picker">
-                                            <div class="form-sort me-2">
-                                                <i class="ti ti-calendar"></i>
-                                                <input type="text" class="form-control date-range bookingrange"
-                                                    bsDaterangepicker [bsConfig]="{ adaptivePosition: true }"
-                                                    formControlName="rangeValue" />
-                                            </div>
-                                        </div>
-                                    </form>
+                                    <div class="me-2">
+                                        <select class="form-select" [value]="selectedPeriod()" (change)="onPeriodChange($any($event.target).value)" style="min-width:145px">
+                                            <option value="TODAY">Aujourd'hui</option>
+                                            <option value="1W">1 Semaine</option>
+                                            <option value="1M">1 Mois</option>
+                                            <option value="3M">3 Mois</option>
+                                            <option value="6M">6 Mois</option>
+                                            <option value="1Y">1 An</option>
+                                        </select>
+                                    </div>
                                     @if(currentUser()?.permission === 'ALL' ||
                                     currentUser()?.permission === 'VAE' ||
                                     currentUser()?.permission === 'VA') {
@@ -374,13 +374,15 @@
                                             <mat-icon class="text-blue">edit</mat-icon>
                                         </button>
                                         }
-                                        @if(!(element.pos_uuid == '' && isLessThan24HoursOld(element.CreatedAt) &&
+                                        @if((element.sync_status === 'pending' && isCurrentUserCreator(element)) ||
+                                        (!(element.pos_uuid == '' && isLessThan24HoursOld(element.CreatedAt) &&
                                         isCurrentUserCreator(element)) &&
                                         (currentUser()?.permission === 'ALL' ||
                                         currentUser()?.permission === 'VED') &&
-                                        isLessThan24HoursOld(element.CreatedAt)) {
-                                        <button mat-icon-button (click)="findValue(element.uuid)" data-bs-toggle="modal"
-                                            data-bs-target="#delete_contact">
+                                        isLessThan24HoursOld(element.CreatedAt))) {
+                                        <button mat-icon-button (click)="setDeleteTarget(element)" data-bs-toggle="modal"
+                                            data-bs-target="#delete_contact"
+                                            [title]="element.sync_status === 'pending' ? 'Supprimer ce rapport local' : 'Supprimer'">
                                             <mat-icon class="text-danger">delete</mat-icon>
                                         </button>
                                         }

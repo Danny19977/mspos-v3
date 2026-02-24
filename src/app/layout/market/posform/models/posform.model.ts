@@ -50,7 +50,7 @@ export interface IPosForm {
     signature: string;
 
     // Offline sync fields
-    sync_status?: 'synced' | 'pending' | 'error';
+    sync_status?: 'synced' | 'pending' | 'error' | 'deleted';
     temp_id?: string; // Temporary UUID for offline-created entities
 
     CreatedAt?: Date;

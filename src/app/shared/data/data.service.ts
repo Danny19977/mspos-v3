@@ -65,6 +65,10 @@ export class DataService {
               menuValue: 'KPI',
               route: routes.kpiDashboard,
             },
+            {
+              menuValue: 'Observations',
+              route: routes.observationsDashboard,
+            },
           ]
         },
       ],
@@ -283,6 +287,10 @@ export class DataService {
               menuValue: 'KPI',
               route: routes.kpiDashboard,
             },
+            {
+              menuValue: 'Observations',
+              route: routes.observationsDashboard,
+            },
           ]
         },
       ],
@@ -460,6 +468,10 @@ export class DataService {
             {
               menuValue: 'KPI',
               route: routes.kpiDashboard,
+            },
+            {
+              menuValue: 'Observations',
+              route: routes.observationsDashboard,
             },
           ]
         },
@@ -760,6 +772,10 @@ export class DataService {
             {
               menuValue: 'KPI',
               route: routes.kpiDashboard,
+            },
+            {
+              menuValue: 'Observations',
+              route: routes.observationsDashboard,
             },
           ]
         },

@@ -128,7 +128,13 @@ export class DataSyncService {
       const posToStore = posList.map((pos: any) => ({
         ...pos,
         sync_status: 'synced',
-        id: pos.ID || pos.id
+        id: pos.ID || pos.id,
+        // Normaliser les champs plats depuis les objets imbriqués
+        area_name: pos.area_name || (typeof pos.Area?.name === 'string' ? pos.Area.name : '') || '',
+        subarea_name: pos.subarea_name || (typeof pos.SubArea?.name === 'string' ? pos.SubArea.name : '') || '',
+        province_name: pos.province_name || (typeof pos.Province?.name === 'string' ? pos.Province.name : '') || '',
+        commune_name: pos.commune_name || (typeof pos.Commune?.name === 'string' ? pos.Commune.name : '') || '',
+        country_name: pos.country_name || (typeof pos.Country?.name === 'string' ? pos.Country.name : '') || ''
       }));
 
       // Vider la table et insérer les nouvelles données

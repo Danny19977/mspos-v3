@@ -1,31 +1,820 @@
 <div class="page-wrapper">
-    <div class="content">
-      <div class="row">
-        <div class="col-md-12">
-          <div class="page-header">
-            <div class="row align-items-center">
-              <div class="col-md-4">
-                <h3 class="page-title">SALES EVOLUTION</h3> 
-              </div>
-              <div class="col-md-8 float-end ms-auto">
-                @if (this.currentUser) {
-                <div class="d-flex title-head">
-                  <div class="head-icons mb-0">
-                    <app-reload></app-reload>
-                    <app-collapse-header></app-collapse-header>
-                  </div>
+  <div class="content">
+
+    <!-- ── PAGE HEADER ──────────────────────────────────────────────────────── -->
+    <div class="row mb-3">
+      <div class="col-md-12">
+        <div class="page-header mb-0">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <h3 class="page-title mb-0 d-flex align-items-center gap-2">
+                <span class="se-title-badge"><i class="ti ti-chart-line"></i></span>
+                SALES EVOLUTION
+              </h3>
+              <p class="text-muted small mb-0 mt-1">
+                Analyse des ventes par type POS, marque et territoire
+              </p>
+            </div>
+            <div class="col-md-6 d-flex justify-content-end align-items-center gap-2">
+              <!-- Date Range Picker -->
+              <form [formGroup]="dateRange" class="se-date-form">
+                <div class="se-date-field">
+                  <i class="ti ti-calendar-event"></i>
+                  <input type="text" class="form-control bookingrange se-date-input"
+                    placeholder="Sélectionner une période"
+                    bsDaterangepicker
+                    [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
+                    formControlName="rangeValue" />
                 </div>
-                }
+              </form>
+              <div class="head-icons mb-0 d-flex gap-1">
+                <app-reload></app-reload>
+                <app-collapse-header></app-collapse-header>
               </div>
             </div>
           </div>
         </div>
       </div>
-  
-  
-      <router-outlet />
-   
-  
     </div>
-  
-  </div>
+
+    <!-- ── GEO FILTERS ─────────────────────────────────────────────────────── -->
+    <div class="se-geo-bar mb-3">
+      <!-- Country -->
+      <div class="se-geo-item">
+        <label class="se-geo-label"><i class="ti ti-world me-1"></i>Pays</label>
+        <select class="form-select form-select-sm se-select"
+          [(ngModel)]="selectedCountry" (ngModelChange)="onCountryChange($event)">
+          @for (c of countryList(); track c.uuid) {
+            <option [ngValue]="c">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+      <!-- Province -->
+      <div class="se-geo-item">
+        <label class="se-geo-label"><i class="ti ti-map-2 me-1"></i>Province</label>
+        <select class="form-select form-select-sm se-select"
+          [(ngModel)]="selectedProvince" (ngModelChange)="onProvinceChange($event)">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (p of provinceList(); track p.uuid) {
+            <option [ngValue]="p">{{ p.name }}</option>
+          }
+        </select>
+      </div>
+      <!-- Area -->
+      <div class="se-geo-item" [class.se-geo-disabled]="!selectedProvince">
+        <label class="se-geo-label"><i class="ti ti-map-pin me-1"></i>Area</label>
+        <select class="form-select form-select-sm se-select"
+          [(ngModel)]="selectedArea" (ngModelChange)="onAreaChange($event)"
+          [disabled]="!selectedProvince">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (a of areaList(); track a.uuid) {
+            <option [ngValue]="a">{{ a.name }}</option>
+          }
+        </select>
+      </div>
+      <!-- SubArea -->
+      <div class="se-geo-item" [class.se-geo-disabled]="!selectedArea">
+        <label class="se-geo-label"><i class="ti ti-location me-1"></i>Sub-Area</label>
+        <select class="form-select form-select-sm se-select"
+          [(ngModel)]="selectedSubArea" (ngModelChange)="onSubAreaChange($event)"
+          [disabled]="!selectedArea">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (s of subAreaList(); track s.uuid) {
+            <option [ngValue]="s">{{ s.name }}</option>
+          }
+        </select>
+      </div>
+      <!-- Commune -->
+      <div class="se-geo-item" [class.se-geo-disabled]="!selectedSubArea">
+        <label class="se-geo-label"><i class="ti ti-building-community me-1"></i>Commune</label>
+        <select class="form-select form-select-sm se-select"
+          [(ngModel)]="selectedCommune" (ngModelChange)="onCommuneChange($event)"
+          [disabled]="!selectedSubArea">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (c of communeList(); track c.uuid) {
+            <option [ngValue]="c">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <!-- ── KPI CARDS ───────────────────────────────────────────────────────── -->
+    @if (isLoadingKpi) {
+      <div class="row g-3 mb-3">
+        @for (i of [1,2,3,4,5,6,7,8]; track i) {
+          <div class="col-6 col-md-3">
+            <div class="card border-0 shadow-sm se-kpi-skeleton">
+              <div class="card-body"><div class="skeleton-line"></div><div class="skeleton-line short"></div></div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+    @if (!isLoadingKpi && kpiData) {
+      <div class="row g-3 mb-3">
+        <div class="col-6 col-sm-4 col-xl-3">
+          <div class="se-kpi-card accent-blue">
+            <div class="se-kpi-icon"><i class="ti ti-package"></i></div>
+            <div class="se-kpi-body">
+              <span class="se-kpi-label">Total Farde</span>
+              <span class="se-kpi-value">{{ kpiData.current.total_farde | number:'1.0-0' }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-3">
+          <div class="se-kpi-card accent-pink">
+            <div class="se-kpi-icon"><i class="ti ti-shopping-cart"></i></div>
+            <div class="se-kpi-body">
+              <span class="se-kpi-label">Total Sold</span>
+              <span class="se-kpi-value">{{ kpiData.current.total_sold | number:'1.0-0' }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-3">
+          <div class="se-kpi-card accent-green">
+            <div class="se-kpi-icon"><i class="ti ti-coin"></i></div>
+            <div class="se-kpi-body">
+              <span class="se-kpi-label">Revenu Total</span>
+              <span class="se-kpi-value">{{ kpiData.current.total_revenue | number:'1.0-0' }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-3">
+          <div class="se-kpi-card accent-orange">
+            <div class="se-kpi-icon"><i class="ti ti-checklist"></i></div>
+            <div class="se-kpi-body">
+              <span class="se-kpi-label">Visites</span>
+              <span class="se-kpi-value">{{ kpiData.current.total_visits | number }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-3">
+          <div class="se-kpi-card accent-purple">
+            <div class="se-kpi-icon"><i class="ti ti-building-store"></i></div>
+            <div class="se-kpi-body">
+              <span class="se-kpi-label">POS Actifs</span>
+              <span class="se-kpi-value">{{ kpiData.current.active_pos | number }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-3">
+          <div class="se-kpi-card accent-teal">
+            <div class="se-kpi-icon"><i class="ti ti-brand-databricks"></i></div>
+            <div class="se-kpi-body">
+              <span class="se-kpi-label">Marques Actives</span>
+              <span class="se-kpi-value">{{ kpiData.current.active_brands }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-3">
+          <div class="se-kpi-card accent-indigo">
+            <div class="se-kpi-icon"><i class="ti ti-users"></i></div>
+            <div class="se-kpi-body">
+              <span class="se-kpi-label">Agents Actifs</span>
+              <span class="se-kpi-value">{{ kpiData.current.active_agents }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-3">
+          <div class="se-kpi-card accent-amber">
+            <div class="se-kpi-icon"><i class="ti ti-receipt"></i></div>
+            <div class="se-kpi-body">
+              <span class="se-kpi-label">Prix Moyen</span>
+              <span class="se-kpi-value">{{ kpiData.current.avg_price | number:'1.2-2' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── SECTION NAV TABS ─────────────────────────────────────────────────── -->
+    <div class="se-section-nav mb-3">
+      <button class="se-nav-btn" [class.active]="activeSection === 'overview'"    (click)="setSection('overview')">
+        <i class="ti ti-layout-dashboard me-1"></i>Évolution
+      </button>
+      <button class="se-nav-btn" [class.active]="activeSection === 'tableview'"  (click)="setSection('tableview')">
+        <i class="ti ti-table me-1"></i>Tables Détail
+      </button>
+      <button class="se-nav-btn" [class.active]="activeSection === 'growth'"     (click)="setSection('growth')">
+        <i class="ti ti-trending-up me-1"></i>Croissance
+      </button>
+      <button class="se-nav-btn" [class.active]="activeSection === 'competition'"(click)="setSection('competition')">
+        <i class="ti ti-chart-bar me-1"></i>Compétition
+      </button>
+      <button class="se-nav-btn" [class.active]="activeSection === 'toppos'"     (click)="setSection('toppos')">
+        <i class="ti ti-trophy me-1"></i>Top POS
+      </button>
+      <button class="se-nav-btn" [class.active]="activeSection === 'scorecard'"  (click)="setSection('scorecard')">
+        <i class="ti ti-id-badge me-1"></i>Équipe
+      </button>
+      <button class="se-nav-btn" [class.active]="activeSection === 'heatmap'"    (click)="setSection('heatmap')">
+        <i class="ti ti-calendar-stats me-1"></i>Heatmap
+      </button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: OVERVIEW — Monthly evolution chart                            -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection === 'overview') {
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h5 class="fw-semibold mb-0"><i class="ti ti-chart-area-line me-2 text-primary"></i>Évolution mensuelle des ventes (Farde par marque)</h5>
+              @if (isLoadingEvolution) { <div class="spinner-border spinner-border-sm text-primary"></div> }
+            </div>
+            <div class="card-body px-2 pt-2 pb-1">
+              @if (!isLoadingEvolution && chartEvolutionOpts) {
+                <apx-chart #chartEvolution
+                  [series]="chartEvolutionOpts.series" [chart]="chartEvolutionOpts.chart"
+                  [colors]="chartEvolutionOpts.colors" [dataLabels]="chartEvolutionOpts.dataLabels"
+                  [stroke]="chartEvolutionOpts.stroke" [fill]="chartEvolutionOpts.fill"
+                  [xaxis]="chartEvolutionOpts.xaxis" [yaxis]="chartEvolutionOpts.yaxis"
+                  [legend]="chartEvolutionOpts.legend" [tooltip]="chartEvolutionOpts.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingEvolution) {
+                <div class="se-empty-state">
+                  <i class="ti ti-chart-off"></i><p>Aucune donnée d'évolution disponible</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly table summary -->
+        @if (!isLoadingEvolution && evolutionData.length > 0) {
+          <div class="col-12">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header border-0 pb-0 pt-3 px-3">
+                <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-table me-2 text-primary"></i>Détail mensuel par marque</h6>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 se-table">
+                    <thead class="se-thead">
+                      <tr>
+                        <th>Mois</th>
+                        <th>Marque</th>
+                        <th class="text-end">Visites</th>
+                        <th class="text-end">Farde</th>
+                        <th class="text-end">Sold</th>
+                        <th class="text-end">Revenu</th>
+                        <th class="text-end">Δ Farde MoM</th>
+                        <th class="text-end">Δ Sold MoM</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of evolutionData; track row.year_month + row.brand_name) {
+                        <tr>
+                          <td><span class="badge bg-light text-dark border">{{ row.year_month }}</span></td>
+                          <td class="fw-semibold text-primary">{{ row.brand_name }}</td>
+                          <td class="text-end">{{ row.total_visits | number }}</td>
+                          <td class="text-end fw-semibold">{{ row.total_farde | number:'1.0-0' }}</td>
+                          <td class="text-end">{{ row.total_sold | number:'1.0-0' }}</td>
+                          <td class="text-end">{{ row.total_revenue | number:'1.0-0' }}</td>
+                          <td class="text-end {{ getTrendClass(row.growth_farde_pct) }}">
+                            @if (row.growth_farde_pct !== null) {
+                              <i class="ti {{ row.growth_farde_pct > 0 ? 'ti-arrow-up' : row.growth_farde_pct < 0 ? 'ti-arrow-down' : 'ti-minus' }} me-1"></i>
+                              {{ row.growth_farde_pct | number:'1.1-1' }}%
+                            } @else { — }
+                          </td>
+                          <td class="text-end {{ getTrendClass(row.growth_sold_pct) }}">
+                            @if (row.growth_sold_pct !== null) {
+                              <i class="ti {{ row.growth_sold_pct > 0 ? 'ti-arrow-up' : row.growth_sold_pct < 0 ? 'ti-arrow-down' : 'ti-minus' }} me-1"></i>
+                              {{ row.growth_sold_pct | number:'1.1-1' }}%
+                            } @else { — }
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: TABLE VIEW — Type POS + Price tables per geo level            -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection === 'tableview') {
+      <div class="card border-0 shadow-sm se-tableview-card">
+
+        <!-- Card header: breadcrumb + geo level switcher -->
+        <div class="card-header se-tableview-header px-3 py-2">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+
+            <!-- Breadcrumb geo path -->
+            <div class="se-geo-crumb">
+              <i class="ti ti-map me-1 text-primary"></i>
+              <span>{{ selectedCountry.name || '—' }}</span>
+              @if (selectedProvince) {
+                <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+                <span class="text-primary">{{ selectedProvince.name }}</span>
+              }
+              @if (selectedArea) {
+                <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+                <span class="text-indigo">{{ selectedArea.name }}</span>
+              }
+              @if (selectedSubArea) {
+                <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+                <span>{{ selectedSubArea.name }}</span>
+              }
+              @if (selectedCommune) {
+                <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+                <span class="text-success fw-bold">{{ selectedCommune.name }}</span>
+              }
+            </div>
+
+            <!-- Geo level switcher -->
+            <div class="se-geo-level-tabs">
+              <button class="se-level-btn"
+                [class.active]="!selectedArea && !selectedSubArea && !selectedCommune"
+                (click)="selectedArea = null!; selectedSubArea = null!; selectedCommune = null!">
+                <i class="ti ti-map-2"></i>Province
+              </button>
+              <button class="se-level-btn"
+                [class.active]="!!selectedArea && !selectedSubArea && !selectedCommune"
+                [disabled]="!selectedProvince">
+                <i class="ti ti-map-pin"></i>Area
+              </button>
+              <button class="se-level-btn"
+                [class.active]="!!selectedArea && !!selectedSubArea && !selectedCommune"
+                [disabled]="!selectedArea">
+                <i class="ti ti-location"></i>Sub-Area
+              </button>
+              <button class="se-level-btn"
+                [class.active]="!!selectedCommune"
+                [disabled]="!selectedSubArea">
+                <i class="ti ti-building-community"></i>Commune
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Card body: sub-component content -->
+        <div class="card-body p-3">
+          @if (!selectedArea && !selectedSubArea && !selectedCommune) {
+            <app-se-table-view-province
+              [country_uuid]="country_uuid" [province_uuid]="province_uuid"
+              [start_date]="start_date" [end_date]="end_date">
+            </app-se-table-view-province>
+          }
+          @if (selectedArea && !selectedSubArea && !selectedCommune) {
+            <app-se-table-view-area
+              [country_uuid]="country_uuid" [province_uuid]="province_uuid"
+              [area_uuid]="area_uuid" [start_date]="start_date" [end_date]="end_date">
+            </app-se-table-view-area>
+          }
+          @if (selectedSubArea && !selectedCommune) {
+            <app-se-table-view-subarea
+              [country_uuid]="country_uuid" [province_uuid]="province_uuid"
+              [area_uuid]="area_uuid" [sub_area_uuid]="sub_area_uuid"
+              [start_date]="start_date" [end_date]="end_date">
+            </app-se-table-view-subarea>
+          }
+          @if (selectedCommune) {
+            <app-se-table-view-commune
+              [country_uuid]="country_uuid" [province_uuid]="province_uuid"
+              [area_uuid]="area_uuid" [sub_area_uuid]="sub_area_uuid"
+              [commune_uuid]="commune_uuid" [start_date]="start_date" [end_date]="end_date">
+            </app-se-table-view-commune>
+          }
+        </div>
+
+      </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: GROWTH RATE — Period-over-period comparison                   -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection === 'growth') {
+      <div class="row g-3">
+        <!-- Growth chart -->
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-trending-up me-2 text-primary"></i>Croissance période vs précédente (%)</h6>
+              @if (isLoadingGrowth) { <div class="spinner-border spinner-border-sm text-primary"></div> }
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingGrowth && chartGrowthOpts) {
+                <apx-chart #chartGrowth
+                  [series]="chartGrowthOpts.series" [chart]="chartGrowthOpts.chart"
+                  [colors]="chartGrowthOpts.colors" [plotOptions]="chartGrowthOpts.plotOptions"
+                  [dataLabels]="chartGrowthOpts.dataLabels" [xaxis]="chartGrowthOpts.xaxis"
+                  [yaxis]="chartGrowthOpts.yaxis" [legend]="chartGrowthOpts.legend"
+                  [tooltip]="chartGrowthOpts.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingGrowth) {
+                <div class="se-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+        <!-- Growth cards per brand -->
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-list me-2 text-primary"></i>Scorecard par Marque</h6>
+            </div>
+            <div class="card-body p-0">
+              @if (isLoadingGrowth) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary"></div></div>
+              } @else {
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 se-table">
+                    <thead class="se-thead">
+                      <tr>
+                        <th>Marque</th>
+                        <th class="text-end">Curr Farde</th>
+                        <th class="text-end">Prev Farde</th>
+                        <th class="text-end">Δ %</th>
+                        <th class="text-end">Tendance</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of growthData; track row.brand_name) {
+                        <tr>
+                          <td class="fw-semibold">{{ row.brand_name }}</td>
+                          <td class="text-end">{{ row.curr_farde | number:'1.0-0' }}</td>
+                          <td class="text-end text-muted">{{ row.prev_farde | number:'1.0-0' }}</td>
+                          <td class="text-end fw-bold {{ getTrendClass(row.growth_farde_pct) }}">
+                            {{ row.growth_farde_pct > 0 ? '+' : '' }}{{ row.growth_farde_pct | number:'1.1-1' }}%
+                          </td>
+                          <td class="text-center">
+                            <i class="{{ getTrendIcon(row.trend) }} fs-5"></i>
+                          </td>
+                        </tr>
+                      }
+                      @empty {
+                        <tr><td colspan="5" class="text-center text-muted py-4">Aucune donnée</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: BRAND COMPETITION MATRIX                                      -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection === 'competition') {
+      <div class="row g-3">
+        <div class="col-12 d-flex align-items-center gap-2 mb-1">
+          <span class="text-muted small fw-semibold">Niveau :</span>
+          @for (lvl of ['province','area','subarea','commune']; track lvl) {
+            <button class="se-pill sm" [class.active]="geoLevel === lvl"
+              (click)="geoLevel = $any(lvl); loadCompetition()">
+              {{ lvl | titlecase }}
+            </button>
+          }
+        </div>
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-chart-bar-popular me-2 text-primary"></i>Part de marché par territoire (stacked)</h6>
+              @if (isLoadingCompetition) { <div class="spinner-border spinner-border-sm text-primary"></div> }
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingCompetition && chartCompetitionOpts) {
+                <apx-chart #chartCompetition
+                  [series]="chartCompetitionOpts.series" [chart]="chartCompetitionOpts.chart"
+                  [colors]="chartCompetitionOpts.colors" [plotOptions]="chartCompetitionOpts.plotOptions"
+                  [dataLabels]="chartCompetitionOpts.dataLabels" [xaxis]="chartCompetitionOpts.xaxis"
+                  [yaxis]="chartCompetitionOpts.yaxis" [legend]="chartCompetitionOpts.legend"
+                  [tooltip]="chartCompetitionOpts.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingCompetition) {
+                <div class="se-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-table me-2 text-primary"></i>Matrice compétition</h6>
+            </div>
+            <div class="card-body p-0">
+              @if (isLoadingCompetition) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary"></div></div>
+              } @else {
+                <div class="table-responsive se-competition-table-wrap">
+                  <table class="table table-hover align-middle mb-0 se-table">
+                    <thead class="se-thead">
+                      <tr>
+                        <th>Territoire</th>
+                        <th>Marque</th>
+                        <th class="text-end">Farde</th>
+                        <th class="text-end">Part</th>
+                        <th class="text-center">Rang</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of competitionData; track row.geo_uuid + row.brand_name) {
+                        <tr [class.se-rank-top]="row.brand_rank === 1">
+                          <td class="small">{{ row.geo_name }}</td>
+                          <td class="fw-semibold text-primary small">{{ row.brand_name }}</td>
+                          <td class="text-end small">{{ row.total_farde | number:'1.0-0' }}</td>
+                          <td class="text-end">
+                            <div class="d-flex align-items-center justify-content-end gap-1">
+                              <div class="progress se-progress" style="width:50px">
+                                <div class="progress-bar bg-primary" [style.width]="row.market_share + '%'"></div>
+                              </div>
+                              <span class="small">{{ row.market_share }}%</span>
+                            </div>
+                          </td>
+                          <td class="text-center">
+                            <span class="badge {{ row.brand_rank <= 3 ? 'bg-warning text-dark' : 'bg-light text-muted border' }}">
+                              {{ getRankMedal(row.brand_rank) }}
+                            </span>
+                          </td>
+                        </tr>
+                      }
+                      @empty {
+                        <tr><td colspan="5" class="text-center text-muted py-4">Aucune donnée</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: TOP POS RANKING                                               -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection === 'toppos') {
+      <div class="row g-3">
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-trophy me-2 text-warning"></i>Top 8 POS par Farde</h6>
+              @if (isLoadingTopPos) { <div class="spinner-border spinner-border-sm text-primary"></div> }
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingTopPos && chartTopPosOpts) {
+                <apx-chart #chartTopPos
+                  [series]="chartTopPosOpts.series" [chart]="chartTopPosOpts.chart"
+                  [colors]="chartTopPosOpts.colors" [plotOptions]="chartTopPosOpts.plotOptions"
+                  [dataLabels]="chartTopPosOpts.dataLabels" [xaxis]="chartTopPosOpts.xaxis"
+                  [legend]="chartTopPosOpts.legend" [tooltip]="chartTopPosOpts.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingTopPos) {
+                <div class="se-empty-state"><i class="ti ti-trophy-off"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-list-numbers me-2 text-warning"></i>Classement complet des POS</h6>
+            </div>
+            <div class="card-body p-0">
+              @if (isLoadingTopPos) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary"></div></div>
+              } @else {
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 se-table">
+                    <thead class="se-thead">
+                      <tr>
+                        <th class="text-center">Rang</th>
+                        <th>POS</th>
+                        <th>Type</th>
+                        <th>Commune</th>
+                        <th class="text-end">Farde</th>
+                        <th class="text-end">Revenu</th>
+                        <th class="text-end">Part</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of topPosData; track row.pos_uuid) {
+                        <tr [class.se-rank-top]="row.rank <= 3">
+                          <td class="text-center fw-bold">{{ getRankMedal(row.rank) }}</td>
+                          <td>
+                            <span class="fw-semibold text-primary">{{ row.pos_name }}</span>
+                            <br><small class="text-muted">{{ row.shop }}</small>
+                          </td>
+                          <td><span class="badge se-badge-type">{{ row.postype }}</span></td>
+                          <td class="small text-muted">{{ row.commune_name }}</td>
+                          <td class="text-end fw-semibold">{{ row.total_farde | number:'1.0-0' }}</td>
+                          <td class="text-end">{{ row.total_revenue | number:'1.0-0' }}</td>
+                          <td class="text-end">
+                            <div class="d-flex align-items-center justify-content-end gap-1">
+                              <div class="progress se-progress" style="width:50px">
+                                <div class="progress-bar bg-warning" [style.width]="row.farde_share + '%'"></div>
+                              </div>
+                              <span class="small">{{ row.farde_share }}%</span>
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                      @empty {
+                        <tr><td colspan="7" class="text-center text-muted py-4">Aucune donnée</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: SALES REP SCORECARD                                           -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection === 'scorecard') {
+      <div class="row g-3">
+        <!-- Filter by title -->
+        <div class="col-12 d-flex align-items-center gap-2">
+          <span class="text-muted small fw-semibold">Filtrer :</span>
+          @for (t of titleOptions; track t) {
+            <button class="se-pill sm" [class.active]="titleFilter === t"
+              (click)="onTitleFilterChange(t)">
+              {{ t || 'Tous' }}
+            </button>
+          }
+          @if (isLoadingScorecard) { <div class="spinner-border spinner-border-sm text-primary ms-2"></div> }
+        </div>
+        <!-- Scorecard cards (top 4) -->
+        @if (!isLoadingScorecard && scorecardData.length > 0) {
+          <div class="col-12">
+            <div class="row g-3">
+              @for (rep of scorecardData.slice(0, 4); track rep.agent_uuid) {
+                <div class="col-sm-6 col-xl-3">
+                  <div class="se-rep-card">
+                    <div class="se-rep-header">
+                      <div class="se-rep-avatar">{{ rep.agent_name[0]?.toUpperCase() }}</div>
+                      <div>
+                        <span class="se-rep-name">{{ rep.agent_name }}</span>
+                        <span class="badge se-badge-title ms-1">{{ rep.title }}</span>
+                      </div>
+                      <span [class]="getPerfBadge(rep.perf_score)" class="ms-auto">{{ rep.perf_score | number:'1.0-0' }}</span>
+                    </div>
+                    <div class="se-rep-stats">
+                      <div class="se-stat"><span class="se-stat-label">Visites</span><span class="se-stat-val">{{ rep.total_visits }}</span></div>
+                      <div class="se-stat"><span class="se-stat-label">Objectif</span><span class="se-stat-val">{{ rep.visit_target }}</span></div>
+                      <div class="se-stat"><span class="se-stat-label">Farde</span><span class="se-stat-val">{{ rep.total_farde | number:'1.0-0' }}</span></div>
+                      <div class="se-stat"><span class="se-stat-label">Marques</span><span class="se-stat-val">{{ rep.brands_covered }}</span></div>
+                    </div>
+                    <div class="mt-2">
+                      <div class="d-flex justify-content-between small mb-1">
+                        <span class="text-muted">Réalisation</span>
+                        <span class="fw-semibold {{ getTrendClass(rep.achievement_pct - 100) }}">{{ rep.achievement_pct | number:'1.0-0' }}%</span>
+                      </div>
+                      <div class="progress" style="height:6px">
+                        <div class="progress-bar {{ rep.achievement_pct >= 100 ? 'bg-success' : rep.achievement_pct >= 50 ? 'bg-warning' : 'bg-danger' }}"
+                          [style.width]="(rep.achievement_pct > 100 ? 100 : rep.achievement_pct) + '%'">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+        <!-- Full table -->
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-table me-2 text-primary"></i>Classement complet — Équipe commerciale</h6>
+            </div>
+            <div class="card-body p-0">
+              @if (isLoadingScorecard) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary"></div></div>
+              } @else {
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 se-table">
+                    <thead class="se-thead">
+                      <tr>
+                        <th>#</th>
+                        <th>Agent</th>
+                        <th>Titre</th>
+                        <th class="text-end">Visites</th>
+                        <th class="text-end">Cible</th>
+                        <th class="text-end">Réalisation</th>
+                        <th class="text-end">POS uniques</th>
+                        <th class="text-end">Farde</th>
+                        <th class="text-end">Sold</th>
+                        <th class="text-end">Revenu</th>
+                        <th class="text-end">Marques</th>
+                        <th class="text-end">Score</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (rep of scorecardData; track rep.agent_uuid; let i = $index) {
+                        <tr [class.se-rank-top]="i < 3">
+                          <td class="fw-bold text-center">{{ getRankMedal(i + 1) }}</td>
+                          <td class="fw-semibold">{{ rep.agent_name }}</td>
+                          <td><span class="badge se-badge-title">{{ rep.title }}</span></td>
+                          <td class="text-end">{{ rep.total_visits | number }}</td>
+                          <td class="text-end text-muted">{{ rep.visit_target | number }}</td>
+                          <td class="text-end {{ getTrendClass(rep.achievement_pct - 100) }}">
+                            {{ rep.achievement_pct | number:'1.0-0' }}%
+                          </td>
+                          <td class="text-end">{{ rep.unique_pos | number }}</td>
+                          <td class="text-end fw-semibold">{{ rep.total_farde | number:'1.0-0' }}</td>
+                          <td class="text-end">{{ rep.total_sold | number:'1.0-0' }}</td>
+                          <td class="text-end">{{ rep.total_revenue | number:'1.0-0' }}</td>
+                          <td class="text-end">{{ rep.brands_covered }}</td>
+                          <td class="text-end">
+                            <span [class]="getPerfBadge(rep.perf_score)">{{ rep.perf_score | number:'1.0-0' }}</span>
+                          </td>
+                        </tr>
+                      }
+                      @empty {
+                        <tr><td colspan="12" class="text-center text-muted py-4">Aucun agent trouvé</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: HEATMAP — Day of week                                         -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection === 'heatmap') {
+      <div class="row g-3">
+        <div class="col-lg-8">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-calendar-stats me-2 text-primary"></i>Intensité des ventes par jour de la semaine</h6>
+              @if (isLoadingHeatmap) { <div class="spinner-border spinner-border-sm text-primary"></div> }
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingHeatmap && chartHeatmapOpts) {
+                <apx-chart #chartHeatmap
+                  [series]="chartHeatmapOpts.series" [chart]="chartHeatmapOpts.chart"
+                  [colors]="chartHeatmapOpts.colors" [dataLabels]="chartHeatmapOpts.dataLabels"
+                  [plotOptions]="chartHeatmapOpts.plotOptions"
+                  [legend]="chartHeatmapOpts.legend" [tooltip]="chartHeatmapOpts.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingHeatmap) {
+                <div class="se-empty-state"><i class="ti ti-calendar-off"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-table me-2 text-primary"></i>Farde totale par jour</h6>
+            </div>
+            <div class="card-body p-0">
+              @if (isLoadingHeatmap) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary"></div></div>
+              } @else {
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 se-table">
+                    <thead class="se-thead">
+                      <tr>
+                        <th>Jour</th>
+                        <th>Marque</th>
+                        <th class="text-end">Farde</th>
+                        <th class="text-end">Visites</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of heatmapData; track row.day_of_week + row.brand_name) {
+                        <tr>
+                          <td class="small fw-semibold">{{ row.day_name | titlecase }}</td>
+                          <td class="small text-primary">{{ row.brand_name }}</td>
+                          <td class="text-end small fw-semibold">{{ row.total_farde | number:'1.0-0' }}</td>
+                          <td class="text-end small">{{ row.total_visits | number }}</td>
+                        </tr>
+                      }
+                      @empty {
+                        <tr><td colspan="4" class="text-center text-muted py-4">Aucune donnée</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+  </div><!-- /content -->
+</div><!-- /page-wrapper -->

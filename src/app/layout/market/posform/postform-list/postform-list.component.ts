@@ -66,10 +66,9 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   isOnline = signal(navigator.onLine);
   public routes = routes;
 
-  dateRange!: FormGroup;
   start_date = signal('');
   end_date = signal('');
-  rangeDate: any[] = [];
+  selectedPeriod = signal<string>('TODAY');
 
   dataList = signal<IPosForm[]>([]);
   total_pages = signal(0);
@@ -193,17 +192,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
 
   ngAfterViewInit(): void {
-    const date = new Date();
-    const firstDay = new Date(date.getFullYear(), date.getMonth(), 1); // First day of the current month
-    const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 1); // First day of the next month
-    lastDay.setDate(lastDay.getDate() + 1); // Add 1 day to the last day
-    this.rangeDate = [firstDay, lastDay];
-
-    this.dateRange = this._formBuilder.group({
-      rangeValue: new FormControl(this.rangeDate),
-    });
-    this.start_date.set(formatDate(this.dateRange.value.rangeValue[0], 'yyyy-MM-dd', 'en-US'));
-    this.end_date.set(formatDate(this.dateRange.value.rangeValue[1], 'yyyy-MM-dd', 'en-US'));
+    this.applyPeriod('TODAY');
 
     this.authService.user().subscribe({
       next: (user) => {
@@ -458,21 +447,50 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   }
 
 
-  // Méthode onChanges
-  onChanges(): void {
-    this.dateRange.valueChanges.subscribe((val) => {
-      this.start_date.set(formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US'));
+  /** Calcule start/end à partir d'une période prédéfinie et recharge les données */
+  applyPeriod(period: string): void {
+    const today = new Date();
+    const end = new Date(today);
+    end.setHours(23, 59, 59, 999);
+    const start = new Date(today);
+    start.setHours(0, 0, 0, 0);
 
-      val.rangeValue[1].setDate(val.rangeValue[1].getDate() + 1);
-      this.end_date.set(formatDate(val.rangeValue[1], 'yyyy-MM-dd', 'en-US'));
+    switch (period) {
+      case 'TODAY':
+        // start = today, end = today → déjà initialisé
+        break;
+      case '1W':
+        start.setDate(start.getDate() - 7);
+        break;
+      case '1M':
+        start.setMonth(start.getMonth() - 1);
+        break;
+      case '3M':
+        start.setMonth(start.getMonth() - 3);
+        break;
+      case '6M':
+        start.setMonth(start.getMonth() - 6);
+        break;
+      case '1Y':
+        start.setFullYear(start.getFullYear() - 1);
+        break;
+    }
 
-      const currentUser = this.currentUser();
-      if (currentUser) {
-        this.fetchProducts(currentUser, this.start_date(), this.end_date());
-      }
-
-    });
+    this.start_date.set(formatDate(start, 'yyyy-MM-dd', 'en-US'));
+    this.end_date.set(formatDate(end, 'yyyy-MM-dd', 'en-US'));
   }
+
+  onPeriodChange(period: string): void {
+    this.selectedPeriod.set(period);
+    this.applyPeriod(period);
+    const currentUser = this.currentUser();
+    if (currentUser) {
+      this.fetchProducts(currentUser, this.start_date(), this.end_date());
+    }
+  }
+
+  // Méthode onChanges — conservée pour rétrocompatibilité
+  onChanges(): void {}
 
   onPageChange(event: PageEvent): void {
     this.isLoadingData.set(true);
@@ -879,12 +897,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         return;
     }
 
-    // Mettre à jour le FormControl de dateRange
-    this.dateRange.patchValue({
-      rangeValue: [startDate, endDate]
-    });
-
-    // Déclencher le changement de date
+    // Mettre à jour les dates
     this.start_date.set(formatDate(startDate, 'yyyy-MM-dd', 'en-US'));
     this.end_date.set(formatDate(endDate, 'yyyy-MM-dd', 'en-US'));
     this.fetchProducts(this.currentUser()!, this.start_date(), this.end_date());
@@ -1006,6 +1019,22 @@ export class PostformListComponent implements OnInit, AfterViewInit {
   }
 
   /**
+   * Prépare la suppression d'un posform : set uuidItem et dataItem directement
+   * depuis l'objet ligne (évite les bugs si l'item n'est pas trouvé dans les listes filtrées).
+   */
+  setDeleteTarget(element: IPosForm): void {
+    const uuid = element?.uuid;
+    if (!uuid) {
+      console.error('❌ setDeleteTarget: UUID manquant sur cet élément', element);
+      this.toastr.error('Impossible de préparer la suppression : UUID introuvable.', 'Erreur');
+      return;
+    }
+    this.uuidItem.set(uuid);
+    this.dataItem.set(element);
+    console.log('🗑️ Cible de suppression définie:', uuid);
+  }
+
+  /**
    * Méthodes manquantes pour le formulaire et les actions
    */
 
@@ -1116,9 +1145,19 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
   // Creation de rapport de visite
   onSubmit(): void {
+    // canAddNewPosForm() retourne false quand le dernier rapport n'a pas de pos_uuid.
+    // Mais onSubmit() est précisément appelé pour COMPLÉTER ce rapport (update).
+    // On doit donc autoriser la soumission si uuidItem correspond au dernier rapport incomplet.
     if (!this.canAddNewPosForm()) {
-      this.toastr.warning('Vous devez d\'abord compléter le dernier PosForm en sélectionnant un POS.', 'Attention!');
-      return;
+      const currentUserReports = this.dataList().filter(item => item.user_uuid === this.currentUser()!.uuid);
+      const lastReport = currentUserReports[0];
+      const isCompletingLastIncomplete = lastReport &&
+        (!lastReport.pos_uuid || lastReport.pos_uuid.trim() === '') &&
+        this.uuidItem() === lastReport.uuid;
+      if (!isCompletingLastIncomplete) {
+        this.toastr.warning('Vous devez d\'abord compléter le dernier PosForm en sélectionnant un POS.', 'Attention!');
+        return;
+      }
     }
 
     if (this.formGroup.valid) {
@@ -1194,9 +1233,17 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
 
   onSubmitUpdate(): void {
+    // Même logique que onSubmit(): autoriser si on complète le dernier rapport incomplet
     if (!this.canAddNewPosForm()) {
-      this.toastr.warning('Vous devez d\'abord compléter le dernier PosForm en sélectionnant un POS.', 'Attention!');
-      return;
+      const currentUserReports = this.dataList().filter(item => item.user_uuid === this.currentUser()!.uuid);
+      const lastReport = currentUserReports[0];
+      const isCompletingLastIncomplete = lastReport &&
+        (!lastReport.pos_uuid || lastReport.pos_uuid.trim() === '') &&
+        this.uuidItem() === lastReport.uuid;
+      if (!isCompletingLastIncomplete) {
+        this.toastr.warning('Vous devez d\'abord compléter le dernier PosForm en sélectionnant un POS.', 'Attention!');
+        return;
+      }
     }
     if (this.formGroup.valid) {
       this.isLoading.set(true);
@@ -1539,6 +1586,13 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     const currentUser = this.currentUser();
     if (!dataItem || !currentUser) return;
 
+    const uuid = dataItem.uuid || this.uuidItem();
+    if (!uuid || uuid.trim() === '') {
+      console.error('❌ delete() appelé sans UUID valide');
+      this.toastr.error('UUID manquant, impossible de supprimer.', 'Erreur');
+      return;
+    }
+
     // Trouver le routePlanItem correspondant au pos_uuid du posform supprimé
     // pour réinitialiser son statut à false (POS à nouveau disponible)
     const matchingRPItem = this.routePlanItemList().find(
@@ -1547,28 +1601,25 @@ export class PostformListComponent implements OnInit, AfterViewInit {
 
     const doDelete = () => {
       this.posformService
-        .delete(this.uuidItem())
+        .delete(uuid)
         .subscribe({
           next: () => {
+            // Mettre à jour l'UI immédiatement, sans attendre le log (qui peut échouer offline)
+            this.formGroup.reset();
+            this.getAllRoutePlans();
+            this.fetchProducts(currentUser, this.start_date(), this.end_date());
+            this.toastr.info('Supprimé avec succès!', 'Success!');
+            this.isLoading.set(false);
+
+            // Log en arrière-plan (fire-and-forget : ne bloque pas si offline)
             this.logActivity.activity(
               'Posform',
               currentUser.uuid,
               'deleted',
-              `Delete posform uuid: ${this.uuidItem()}`,
+              `Delete posform uuid: ${uuid}`,
               currentUser.fullname
             ).subscribe({
-              next: () => {
-                this.formGroup.reset();
-                this.getAllRoutePlans();
-                this.fetchProducts(currentUser, this.start_date(), this.end_date());
-                this.toastr.info('Supprimé avec succès!', 'Success!');
-                this.isLoading.set(false);
-              },
-              error: (err) => {
-                this.isLoading.set(false);
-                this.toastr.error(`${err.error?.message || err.message}`, 'Oupss!');
-                console.log(err);
-              }
+              error: (err) => console.warn('⚠️ Log activité non envoyé (offline ?):', err.message)
             });
           },
           error: err => {

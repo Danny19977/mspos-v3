@@ -1,92 +1,134 @@
-<div class="row">
-    <div class="col-md-12 d-flex">
-  
-      <div class="card w-100">
-        <div class="card-header border-0 pb-0">
-          <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
-            @if(subarea) { 
-            <h4>
-              <i class="ti ti-grip-vertical me-1"></i>
-              Table KPI Commune by <span style="color: red; font-weight: bold;">{{ subarea.name }}</span>
-            </h4>
+﻿<!-- PAGE HEADER -->
+    <div class="page-header">
+      <div class="row align-items-center">
+        <div class="col-8">
+          <h4 class="page-title">
+            <i class="ti ti-building-community me-1"></i>KPI par Commune
+            @if (subarea()) {
+              <span class="count-title ms-2">Sous-Zone : {{ subarea()!.name }}</span>
             }
-            <div class="d-flex d-flex align-items-center justify-content-center flex-wrap row-gap-2">
-              <div class="daterange-picker mb-3">
-                <form [formGroup]="dateRange">
-                  <div class="form-sorts dropdown">
-                    <a href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside"><i
-                        class="ti ti-filter-share"></i>Filter</a>
-                    <div class="filter-dropdown-menu dropdown-menu dropdown-menu-md-end p-3">
-                      <div class="filter-set-view">
-                        <div class="filter-set-head">
-                          <h4><i class="ti ti-filter-share"></i>Filter</h4>
-                        </div>
-  
-                        <div class="accordion" id="accordionExample">
-                          <div class="filter-set-content">
-                            <div class="filter-set-content-head">
-                              <a href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#collapseArea"
-                                aria-expanded="true" aria-controls="collapseArea">Filtre par tranche de dates</a>
-                            </div>
-                            <div class="filter-set-contents accordion-collapse collapse show" id="collapseArea"
-                              data-bs-parent="#accordionExample">
-                              <div class="form-sort me-2">
-                                <i class="ti ti-calendar"></i>
-                                <input type="text" class="form-control date-range bookingrange" bsDaterangepicker
-                                  [bsConfig]="{ adaptivePosition: true }" formControlName="rangeValue" />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-  
-                      </div>
-                    </div>
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
+          </h4>
         </div>
-        <div class="card-body">
-          @if (isLoading) {
-          <div class=" text-center d-flex justify-content-center align-items-center ">
-            <div class="spinner-border bs-primary" role="status">
-              <span class="visually-hidden">Loading...</span>
-            </div>
+        <div class="col-4 text-end">
+          <div class="head-icons">
+            <a href="javascript:void(0);" title="Actualiser" (click)="loadData()">
+              <i class="ti ti-refresh" [class.spin-animation]="isLoading()"></i>
+            </a>
           </div>
-          } @else {
-          <div class="table-responsive custom-table">
-            <table class="table dataTable" id="deals-project">
-                <thead class="thead-light">
-                    <tr>
-                        <th>Province</th>
-                        <th>Fullname</th>
-                        <th>Titre</th> 
-                        <th>Objectifs</th>
-                        <th>Total Visits</th>
-                        <th>Target</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (item of tableViewList; track $index) {
-                    <tr class="odd">
-                        <td>
-                            {{ item.name }}
-                        </td>
-                        <td>{{ item.signature }}</td>
-                        <td>{{ item.title }}</td> 
-                        <td>{{ item.objectif }} %</td>
-                        <td>{{ item.total_visits }}</td>
-                        <td>{{ item.target }}</td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
-          </div>
-          }
-  
         </div>
       </div>
-  
     </div>
-  </div>
+
+    <!-- FILTER CARD -->
+    <div class="card kpi-filter-card mb-4">
+      <div class="card-body py-3">
+        <div class="row g-3 align-items-end">
+
+          <!-- Period button group -->
+          <div class="col-12">
+            <label class="form-label kpi-label"><i class="ti ti-calendar me-1"></i>Période</label>
+            <div class="obs-period-group" role="group">
+              @for (p of periodOptions; track p.key) {
+                <button type="button" class="obs-period-btn"
+                  [class.active]="selectedPeriod() === p.key"
+                  (click)="onPeriodChange(p.key)">{{ p.label }}</button>
+              }
+            </div>
+          </div>
+
+          <!-- Custom date range -->
+          @if (selectedPeriod() === 'custom') {
+            <div class="col-md-3">
+              <label class="form-label">Date début</label>
+              <input type="date" class="form-control form-control-sm"
+                [ngModel]="customStart()" (ngModelChange)="customStart.set($event); onCustomDateChange()">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Date fin</label>
+              <input type="date" class="form-control form-control-sm"
+                [ngModel]="customEnd()" (ngModelChange)="customEnd.set($event); onCustomDateChange()">
+            </div>
+          }
+
+          <!-- Role filter -->
+          <div class="col-md-3">
+            <mat-form-field appearance="fill" class="w-100">
+              <mat-label>Rôle</mat-label>
+              <mat-select [value]="selectedTitle()" (selectionChange)="selectedTitle.set($event.value); loadData()">
+                <mat-option value="">Tous</mat-option>
+                @for (t of titleOptions; track t) {
+                  <mat-option [value]="t">{{ t }}</mat-option>
+                }
+              </mat-select>
+            </mat-form-field>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- DATA CARD -->
+    <div class="card">
+      <div class="card-body">
+        @if (isLoading()) {
+          <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+              <span class="visually-hidden">Chargement...</span>
+            </div>
+          </div>
+        } @else {
+
+          <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div class="search-box" [class.has-value]="searchTerm()" style="min-width:260px;">
+              <input type="text" class="form-control" placeholder="Rechercher agent ou commune..."
+                [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" autocomplete="off">
+              <i class="ti ti-search search-icon"></i>
+              @if (searchTerm()) {
+                <button class="btn btn-sm btn-link clear-search" (click)="searchTerm.set('')">
+                  <i class="ti ti-x"></i>
+                </button>
+              }
+            </div>
+            <button class="btn btn-outline-success btn-sm" (click)="exportToCSV()">
+              <i class="ti ti-download me-1"></i>CSV
+            </button>
+          </div>
+
+          <div class="table-responsive custom-table">
+            <table class="table table-hover align-middle dataTable">
+              <thead class="thead-light">
+                <tr>
+                  <th>Commune</th>
+                  <th>Agent</th>
+                  <th>Role</th>
+                  <th class="text-center">Visites</th>
+                  <th class="text-center">Cible</th>
+                  <th class="text-center">% Objectif</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (item of filteredList(); track item.signature + item.name) {
+                  <tr>
+                    <td class="fw-semibold">{{ item.name }}</td>
+                    <td>{{ item.signature }}</td>
+                    <td><span class="badge {{ getTitleBadgeClass(item.title) }}">{{ item.title }}</span></td>
+                    <td class="text-center fw-bold">{{ item.total_visits }}</td>
+                    <td class="text-center text-muted">{{ item.target }}</td>
+                    <td class="text-center">
+                      <span class="badge {{ getPctClass(item.objectif) }}">{{ item.objectif | number:'1.0-1' }}%</span>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="6" class="text-center text-muted py-4">
+                      <i class="ti ti-database-off me-2"></i>Aucune donnee disponible.
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+
+        }
+      </div>
+    </div>

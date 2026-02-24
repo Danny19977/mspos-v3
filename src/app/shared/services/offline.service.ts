@@ -128,13 +128,19 @@ export class OfflineService {
           break;
           
         case 'pos':
+          const normalizePosItem = (item: any) => ({
+            ...item,
+            sync_status: 'synced',
+            area_name: item.area_name || (typeof item.Area?.name === 'string' ? item.Area.name : '') || '',
+            subarea_name: item.subarea_name || (typeof item.SubArea?.name === 'string' ? item.SubArea.name : '') || '',
+            province_name: item.province_name || (typeof item.Province?.name === 'string' ? item.Province.name : '') || '',
+            commune_name: item.commune_name || (typeof item.Commune?.name === 'string' ? item.Commune.name : '') || '',
+            country_name: item.country_name || (typeof item.Country?.name === 'string' ? item.Country.name : '') || ''
+          });
           if (Array.isArray(data)) {
-            await db.pos.bulkPut(data.map(item => ({
-              ...item,
-              sync_status: 'synced'
-            })));
+            await db.pos.bulkPut(data.map(normalizePosItem));
           } else {
-            await db.pos.put({ ...data, sync_status: 'synced' });
+            await db.pos.put(normalizePosItem(data));
           }
           break;
           

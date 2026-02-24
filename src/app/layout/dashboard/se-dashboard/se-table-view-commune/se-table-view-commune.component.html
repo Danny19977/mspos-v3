@@ -1,135 +1,160 @@
-@if (isLoading) {
-    <div class=" text-center d-flex justify-content-center align-items-center ">
-        <div class="spinner-border bs-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+<!-- Tab selector -->
+<div class="se-tab-pills mb-3">
+  <button class="se-pill" [class.active]="activeTab() === 'typepos'" (click)="activeTab.set('typepos')">
+    <i class="ti ti-store me-1"></i> Type POS
+  </button>
+  <button class="se-pill" [class.active]="activeTab() === 'price'" (click)="activeTab.set('price')">
+    <i class="ti ti-currency-dollar me-1"></i> Analyse Prix
+  </button>
+</div>
+
+@if (activeTab() === 'typepos') {
+  <div class="row g-3">
+    <div class="col-lg-5">
+      <div class="card h-100 border-0 shadow-sm">
+        <div class="card-header border-0 pb-0 pt-3 px-3">
+          <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-chart-bar me-1 text-primary"></i>Farde & Sold par Type POS</h6>
         </div>
+        <div class="card-body pt-2 px-2">
+          @if (isLoadingTypePos()) {
+            <div class="d-flex justify-content-center align-items-center" style="height:260px"><div class="spinner-border text-primary"></div></div>
+          } @else if (typePosData().length === 0) {
+            <div class="d-flex justify-content-center align-items-center text-muted" style="height:260px">
+              <div class="text-center"><i class="ti ti-database-off" style="font-size:2rem"></i><p class="mt-2 small">Aucune donnée</p></div>
+            </div>
+          } @else {
+            <apx-chart [series]="chartTypePosOptions.series" [chart]="chartTypePosOptions.chart"
+              [colors]="chartTypePosOptions.colors" [plotOptions]="chartTypePosOptions.plotOptions"
+              [dataLabels]="chartTypePosOptions.dataLabels" [xaxis]="chartTypePosOptions.xaxis"
+              [legend]="chartTypePosOptions.legend" [tooltip]="chartTypePosOptions.tooltip">
+            </apx-chart>
+          }
+        </div>
+      </div>
     </div>
-    } @else {
-        <div class="d-flex align-items-center justify-content-end flex-wrap row-gap-2">
-            <div class="daterange-picker mb-3">
-                <form [formGroup]="dateRange">
-                    <div class="form-sorts dropdown">
-                        <a href="javascript:void(0);" data-bs-toggle="dropdown" data-bs-auto-close="outside"><i
-                                class="ti ti-filter-share"></i>Filter</a>
-                        <div class="filter-dropdown-menu dropdown-menu dropdown-menu-md-end p-3">
-                            <div class="filter-set-view">
-                                <div class="filter-set-head">
-                                    <h4><i class="ti ti-filter-share"></i>Filter</h4>
-                                </div>
-    
-                                <div class="accordion" id="accordionExample">
-                                    <div class="filter-set-content">
-                                        <div class="filter-set-content-head">
-                                            <a href="javascript:void(0);" data-bs-toggle="collapse" data-bs-target="#collapseArea"
-                                                aria-expanded="true" aria-controls="collapseArea">Filtre par tranche de dates</a>
-                                        </div>
-                                        <div class="filter-set-contents accordion-collapse collapse show" id="collapseArea"
-                                            data-bs-parent="#accordionExample">
-                                            <div class="form-sort me-2">
-                                                <i class="ti ti-calendar"></i>
-                                                <input type="text" class="form-control date-range bookingrange" bsDaterangepicker
-                                                    [bsConfig]="{ adaptivePosition: true }" formControlName="rangeValue" />
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-    
-                            </div>
+    <div class="col-lg-7">
+      <div class="card h-100 border-0 shadow-sm">
+        <div class="card-header border-0 pb-0 pt-3 px-3">
+          <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-table me-1 text-primary"></i>Détail par Type POS — Commune</h6>
+        </div>
+        <div class="card-body p-0">
+          @if (isLoadingTypePos()) {
+            <div class="d-flex justify-content-center align-items-center p-4"><div class="spinner-border text-primary"></div></div>
+          } @else {
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 se-table">
+                <thead class="se-thead">
+                  <tr>
+                    <th>Type POS</th><th class="text-end">Visites</th><th class="text-end">POS</th>
+                    <th class="text-end">Farde</th><th class="text-end">Sold</th><th class="text-end">Revenu</th>
+                    <th class="text-end">Part Farde</th><th class="text-end">Part Sold</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of typePosData(); track row.pos_type) {
+                    <tr>
+                      <td><span class="badge se-badge-type">{{ row.pos_type }}</span></td>
+                      <td class="text-end">{{ row.total_visits | number }}</td>
+                      <td class="text-end">{{ row.total_pos | number }}</td>
+                      <td class="text-end fw-semibold">{{ row.total_farde | number:'1.0-0' }}</td>
+                      <td class="text-end">{{ row.total_sold | number:'1.0-0' }}</td>
+                      <td class="text-end">{{ row.total_revenue | number:'1.0-2' }}</td>
+                      <td class="text-end">
+                        <div class="d-flex align-items-center justify-content-end gap-1">
+                          <div class="progress se-progress" style="width:60px"><div class="progress-bar bg-primary" [style.width]="row.market_share_farde + '%'"></div></div>
+                          <span class="small">{{ row.market_share_farde }}%</span>
                         </div>
-                    </div>
-                </form>
+                      </td>
+                      <td class="text-end">
+                        <div class="d-flex align-items-center justify-content-end gap-1">
+                          <div class="progress se-progress" style="width:60px"><div class="progress-bar bg-danger" [style.width]="row.market_share_sold + '%'"></div></div>
+                          <span class="small">{{ row.market_share_sold }}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                  @empty {
+                    <tr><td colspan="8" class="text-center text-muted py-4">Aucune donnée disponible</td></tr>
+                  }
+                </tbody>
+              </table>
             </div>
+          }
         </div>
-    <div class="row">
-        <div class="col-md-6">
-            <div class="card w-100">
-                <div class="card-header border-0 pb-0">
-                    @if(subarea) {
-                    <h4><i class="ti ti-grip-vertical me-1"></i>Type Pos by
-                        <span style="color: red; font-weight: bold;">{{ subarea.name }}</span>
-                    </h4>
-                    }
-                </div>
-                <div class="card-body mb-5">
-                    @if (tableViewList) {
-                    <div id="leadpiechart">
-                        <apx-chart [series]="chartOptions3.series" [chart]="chartOptions3.chart"
-                            [labels]="chartOptions3.labels" [responsive]="chartOptions3.responsive"
-                            [legend]="chartOptions3.legend">
-                        </apx-chart>
-                    </div>
-                    }
-                </div>
-                <div class="table-responsive custom-table">
-                    <table class="table dataTable" id="deals-project">
-                        <thead class="thead-light">
-                            <tr>
-                                <th>Commune</th>
-                                <th class="text-center">Type POS</th>
-                                <th class="text-center">Total Pos</th> 
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (item of tableViewList; track $index) {
-                            <tr class="odd">
-                                <td>
-                                    {{ item.name }}
-                                </td>
-                                <td class="text-center">{{ item.type_pos }}</td>
-                                <td class="text-center">{{ item.total_pos }}</td> 
-                            </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-6">
-            <div class="card w-100">
-                <div class="card-header border-0 pb-0">
-                    @if(subarea) {
-                    <h4><i class="ti ti-grip-vertical me-1"></i>Prix de tige by
-                        <span style="color: red; font-weight: bold;">{{ subarea.name }}</span>
-                    </h4>
-                    }
-                </div>
-                <div class="card-body mb-5">
-                    @if (tableViewPriceList) {
-                    <div id="leadpiechart">
-                        <apx-chart [series]="chartOptions4.series" [chart]="chartOptions4.chart"
-                            [labels]="chartOptions4.labels" [responsive]="chartOptions4.responsive"
-                            [legend]="chartOptions4.legend">
-                        </apx-chart>
-                    </div>
-                    }
-                </div>
-                <div class="table-responsive custom-table">
-                    <table class="table dataTable" id="deals-project">
-                        <thead class="thead-light">
-                            <tr>
-                                <th>Commune</th>
-                                <th class="text-center">Prix</th>
-                                <th class="text-center">Total Prix</th>
-                                <th class="text-center">Stock Vendus</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @for (item of tableViewPriceList; track $index) {
-                            <tr class="odd">
-                                <td>
-                                    {{ item.name }}
-                                </td>
-                                <td class="text-center">{{ item.price }} FC</td>
-                                <td class="text-center">{{ item.count_price }}</td>
-                                <td class="text-center">{{ item.sold }} farde{{ item.sold > 1 ? 's' : '' }}</td>
-                            </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-    
-        </div>
+      </div>
     </div>
-    
-    }
+  </div>
+}
+
+@if (activeTab() === 'price') {
+  <div class="row g-3">
+    <div class="col-lg-5">
+      <div class="card h-100 border-0 shadow-sm">
+        <div class="card-header border-0 pb-0 pt-3 px-3">
+          <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-chart-bar me-1 text-success"></i>Revenu & Prix moyen par Marque</h6>
+        </div>
+        <div class="card-body pt-2 px-2">
+          @if (isLoadingPrice()) {
+            <div class="d-flex justify-content-center align-items-center" style="height:260px"><div class="spinner-border text-success"></div></div>
+          } @else if (priceData().length === 0) {
+            <div class="d-flex justify-content-center align-items-center text-muted" style="height:260px">
+              <div class="text-center"><i class="ti ti-database-off" style="font-size:2rem"></i><p class="mt-2 small">Aucune donnée</p></div>
+            </div>
+          } @else {
+            <apx-chart [series]="chartPriceOptions.series" [chart]="chartPriceOptions.chart"
+              [colors]="chartPriceOptions.colors" [plotOptions]="chartPriceOptions.plotOptions"
+              [dataLabels]="chartPriceOptions.dataLabels" [xaxis]="chartPriceOptions.xaxis"
+              [legend]="chartPriceOptions.legend" [tooltip]="chartPriceOptions.tooltip">
+            </apx-chart>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-7">
+      <div class="card h-100 border-0 shadow-sm">
+        <div class="card-header border-0 pb-0 pt-3 px-3">
+          <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-table me-1 text-success"></i>Analyse Prix par Marque — Commune</h6>
+        </div>
+        <div class="card-body p-0">
+          @if (isLoadingPrice()) {
+            <div class="d-flex justify-content-center align-items-center p-4"><div class="spinner-border text-success"></div></div>
+          } @else {
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 se-table">
+                <thead class="se-thead">
+                  <tr>
+                    <th>Marque</th><th class="text-end">Visites</th><th class="text-end">POS</th>
+                    <th class="text-end">Revenu</th><th class="text-end">Moy. Prix</th>
+                    <th class="text-end">Min</th><th class="text-end">Max</th><th class="text-end">Part Rev.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of priceData(); track row.brand_name) {
+                    <tr>
+                      <td><span class="fw-semibold text-primary">{{ row.brand_name }}</span></td>
+                      <td class="text-end">{{ row.total_visits | number }}</td>
+                      <td class="text-end">{{ row.total_pos | number }}</td>
+                      <td class="text-end fw-semibold">{{ row.total_revenue | number:'1.0-0' }}</td>
+                      <td class="text-end">{{ row.avg_price | number:'1.2-2' }}</td>
+                      <td class="text-end text-success small">{{ row.min_price | number:'1.2-2' }}</td>
+                      <td class="text-end text-danger small">{{ row.max_price | number:'1.2-2' }}</td>
+                      <td class="text-end">
+                        <div class="d-flex align-items-center justify-content-end gap-1">
+                          <div class="progress se-progress" style="width:60px"><div class="progress-bar bg-success" [style.width]="row.revenue_share + '%'"></div></div>
+                          <span class="small">{{ row.revenue_share }}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                  @empty {
+                    <tr><td colspan="8" class="text-center text-muted py-4">Aucune donnée disponible</td></tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

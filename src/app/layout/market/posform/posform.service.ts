@@ -355,30 +355,69 @@ export class PosformService extends ApiService {
    * Supprime un Posform - OFFLINE FIRST
    */
   override delete(uuid: string): Observable<any> {
-    return from(this.markPosformAsDeleted(uuid)).pipe(
-      switchMap(async () => {
-        // Mettre en file d'attente pour synchronisation
-        await this.syncQueue.enqueue({
-          operationId: uuidv4(),
-          entityType: 'posform',
-          operation: 'delete',
-          endpoint: `${this.endpoint}/delete/${uuid}`,
-          data: { uuid },
-          timestamp: new Date(),
-          retryCount: 0,
-          status: 'pending'
-        });
+    return from(this.deletePosformSmart(uuid));
+  }
 
-        console.log('✅ Posform marqué comme supprimé et mis en file de synchronisation');
-        
-        return {
-          offline: !this.networkService.isOnline(),
-          message: this.networkService.isOnline()
-            ? 'Posform supprimé, synchronisation en cours...'
-            : 'Posform supprimé localement, sera synchronisé à la reconnexion'
-        };
-      })
-    );
+  /**
+   * Supprime un Posform intelligemment :
+   * - Si encore local (pending, jamais envoyé au serveur) : suppression directe d'IndexedDB, pas de sync.
+   * - Si déjà synchronisé : soft-delete local + enqueue vers le serveur.
+   */
+  private async deletePosformSmart(uuid: string): Promise<any> {
+    if (!uuid || uuid.trim() === '') {
+      throw new Error('UUID manquant pour la suppression du posform');
+    }
+
+    const posform = await db.posForms.where('uuid').equals(uuid).first();
+
+    if (posform?.sync_status === 'pending') {
+      // Jamais envoyé au serveur : annuler les opérations en file d'attente
+      // (crée/update) avant de supprimer localement pour éviter les données fantômes
+      await this.syncQueue.cancelPendingOperationsForEntity('posform', uuid);
+      await db.posForms.where('uuid').equals(uuid).delete();
+
+      // Supprimer aussi les posformItems orphelins et annuler leurs opérations en queue
+      const orphanItems = await (db.posformItems as any).where('posform_uuid').equals(uuid).toArray();
+      for (const item of orphanItems) {
+        if (item.uuid) {
+          await this.syncQueue.cancelPendingOperationsForEntity('posformItem', item.uuid);
+        }
+      }
+      await (db.posformItems as any).where('posform_uuid').equals(uuid).delete();
+      console.log(`🗑️ Posform local ${uuid} + ${orphanItems.length} item(s) supprimés directement (jamais synchronisés)`);
+      return {
+        offline: true,
+        local: true,
+        message: 'Rapport local supprimé.'
+      };
+    }
+
+    if (posform?.sync_status === 'deleted') {
+      // Déjà marqué comme supprimé, ne pas ré-enqueue
+      console.warn(`⚠️ Posform ${uuid} déjà marqué comme supprimé, ignoré`);
+      return { message: 'Déjà supprimé.' };
+    }
+
+    // Déjà synchronisé : marquer comme supprimé localement + enqueue vers le serveur
+    await this.markPosformAsDeleted(uuid);
+    await this.syncQueue.enqueue({
+      operationId: uuidv4(),
+      entityType: 'posform',
+      operation: 'delete',
+      endpoint: `${this.endpoint}/delete/${uuid}`,
+      data: { uuid },
+      timestamp: new Date(),
+      retryCount: 0,
+      status: 'pending'
+    });
+
+    console.log('✅ Posform marqué comme supprimé et mis en file de synchronisation');
+    return {
+      offline: !this.networkService.isOnline(),
+      message: this.networkService.isOnline()
+        ? 'Posform supprimé, synchronisation en cours...'
+        : 'Posform supprimé localement, sera synchronisé à la reconnexion'
+    };
   }
 
   /**
@@ -443,10 +482,10 @@ export class PosformService extends ApiService {
   private async markPosformAsDeleted(uuid: string): Promise<void> {
     // Utiliser as any pour éviter les références circulaires avec Dexie
     await (db.posForms.where('uuid').equals(uuid) as any).modify({
-      sync_status: 'pending'
+      sync_status: 'deleted'
     });
 
-    console.log(`💾 Posform ${uuid} marqué comme supprimé`);
+    console.log(`💾 Posform ${uuid} marqué comme supprimé (sync_status: deleted)`);
   }
 
   /**
@@ -483,8 +522,16 @@ export class PosformService extends ApiService {
         if (rec.uuid && rec.id != null) uuidToLocalId.set(rec.uuid, rec.id as number);
       }
 
+      // Récupérer les uuids des posforms marqués comme supprimés localement
+      // pour ne pas les écraser lors du rafraîchissement depuis le serveur (anti-résurrection)
+      const deletedUuids = new Set(
+        (await db.posForms.toCollection().toArray())
+          .filter(pf => pf.sync_status === 'deleted' && !!pf.uuid)
+          .map(pf => pf.uuid as string)
+      );
+
       const posformsToStore = posforms
-        .filter(pf => !!pf.uuid)
+        .filter(pf => !!pf.uuid && !deletedUuids.has(pf.uuid!))
         .map(pf => ({
           ...(uuidToLocalId.has(pf.uuid!) ? { id: uuidToLocalId.get(pf.uuid!) } : {}),
           uuid: pf.uuid!,
@@ -601,6 +648,9 @@ export class PosformService extends ApiService {
     } else {
       posforms = await db.posForms.toCollection().toArray();
     }
+
+    // Exclure les posforms marqués comme supprimés localement
+    posforms = posforms.filter(pf => pf.sync_status !== 'deleted');
 
     // Filtrer par plage de dates
     const start = new Date(startDate);
