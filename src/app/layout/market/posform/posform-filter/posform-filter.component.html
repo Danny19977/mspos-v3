@@ -42,21 +42,24 @@
                 @if (currentUser()) {
                 <div class="card">
                     <div class="card-header">
-                        <div class="row align-items-center mb-3" *ngIf="territoire">
+                        @if (territoire()) {
+                        <div class="row align-items-center mb-3">
                             <div class="col-12">
                                 <div class="alert alert-info border-0 shadow-sm d-flex align-items-center">
                                     <i class="ti ti-filter me-2 text-primary"></i>
                                     <span class="fw-medium">
                                         Affichage des points de vente pour :
                                         <strong class="text-primary">{{ territoire()?.name }}</strong>
-                                        <span class="text-muted"
-                                            *ngIf="name() == 'ASM' || name() == 'Supervisor' || name() == 'DR' || name() == 'Cyclo'">
+                                        @if (name() == 'ASM' || name() == 'Supervisor' || name() == 'DR' || name() == 'Cyclo') {
+                                        <span class="text-muted">
                                             (filtré depuis {{ name() }})
                                         </span>
+                                        }
                                     </span>
                                 </div>
                             </div>
                         </div>
+                        }
                         <!-- Search -->
                         <div class="row align-items-center">
                             <div class="col-sm-4">
@@ -138,7 +141,9 @@
                                     <select class="form-select" [(ngModel)]="filters.price"
                                         (ngModelChange)="applyFilters()">
                                         <option value="">Tous les couts</option>
-                                        <option *ngFor="let price of uniquePrices()" [value]="price">{{price}} FC</option>
+                                        @for (price of uniquePrices(); track price) {
+                                        <option [value]="price">{{price}} FC</option>
+                                        }
                                     </select>
                                 </div>
 
@@ -148,7 +153,9 @@
                                     <select class="form-select" [(ngModel)]="filters.asm"
                                         (ngModelChange)="applyFilters()">
                                         <option value="">Tous les ASM</option>
-                                        <option *ngFor="let asm of filteredAsms()" [value]="asm">{{asm}}</option>
+                                        @for (asm of filteredAsms(); track asm) {
+                                        <option [value]="asm">{{asm}}</option>
+                                        }
                                     </select>
                                 </div>
 
@@ -158,7 +165,9 @@
                                     <select class="form-select" [(ngModel)]="filters.supervisor"
                                         (ngModelChange)="applyFilters()">
                                         <option value="">Tous les supervisors</option>
-                                        <option *ngFor="let sup of filteredSupervisors()" [value]="sup">{{sup}}</option>
+                                        @for (sup of filteredSupervisors(); track sup) {
+                                        <option [value]="sup">{{sup}}</option>
+                                        }
                                     </select>
                                 </div>
 
@@ -168,7 +177,9 @@
                                     <select class="form-select" [(ngModel)]="filters.dr"
                                         (ngModelChange)="applyFilters()">
                                         <option value="">Tous les DR</option>
-                                        <option *ngFor="let dr of filteredDrs()" [value]="dr">{{dr}}</option>
+                                        @for (dr of filteredDrs(); track dr) {
+                                        <option [value]="dr">{{dr}}</option>
+                                        }
                                     </select>
                                 </div>
 
@@ -178,7 +189,9 @@
                                     <select class="form-select" [(ngModel)]="filters.cyclo"
                                         (ngModelChange)="applyFilters()">
                                         <option value="">Tous les cyclos</option>
-                                        <option *ngFor="let cyclo of filteredCyclos()" [value]="cyclo">{{cyclo}}</option>
+                                        @for (cyclo of filteredCyclos(); track cyclo) {
+                                        <option [value]="cyclo">{{cyclo}}</option>
+                                        }
                                     </select>
                                 </div>
 
@@ -360,16 +373,16 @@
                                     <th mat-header-cell *matHeaderCellDef> Action </th>
                                     <td mat-cell *matCellDef="let element" class="d-flex align-items-center">
 
-                                        <ng-container *ngIf="element.pos_uuid == '' && 
+                                        @if (element.pos_uuid == '' && 
                                             isLessThan24HoursOld(element.CreatedAt) && 
-                                            isCurrentUserCreator(element)">
+                                            isCurrentUserCreator(element)) {
                                             <button mat-icon-button (click)="findValue(element.uuid)"
                                                 data-bs-toggle="offcanvas" data-bs-target="#offcanvas_add"
                                                 class="text-success"
                                                 title="Compléter ce rapport en sélectionnant un point de vente">
                                                 <mat-icon>add_circle</mat-icon>
                                             </button>
-                                        </ng-container>
+                                        }
 
                                         <button mat-icon-button (click)="findValue(element.uuid)"
                                             data-bs-toggle="offcanvas" data-bs-target="#offcanvas_visibility"
@@ -538,11 +551,12 @@
                                             <input type="number" class="form-control" formControlName="number_farde"
                                                 placeholder="Ex: 5" min="0" required />
                                             <small class="text-muted">Indiquez 0 si aucun produit n'est visible</small>
-                                            <mat-error
-                                                *ngIf="formGroupPosFormItem.controls['number_farde'].hasError('required')">
+                                            @if (formGroupPosFormItem.controls['number_farde'].hasError('required')) {
+                                            <mat-error>
                                                 <i class="ti ti-alert-circle me-1"></i>Veuillez indiquer le nombre de
                                                 fardes présents
                                             </mat-error>
+                                            }
                                         </div>
                                     </div>
                                     <div class="col-md-6">
@@ -558,11 +572,12 @@
                                             <input type="number" class="form-control" formControlName="sold"
                                                 placeholder="Ex: 3" required />
                                             <small class="text-muted">Indiquez 0 si aucune vente aujourd'hui</small>
-                                            <mat-error
-                                                *ngIf="formGroupPosFormItem.controls['sold'].hasError('required')">
+                                            @if (formGroupPosFormItem.controls['sold'].hasError('required')) {
+                                            <mat-error>
                                                 <i class="ti ti-alert-circle me-1"></i>Veuillez indiquer le nombre de
                                                 ventes réalisées
                                             </mat-error>
+                                            }
                                         </div>
                                     </div>
                                     <div class="col-md-6 d-flex align-items-end mb-3">
@@ -604,14 +619,18 @@
                                                             || item.brand_name }}</p>
                                                         <p class="mb-1"><strong>📦 Fardes:</strong> {{ item.number_farde
                                                             }}</p>
-                                                        <p *ngIf="item.sold > 0" class="mb-1 text-success">
+                                                        @if (item.sold > 0) {
+                                                        <p class="mb-1 text-success">
                                                             <strong>💰 {{ item.sold > 1 ? 'Ventes:' : 'Vente:'
                                                                 }}</strong>
                                                             {{ item.sold }}
                                                         </p>
-                                                        <p *ngIf="item.sold == 0" class="mb-1 text-muted">
+                                                        }
+                                                        @if (item.sold == 0) {
+                                                        <p class="mb-1 text-muted">
                                                             <strong>Aucune vente</strong>
                                                         </p>
+                                                        }
                                                     </div>
                                                 </div>
                                                 <div class="task-actions mt-3 text-end">
@@ -659,10 +678,12 @@
                             }
                         </mat-autocomplete>
                         <small class="text-muted">Choisissez dans votre liste de points de vente à visiter</small>
-                        <mat-error *ngIf="formGroup.controls['pos_uuid'].hasError('required')">
+                        @if (formGroup.controls['pos_uuid'].hasError('required')) {
+                        <mat-error>
                             <i class="ti ti-alert-circle me-1"></i>Veuillez sélectionner le point de vente que vous
                             visitez
                         </mat-error>
+                        }
                     </div>
                 </div>
                 <div class="col-md-6">
@@ -676,12 +697,16 @@
                         </label>
                         <select class="form-control" formControlName="price" required>
                             <option value="" disabled selected>💰 Choisissez le coût de votre visite...</option>
-                            <option *ngFor="let price of priceList" [value]="price">{{price}} FC</option>
+                            @for (price of priceList; track price) {
+                            <option [value]="price">{{price}} FC</option>
+                            }
                         </select>
                         <small class="text-muted">Le montant dépend du type de visite (simple, détaillée, etc.)</small>
-                        <mat-error *ngIf="formGroup.controls['price'].hasError('required')">
+                        @if (formGroup.controls['price'].hasError('required')) {
+                        <mat-error>
                             <i class="ti ti-alert-circle me-1"></i>Veuillez sélectionner le coût de votre visite
                         </mat-error>
+                        }
                     </div>
                 </div>
                 <div class="col-md-12">
@@ -700,9 +725,11 @@
                             💡 Exemples : "Bon accueil, manque de produits XYZ", "Magasin bien rangé", "Vendeur demande
                             plus de formation"
                         </small>
-                        <mat-error *ngIf="formGroup.controls['comment'].hasError('required')">
+                        @if (formGroup.controls['comment'].hasError('required')) {
+                        <mat-error>
                             <i class="ti ti-alert-circle me-1"></i>Veuillez ajouter vos commentaires sur cette visite
                         </mat-error>
+                        }
                     </div>
                 </div>
             </div>
@@ -799,10 +826,11 @@
                                     <label class="col-form-label" for="text">Présence des fardes <span
                                             class="text-danger">*</span></label>
                                     <input type="number" class="form-control" formControlName="number_farde" required />
-                                    <mat-error
-                                        *ngIf="formGroupPosFormItem.controls['number_farde'].hasError('required')">
+                                    @if (formGroupPosFormItem.controls['number_farde'].hasError('required')) {
+                                    <mat-error>
                                         Ce champs est obligatoire
                                     </mat-error>
+                                    }
                                 </div>
                             </div>
                             <div class="col-md-6">
@@ -810,9 +838,11 @@
                                     <label class="col-form-label" for="text">Ventes <span
                                             class="text-danger">*</span></label>
                                     <input type="number" class="form-control" formControlName="sold" required />
-                                    <mat-error *ngIf="formGroupPosFormItem.controls['sold'].hasError('required')">
+                                    @if (formGroupPosFormItem.controls['sold'].hasError('required')) {
+                                    <mat-error>
                                         Ce champs est obligatoire
                                     </mat-error>
+                                    }
                                 </div>
                             </div>
                             <div class="col-md-6 d-flex align-items-end mb-3">
@@ -847,10 +877,12 @@
                                                 <p class="mb-1"><strong>
                                                         Nombre de Farde:</strong> {{ item.number_farde }}
                                                 </p>
-                                                <p *ngIf="item.sold > 0" class="mb-1">
+                                                @if (item.sold > 0) {
+                                                <p class="mb-1">
                                                     <strong>{{ item.sold > 1 ? 'Ventes:' : 'Vente:' }}</strong>
                                                     {{ item.sold }}
                                                 </p>
+                                                }
                                             </div>
                                         </div>
                                         <div class="task-actions mt-3 text-end">
@@ -899,11 +931,15 @@
                         </label>
                         <select class="form-control" formControlName="price" required>
                             <option value="" disabled>💰 Sélectionnez le coût...</option>
-                            <option *ngFor="let price of priceList" [value]="price">{{price}} FC</option>
+                            @for (price of priceList; track price) {
+                            <option [value]="price">{{price}} FC</option>
+                            }
                         </select>
-                        <mat-error *ngIf="formGroup.controls['price'].hasError('required')">
+                        @if (formGroup.controls['price'].hasError('required')) {
+                        <mat-error>
                             <i class="ti ti-alert-circle me-1"></i>Veuillez sélectionner le coût de la visite
                         </mat-error>
+                        }
                     </div>
                 </div>
                 <div class="col-md-12">
@@ -922,9 +958,11 @@
                             💡 Ajoutez toute nouvelle information ou modification observée depuis votre première
                             visite
                         </small>
-                        <mat-error *ngIf="formGroup.controls['comment'].hasError('required')">
+                        @if (formGroup.controls['comment'].hasError('required')) {
+                        <mat-error>
                             <i class="ti ti-alert-circle me-1"></i>Veuillez ajouter vos commentaires
                         </mat-error>
+                        }
                     </div>
                 </div>
             </div>
@@ -973,7 +1011,8 @@
         </button>
     </div>
     <div class="offcanvas-body">
-        <div *ngIf="dataItem; else noDataTemplate" class="row">
+        @if (dataItem()) {
+        <div class="row">
             <!-- Informations générales -->
             <div class="col-12 mb-4">
                 <div class="card border-info">
@@ -986,34 +1025,31 @@
                                 <div class="mb-3">
                                     <p>
                                         <strong>Pays :</strong><br>
-                                        <span *ngIf="dataItem()?.Country?.name; else noCountry">
-                                            {{dataItem()?.Country?.name}}
-                                        </span>
-                                        <ng-template #noCountry>
-                                            <small>Pas disponible</small>
-                                        </ng-template>
+                                        @if (dataItem()?.Country?.name) {
+                                        <span>{{dataItem()?.Country?.name}}</span>
+                                        } @else {
+                                        <small>Pas disponible</small>
+                                        }
                                     </p>
                                 </div>
                                 <div class="mb-3">
                                     <p>
                                         <strong>Area :</strong><br>
-                                        <span *ngIf="dataItem()?.Area?.name; else noArea">
-                                            {{dataItem()?.Area?.name}}
-                                        </span>
-                                        <ng-template #noArea>
-                                            <small>Pas disponible</small>
-                                        </ng-template>
+                                        @if (dataItem()?.Area?.name) {
+                                        <span>{{dataItem()?.Area?.name}}</span>
+                                        } @else {
+                                        <small>Pas disponible</small>
+                                        }
                                     </p>
                                 </div>
                                 <div class="mb-3">
                                     <p>
                                         <strong>Commune(Quartier) :</strong><br>
-                                        <span *ngIf="dataItem()?.Commune?.name; else noCommune">
-                                            {{ dataItem()?.Commune?.name }}
-                                        </span>
-                                        <ng-template #noCommune>
-                                            <small>Pas disponible</small>
-                                        </ng-template>
+                                        @if (dataItem()?.Commune?.name) {
+                                        <span>{{ dataItem()?.Commune?.name }}</span>
+                                        } @else {
+                                        <small>Pas disponible</small>
+                                        }
                                     </p>
                                 </div>
                             </div>
@@ -1021,23 +1057,21 @@
                                 <div class="mb-3">
                                     <p>
                                         <strong>Province :</strong><br>
-                                        <span *ngIf="dataItem()?.Province?.name; else noProvince">
-                                            {{dataItem()?.Province?.name}}
-                                        </span>
-                                        <ng-template #noProvince>
-                                            <small>Pas disponible</small>
-                                        </ng-template>
+                                        @if (dataItem()?.Province?.name) {
+                                        <span>{{dataItem()?.Province?.name}}</span>
+                                        } @else {
+                                        <small>Pas disponible</small>
+                                        }
                                     </p>
                                 </div>
                                 <div class="mb-3">
                                     <p>
                                         <strong>Sous Area :</strong><br>
-                                        <span *ngIf="dataItem()?.SubArea?.name; else noSubArea">
-                                            {{dataItem()?.SubArea?.name}}
-                                        </span>
-                                        <ng-template #noSubArea>
-                                            <small>Pas disponible</small>
-                                        </ng-template>
+                                        @if (dataItem()?.SubArea?.name) {
+                                        <span>{{dataItem()?.SubArea?.name}}</span>
+                                        } @else {
+                                        <small>Pas disponible</small>
+                                        }
                                     </p>
                                 </div>
                                 <div class="mb-3">
@@ -1057,8 +1091,8 @@
                                     <p>
                                         <strong>🏪 Point de vente visité :</strong><br>
                                         <span class="text-primary">{{dataItem()?.Pos?.name || 'Non renseigné'}}
-                                            <span *ngIf="dataItem()?.Pos?.shop">|
-                                                {{dataItem()?.Pos?.shop}}</span></span>
+                                            @if (dataItem()?.Pos?.shop) {<span>|
+                                                {{dataItem()?.Pos?.shop}}</span>}</span>
                                     </p>
                                 </div>
                             </div>
@@ -1076,7 +1110,8 @@
             </div>
 
             <!-- Marques observées -->
-            <div *ngIf="dataListPosFormItem() && dataListPosFormItem().length > 0" class="col-12 mb-4">
+            @if (dataListPosFormItem() && dataListPosFormItem().length > 0) {
+            <div class="col-12 mb-4">
                 <div class="card border-success">
                     <div class="card-header bg-success text-white">
                         <h6 class="mb-0">🏷️ Marques observées ({{dataListPosFormItem().length}})</h6>
@@ -1084,13 +1119,15 @@
                     <div class="card-body">
                         <div class="task-wrapper">
                             <div class="row">
-                                <div *ngIf="isLoadingPosFormItem"
-                                    class="d-flex align-items-center justify-content-center w-100">
+                                @if (isLoadingPosFormItem()) {
+                                <div class="d-flex align-items-center justify-content-center w-100">
                                     <strong role="status">Chargement...</strong>
                                     <div class="spinner-border ms-2" aria-hidden="true"></div>
                                 </div>
-                                <ng-container *ngIf="!isLoadingPosFormItem">
-                                    <div *ngFor="let item of dataListPosFormItem()" class="col-md-4 mb-3">
+                                }
+                                @if (!isLoadingPosFormItem()) {
+                                    @for (item of dataListPosFormItem(); track $index) {
+                                    <div class="col-md-4 mb-3">
                                         <div class="card task-card border-success">
                                             <div class="card-body">
                                                 <div class="task-info">
@@ -1100,52 +1137,58 @@
                                                     <p class="mb-2"><strong>📦 Fardes :</strong>
                                                         {{ item.number_farde }}
                                                     </p>
-                                                    <p *ngIf="item.sold > 0" class="mb-0 text-success">
+                                                    @if (item.sold > 0) {
+                                                    <p class="mb-0 text-success">
                                                         <strong>💰 {{ item.sold > 1 ? 'Ventes :' : 'Vente :' }}
                                                         </strong>
                                                         {{ item.sold }}
                                                     </p>
-                                                    <p *ngIf="item.sold === 0" class="mb-0 text-muted">
+                                                    }
+                                                    @if (item.sold === 0) {
+                                                    <p class="mb-0 text-muted">
                                                         <strong>Aucune vente</strong>
                                                     </p>
+                                                    }
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </ng-container>
+                                    }
+                                }
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div *ngIf="!dataListPosFormItem() || dataListPosFormItem().length === 0" class="col-12 mb-4">
+            } @else {
+            <div class="col-12 mb-4">
                 <div class="alert alert-warning">
                     <h6><i class="ti ti-alert-triangle me-2"></i>Aucune marque enregistrée</h6>
                     <p class="mb-0">Aucune marque n'a été observée ou enregistrée lors de cette visite.</p>
                 </div>
             </div>
+            }
 
-            <!-- Commentaires -->
+            <!-- Observations -->
             <div class="col-md-12">
                 <div class="card border-warning">
                     <div class="card-header bg-warning text-dark">
-                        <h6 class="mb-0">💬 Commentaires et observations</h6>
+                        <h6 class="mb-0">💬 Observations</h6>
                     </div>
                     <div class="card-body">
                         <p class="mb-0" style="white-space: pre-wrap;">
-                            {{ dataItem()?.comment || 'Aucun commentaire ajouté.' }}
+                            {{ dataItem()?.comment || 'Aucune observation ajoutée.' }}
                         </p>
                     </div>
                 </div>
             </div>
         </div>
-
-        <ng-template #noDataTemplate>
+        } @else {
             <div class="alert alert-warning">
                 <h6><i class="ti ti-alert-triangle me-2"></i>Aucune donnée disponible</h6>
                 <p class="mb-0">Impossible de charger les détails du rapport. Veuillez réessayer.</p>
             </div>
-        </ng-template>
+        }
     </div>
 
 </div>

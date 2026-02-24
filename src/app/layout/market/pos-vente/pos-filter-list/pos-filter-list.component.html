@@ -483,9 +483,9 @@
                         <div class="mb-3">
                             <label class="col-form-label" for="text">Shop <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" formControlName="shop" required />
-                            <mat-error *ngIf="formGroup().controls['shop'].hasError('required')">
-                                Ce champs est obligatoire
-                            </mat-error>
+                            @if (formGroup().controls['shop'].hasError('required')) {
+                            <mat-error>Ce champs est obligatoire</mat-error>
+                            }
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -494,11 +494,13 @@
                                     class="text-danger">*</span></label>
                             <select class="form-control" formControlName="postype" required>
                                 <option value="" disabled selected>Select POS Type</option>
-                                <option *ngFor="let type of posTypes" [value]="type">{{ type }}</option>
+                                @for (type of posTypes; track type) {
+                                <option [value]="type">{{ type }}</option>
+                                }
                             </select>
-                            <mat-error *ngIf="formGroup().controls['postype'].hasError('required')">
-                                Ce champs est obligatoire
-                            </mat-error>
+                            @if (formGroup().controls['postype'].hasError('required')) {
+                            <mat-error>Ce champs est obligatoire</mat-error>
+                            }
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -506,36 +508,36 @@
                             <label class="col-form-label" for="text">Nom du vendeur<span
                                     class="text-danger">*</span></label>
                             <input type="text" class="form-control" formControlName="name" required />
-                            <mat-error *ngIf="formGroup().controls['name'].hasError('required')">
-                                Ce champs est obligatoire
-                            </mat-error>
+                            @if (formGroup().controls['name'].hasError('required')) {
+                            <mat-error>Ce champs est obligatoire</mat-error>
+                            }
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="col-form-label" for="text">Gérant <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" formControlName="gerant" required />
-                            <mat-error *ngIf="formGroup().controls['gerant'].hasError('required')">
-                                Ce champs est obligatoire
-                            </mat-error>
+                            @if (formGroup().controls['gerant'].hasError('required')) {
+                            <mat-error>Ce champs est obligatoire</mat-error>
+                            }
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="col-form-label" for="text">Avenue <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" formControlName="avenue" required />
-                            <mat-error *ngIf="formGroup().controls['avenue'].hasError('required')">
-                                Ce champs est obligatoire
-                            </mat-error>
+                            @if (formGroup().controls['avenue'].hasError('required')) {
+                            <mat-error>Ce champs est obligatoire</mat-error>
+                            }
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="col-form-label" for="text">Quartier <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" formControlName="quartier" required />
-                            <mat-error *ngIf="formGroup().controls['quartier'].hasError('required')">
-                                Ce champs est obligatoire
-                            </mat-error>
+                            @if (formGroup().controls['quartier'].hasError('required')) {
+                            <mat-error>Ce champs est obligatoire</mat-error>
+                            }
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -543,9 +545,9 @@
                             <label class="col-form-label" for="text">Reference <span
                                     class="text-danger">*</span></label>
                             <input type="text" class="form-control" formControlName="reference" required />
-                            <mat-error *ngIf="formGroup().controls['reference'].hasError('required')">
-                                Ce champs est obligatoire
-                            </mat-error>
+                            @if (formGroup().controls['reference'].hasError('required')) {
+                            <mat-error>Ce champs est obligatoire</mat-error>
+                            }
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -553,9 +555,9 @@
                             <label class="col-form-label" for="text">Telephone <span
                                     class="text-danger">*</span></label>
                             <input type="text" class="form-control" formControlName="telephone" required />
-                            <mat-error *ngIf="formGroup().controls['telephone'].hasError('required')">
-                                Ce champs est obligatoire
-                            </mat-error>
+                            @if (formGroup().controls['telephone'].hasError('required')) {
+                            <mat-error>Ce champs est obligatoire</mat-error>
+                            }
                         </div>
                     </div>
                     <!-- <div class="col-md-6">
@@ -607,9 +609,9 @@
                         <div class="mb-3">
                             <label class="col-form-label" for="text">Shop <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" formControlName="shop" required />
-                            <mat-error *ngIf="formGroup().controls['shop'].hasError('required')">
-                                Ce champs est obligatoire
-                            </mat-error>
+                            @if (formGroup().controls['shop'].hasError('required')) {
+                            <mat-error>Ce champs est obligatoire</mat-error>
+                            }
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -618,11 +620,13 @@
                                     class="text-danger">*</span></label>
                             <select class="form-control" formControlName="postype" required>
                                 <option value="" disabled selected>Select POS Type</option>
-                                <option *ngFor="let type of posTypes" [value]="type">{{ type }}</option>
+                                @for (type of posTypes; track type) {
+                                <option [value]="type">{{ type }}</option>
+                                }
                             </select>
-                            <mat-error *ngIf="formGroup().controls['postype'].hasError('required')">
-                                Ce champs est obligatoire
-                            </mat-error>
+                            @if (formGroup().controls['postype'].hasError('required')) {
+                            <mat-error>Ce champs est obligatoire</mat-error>
+                            }
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -630,36 +634,36 @@
                             <label class="col-form-label" for="text">Nom du vendeur<span
                                     class="text-danger">*</span></label>
                             <input type="text" class="form-control" formControlName="name" required />
-                            <mat-error *ngIf="formGroup().controls['name'].hasError('required')">
-                                Ce champs est obligatoire
-                            </mat-error>
+                            @if (formGroup().controls['name'].hasError('required')) {
+                            <mat-error>Ce champs est obligatoire</mat-error>
+                            }
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="col-form-label" for="text">Gérant <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" formControlName="gerant" required />
-                            <mat-error *ngIf="formGroup().controls['gerant'].hasError('required')">
-                                Ce champs est obligatoire
-                            </mat-error>
+                            @if (formGroup().controls['gerant'].hasError('required')) {
+                            <mat-error>Ce champs est obligatoire</mat-error>
+                            }
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="col-form-label" for="text">Avenue <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" formControlName="avenue" required />
-                            <mat-error *ngIf="formGroup().controls['avenue'].hasError('required')">
-                                Ce champs est obligatoire
-                            </mat-error>
+                            @if (formGroup().controls['avenue'].hasError('required')) {
+                            <mat-error>Ce champs est obligatoire</mat-error>
+                            }
                         </div>
                     </div>
                     <div class="col-md-6">
                         <div class="mb-3">
                             <label class="col-form-label" for="text">Quartier <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" formControlName="quartier" required />
-                            <mat-error *ngIf="formGroup().controls['quartier'].hasError('required')">
-                                Ce champs est obligatoire
-                            </mat-error>
+                            @if (formGroup().controls['quartier'].hasError('required')) {
+                            <mat-error>Ce champs est obligatoire</mat-error>
+                            }
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -667,9 +671,9 @@
                             <label class="col-form-label" for="text">Reference <span
                                     class="text-danger">*</span></label>
                             <input type="text" class="form-control" formControlName="reference" required />
-                            <mat-error *ngIf="formGroup().controls['reference'].hasError('required')">
-                                Ce champs est obligatoire
-                            </mat-error>
+                            @if (formGroup().controls['reference'].hasError('required')) {
+                            <mat-error>Ce champs est obligatoire</mat-error>
+                            }
                         </div>
                     </div>
                     <div class="col-md-6">
@@ -677,9 +681,9 @@
                             <label class="col-form-label" for="text">Telephone <span
                                     class="text-danger">*</span></label>
                             <input type="text" class="form-control" formControlName="telephone" required />
-                            <mat-error *ngIf="formGroup().controls['telephone'].hasError('required')">
-                                Ce champs est obligatoire
-                            </mat-error>
+                            @if (formGroup().controls['telephone'].hasError('required')) {
+                            <mat-error>Ce champs est obligatoire</mat-error>
+                            }
                         </div>
                     </div>
                     <!-- <div class="col-md-6">

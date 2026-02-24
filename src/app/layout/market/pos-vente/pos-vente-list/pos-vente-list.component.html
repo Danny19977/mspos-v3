@@ -472,7 +472,9 @@
                         <label class="col-form-label" for="postype">POS Type <span class="text-danger">*</span></label>
                         <select class="form-control" formControlName="postype" required>
                             <option value="" disabled selected>Select POS Type</option>
-                            <option *ngFor="let type of posTypes()" [value]="type">{{ type }}</option>
+                            @for (type of posTypes(); track type) {
+                            <option [value]="type">{{ type }}</option>
+                            }
                         </select>
                         @if (formGroup().controls['postype'].hasError('required')) {
                         <mat-error>Ce champs est obligatoire</mat-error>
@@ -593,7 +595,9 @@
                         <label class="col-form-label" for="postype">POS Type <span class="text-danger">*</span></label>
                         <select class="form-control" formControlName="postype" required>
                             <option value="" disabled selected>Select POS Type</option>
-                            <option *ngFor="let type of posTypes()" [value]="type">{{ type }}</option>
+                            @for (type of posTypes(); track type) {
+                            <option [value]="type">{{ type }}</option>
+                            }
                         </select>
                         @if (formGroup().controls['postype'].hasError('required')) {
                         <mat-error>Ce champs est obligatoire</mat-error>

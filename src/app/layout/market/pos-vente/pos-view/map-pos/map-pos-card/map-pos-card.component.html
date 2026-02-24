@@ -13,8 +13,10 @@
 </div>
 } @else {
 <google-map [height]="mapHeight()" [width]="mapWidth()" [center]="center()" [zoom]="zoom()">
-    <map-marker *ngFor="let marker of markers()" #markerRef="mapMarker" [position]="marker.position" [title]="marker.name"
+    @for (marker of markers(); track marker) {
+    <map-marker #markerRef="mapMarker" [position]="marker.position" [title]="marker.name"
         (mapClick)="openInfoWindow(marker, markerRef)"></map-marker>
+    }
 
     <map-info-window #infoWindow>
         @if (selectedMarker(); as marker) {
