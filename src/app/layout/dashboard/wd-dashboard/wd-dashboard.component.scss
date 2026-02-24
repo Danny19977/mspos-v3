@@ -1,0 +1,696 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// WD-DASHBOARD  —  Weighted Distribution Dashboard styles
+// Prefix: "wd-"  |  Palette: Orange/Amber primary, semantic accents
+// WD differs from ND: it is volume-weighted (fardes), not POS-count-based.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── CSS custom property tokens ────────────────────────────────────────────────
+:host {
+  --wd-primary:    #f77f00;
+  --wd-primary-lt: #fff3e0;
+  --wd-primary-md: #fde6c3;
+  --wd-border:     #fde6c3;
+  --wd-bg-soft:    #fff9f2;
+  --wd-bg-card:    #fffcf8;
+}
+
+// ── Page header badge ─────────────────────────────────────────────────────────
+.wd-title-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #f77f00 0%, #d62828 100%);
+  color: #fff;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+// ── Date range picker ─────────────────────────────────────────────────────────
+.wd-date-form {
+  .wd-date-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    i {
+      position: absolute;
+      left: 10px;
+      color: #6c757d;
+      font-size: 1rem;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .wd-date-input {
+      padding-left: 34px;
+      border-radius: 8px;
+      border: 1px solid var(--wd-border);
+      font-size: 0.82rem;
+      background-color: var(--wd-bg-soft);
+      min-width: 220px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+
+      &:focus {
+        border-color: var(--wd-primary);
+        box-shadow: 0 0 0 3px rgba(247, 127, 0, 0.12);
+        background-color: #fff;
+      }
+    }
+  }
+}
+
+// ── Period dropdown ───────────────────────────────────────────────────────────
+.wd-period-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--wd-border);
+  background: var(--wd-bg-soft);
+  color: var(--wd-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  gap: 4px;
+  transition: all 0.15s;
+
+  &:hover, &:focus {
+    background: var(--wd-primary-lt);
+    border-color: var(--wd-primary);
+    box-shadow: none;
+  }
+
+  &::after { margin-left: 4px; }
+}
+
+.wd-period-menu {
+  min-width: 160px;
+  border: 1px solid var(--wd-border);
+  border-radius: 10px;
+  padding: 4px;
+  font-size: 0.82rem;
+}
+
+.wd-period-item {
+  border-radius: 7px;
+  color: #3a3a5c;
+  font-size: 0.82rem;
+  padding: 7px 12px;
+  display: flex;
+  align-items: center;
+
+  &:hover { background: var(--wd-primary-lt); color: var(--wd-primary); }
+
+  &.active {
+    background: var(--wd-primary);
+    color: #fff;
+    font-weight: 600;
+  }
+}
+
+// ── Geo filter bar ────────────────────────────────────────────────────────────
+.wd-geo-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  background: #fff;
+  border: 1px solid var(--wd-border);
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(247, 127, 0, 0.07);
+}
+
+.wd-geo-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 130px;
+
+  &.wd-geo-disabled { opacity: 0.5; }
+}
+
+.wd-geo-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
+.wd-select {
+  border-radius: 8px;
+  border: 1px solid var(--wd-border);
+  background-color: var(--wd-bg-soft);
+  font-size: 0.8rem;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: var(--wd-primary);
+    box-shadow: 0 0 0 3px rgba(247, 127, 0, 0.1);
+  }
+}
+
+// ── Spinner override ──────────────────────────────────────────────────────────
+.wd-spinner {
+  color: var(--wd-primary) !important;
+}
+
+// ── KPI skeleton ──────────────────────────────────────────────────────────────
+.wd-kpi-skeleton {
+  border-radius: 12px;
+  min-height: 80px;
+
+  .card-body { display: flex; flex-direction: column; gap: 12px; }
+
+  @keyframes wd-shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+
+  .skeleton-line {
+    height: 14px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #f5f0e8 25%, #fde6c3 50%, #f5f0e8 75%);
+    background-size: 400px 100%;
+    animation: wd-shimmer 1.4s infinite;
+
+    &.short { width: 55%; height: 22px; }
+  }
+}
+
+// ── KPI cards ─────────────────────────────────────────────────────────────────
+.wd-kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border: 1px solid transparent;
+  transition: transform 0.18s, box-shadow 0.18s;
+  min-height: 76px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  }
+
+  .wd-kpi-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .wd-kpi-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+    min-width: 0;
+  }
+
+  .wd-kpi-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6c757d;
+    white-space: nowrap;
+  }
+
+  .wd-kpi-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+
+  .wd-kpi-brand {
+    font-size: 0.95rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .wd-kpi-sub {
+    font-size: 0.72rem;
+    color: #6c757d;
+  }
+
+  // accent variants
+  &.accent-orange { border-color: #fddcae; .wd-kpi-icon { background: #fff3e0; color: #f77f00; } .wd-kpi-value { color: #f77f00; } }
+  &.accent-teal   { border-color: #d0f8ef; .wd-kpi-icon { background: #e0faf4; color: #0fa97a; } .wd-kpi-value { color: #0c9b6e; } }
+  &.accent-green  { border-color: #d0fce6; .wd-kpi-icon { background: #e5fdf0; color: #06d6a0; } .wd-kpi-value { color: #05ba8b; } }
+  &.accent-indigo { border-color: #e0daff; .wd-kpi-icon { background: #ede8ff; color: #4361ee; } .wd-kpi-value { color: #4361ee; } }
+  &.accent-amber  { border-color: #fff3cc; .wd-kpi-icon { background: #fffae0; color: #e9a001; } .wd-kpi-value { color: #d48e00; } }
+  &.accent-red    { border-color: #ffc5d0; .wd-kpi-icon { background: #fff0f3; color: #d62828; } .wd-kpi-value { color: #d62828; } }
+}
+
+// ── Section nav ───────────────────────────────────────────────────────────────
+.wd-section-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-bottom: 2px solid #fde6c3;
+  padding-bottom: 8px;
+}
+
+.wd-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 16px;
+  border-radius: 8px 8px 0 0;
+  border: 1px solid transparent;
+  background: #fff9f2;
+  color: #6c757d;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+  margin-bottom: -2px;
+
+  &:hover {
+    background: var(--wd-primary-lt);
+    color: var(--wd-primary);
+  }
+
+  &.active {
+    background: #fff;
+    color: var(--wd-primary);
+    border-color: var(--wd-border) var(--wd-border) #fff;
+    font-weight: 600;
+  }
+
+  &.wd-nav-drill {
+    background: var(--wd-primary-lt);
+    color: var(--wd-primary);
+    font-weight: 600;
+    border: 1px solid var(--wd-border);
+
+    &.active {
+      background: var(--wd-primary);
+      color: #fff;
+      border-color: var(--wd-primary);
+    }
+  }
+}
+
+// ── Geo crumb ──────────────────────────────────────────────────────────────────
+.wd-geo-crumb {
+  font-size: 0.8rem;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.wd-text-primary { color: var(--wd-primary) !important; }
+
+// ── Geo level tabs ────────────────────────────────────────────────────────────
+.wd-geo-level-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.wd-level-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--wd-border);
+  background: var(--wd-bg-soft);
+  color: #6c757d;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+
+  &:hover { background: var(--wd-primary-lt); color: var(--wd-primary); }
+
+  &.active {
+    background: var(--wd-primary);
+    color: #fff;
+    border-color: var(--wd-primary);
+    font-weight: 600;
+  }
+}
+
+// ── Pill ──────────────────────────────────────────────────────────────────────
+.wd-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 1px solid var(--wd-border);
+  background: var(--wd-bg-soft);
+  color: #6c757d;
+  font-size: 0.77rem;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { background: var(--wd-primary-lt); color: var(--wd-primary); }
+
+  &.active {
+    background: var(--wd-primary);
+    color: #fff;
+    border-color: var(--wd-primary);
+    font-weight: 600;
+  }
+}
+
+// ── Tableview card ────────────────────────────────────────────────────────────
+.wd-tableview-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.wd-tableview-header {
+  background: var(--wd-bg-soft);
+  border-bottom: 1px solid var(--wd-border);
+}
+
+// ── Territory groups ──────────────────────────────────────────────────────────
+.wd-territory-group {
+  border-bottom: 2px solid var(--wd-primary-lt);
+
+  &:last-child { border-bottom: none; }
+}
+
+.wd-territory-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: linear-gradient(90deg, #fff3e0 0%, #fffbf5 100%);
+  font-size: 0.85rem;
+  color: #3a3a5c;
+  border-bottom: 1px solid var(--wd-border);
+}
+
+// ── Tables ────────────────────────────────────────────────────────────────────
+.wd-table {
+  font-size: 0.82rem;
+
+  td, th { padding: 8px 12px; }
+}
+
+.wd-table-sm {
+  td, th { padding: 6px 10px; }
+}
+
+.wd-thead {
+  background: var(--wd-bg-soft);
+
+  th {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6c757d;
+    border-bottom: 2px solid var(--wd-border);
+    white-space: nowrap;
+  }
+}
+
+.wd-rank-top {
+  background: linear-gradient(90deg, rgba(247,127,0,0.06), transparent);
+}
+
+// ── Progress bars ─────────────────────────────────────────────────────────────
+.wd-progress {
+  height: 6px;
+  border-radius: 4px;
+  background-color: var(--wd-primary-lt);
+
+  .progress-bar { border-radius: 4px; }
+}
+
+.wd-progress-mini {
+  height: 4px;
+  border-radius: 3px;
+  background-color: var(--wd-primary-lt);
+  width: 60px;
+  display: inline-flex;
+
+  .progress-bar { border-radius: 3px; }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.wd-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  color: #c8a87a;
+  gap: 8px;
+
+  i {
+    font-size: 2.5rem;
+    opacity: 0.5;
+  }
+
+  p {
+    font-size: 0.85rem;
+    margin: 0;
+  }
+}
+
+// ── Bar territory list ────────────────────────────────────────────────────────
+.wd-bar-territory {
+  background: #fff;
+  transition: background 0.15s;
+
+  &:hover { background: var(--wd-bg-soft); }
+}
+
+// ── Ranking drill button ──────────────────────────────────────────────────────
+.wd-drill-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--wd-border);
+  background: var(--wd-bg-soft);
+  color: var(--wd-primary);
+  padding: 0;
+  transition: all 0.18s;
+
+  &:hover {
+    background: var(--wd-primary);
+    color: #fff;
+    border-color: var(--wd-primary);
+  }
+}
+
+// ── Gap Analysis — Zone cards ─────────────────────────────────────────────────
+.wd-zone-card {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid;
+  font-size: 0.8rem;
+
+  &.zone-a { background: #eafff7; border-color: #b2f2de; }
+  &.zone-b { background: #fffbec; border-color: #ffe9a0; }
+}
+
+.wd-zone-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+// ── Gap funnel bar ────────────────────────────────────────────────────────────
+.wd-funnel-bar {
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f5efe8;
+
+  .wd-funnel-zone {
+    height: 100%;
+    transition: width 0.4s;
+    min-width: 2px;
+
+    &.zone-a { background: #06d6a0; }
+    &.zone-b { background: #ffd166; }
+  }
+}
+
+.wd-section-sub-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #888;
+}
+
+// ── Evolution cards ───────────────────────────────────────────────────────────
+.wd-evo-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  border: 1px solid var(--wd-border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: transform 0.18s;
+
+  &:hover { transform: translateY(-2px); }
+
+  &.wd-evo-up   { border-top: 3px solid #06d6a0; }
+  &.wd-evo-down { border-top: 3px solid #ef476f; }
+}
+
+.wd-evo-percent {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--wd-primary);
+  line-height: 1.1;
+}
+
+.wd-evo-delta {
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+// ── Heatmap matrix table ──────────────────────────────────────────────────────
+.wd-matrix-table {
+  font-size: 0.75rem;
+
+  th, td { padding: 5px 8px; white-space: nowrap; }
+}
+
+.wd-matrix-brand-col {
+  background: var(--wd-bg-soft);
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 120px;
+  font-size: 0.76rem;
+  border-right: 2px solid var(--wd-border) !important;
+}
+
+.wd-matrix-cell {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.72rem;
+  transition: opacity 0.2s;
+  min-width: 56px;
+
+  &:hover { opacity: 0.85; }
+}
+
+// ── Legend chips ──────────────────────────────────────────────────────────────
+.wd-legend-chip {
+  display: inline-block;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+// ── WD × ND Correlation — Quadrant ───────────────────────────────────────────
+.wd-quad-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.wd-quad-summary-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border: 1px solid #f0e8e0;
+  border-top-width: 4px;
+  text-align: center;
+}
+
+.wd-quad-count {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.wd-quad-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #3a3a5c;
+  margin-top: 4px;
+}
+
+.wd-quad-desc {
+  font-size: 0.72rem;
+  color: #888;
+  margin-top: 2px;
+}
+
+// ── Scatter tooltip ───────────────────────────────────────────────────────────
+.wd-tooltip-scatter {
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid var(--wd-border);
+  border-radius: 8px;
+  font-size: 0.8rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+
+  strong { display: block; margin-bottom: 2px; color: var(--wd-primary); }
+}
+
+// ── POS Drill-Down ────────────────────────────────────────────────────────────
+.wd-back-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--wd-border);
+  background: var(--wd-bg-soft);
+  color: var(--wd-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.15s;
+
+  &:hover {
+    background: var(--wd-primary);
+    color: #fff;
+    border-color: var(--wd-primary);
+  }
+}
+
+.wd-drill-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.wd-drill-brand-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--wd-primary);
+}
+
+// ── Utility tweaks ────────────────────────────────────────────────────────────
+.text-indigo { color: #3a0ca3 !important; }

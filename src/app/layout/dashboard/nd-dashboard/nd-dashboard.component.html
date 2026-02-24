@@ -1,46 +1,1004 @@
 <div class="page-wrapper">
   <div class="content">
-    <div class="row">
+
+    <!-- ── PAGE HEADER ──────────────────────────────────────────────────────── -->
+    <div class="row mb-3">
       <div class="col-md-12">
-        <div class="page-header">
+        <div class="page-header mb-0">
           <div class="row align-items-center">
-            <div class="col-md-4">
-              <h3 class="page-title">NUMERIC DISTRIBUTION</h3>
+            <div class="col-md-6">
+              <h3 class="page-title mb-0 d-flex align-items-center gap-2">
+                <span class="nd-title-badge"><i class="ti ti-chart-grid-dots"></i></span>
+                NUMERIC DISTRIBUTION
+              </h3>
+              <p class="text-muted small mb-0 mt-1">
+                ND% = POS avec stock marque ÷ total POS visités × 100
+              </p>
             </div>
-            <div class="col-md-8 float-end ms-auto">
-              @if (this.currentUser) {
-              <div class="d-flex title-head">
-                <div class="head-icons mb-0">
-                  <app-reload></app-reload>
-                  <app-collapse-header></app-collapse-header>
-                </div>
+            <div class="col-md-6 d-flex justify-content-end align-items-center gap-2 flex-wrap">
+              <div class="dropdown">
+                <button class="btn nd-period-toggle dropdown-toggle" type="button"
+                  data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="ti ti-calendar-stats me-1"></i>
+                  {{ getPeriodLabel() }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end nd-period-menu shadow-sm">
+                  @for (p of PERIODS; track p.key) {
+                    @if (p.key !== 'custom') {
+                      <li>
+                        <button class="dropdown-item nd-period-item"
+                          [class.active]="selectedPeriod() === p.key"
+                          (click)="setPeriod(p.key)">
+                          <i class="ti {{ selectedPeriod() === p.key ? 'ti-check' : 'ti-point' }} me-2"></i>
+                          {{ p.label }}
+                        </button>
+                      </li>
+                    }
+                  }
+                  <li><hr class="dropdown-divider my-1"></li>
+                  <li>
+                    <button class="dropdown-item nd-period-item"
+                      [class.active]="selectedPeriod() === 'custom'"
+                      (click)="setPeriod('custom')">
+                      <i class="ti {{ selectedPeriod() === 'custom' ? 'ti-check' : 'ti-calendar-event' }} me-2"></i>
+                      Personnalisé
+                    </button>
+                  </li>
+                </ul>
               </div>
+              @if (selectedPeriod() === 'custom') {
+                <form [formGroup]="dateRange" class="nd-date-form">
+                  <div class="nd-date-field">
+                    <i class="ti ti-calendar-event"></i>
+                    <input type="text" class="form-control bookingrange nd-date-input"
+                      placeholder="Sélectionner une période"
+                      bsDaterangepicker
+                      [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
+                      formControlName="rangeValue" />
+                  </div>
+                </form>
               }
+              <div class="head-icons mb-0 d-flex gap-1">
+                <app-reload></app-reload>
+                <app-collapse-header></app-collapse-header>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- ── GEO FILTERS ─────────────────────────────────────────────────────── -->
+    <div class="nd-geo-bar mb-3">
+      <div class="nd-geo-item">
+        <label class="nd-geo-label"><i class="ti ti-world me-1"></i>Pays</label>
+        <select class="form-select form-select-sm nd-select"
+          [(ngModel)]="selectedCountry" (ngModelChange)="onCountryChange($event)">
+          @for (c of countryList(); track c.uuid) {
+            <option [ngValue]="c">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="nd-geo-item">
+        <label class="nd-geo-label"><i class="ti ti-map-2 me-1"></i>Province</label>
+        <select class="form-select form-select-sm nd-select"
+          [(ngModel)]="selectedProvince" (ngModelChange)="onProvinceChange($event)">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (p of provinceList(); track p.uuid) {
+            <option [ngValue]="p">{{ p.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="nd-geo-item" [class.nd-geo-disabled]="!selectedProvince">
+        <label class="nd-geo-label"><i class="ti ti-map-pin me-1"></i>Area</label>
+        <select class="form-select form-select-sm nd-select"
+          [(ngModel)]="selectedArea" (ngModelChange)="onAreaChange($event)"
+          [disabled]="!selectedProvince">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (a of areaList(); track a.uuid) {
+            <option [ngValue]="a">{{ a.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="nd-geo-item" [class.nd-geo-disabled]="!selectedArea">
+        <label class="nd-geo-label"><i class="ti ti-location me-1"></i>Sub-Area</label>
+        <select class="form-select form-select-sm nd-select"
+          [(ngModel)]="selectedSubArea" (ngModelChange)="onSubAreaChange($event)"
+          [disabled]="!selectedArea">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (s of subAreaList(); track s.uuid) {
+            <option [ngValue]="s">{{ s.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="nd-geo-item" [class.nd-geo-disabled]="!selectedSubArea">
+        <label class="nd-geo-label"><i class="ti ti-building-community me-1"></i>Commune</label>
+        <select class="form-select form-select-sm nd-select"
+          [(ngModel)]="selectedCommune" (ngModelChange)="onCommuneChange($event)"
+          [disabled]="!selectedSubArea">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (c of communeList(); track c.uuid) {
+            <option [ngValue]="c">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+    </div>
 
-    <router-outlet />
-
-
-    <!-- <div class="row">
-      <div class="col-md-12 d-flex">
-        <div class="card w-100">
-          <div class="card-header border-0 pb-0">
-            <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
-              <h4><i class="ti ti-grip-vertical me-1"></i>ND by Year</h4>
+    <!-- ── KPI CARDS ───────────────────────────────────────────────────────── -->
+    @if (isLoadingKpi()) {
+      <div class="row g-3 mb-3">
+        @for (i of [1,2,3,4,5,6,7]; track i) {
+          <div class="col-6 col-md-3 col-xl-auto flex-grow-1">
+            <div class="card border-0 shadow-sm nd-kpi-skeleton">
+              <div class="card-body">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+              </div>
             </div>
           </div>
-          <div class="card-body">
-            <app-nd-by-year [isLoading]="isLoading" [ndYear]="ndYearList"></app-nd-by-year>
+        }
+      </div>
+    }
+    @if (!isLoadingKpi() && kpiData()) {
+      <div class="row g-3 mb-3">
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="nd-kpi-card accent-blue">
+            <div class="nd-kpi-icon"><i class="ti ti-building-store"></i></div>
+            <div class="nd-kpi-body">
+              <span class="nd-kpi-label">Univers POS</span>
+              <span class="nd-kpi-value">{{ kpiData()!.total_universe_pos | number }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="nd-kpi-card accent-teal">
+            <div class="nd-kpi-icon"><i class="ti ti-checklist"></i></div>
+            <div class="nd-kpi-body">
+              <span class="nd-kpi-label">POS Visités</span>
+              <span class="nd-kpi-value">{{ kpiData()!.total_visited_pos | number }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="nd-kpi-card accent-green">
+            <div class="nd-kpi-icon"><i class="ti ti-chart-grid-dots"></i></div>
+            <div class="nd-kpi-body">
+              <span class="nd-kpi-label">POS en ND</span>
+              <span class="nd-kpi-value">{{ kpiData()!.total_nd_pos | number }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="nd-kpi-card accent-indigo">
+            <div class="nd-kpi-icon"><i class="ti ti-percentage"></i></div>
+            <div class="nd-kpi-body">
+              <span class="nd-kpi-label">ND% Moyen</span>
+              <span class="nd-kpi-value">{{ kpiData()!.avg_nd_percent | number:'1.1-1' }}%</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="nd-kpi-card accent-purple">
+            <div class="nd-kpi-icon"><i class="ti ti-brand-databricks"></i></div>
+            <div class="nd-kpi-body">
+              <span class="nd-kpi-label">Marques</span>
+              <span class="nd-kpi-value">{{ kpiData()!.total_brands }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="nd-kpi-card accent-amber">
+            <div class="nd-kpi-icon"><i class="ti ti-radar"></i></div>
+            <div class="nd-kpi-body">
+              <span class="nd-kpi-label">Reach Rate</span>
+              <span class="nd-kpi-value">{{ kpiData()!.reach_rate | number:'1.1-1' }}%</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="nd-kpi-card accent-pink">
+            <div class="nd-kpi-icon"><i class="ti ti-chart-donut"></i></div>
+            <div class="nd-kpi-body">
+              <span class="nd-kpi-label">Coverage Index</span>
+              <span class="nd-kpi-value">{{ kpiData()!.coverage_index | number:'1.1-1' }}%</span>
+            </div>
           </div>
         </div>
       </div>
-    </div> -->
+    }
 
-  </div>
+    <!-- ── SECTION NAV TABS ─────────────────────────────────────────────────── -->
+    <div class="nd-section-nav mb-3">
+      <button class="nd-nav-btn" [class.active]="activeSection() === 'trend'"     (click)="setSection('trend')">
+        <i class="ti ti-chart-line me-1"></i>Tendance
+      </button>
+      <button class="nd-nav-btn" [class.active]="activeSection() === 'tableview'" (click)="setSection('tableview')">
+        <i class="ti ti-table me-1"></i>Tables
+      </button>
+      <button class="nd-nav-btn" [class.active]="activeSection() === 'barchart'"  (click)="setSection('barchart')">
+        <i class="ti ti-chart-bar me-1"></i>Barres
+      </button>
+      <button class="nd-nav-btn" [class.active]="activeSection() === 'ranking'"   (click)="setSection('ranking')">
+        <i class="ti ti-trophy me-1"></i>Classement
+      </button>
+      <button class="nd-nav-btn" [class.active]="activeSection() === 'gap'"       (click)="setSection('gap')">
+        <i class="ti ti-chart-area me-1"></i>Gap Analysis
+      </button>
+      <button class="nd-nav-btn" [class.active]="activeSection() === 'evolution'" (click)="setSection('evolution')">
+        <i class="ti ti-trending-up me-1"></i>Évolution PvP
+      </button>
+      <button class="nd-nav-btn" [class.active]="activeSection() === 'heatmap'"   (click)="setSection('heatmap')">
+        <i class="ti ti-layout-grid me-1"></i>Heatmap
+      </button>
+    </div>
 
-</div>
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: TREND — ND% par marque par mois
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'trend') {
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h5 class="fw-semibold mb-0">
+                <i class="ti ti-chart-line me-2 text-primary"></i>
+                Tendance mensuelle ND% par marque
+              </h5>
+              @if (isLoadingTrend()) { <div class="spinner-border spinner-border-sm text-primary"></div> }
+            </div>
+            <div class="card-body px-2 pt-2 pb-1">
+              @if (!isLoadingTrend() && chartTrendOpts()) {
+                <apx-chart #chartTrend
+                  [series]="chartTrendOpts()!.series"
+                  [chart]="chartTrendOpts()!.chart"
+                  [colors]="chartTrendOpts()!.colors"
+                  [stroke]="chartTrendOpts()!.stroke"
+                  [markers]="chartTrendOpts()!.markers"
+                  [dataLabels]="chartTrendOpts()!.dataLabels"
+                  [xaxis]="chartTrendOpts()!.xaxis"
+                  [yaxis]="chartTrendOpts()!.yaxis"
+                  [legend]="chartTrendOpts()!.legend"
+                  [tooltip]="chartTrendOpts()!.tooltip"
+                  [grid]="chartTrendOpts()!.grid">
+                </apx-chart>
+              } @else if (!isLoadingTrend()) {
+                <div class="nd-empty-state">
+                  <i class="ti ti-chart-off"></i>
+                  <p>Aucune donnée de tendance disponible</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly detail table -->
+        @if (!isLoadingTrend() && trendData().length > 0) {
+          <div class="col-12">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header border-0 pb-0 pt-3 px-3">
+                <h6 class="fw-semibold mb-0 text-secondary">
+                  <i class="ti ti-table me-2 text-primary"></i>
+                  Détail mensuel par marque
+                </h6>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 nd-table">
+                    <thead class="nd-thead">
+                      <tr>
+                        <th>Marque</th>
+                        <th>Mois</th>
+                        <th class="text-end">POS en ND</th>
+                        <th class="text-end">Total POS</th>
+                        <th class="text-end">ND %</th>
+                        <th class="text-center">Niveau</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (brand of trendData(); track brand.brand_uuid) {
+                        @for (pt of brand.points; track pt.month) {
+                          <tr>
+                            <td class="fw-semibold text-primary">{{ pt.brand_name }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ pt.month }}</span></td>
+                            <td class="text-end fw-semibold">{{ pt.nd_pos | number }}</td>
+                            <td class="text-end text-muted">{{ pt.total_pos | number }}</td>
+                            <td class="text-end fw-bold">
+                              <span [class]="getNdBadge(pt.nd_percent)">{{ pt.nd_percent | number:'1.1-1' }}%</span>
+                            </td>
+                            <td class="text-center">
+                              <div class="progress nd-progress-mini">
+                                <div class="progress-bar {{ pt.nd_percent >= 75 ? 'bg-success' : pt.nd_percent >= 40 ? 'bg-warning' : 'bg-danger' }}"
+                                  [style.width]="pt.nd_percent + '%'">
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        }
+                      }
+                      @if (trendData().length === 0) {
+                        <tr><td colspan="6" class="text-center text-muted py-4">Aucune donnée</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: TABLE VIEW — Grille territoire × marque
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'tableview') {
+      <div class="card border-0 shadow-sm nd-tableview-card">
+
+        <!-- Card header: geo level + breadcrumb -->
+        <div class="card-header nd-tableview-header px-3 py-2">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="nd-geo-crumb">
+              <i class="ti ti-map me-1 text-primary"></i>
+              <span>{{ selectedCountry?.name ?? '—' }}</span>
+              @if (selectedProvince) {
+                <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+                <span class="text-primary">{{ selectedProvince.name }}</span>
+              }
+              @if (selectedArea) {
+                <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+                <span class="text-indigo">{{ selectedArea.name }}</span>
+              }
+              @if (selectedSubArea) {
+                <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+                <span>{{ selectedSubArea.name }}</span>
+              }
+              @if (selectedCommune) {
+                <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+                <span class="text-success fw-bold">{{ selectedCommune.name }}</span>
+              }
+            </div>
+            <div class="nd-geo-level-tabs">
+              @for (lvl of ['province','area','subarea','commune']; track lvl) {
+                <button class="nd-level-btn"
+                  [class.active]="geoLevel() === lvl"
+                  (click)="onGeoLevelChange($any(lvl))">
+                  <i class="ti {{ lvl === 'province' ? 'ti-map-2' : lvl === 'area' ? 'ti-map-pin' : lvl === 'subarea' ? 'ti-location' : 'ti-building-community' }}"></i>
+                  {{ lvl | titlecase }}
+                </button>
+              }
+              @if (isLoadingTable()) {
+                <div class="spinner-border spinner-border-sm text-primary ms-2"></div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          @if (isLoadingTable()) {
+            <div class="d-flex justify-content-center p-5">
+              <div class="spinner-border text-primary"></div>
+            </div>
+          } @else if (tableGrouped().length === 0) {
+            <div class="nd-empty-state"><i class="ti ti-table-off"></i><p>Aucune donnée</p></div>
+          } @else {
+            @for (group of tableGrouped(); track group.territory_uuid) {
+              <div class="nd-territory-group">
+                <div class="nd-territory-header">
+                  <i class="ti ti-map-2 me-2 text-primary"></i>
+                  <span class="fw-semibold">{{ group.territory_name }}</span>
+                  <span class="badge bg-light text-dark border ms-2">{{ group.rows.length }} marques</span>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 nd-table">
+                    <thead class="nd-thead">
+                      <tr>
+                        <th>Marque</th>
+                        <th class="text-end">POS en ND</th>
+                        <th class="text-end">Total visités</th>
+                        <th class="text-end">Univers POS</th>
+                        <th class="text-end">ND %</th>
+                        <th class="text-end">Reach %</th>
+                        <th class="text-center" style="width:100px">Progression</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of group.rows; track row.brand_uuid) {
+                        <tr>
+                          <td class="fw-semibold text-primary">{{ row.brand_name }}</td>
+                          <td class="text-end fw-semibold">{{ row.nd_pos | number }}</td>
+                          <td class="text-end">{{ row.total_pos | number }}</td>
+                          <td class="text-end text-muted">{{ row.universe_pos | number }}</td>
+                          <td class="text-end">
+                            <span [class]="getNdBadge(row.nd_percent)">{{ row.nd_percent | number:'1.1-1' }}%</span>
+                          </td>
+                          <td class="text-end text-muted small">{{ row.reach_rate | number:'1.1-1' }}%</td>
+                          <td>
+                            <div class="progress nd-progress">
+                              <div class="progress-bar {{ row.nd_percent >= 75 ? 'bg-success' : row.nd_percent >= 40 ? 'bg-warning' : 'bg-danger' }}"
+                                [style.width]="row.nd_percent + '%'"
+                                [title]="row.nd_percent + '%'">
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: BAR CHART — ND% par territoire et marque
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'barchart') {
+      <div class="row g-3">
+        <!-- Geo level selector -->
+        <div class="col-12 d-flex align-items-center gap-2 mb-1">
+          <span class="text-muted small fw-semibold">Niveau :</span>
+          @for (lvl of ['province','area','subarea','commune']; track lvl) {
+            <button class="nd-pill" [class.active]="geoLevel() === lvl"
+              (click)="onGeoLevelChange($any(lvl))">
+              {{ lvl | titlecase }}
+            </button>
+          }
+          @if (isLoadingBar()) { <div class="spinner-border spinner-border-sm text-primary ms-2"></div> }
+        </div>
+
+        <!-- Bar chart -->
+        <div class="col-xl-8">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-chart-bar-popular me-2 text-primary"></i>
+                ND% par territoire — Barres groupées par marque
+              </h6>
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingBar() && chartBarOpts()) {
+                <apx-chart #chartBar
+                  [series]="chartBarOpts()!.series"
+                  [chart]="chartBarOpts()!.chart"
+                  [colors]="chartBarOpts()!.colors"
+                  [plotOptions]="chartBarOpts()!.plotOptions"
+                  [dataLabels]="chartBarOpts()!.dataLabels"
+                  [xaxis]="chartBarOpts()!.xaxis"
+                  [yaxis]="chartBarOpts()!.yaxis"
+                  [legend]="chartBarOpts()!.legend"
+                  [tooltip]="chartBarOpts()!.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingBar()) {
+                <div class="nd-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Territory detail cards -->
+        <div class="col-xl-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-list me-2 text-primary"></i>
+                Détail par territoire
+              </h6>
+            </div>
+            <div class="card-body p-0" style="overflow-y:auto;max-height:400px">
+              @if (isLoadingBar()) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary"></div></div>
+              } @else {
+                @for (group of barData(); track group.territory_uuid) {
+                  <div class="nd-bar-territory px-3 py-2 border-bottom">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                      <span class="fw-semibold small">{{ group.territory_name }}</span>
+                      <span class="badge bg-light text-dark border small">
+                        {{ group.total_pos | number }} / {{ group.universe_pos | number }}
+                      </span>
+                    </div>
+                    @for (b of group.brands; track b.brand_uuid) {
+                      <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="text-muted" style="width:90px;font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ b.brand_name }}</span>
+                        <div class="progress flex-grow-1 nd-progress">
+                          <div class="progress-bar {{ b.nd_percent >= 75 ? 'bg-success' : b.nd_percent >= 40 ? 'bg-warning' : 'bg-danger' }}"
+                            [style.width]="b.nd_percent + '%'">
+                          </div>
+                        </div>
+                        <span class="fw-semibold" style="width:38px;text-align:right;font-size:.75rem">{{ b.nd_percent }}%</span>
+                      </div>
+                    }
+                  </div>
+                }
+                @empty {
+                  <div class="nd-empty-state"><i class="ti ti-table-off"></i><p>Aucune donnée</p></div>
+                }
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: RANKING — Classement des marques par ND%
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'ranking') {
+      <div class="row g-3">
+        <!-- Horizontal bar chart -->
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-trophy me-2 text-warning"></i>
+                Top 10 Marques — ND%
+              </h6>
+              @if (isLoadingRanking()) { <div class="spinner-border spinner-border-sm text-primary"></div> }
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingRanking() && chartRankingOpts()) {
+                <apx-chart #chartRanking
+                  [series]="chartRankingOpts()!.series"
+                  [chart]="chartRankingOpts()!.chart"
+                  [colors]="chartRankingOpts()!.colors"
+                  [plotOptions]="chartRankingOpts()!.plotOptions"
+                  [dataLabels]="chartRankingOpts()!.dataLabels"
+                  [xaxis]="chartRankingOpts()!.xaxis"
+                  [legend]="chartRankingOpts()!.legend"
+                  [tooltip]="chartRankingOpts()!.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingRanking()) {
+                <div class="nd-empty-state"><i class="ti ti-trophy-off"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Full ranking table -->
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-list-numbers me-2 text-warning"></i>
+                Classement complet des marques
+              </h6>
+            </div>
+            <div class="card-body p-0">
+              @if (isLoadingRanking()) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary"></div></div>
+              } @else {
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 nd-table">
+                    <thead class="nd-thead">
+                      <tr>
+                        <th class="text-center">Rang</th>
+                        <th>Marque</th>
+                        <th class="text-end">POS en ND</th>
+                        <th class="text-end">Total POS</th>
+                        <th class="text-end">ND %</th>
+                        <th class="text-end">Total Farde</th>
+                        <th class="text-end">Moy. Counter</th>
+                        <th style="width:80px">Niveau</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of rankingData(); track row.brand_uuid) {
+                        <tr [class.nd-rank-top]="row.rank <= 3">
+                          <td class="text-center fw-bold">{{ getRankMedal(row.rank) }}</td>
+                          <td class="fw-semibold text-primary">{{ row.brand_name }}</td>
+                          <td class="text-end fw-semibold">{{ row.nd_pos | number }}</td>
+                          <td class="text-end text-muted">{{ row.total_pos | number }}</td>
+                          <td class="text-end">
+                            <span [class]="getNdBadge(row.nd_percent)">{{ row.nd_percent | number:'1.1-1' }}%</span>
+                          </td>
+                          <td class="text-end">{{ row.total_farde | number:'1.0-0' }}</td>
+                          <td class="text-end text-muted">{{ row.avg_counter | number:'1.1-1' }}</td>
+                          <td>
+                            <div class="progress nd-progress">
+                              <div class="progress-bar {{ row.nd_percent >= 75 ? 'bg-success' : row.nd_percent >= 40 ? 'bg-warning' : 'bg-danger' }}"
+                                [style.width]="row.nd_percent + '%'">
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                      @empty {
+                        <tr><td colspan="8" class="text-center text-muted py-4">Aucune donnée</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: GAP ANALYSIS — Entonnoir 3 zones d'opportunité
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'gap') {
+      <div class="row g-3">
+
+        <!-- Zone legend cards -->
+        <div class="col-12">
+          <div class="row g-2 mb-1">
+            <div class="col-4">
+              <div class="nd-zone-card zone-a">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="nd-zone-dot" style="background:#06d6a0"></div>
+                  <div>
+                    <div class="fw-semibold small">Zone A — ND</div>
+                    <div class="text-muted" style="font-size:.72rem">POS avec stock marque (counter > 0)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="nd-zone-card zone-b">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="nd-zone-dot" style="background:#ffd166"></div>
+                  <div>
+                    <div class="fw-semibold small">Zone B — Visited Gap</div>
+                    <div class="text-muted" style="font-size:.72rem">POS visités mais marque absente</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-4">
+              <div class="nd-zone-card zone-c">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="nd-zone-dot" style="background:#ef476f"></div>
+                  <div>
+                    <div class="fw-semibold small">Zone C — Universe Gap</div>
+                    <div class="text-muted" style="font-size:.72rem">POS enregistrés jamais visités</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stacked bar chart -->
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-chart-area me-2 text-primary"></i>
+                Entonnoir d'opportunité par marque
+              </h6>
+              @if (isLoadingGap()) { <div class="spinner-border spinner-border-sm text-primary"></div> }
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingGap() && chartGapOpts()) {
+                <apx-chart #chartGap
+                  [series]="chartGapOpts()!.series"
+                  [chart]="chartGapOpts()!.chart"
+                  [colors]="chartGapOpts()!.colors"
+                  [plotOptions]="chartGapOpts()!.plotOptions"
+                  [dataLabels]="chartGapOpts()!.dataLabels"
+                  [xaxis]="chartGapOpts()!.xaxis"
+                  [yaxis]="chartGapOpts()!.yaxis"
+                  [legend]="chartGapOpts()!.legend"
+                  [tooltip]="chartGapOpts()!.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingGap()) {
+                <div class="nd-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Gap detail table -->
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-table me-2 text-primary"></i>
+                Analyse détaillée par marque
+              </h6>
+            </div>
+            <div class="card-body p-0" style="overflow-y:auto;max-height:420px">
+              @if (isLoadingGap()) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary"></div></div>
+              } @else {
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 nd-table nd-table-sm">
+                    <thead class="nd-thead">
+                      <tr>
+                        <th>Marque</th>
+                        <th class="text-end">ND%</th>
+                        <th class="text-end">Reach%</th>
+                        <th class="text-end text-danger">Opportunité%</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of gapData(); track row.brand_uuid) {
+                        <tr>
+                          <td class="fw-semibold text-primary small">{{ row.brand_name }}</td>
+                          <td class="text-end">
+                            <span [class]="getNdBadge(row.nd_percent)">{{ row.nd_percent | number:'1.1-1' }}%</span>
+                          </td>
+                          <td class="text-end small text-muted">{{ row.reach_rate | number:'1.1-1' }}%</td>
+                          <td class="text-end fw-bold text-danger small">
+                            +{{ row.opportunity_pct | number:'1.1-1' }}%
+                          </td>
+                        </tr>
+                      }
+                      @empty {
+                        <tr><td colspan="4" class="text-center text-muted py-4">Aucune donnée</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+                <!-- Also show a mini funnel per brand (top 5) -->
+                @if (gapData().length > 0) {
+                  <div class="px-3 pt-2 pb-3">
+                    <div class="nd-section-sub-title mb-2">Top 5 — Décomposition par zones</div>
+                    @for (row of gapData().slice(0, 5); track row.brand_uuid) {
+                      <div class="mb-2">
+                        <div class="d-flex justify-content-between small mb-1">
+                          <span class="fw-semibold">{{ row.brand_name }}</span>
+                          <span class="text-muted">{{ row.total_universe | number }} POS univers</span>
+                        </div>
+                        <div class="nd-funnel-bar">
+                          <div class="nd-funnel-zone zone-a"
+                            [style.width]="(row.nd_pos / row.total_universe * 100) + '%'"
+                            [title]="'Zone A: ' + row.nd_pos + ' POS'">
+                          </div>
+                          <div class="nd-funnel-zone zone-b"
+                            [style.width]="(row.visited_gap_pos / row.total_universe * 100) + '%'"
+                            [title]="'Zone B: ' + row.visited_gap_pos + ' POS'">
+                          </div>
+                          <div class="nd-funnel-zone zone-c"
+                            [style.width]="(row.universe_gap_pos / row.total_universe * 100) + '%'"
+                            [title]="'Zone C: ' + row.universe_gap_pos + ' POS'">
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: EVOLUTION — Période sur Période (PoP)
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'evolution') {
+      <div class="row g-3">
+        <!-- Combo chart -->
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <div>
+                <h6 class="fw-semibold mb-0 text-secondary">
+                  <i class="ti ti-trending-up me-2 text-primary"></i>
+                  ND% Courant vs Précédent — Delta en pp
+                </h6>
+                <small class="text-muted">Comparaison sur la période sélectionnée vs période égale précédente</small>
+              </div>
+              @if (isLoadingEvolution()) { <div class="spinner-border spinner-border-sm text-primary"></div> }
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingEvolution() && chartEvolutionOpts()) {
+                <apx-chart #chartEvolution
+                  [series]="chartEvolutionOpts()!.series"
+                  [chart]="chartEvolutionOpts()!.chart"
+                  [colors]="chartEvolutionOpts()!.colors"
+                  [stroke]="chartEvolutionOpts()!.stroke"
+                  [plotOptions]="chartEvolutionOpts()!.plotOptions"
+                  [dataLabels]="chartEvolutionOpts()!.dataLabels"
+                  [xaxis]="chartEvolutionOpts()!.xaxis"
+                  [yaxis]="chartEvolutionOpts()!.yaxis"
+                  [legend]="chartEvolutionOpts()!.legend"
+                  [tooltip]="chartEvolutionOpts()!.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingEvolution()) {
+                <div class="nd-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée d'évolution</p></div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Evolution scorecard -->
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-list me-2 text-primary"></i>
+                Scorecard PoP par marque
+              </h6>
+            </div>
+            <div class="card-body p-0" style="overflow-y:auto;max-height:420px">
+              @if (isLoadingEvolution()) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary"></div></div>
+              } @else {
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 nd-table">
+                    <thead class="nd-thead">
+                      <tr>
+                        <th>Marque</th>
+                        <th class="text-end">ND% Act.</th>
+                        <th class="text-end">ND% Préc.</th>
+                        <th class="text-end">Δ pp</th>
+                        <th class="text-center">Tendance</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of evolutionData(); track row.brand_uuid) {
+                        <tr>
+                          <td class="fw-semibold text-primary small">{{ row.brand_name }}</td>
+                          <td class="text-end">
+                            <span [class]="getNdBadge(row.current_nd_percent)">
+                              {{ row.current_nd_percent | number:'1.1-1' }}%
+                            </span>
+                          </td>
+                          <td class="text-end text-muted small">{{ row.previous_nd_percent | number:'1.1-1' }}%</td>
+                          <td class="text-end fw-bold {{ getTrendClass(row.delta) }}">
+                            {{ row.delta > 0 ? '+' : '' }}{{ row.delta | number:'1.1-1' }}pp
+                          </td>
+                          <td class="text-center">
+                            <i class="{{ getTrendIcon(row.trend) }} fs-5"></i>
+                          </td>
+                        </tr>
+                      }
+                      @empty {
+                        <tr><td colspan="5" class="text-center text-muted py-4">Aucune donnée</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary cards for top movers -->
+        @if (!isLoadingEvolution() && evolutionData().length > 0) {
+          <div class="col-12">
+            <div class="row g-2">
+              @for (row of evolutionData().slice(0, 4); track row.brand_uuid) {
+                <div class="col-6 col-md-3">
+                  <div class="nd-evo-card" [class.nd-evo-up]="row.trend === 'up'" [class.nd-evo-down]="row.trend === 'down'">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                      <span class="fw-semibold small text-truncate pe-1">{{ row.brand_name }}</span>
+                      <span [class]="getTrendBadge(row.trend)" class="flex-shrink-0">
+                        {{ row.trend | titlecase }}
+                      </span>
+                    </div>
+                    <div class="nd-evo-percent">{{ row.current_nd_percent | number:'1.1-1' }}%</div>
+                    <div class="nd-evo-delta {{ getTrendClass(row.delta) }}">
+                      <i class="{{ getTrendIcon(row.trend) }}"></i>
+                      {{ row.delta > 0 ? '+' : '' }}{{ row.delta | number:'1.1-1' }}pp vs précédent
+                    </div>
+                    <div class="progress mt-2 nd-progress">
+                      <div class="progress-bar {{ row.current_nd_percent >= 75 ? 'bg-success' : row.current_nd_percent >= 40 ? 'bg-warning' : 'bg-danger' }}"
+                        [style.width]="row.current_nd_percent + '%'">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: HEATMAP — Matrice Marque × Territoire
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'heatmap') {
+      <div class="row g-3">
+        <!-- Level selector -->
+        <div class="col-12 d-flex align-items-center gap-2 mb-1">
+          <span class="text-muted small fw-semibold">Niveau territorial :</span>
+          @for (lvl of ['province','area','subarea','commune']; track lvl) {
+            <button class="nd-pill" [class.active]="heatmapLevel() === lvl"
+              (click)="onHeatmapLevelChange($any(lvl))">
+              {{ lvl | titlecase }}
+            </button>
+          }
+          @if (isLoadingHeatmap()) { <div class="spinner-border spinner-border-sm text-primary ms-2"></div> }
+        </div>
+
+        <!-- Heatmap chart -->
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <div>
+                <h6 class="fw-semibold mb-0 text-secondary">
+                  <i class="ti ti-layout-grid me-2 text-primary"></i>
+                  Matrice ND% — Marque × Territoire ({{ heatmapLevel() | titlecase }})
+                </h6>
+                <small class="text-muted">Chaque cellule = ND% de la marque dans le territoire</small>
+              </div>
+            </div>
+            <div class="card-body px-2 pt-1 pb-1">
+              @if (!isLoadingHeatmap() && chartHeatmapOpts()) {
+                <apx-chart #chartHeatmap
+                  [series]="chartHeatmapOpts()!.series"
+                  [chart]="chartHeatmapOpts()!.chart"
+                  [colors]="chartHeatmapOpts()!.colors"
+                  [dataLabels]="chartHeatmapOpts()!.dataLabels"
+                  [plotOptions]="chartHeatmapOpts()!.plotOptions"
+                  [legend]="chartHeatmapOpts()!.legend"
+                  [tooltip]="chartHeatmapOpts()!.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingHeatmap()) {
+                <div class="nd-empty-state">
+                  <i class="ti ti-layout-grid-remove"></i>
+                  <p>Aucune donnée pour la heatmap</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Color legend + raw matrix table -->
+        @if (!isLoadingHeatmap() && heatmapData().brands.length > 0) {
+          <div class="col-12">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <h6 class="fw-semibold mb-0 text-secondary">
+                  <i class="ti ti-table me-2 text-primary"></i>
+                  Matrice numérique complète
+                </h6>
+                <!-- Legend -->
+                <div class="d-flex gap-2 align-items-center flex-wrap">
+                  <span class="nd-legend-chip" style="background:#f1f3ff;color:#666">Absent (0%)</span>
+                  <span class="nd-legend-chip" style="background:#cdd5fb;color:#333">Faible (1-25%)</span>
+                  <span class="nd-legend-chip" style="background:#7b8fe9;color:#fff">Moyen (26-50%)</span>
+                  <span class="nd-legend-chip" style="background:#4361ee;color:#fff">Bon (51-75%)</span>
+                  <span class="nd-legend-chip" style="background:#1d3086;color:#fff">Excellent (76%+)</span>
+                </div>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-bordered align-middle mb-0 nd-matrix-table">
+                    <thead class="nd-thead">
+                      <tr>
+                        <th class="nd-matrix-brand-col">Marque</th>
+                        @for (t of heatmapData().territories; track t.uuid) {
+                          <th class="text-center small">{{ t.name }}</th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (b of heatmapData().brands; track b.uuid; let bi = $index) {
+                        <tr>
+                          <td class="fw-semibold text-primary small">{{ b.name }}</td>
+                          @for (t of heatmapData().territories; track t.uuid; let ti = $index) {
+                            <td class="text-center nd-matrix-cell"
+                              [style.background]="
+                                heatmapData().matrix[bi][ti] === 0 ? '#f1f3ff'
+                                : heatmapData().matrix[bi][ti] <= 25 ? '#cdd5fb'
+                                : heatmapData().matrix[bi][ti] <= 50 ? '#7b8fe9'
+                                : heatmapData().matrix[bi][ti] <= 75 ? '#4361ee'
+                                : '#1d3086'"
+                              [style.color]="heatmapData().matrix[bi][ti] > 25 ? '#fff' : '#333'">
+                              {{ heatmapData().matrix[bi][ti] > 0 ? (heatmapData().matrix[bi][ti] | number:'1.0-0') + '%' : '—' }}
+                            </td>
+                          }
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+  </div><!-- /content -->
+</div><!-- /page-wrapper -->

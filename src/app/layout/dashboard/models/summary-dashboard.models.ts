@@ -1,21 +1,32 @@
-// ======================== INTERFACES POUR SUMMARY DASHBOARD ========================
-// Basées sur le contrôleur Go Fiber: https://github.com/Danny19977/mspos-api-V3/blob/main/controllers/dashboard/summary-dashboard.controller.go
+// ── Filter types ──────────────────────────────────────────────────────────────
 
-// ======================== RÉPONSE API GÉNÉRIQUE ========================
+export interface SummaryFilters {
+  countryUuid: string;
+  startDate: string;
+  endDate: string;
+  provinceUuid?: string;
+  areaUuid?: string;
+  subAreaUuid?: string;
+  communeUuid?: string;
+}
+
+export interface CompetitiveFilters {
+  countryUuid: string;
+  currentStart: string;
+  currentEnd: string;
+  previousStart: string;
+  previousEnd: string;
+}
+
+// ── Generic API wrapper ────────────────────────────────────────────────────────
+
 export interface ApiSummaryResponse<T> {
   status: string;
   message: string;
   data: T;
 }
 
-// ======================== RÉSUMÉ EXÉCUTIF GLOBAL ========================
-export interface ExecutiveSummaryResponse {
-  overview: OverviewMetrics;
-  performance: PerformanceMetrics;
-  geographicDistribution: GeographicMetrics;
-  teamPerformance: TeamPerformanceMetrics;
-  trendAnalysis: TrendMetrics;
-}
+// ── Executive Summary ──────────────────────────────────────────────────────────
 
 export interface OverviewMetrics {
   totalPOS: number;
@@ -52,24 +63,24 @@ export interface TeamPerformanceMetrics {
 }
 
 export interface TrendMetrics {
-  visitTrend: string; // 'croissante' | 'décroissante' | 'stable'
+  visitTrend: string;
   monthlyGrowth: number;
   predictedNextMonth: number;
 }
 
-// ======================== RÉSUMÉ RÉGIONAL ========================
-export interface RegionalSummaryResponse {
-  regionInfo: RegionInfo;
-  performance: RegionalPerformance;
-  comparison: RegionalComparison;
-  topPerformers: TopPerformer[];
-  opportunities: Opportunity[];
-  recommendations: Recommendation[];
+export interface ExecutiveSummaryResponse {
+  overview: OverviewMetrics;
+  performance: PerformanceMetrics;
+  geographicDistribution: GeographicMetrics;
+  teamPerformance: TeamPerformanceMetrics;
+  trendAnalysis: TrendMetrics;
 }
 
-export interface RegionInfo {
+// ── Regional Summary ───────────────────────────────────────────────────────────
+
+export interface RegionalInfo {
   name: string;
-  type: string; // 'Country' | 'Province' | 'Area' | 'SubArea' | 'Commune'
+  type: string;
   totalPOS: number;
   totalUsers: number;
   totalSubAreas: number;
@@ -79,7 +90,7 @@ export interface RegionInfo {
 export interface RegionalPerformance {
   visitsThisPeriod: number;
   objectiveRate: number;
-  efficiencyRating: string; // 'Excellent' | 'Bon' | 'Moyen' | 'À améliorer'
+  efficiencyRating: string;
 }
 
 export interface RegionalComparison {
@@ -91,7 +102,7 @@ export interface RegionalComparison {
 
 export interface TopPerformer {
   name: string;
-  role: string; // 'ASM' | 'Supervisor' | 'DR' | 'Cyclo'
+  role: string;
   visits: number;
   objectiveRate: number;
   specialAchievement: string;
@@ -101,25 +112,28 @@ export interface Opportunity {
   area: string;
   potential: string;
   estimatedImpact: number;
-  effort: string; // 'Faible' | 'Moyen' | 'Élevé'
+  effort: string;
   timeline: string;
 }
 
 export interface Recommendation {
-  priority: string; // 'Critique' | 'Haute' | 'Moyenne' | 'Faible'
+  priority: string;
   action: string;
   expectedROI: string;
   timeline: string;
   responsibleTeam: string;
 }
 
-// ======================== DASHBOARD RAPIDE ========================
-export interface QuickDashboardResponse {
-  lastUpdated: string;
-  keyMetrics: QuickMetrics;
-  todayStats: TodayStatistics;
-  urgentActions: UrgentAction[];
+export interface RegionalSummaryResponse {
+  regionInfo: RegionalInfo;
+  performance: RegionalPerformance;
+  comparison: RegionalComparison;
+  topPerformers: TopPerformer[];
+  opportunities: Opportunity[];
+  recommendations: Recommendation[];
 }
+
+// ── Quick Dashboard ────────────────────────────────────────────────────────────
 
 export interface QuickMetrics {
   visitsToday: number;
@@ -130,31 +144,31 @@ export interface QuickMetrics {
   topBrandToday: string;
 }
 
-export interface TodayStatistics {
-  hourlyVisits: number[]; // 24 éléments pour chaque heure
+export interface TodayStats {
+  hourlyVisits: number[];
   peakHour: number;
   activeProvinces: number;
   newPOSVisited: number;
 }
 
 export interface UrgentAction {
-  priority: string; // 'Critique' | 'Haute' | 'Moyenne'
+  priority: string;
   description: string;
   deadline: string;
   owner: string;
   impact: string;
 }
 
-// ======================== ANALYSE COMPARATIVE ========================
-export interface CompetitiveAnalysisResponse {
-  currentPeriod: PeriodAnalysis;
-  previousPeriod: PeriodAnalysis;
-  comparison: ComparisonMetrics;
-  trends: TrendAnalysis[];
-  insights: CompetitiveInsight[];
+export interface QuickDashboardResponse {
+  lastUpdated: string;
+  keyMetrics: QuickMetrics;
+  todayStats: TodayStats;
+  urgentActions: UrgentAction[];
 }
 
-export interface PeriodAnalysis {
+// ── Competitive Analysis ───────────────────────────────────────────────────────
+
+export interface PeriodMetrics {
   name: string;
   totalVisits: number;
   completionRate: number;
@@ -168,74 +182,34 @@ export interface PeriodAnalysis {
   efficiencyScore: number;
 }
 
-export interface ComparisonMetrics {
+export interface PeriodComparison {
   visitGrowth: number;
   efficiencyChange: number;
   userEngagementChange: number;
   marketExpansion: number;
-  overallPerformance: string; // 'Excellente' | 'Bonne' | 'Modérée' | 'À améliorer'
+  overallPerformance: string;
 }
 
-export interface TrendAnalysis {
+export interface TrendItem {
   metric: string;
-  direction: string; // 'croissante' | 'décroissante' | 'stable'
+  direction: string;
   magnitude: number;
-  significance: string; // 'très significative' | 'significative' | 'modérée' | 'faible'
+  significance: string;
   prediction: string;
 }
 
-export interface CompetitiveInsight {
-  category: string; // 'Performance' | 'Efficacité' | 'Expansion'
+export interface Insight {
+  category: string;
   finding: string;
   implication: string;
   actionPlan: string;
-  priority: string; // 'Critique' | 'Haute' | 'Moyenne'
+  priority: string;
 }
 
-// ======================== INTERFACES POUR FILTRES ET PARAMÈTRES ========================
-export interface SummaryFilters {
-  countryUuid: string;
-  provinceUuid?: string;
-  areaUuid?: string;
-  subAreaUuid?: string;
-  communeUuid?: string;
-  startDate: string;
-  endDate: string;
-}
-
-export interface CompetitiveFilters {
-  countryUuid: string;
-  currentStart: string;
-  currentEnd: string;
-  previousStart: string;
-  previousEnd: string;
-}
-
-// ======================== INTERFACES POUR L'UI ========================
-export interface DashboardTab {
-  id: string;
-  label: string;
-  icon: string;
-  active: boolean;
-  component: string;
-}
-
-export interface MetricCard {
-  title: string;
-  value: string | number;
-  unit?: string;
-  trend?: {
-    direction: 'up' | 'down' | 'stable';
-    percentage: number;
-    period: string;
-  };
-  color: string;
-  icon: string;
-}
-
-export interface ChartConfig {
-  type: 'line' | 'bar' | 'pie' | 'donut' | 'area';
-  data: any[];
-  options: any;
-  loading: boolean;
+export interface CompetitiveAnalysisResponse {
+  currentPeriod: PeriodMetrics;
+  previousPeriod: PeriodMetrics;
+  comparison: PeriodComparison;
+  trends: TrendItem[];
+  insights: Insight[];
 }

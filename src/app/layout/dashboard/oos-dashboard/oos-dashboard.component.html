@@ -1,46 +1,972 @@
 <div class="page-wrapper">
-    <div class="content">
-      <div class="row">
-        <div class="col-md-12">
-          <div class="page-header">
-            <div class="row align-items-center">
-              <div class="col-md-4">
-                <h3 class="page-title">OUT OF STOCK</h3>
+  <div class="content">
+
+    <!-- ── PAGE HEADER ──────────────────────────────────────────────────────── -->
+    <div class="row mb-3">
+      <div class="col-md-12">
+        <div class="page-header mb-0">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <h3 class="page-title mb-0 d-flex align-items-center gap-2">
+                <span class="oos-title-badge"><i class="ti ti-alert-triangle"></i></span>
+                OUT OF STOCK
+              </h3>
+              <p class="text-muted small mb-0 mt-1">
+                OOS% = POS sans stock marque ÷ total POS visités × 100 — plus élevé = plus critique
+              </p>
+            </div>
+            <div class="col-md-6 d-flex justify-content-end align-items-center gap-2 flex-wrap">
+              <div class="dropdown">
+                <button class="btn oos-period-toggle dropdown-toggle" type="button"
+                  data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="ti ti-calendar-stats me-1"></i>
+                  {{ getPeriodLabel() }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end oos-period-menu shadow-sm">
+                  @for (p of PERIODS; track p.key) {
+                    @if (p.key !== 'custom') {
+                      <li>
+                        <button class="dropdown-item oos-period-item"
+                          [class.active]="selectedPeriod() === p.key"
+                          (click)="setPeriod(p.key)">
+                          <i class="ti {{ selectedPeriod() === p.key ? 'ti-check' : 'ti-point' }} me-2"></i>
+                          {{ p.label }}
+                        </button>
+                      </li>
+                    }
+                  }
+                  <li><hr class="dropdown-divider my-1"></li>
+                  <li>
+                    <button class="dropdown-item oos-period-item"
+                      [class.active]="selectedPeriod() === 'custom'"
+                      (click)="setPeriod('custom')">
+                      <i class="ti {{ selectedPeriod() === 'custom' ? 'ti-check' : 'ti-calendar-event' }} me-2"></i>
+                      Personnalisé
+                    </button>
+                  </li>
+                </ul>
               </div>
-              <div class="col-md-8 float-end ms-auto">
-                @if (this.currentUser) {
-                <div class="d-flex title-head">
-                  <div class="head-icons mb-0">
-                    <app-reload></app-reload>
-                    <app-collapse-header></app-collapse-header>
+              @if (selectedPeriod() === 'custom') {
+                <form [formGroup]="dateRange" class="oos-date-form">
+                  <div class="oos-date-field">
+                    <i class="ti ti-calendar-event"></i>
+                    <input type="text" class="form-control bookingrange oos-date-input"
+                      placeholder="Sélectionner une période"
+                      bsDaterangepicker
+                      [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
+                      formControlName="rangeValue" />
                   </div>
-                </div>
-                }
+                </form>
+              }
+              <div class="head-icons mb-0 d-flex gap-1">
+                <app-reload></app-reload>
+                <app-collapse-header></app-collapse-header>
               </div>
             </div>
           </div>
         </div>
       </div>
-  
-  
-      <router-outlet />
-  
-<!--   
-      <div class="row">
-        <div class="col-md-12 d-flex">
-          <div class="card w-100">
-            <div class="card-header border-0 pb-0">
-              <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
-                <h4><i class="ti ti-grip-vertical me-1"></i>OOS by Year</h4>
+    </div>
+
+    <!-- ── GEO FILTERS ─────────────────────────────────────────────────────── -->
+    <div class="oos-geo-bar mb-3">
+      <div class="oos-geo-item">
+        <label class="oos-geo-label"><i class="ti ti-world me-1"></i>Pays</label>
+        <select class="form-select form-select-sm oos-select"
+          [(ngModel)]="selectedCountry" (ngModelChange)="onCountryChange($event)">
+          @for (c of countryList(); track c.uuid) {
+            <option [ngValue]="c">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="oos-geo-item">
+        <label class="oos-geo-label"><i class="ti ti-map-2 me-1"></i>Province</label>
+        <select class="form-select form-select-sm oos-select"
+          [(ngModel)]="selectedProvince" (ngModelChange)="onProvinceChange($event)">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (p of provinceList(); track p.uuid) {
+            <option [ngValue]="p">{{ p.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="oos-geo-item" [class.oos-geo-disabled]="!selectedProvince">
+        <label class="oos-geo-label"><i class="ti ti-map-pin me-1"></i>Area</label>
+        <select class="form-select form-select-sm oos-select"
+          [(ngModel)]="selectedArea" (ngModelChange)="onAreaChange($event)"
+          [disabled]="!selectedProvince">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (a of areaList(); track a.uuid) {
+            <option [ngValue]="a">{{ a.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="oos-geo-item" [class.oos-geo-disabled]="!selectedArea">
+        <label class="oos-geo-label"><i class="ti ti-location me-1"></i>Sub-Area</label>
+        <select class="form-select form-select-sm oos-select"
+          [(ngModel)]="selectedSubArea" (ngModelChange)="onSubAreaChange($event)"
+          [disabled]="!selectedArea">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (s of subAreaList(); track s.uuid) {
+            <option [ngValue]="s">{{ s.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="oos-geo-item" [class.oos-geo-disabled]="!selectedSubArea">
+        <label class="oos-geo-label"><i class="ti ti-building-community me-1"></i>Commune</label>
+        <select class="form-select form-select-sm oos-select"
+          [(ngModel)]="selectedCommune" (ngModelChange)="onCommuneChange($event)"
+          [disabled]="!selectedSubArea">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (c of communeList(); track c.uuid) {
+            <option [ngValue]="c">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <!-- ── KPI CARDS ───────────────────────────────────────────────────────── -->
+    @if (isLoadingKpi()) {
+      <div class="row g-3 mb-3">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="col-6 col-md-4 col-xl-auto flex-grow-1">
+            <div class="card border-0 shadow-sm oos-kpi-skeleton">
+              <div class="card-body">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
               </div>
             </div>
-            <div class="card-body">
-              <app-oos-by-year [isLoading]="isLoading" [ndYear]="ndYearList"></app-oos-by-year>
+          </div>
+        }
+      </div>
+    }
+    @if (!isLoadingKpi() && kpiData()) {
+      <div class="row g-3 mb-3">
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="oos-kpi-card accent-blue">
+            <div class="oos-kpi-icon"><i class="ti ti-building-store"></i></div>
+            <div class="oos-kpi-body">
+              <span class="oos-kpi-label">POS Visités</span>
+              <span class="oos-kpi-value">{{ kpiData()!.total_pos_visited | number }}</span>
             </div>
           </div>
         </div>
-      </div> -->
-  
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="oos-kpi-card accent-red">
+            <div class="oos-kpi-icon"><i class="ti ti-alert-circle"></i></div>
+            <div class="oos-kpi-body">
+              <span class="oos-kpi-label">Évts OOS</span>
+              <span class="oos-kpi-value">{{ kpiData()!.total_oos_events | number }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="oos-kpi-card accent-orange">
+            <div class="oos-kpi-icon"><i class="ti ti-percentage"></i></div>
+            <div class="oos-kpi-body">
+              <span class="oos-kpi-label">OOS% Moyen</span>
+              <span class="oos-kpi-value">{{ kpiData()!.avg_oos_percent | number:'1.1-1' }}%</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="oos-kpi-card accent-crimson">
+            <div class="oos-kpi-icon"><i class="ti ti-brand-databricks"></i></div>
+            <div class="oos-kpi-body">
+              <span class="oos-kpi-label">+ Touchée</span>
+              <span class="oos-kpi-value small">{{ kpiData()!.most_affected_brand }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="oos-kpi-card accent-green">
+            <div class="oos-kpi-icon"><i class="ti ti-circle-check"></i></div>
+            <div class="oos-kpi-body">
+              <span class="oos-kpi-label">Moins Touchée</span>
+              <span class="oos-kpi-value small">{{ kpiData()!.least_affected_brand }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="oos-kpi-card accent-amber">
+            <div class="oos-kpi-icon"><i class="ti ti-radar"></i></div>
+            <div class="oos-kpi-body">
+              <span class="oos-kpi-label">Seuil Critique</span>
+              <span class="oos-kpi-value">{{ kpiData()!.critical_threshold | number:'1.1-1' }}%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── SECTION NAV TABS ─────────────────────────────────────────────────── -->
+    <div class="oos-section-nav mb-3">
+      <button class="oos-nav-btn" [class.active]="activeSection() === 'trend'"     (click)="setSection('trend')">
+        <i class="ti ti-chart-line me-1"></i>Tendance
+      </button>
+      <button class="oos-nav-btn" [class.active]="activeSection() === 'tableview'" (click)="setSection('tableview')">
+        <i class="ti ti-table me-1"></i>Tables
+      </button>
+      <button class="oos-nav-btn" [class.active]="activeSection() === 'barchart'"  (click)="setSection('barchart')">
+        <i class="ti ti-chart-bar me-1"></i>Barres
+      </button>
+      <button class="oos-nav-btn" [class.active]="activeSection() === 'ranking'"   (click)="setSection('ranking')">
+        <i class="ti ti-trophy me-1"></i>Classement
+      </button>
+      <button class="oos-nav-btn oos-nav-alert" [class.active]="activeSection() === 'alert'" (click)="setSection('alert')">
+        <i class="ti ti-bell-ringing me-1"></i>Hotspots Critiques
+      </button>
+      <button class="oos-nav-btn" [class.active]="activeSection() === 'evolution'" (click)="setSection('evolution')">
+        <i class="ti ti-trending-up me-1"></i>Évolution PvP
+      </button>
+      <button class="oos-nav-btn" [class.active]="activeSection() === 'heatmap'"   (click)="setSection('heatmap')">
+        <i class="ti ti-layout-grid me-1"></i>Heatmap
+      </button>
     </div>
-  
-  </div>
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: TREND — OOS% par marque par mois
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'trend') {
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h5 class="fw-semibold mb-0">
+                <i class="ti ti-chart-line me-2 text-danger"></i>
+                Tendance mensuelle OOS% par marque
+              </h5>
+              @if (isLoadingTrend()) { <div class="spinner-border spinner-border-sm text-danger"></div> }
+            </div>
+            <div class="card-body px-2 pt-2 pb-1">
+              @if (!isLoadingTrend() && chartTrendOpts()) {
+                <apx-chart #chartTrend
+                  [series]="chartTrendOpts()!.series"
+                  [chart]="chartTrendOpts()!.chart"
+                  [colors]="chartTrendOpts()!.colors"
+                  [stroke]="chartTrendOpts()!.stroke"
+                  [markers]="chartTrendOpts()!.markers"
+                  [dataLabels]="chartTrendOpts()!.dataLabels"
+                  [xaxis]="chartTrendOpts()!.xaxis"
+                  [yaxis]="chartTrendOpts()!.yaxis"
+                  [legend]="chartTrendOpts()!.legend"
+                  [tooltip]="chartTrendOpts()!.tooltip"
+                  [grid]="chartTrendOpts()!.grid">
+                </apx-chart>
+              } @else if (!isLoadingTrend()) {
+                <div class="oos-empty-state">
+                  <i class="ti ti-chart-off"></i>
+                  <p>Aucune donnée de tendance disponible</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly detail table -->
+        @if (!isLoadingTrend() && trendData().length > 0) {
+          <div class="col-12">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header border-0 pb-0 pt-3 px-3">
+                <h6 class="fw-semibold mb-0 text-secondary">
+                  <i class="ti ti-table me-2 text-danger"></i>
+                  Détail mensuel OOS% par marque
+                </h6>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 oos-table">
+                    <thead class="oos-thead">
+                      <tr>
+                        <th>Marque</th>
+                        <th>Mois</th>
+                        <th class="text-end">OOS %</th>
+                        <th class="text-center">Niveau</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (brand of trendData(); track brand.brand_uuid) {
+                        @for (pt of brand.data; track pt.month) {
+                          <tr>
+                            <td class="fw-semibold text-danger">{{ brand.brand_name }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ pt.month }}</span></td>
+                            <td class="text-end fw-bold">
+                              <span [class]="getOosBadge(pt.oos_percent)">{{ pt.oos_percent | number:'1.1-1' }}%</span>
+                            </td>
+                            <td class="text-center">
+                              <div class="progress oos-progress-mini">
+                                <div class="progress-bar {{ pt.oos_percent >= 50 ? 'bg-danger' : pt.oos_percent >= 30 ? 'bg-warning' : 'bg-success' }}"
+                                  [style.width]="pt.oos_percent + '%'">
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        }
+                      }
+                      @if (trendData().length === 0) {
+                        <tr><td colspan="4" class="text-center text-muted py-4">Aucune donnée</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: TABLE VIEW — Grille territoire × marque
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'tableview') {
+      <div class="card border-0 shadow-sm oos-tableview-card">
+
+        <!-- Card header: geo level + breadcrumb -->
+        <div class="card-header oos-tableview-header px-3 py-2">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="oos-geo-crumb">
+              <i class="ti ti-map me-1 text-danger"></i>
+              <span>{{ selectedCountry?.name ?? '—' }}</span>
+              @if (selectedProvince) {
+                <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+                <span class="text-danger">{{ selectedProvince.name }}</span>
+              }
+              @if (selectedArea) {
+                <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+                <span class="text-orange">{{ selectedArea.name }}</span>
+              }
+              @if (selectedSubArea) {
+                <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+                <span>{{ selectedSubArea.name }}</span>
+              }
+              @if (selectedCommune) {
+                <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+                <span class="text-success fw-bold">{{ selectedCommune.name }}</span>
+              }
+            </div>
+            <div class="oos-geo-level-tabs">
+              @for (lvl of ['province','area','subarea','commune']; track lvl) {
+                <button class="oos-level-btn"
+                  [class.active]="geoLevel() === lvl"
+                  (click)="onGeoLevelChange($any(lvl))">
+                  <i class="ti {{ lvl === 'province' ? 'ti-map-2' : lvl === 'area' ? 'ti-map-pin' : lvl === 'subarea' ? 'ti-location' : 'ti-building-community' }}"></i>
+                  {{ lvl | titlecase }}
+                </button>
+              }
+              @if (isLoadingTable()) {
+                <div class="spinner-border spinner-border-sm text-danger ms-2"></div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          @if (isLoadingTable()) {
+            <div class="d-flex justify-content-center p-5">
+              <div class="spinner-border text-danger"></div>
+            </div>
+          } @else if (tableGrouped().length === 0) {
+            <div class="oos-empty-state"><i class="ti ti-table-off"></i><p>Aucune donnée</p></div>
+          } @else {
+            @for (group of tableGrouped(); track group.territory_uuid) {
+              <div class="oos-territory-group">
+                <div class="oos-territory-header">
+                  <i class="ti ti-map-2 me-2 text-danger"></i>
+                  <span class="fw-semibold">{{ group.territory_name }}</span>
+                  <span class="badge bg-light text-dark border ms-2">{{ group.rows.length }} marques</span>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 oos-table">
+                    <thead class="oos-thead">
+                      <tr>
+                        <th>Marque</th>
+                        <th class="text-end">POS OOS</th>
+                        <th class="text-end">POS Couverts</th>
+                        <th class="text-end">Total POS</th>
+                        <th class="text-end">OOS %</th>
+                        <th class="text-end">Coverage %</th>
+                        <th class="text-center" style="width:100px">Risque</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of group.rows; track row.brand_uuid) {
+                        <tr>
+                          <td class="fw-semibold text-danger">{{ row.brand_name }}</td>
+                          <td class="text-end fw-semibold text-danger">{{ row.oos_pos | number }}</td>
+                          <td class="text-end">{{ row.coverage_pos | number }}</td>
+                          <td class="text-end text-muted">{{ row.total_pos | number }}</td>
+                          <td class="text-end">
+                            <span [class]="getOosBadge(row.oos_percent)">{{ row.oos_percent | number:'1.1-1' }}%</span>
+                          </td>
+                          <td class="text-end text-muted small">{{ row.coverage_pct | number:'1.1-1' }}%</td>
+                          <td>
+                            <div class="progress oos-progress">
+                              <div class="progress-bar {{ row.oos_percent >= 50 ? 'bg-danger' : row.oos_percent >= 30 ? 'bg-warning' : 'bg-success' }}"
+                                [style.width]="row.oos_percent + '%'"
+                                [title]="row.oos_percent + '%'">
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: BAR CHART — OOS% par territoire et marque
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'barchart') {
+      <div class="row g-3">
+        <!-- Geo level selector -->
+        <div class="col-12 d-flex align-items-center gap-2 mb-1">
+          <span class="text-muted small fw-semibold">Niveau :</span>
+          @for (lvl of ['province','area','subarea','commune']; track lvl) {
+            <button class="oos-pill" [class.active]="geoLevel() === lvl"
+              (click)="onGeoLevelChange($any(lvl))">
+              {{ lvl | titlecase }}
+            </button>
+          }
+          @if (isLoadingBar()) { <div class="spinner-border spinner-border-sm text-danger ms-2"></div> }
+        </div>
+
+        <!-- Bar chart -->
+        <div class="col-xl-8">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-chart-bar-popular me-2 text-danger"></i>
+                OOS% par territoire — Barres groupées par marque
+              </h6>
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingBar() && chartBarOpts()) {
+                <apx-chart #chartBar
+                  [series]="chartBarOpts()!.series"
+                  [chart]="chartBarOpts()!.chart"
+                  [colors]="chartBarOpts()!.colors"
+                  [plotOptions]="chartBarOpts()!.plotOptions"
+                  [dataLabels]="chartBarOpts()!.dataLabels"
+                  [xaxis]="chartBarOpts()!.xaxis"
+                  [yaxis]="chartBarOpts()!.yaxis"
+                  [legend]="chartBarOpts()!.legend"
+                  [tooltip]="chartBarOpts()!.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingBar()) {
+                <div class="oos-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Brand series detail panel -->
+        <div class="col-xl-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-list me-2 text-danger"></i>
+                OOS% par marque
+              </h6>
+            </div>
+            <div class="card-body p-0" style="overflow-y:auto;max-height:400px">
+              @if (isLoadingBar()) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border text-danger"></div></div>
+              } @else {
+                @for (series of barData().series; track series.brand_uuid) {
+                  <div class="oos-bar-brand px-3 py-2 border-bottom">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                      <span class="fw-semibold small text-danger">{{ series.brand_name }}</span>
+                    </div>
+                    @for (pt of series.data; track pt.territory_name) {
+                      <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="text-muted" style="width:90px;font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ pt.territory_name }}</span>
+                        <div class="progress flex-grow-1 oos-progress">
+                          <div class="progress-bar {{ pt.oos_percent >= 50 ? 'bg-danger' : pt.oos_percent >= 30 ? 'bg-warning' : 'bg-success' }}"
+                            [style.width]="pt.oos_percent + '%'">
+                          </div>
+                        </div>
+                        <span class="fw-semibold" style="width:38px;text-align:right;font-size:.75rem">{{ pt.oos_percent }}%</span>
+                      </div>
+                    }
+                  </div>
+                }
+                @if (barData().series.length === 0) {
+                  <div class="oos-empty-state"><i class="ti ti-table-off"></i><p>Aucune donnée</p></div>
+                }
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: RANKING — Classement des marques par OOS%
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'ranking') {
+      <div class="row g-3">
+        <!-- Horizontal bar chart -->
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-trophy me-2 text-danger"></i>
+                Top 10 Marques — OOS%
+              </h6>
+              @if (isLoadingRanking()) { <div class="spinner-border spinner-border-sm text-danger"></div> }
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingRanking() && chartRankingOpts()) {
+                <apx-chart #chartRanking
+                  [series]="chartRankingOpts()!.series"
+                  [chart]="chartRankingOpts()!.chart"
+                  [colors]="chartRankingOpts()!.colors"
+                  [plotOptions]="chartRankingOpts()!.plotOptions"
+                  [dataLabels]="chartRankingOpts()!.dataLabels"
+                  [xaxis]="chartRankingOpts()!.xaxis"
+                  [legend]="chartRankingOpts()!.legend"
+                  [tooltip]="chartRankingOpts()!.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingRanking()) {
+                <div class="oos-empty-state"><i class="ti ti-trophy-off"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Full ranking table -->
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-list-numbers me-2 text-danger"></i>
+                Classement complet — Sévérité OOS
+              </h6>
+            </div>
+            <div class="card-body p-0">
+              @if (isLoadingRanking()) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border text-danger"></div></div>
+              } @else {
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 oos-table">
+                    <thead class="oos-thead">
+                      <tr>
+                        <th class="text-center">Rang</th>
+                        <th>Marque</th>
+                        <th class="text-end">POS OOS</th>
+                        <th class="text-end">Total POS</th>
+                        <th class="text-end">OOS %</th>
+                        <th class="text-center">Sévérité</th>
+                        <th style="width:80px">Risque</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of rankingData(); track row.brand_uuid) {
+                        <tr [class.oos-rank-top]="row.rank <= 3">
+                          <td class="text-center fw-bold">{{ getRankMedal(row.rank) }}</td>
+                          <td class="fw-semibold text-danger">{{ row.brand_name }}</td>
+                          <td class="text-end fw-semibold text-danger">{{ row.oos_pos | number }}</td>
+                          <td class="text-end text-muted">{{ row.total_pos | number }}</td>
+                          <td class="text-end">
+                            <span [class]="getOosBadge(row.oos_percent)">{{ row.oos_percent | number:'1.1-1' }}%</span>
+                          </td>
+                          <td class="text-center">
+                            <span [class]="getSeverityBadge(row.severity)">{{ row.severity | titlecase }}</span>
+                          </td>
+                          <td>
+                            <div class="progress oos-progress">
+                              <div class="progress-bar {{ row.oos_percent >= 50 ? 'bg-danger' : row.oos_percent >= 30 ? 'bg-warning' : 'bg-success' }}"
+                                [style.width]="row.oos_percent + '%'">
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                      @empty {
+                        <tr><td colspan="7" class="text-center text-muted py-4">Aucune donnée</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: CRITICAL ALERT — Top 20 hotspots OOS > 15%
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'alert') {
+      <div class="row g-3">
+
+        <!-- Severity legend -->
+        <div class="col-12">
+          <div class="row g-2 mb-1">
+            <div class="col-6 col-md-3">
+              <div class="oos-sev-card sev-critical">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="oos-sev-dot sev-critical-dot"></div>
+                  <div>
+                    <div class="fw-semibold small">Critique (&gt;50%)</div>
+                    <div class="text-muted" style="font-size:.72rem">Action immédiate requise</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="oos-sev-card sev-high">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="oos-sev-dot sev-high-dot"></div>
+                  <div>
+                    <div class="fw-semibold small">Élevé (30–50%)</div>
+                    <div class="text-muted" style="font-size:.72rem">Intervention prioritaire</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="oos-sev-card sev-medium">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="oos-sev-dot sev-medium-dot"></div>
+                  <div>
+                    <div class="fw-semibold small">Moyen (15–30%)</div>
+                    <div class="text-muted" style="font-size:.72rem">À surveiller de près</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-md-3">
+              <div class="oos-sev-card sev-low">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="oos-sev-dot sev-low-dot"></div>
+                  <div>
+                    <div class="fw-semibold small">Faible (&lt;15%)</div>
+                    <div class="text-muted" style="font-size:.72rem">Situation acceptable</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Horizontal bar chart — top 15 hotspots -->
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-flame me-2 text-danger"></i>
+                Top 15 Hotspots critiques par marque/territoire
+              </h6>
+              @if (isLoadingAlert()) { <div class="spinner-border spinner-border-sm text-danger"></div> }
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingAlert() && chartAlertOpts()) {
+                <apx-chart #chartAlert
+                  [series]="chartAlertOpts()!.series"
+                  [chart]="chartAlertOpts()!.chart"
+                  [colors]="chartAlertOpts()!.colors"
+                  [plotOptions]="chartAlertOpts()!.plotOptions"
+                  [dataLabels]="chartAlertOpts()!.dataLabels"
+                  [xaxis]="chartAlertOpts()!.xaxis"
+                  [legend]="chartAlertOpts()!.legend"
+                  [tooltip]="chartAlertOpts()!.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingAlert()) {
+                <div class="oos-empty-state"><i class="ti ti-bell-off"></i><p>Aucun hotspot détecté</p></div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Alert list table -->
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-list me-2 text-danger"></i>
+                Liste complète des alertes (top 20)
+              </h6>
+            </div>
+            <div class="card-body p-0" style="overflow-y:auto;max-height:460px">
+              @if (isLoadingAlert()) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border text-danger"></div></div>
+              } @else {
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 oos-table oos-table-sm">
+                    <thead class="oos-thead">
+                      <tr>
+                        <th>Marque</th>
+                        <th>Territoire</th>
+                        <th class="text-end">OOS %</th>
+                        <th class="text-center">Sév.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of alertData(); track row.brand_uuid + row.territory_name) {
+                        <tr [class]="getSeverityClass(row.severity) + '-row'">
+                          <td class="fw-semibold small">{{ row.brand_name }}</td>
+                          <td class="small text-muted">{{ row.territory_name }}</td>
+                          <td class="text-end fw-bold">
+                            <span [class]="getOosBadge(row.oos_percent)">{{ row.oos_percent | number:'1.1-1' }}%</span>
+                          </td>
+                          <td class="text-center">
+                            <span [class]="getSeverityBadge(row.severity)">{{ row.severity | titlecase }}</span>
+                          </td>
+                        </tr>
+                      }
+                      @empty {
+                        <tr><td colspan="4" class="text-center text-muted py-4">Aucune alerte détectée</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: EVOLUTION — Période sur Période (PoP)
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'evolution') {
+      <div class="row g-3">
+        <!-- Combo chart -->
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <div>
+                <h6 class="fw-semibold mb-0 text-secondary">
+                  <i class="ti ti-trending-up me-2 text-danger"></i>
+                  OOS% Courant vs Précédent — Delta en pp
+                </h6>
+                <small class="text-muted">Comparaison sur la période sélectionnée vs période égale précédente</small>
+              </div>
+              @if (isLoadingEvolution()) { <div class="spinner-border spinner-border-sm text-danger"></div> }
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingEvolution() && chartEvolutionOpts()) {
+                <apx-chart #chartEvolution
+                  [series]="chartEvolutionOpts()!.series"
+                  [chart]="chartEvolutionOpts()!.chart"
+                  [colors]="chartEvolutionOpts()!.colors"
+                  [stroke]="chartEvolutionOpts()!.stroke"
+                  [plotOptions]="chartEvolutionOpts()!.plotOptions"
+                  [dataLabels]="chartEvolutionOpts()!.dataLabels"
+                  [xaxis]="chartEvolutionOpts()!.xaxis"
+                  [yaxis]="chartEvolutionOpts()!.yaxis"
+                  [legend]="chartEvolutionOpts()!.legend"
+                  [tooltip]="chartEvolutionOpts()!.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingEvolution()) {
+                <div class="oos-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée d'évolution</p></div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Evolution scorecard table -->
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-list me-2 text-danger"></i>
+                Scorecard PoP par marque
+              </h6>
+            </div>
+            <div class="card-body p-0" style="overflow-y:auto;max-height:420px">
+              @if (isLoadingEvolution()) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border text-danger"></div></div>
+              } @else {
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 oos-table">
+                    <thead class="oos-thead">
+                      <tr>
+                        <th>Marque</th>
+                        <th class="text-end">OOS% Act.</th>
+                        <th class="text-end">OOS% Préc.</th>
+                        <th class="text-end">Δ pp</th>
+                        <th class="text-center">Tendance</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of evolutionData(); track row.brand_uuid) {
+                        <tr>
+                          <td class="fw-semibold text-danger small">{{ row.brand_name }}</td>
+                          <td class="text-end">
+                            <span [class]="getOosBadge(row.current_oos_percent)">
+                              {{ row.current_oos_percent | number:'1.1-1' }}%
+                            </span>
+                          </td>
+                          <td class="text-end text-muted small">{{ row.previous_oos_percent | number:'1.1-1' }}%</td>
+                          <td class="text-end fw-bold {{ getTrendClass(row.delta) }}">
+                            {{ row.delta > 0 ? '+' : '' }}{{ row.delta | number:'1.1-1' }}pp
+                          </td>
+                          <td class="text-center">
+                            <i class="{{ getTrendIcon(row.trend) }} fs-5"></i>
+                          </td>
+                        </tr>
+                      }
+                      @empty {
+                        <tr><td colspan="5" class="text-center text-muted py-4">Aucune donnée</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary cards for top movers -->
+        @if (!isLoadingEvolution() && evolutionData().length > 0) {
+          <div class="col-12">
+            <div class="row g-2">
+              @for (row of evolutionData().slice(0, 4); track row.brand_uuid) {
+                <div class="col-6 col-md-3">
+                  <div class="oos-evo-card"
+                    [class.oos-evo-worsening]="row.trend === 'worsening'"
+                    [class.oos-evo-improving]="row.trend === 'improving'">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                      <span class="fw-semibold small text-truncate pe-1">{{ row.brand_name }}</span>
+                      <span [class]="getTrendBadge(row.trend)" class="flex-shrink-0">
+                        {{ row.trend | titlecase }}
+                      </span>
+                    </div>
+                    <div class="oos-evo-percent">{{ row.current_oos_percent | number:'1.1-1' }}%</div>
+                    <div class="oos-evo-delta {{ getTrendClass(row.delta) }}">
+                      <i class="{{ getTrendIcon(row.trend) }}"></i>
+                      {{ row.delta > 0 ? '+' : '' }}{{ row.delta | number:'1.1-1' }}pp vs précédent
+                    </div>
+                    <div class="progress mt-2 oos-progress">
+                      <div class="progress-bar {{ row.current_oos_percent >= 50 ? 'bg-danger' : row.current_oos_percent >= 30 ? 'bg-warning' : 'bg-success' }}"
+                        [style.width]="row.current_oos_percent + '%'">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: HEATMAP — Matrice Marque × Territoire
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'heatmap') {
+      <div class="row g-3">
+        <!-- Level selector -->
+        <div class="col-12 d-flex align-items-center gap-2 mb-1">
+          <span class="text-muted small fw-semibold">Niveau territorial :</span>
+          @for (lvl of ['province','area','subarea','commune']; track lvl) {
+            <button class="oos-pill" [class.active]="heatmapLevel() === lvl"
+              (click)="onHeatmapLevelChange($any(lvl))">
+              {{ lvl | titlecase }}
+            </button>
+          }
+          @if (isLoadingHeatmap()) { <div class="spinner-border spinner-border-sm text-danger ms-2"></div> }
+        </div>
+
+        <!-- Heatmap chart -->
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <div>
+                <h6 class="fw-semibold mb-0 text-secondary">
+                  <i class="ti ti-layout-grid me-2 text-danger"></i>
+                  Matrice OOS% — Marque × Territoire ({{ heatmapLevel() | titlecase }})
+                </h6>
+                <small class="text-muted">Chaque cellule = OOS% de la marque dans le territoire — rouge = critique</small>
+              </div>
+            </div>
+            <div class="card-body px-2 pt-1 pb-1">
+              @if (!isLoadingHeatmap() && chartHeatmapOpts()) {
+                <apx-chart #chartHeatmap
+                  [series]="chartHeatmapOpts()!.series"
+                  [chart]="chartHeatmapOpts()!.chart"
+                  [colors]="chartHeatmapOpts()!.colors"
+                  [dataLabels]="chartHeatmapOpts()!.dataLabels"
+                  [plotOptions]="chartHeatmapOpts()!.plotOptions"
+                  [legend]="chartHeatmapOpts()!.legend"
+                  [tooltip]="chartHeatmapOpts()!.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingHeatmap()) {
+                <div class="oos-empty-state">
+                  <i class="ti ti-layout-grid-remove"></i>
+                  <p>Aucune donnée pour la heatmap</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Color legend + raw matrix table -->
+        @if (!isLoadingHeatmap() && heatmapData().brands.length > 0) {
+          <div class="col-12">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <h6 class="fw-semibold mb-0 text-secondary">
+                  <i class="ti ti-table me-2 text-danger"></i>
+                  Matrice numérique complète
+                </h6>
+                <!-- Legend -->
+                <div class="d-flex gap-2 align-items-center flex-wrap">
+                  <span class="oos-legend-chip" style="background:#fff5f5;color:#666">Absent (0%)</span>
+                  <span class="oos-legend-chip" style="background:#fecaca;color:#333">Faible (1-15%)</span>
+                  <span class="oos-legend-chip" style="background:#f87171;color:#fff">Moyen (16-30%)</span>
+                  <span class="oos-legend-chip" style="background:#ef4444;color:#fff">Élevé (31-50%)</span>
+                  <span class="oos-legend-chip" style="background:#991b1b;color:#fff">Critique (&gt;50%)</span>
+                </div>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-bordered align-middle mb-0 oos-matrix-table">
+                    <thead class="oos-thead">
+                      <tr>
+                        <th class="oos-matrix-brand-col">Marque</th>
+                        @for (t of heatmapData().territories; track t.uuid) {
+                          <th class="text-center small">{{ t.name }}</th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (b of heatmapData().brands; track b.uuid; let bi = $index) {
+                        <tr>
+                          <td class="fw-semibold text-danger small">{{ b.name }}</td>
+                          @for (t of heatmapData().territories; track t.uuid; let ti = $index) {
+                            <td class="text-center oos-matrix-cell"
+                              [style.background]="
+                                heatmapData().matrix[bi][ti] === 0 ? '#fff5f5'
+                                : heatmapData().matrix[bi][ti] <= 15 ? '#fecaca'
+                                : heatmapData().matrix[bi][ti] <= 30 ? '#f87171'
+                                : heatmapData().matrix[bi][ti] <= 50 ? '#ef4444'
+                                : '#991b1b'"
+                              [style.color]="heatmapData().matrix[bi][ti] > 15 ? '#fff' : '#333'">
+                              {{ heatmapData().matrix[bi][ti] > 0 ? (heatmapData().matrix[bi][ti] | number:'1.0-0') + '%' : '—' }}
+                            </td>
+                          }
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+  </div><!-- /content -->
+</div><!-- /page-wrapper -->

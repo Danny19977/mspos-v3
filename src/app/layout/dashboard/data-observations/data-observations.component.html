@@ -9,7 +9,9 @@
         <div class="col-8">
           <h4 class="page-title">
             Observations Terrain
-            <span class="count-title" *ngIf="pagination()">{{ pagination()!.total_records | number }}</span>
+            @if (pagination()) {
+              <span class="count-title">{{ pagination()!.total_records | number }}</span>
+            }
           </h4>
         </div>
         <div class="col-4 text-end">
@@ -52,8 +54,8 @@
               <i class="ti ti-calendar me-1"></i>Période
             </label>
             <div class="obs-period-group" role="group">
+              @for (p of periods; track p.key) {
               <button
-                *ngFor="let p of periods"
                 type="button"
                 class="obs-period-btn"
                 [class.active]="selectedPeriod() === p.key"
@@ -61,6 +63,7 @@
               >
                 {{ p.label }}
               </button>
+              }
             </div>
           </div>
 
@@ -110,8 +113,10 @@
     <!-- ═══════════════════════════════════════════════════════════════════
          LOADING SKELETON
     ══════════════════════════════════════════════════════════════════════ -->
-    <div *ngIf="isLoading()" class="row g-3 mb-4">
-      <div class="col-md-6 col-xl-4" *ngFor="let _ of [1,2,3,4,5,6]">
+    @if (isLoading()) {
+      <div class="row g-3 mb-4">
+        @for (_ of [1,2,3,4,5,6]; track $index) {
+      <div class="col-md-6 col-xl-4">
         <div class="card obs-skeleton-card">
           <div class="obs-skeleton obs-skeleton-header"></div>
           <div class="card-body">
@@ -121,26 +126,31 @@
           </div>
         </div>
       </div>
-    </div>
+        }
+      </div>
+    }
 
     <!-- ═══════════════════════════════════════════════════════════════════
          EMPTY STATE
     ══════════════════════════════════════════════════════════════════════ -->
-    <div *ngIf="!isLoading() && !hasData()" class="obs-empty-state text-center py-5">
+    @if (!isLoading() && !hasData()) {
+      <div class="obs-empty-state text-center py-5">
       <div class="obs-empty-icon mb-3">
         <i class="ti ti-message-circle"></i>
       </div>
-      <h6 class="text-muted">Aucune observation trouvée</h6>
-      <p class="text-muted small">Modifiez les filtres ou la période pour trouver des observations.</p>
-    </div>
+        <h6 class="text-muted">Aucune observation trouvée</h6>
+        <p class="text-muted small">Modifiez les filtres ou la période pour trouver des observations.</p>
+      </div>
+    }
 
     <!-- ═══════════════════════════════════════════════════════════════════
          CARDS VIEW
     ══════════════════════════════════════════════════════════════════════ -->
-    <div *ngIf="!isLoading() && hasData() && viewMode() === 'cards'" class="row g-3 mb-4">
+    @if (!isLoading() && hasData() && viewMode() === 'cards') {
+      <div class="row g-3 mb-4">
+      @for (obs of observations(); track obs.uuid) {
       <div
         class="col-md-6 col-xl-4"
-        *ngFor="let obs of observations(); trackBy: trackByUuid"
       >
         <div class="card obs-card h-100" [ngClass]="'obs-role-' + obs.user_role.toLowerCase()">
 
@@ -186,38 +196,47 @@
                 <span class="obs-territory-chip">{{ obs.province_name }}</span>
                 <i class="ti ti-chevron-right obs-sep"></i>
                 <span class="obs-territory-chip">{{ obs.area_name }}</span>
-                <ng-container *ngIf="obs.commune_name">
+                @if (obs.commune_name) {
                   <i class="ti ti-chevron-right obs-sep"></i>
                   <span class="obs-territory-chip">{{ obs.commune_name }}</span>
-                </ng-container>
+                }
               </span>
             </div>
 
             <!-- Agent chain -->
-            <div class="obs-meta-row" *ngIf="obs.dr">
-              <span class="obs-meta-icon"><i class="ti ti-user-check"></i></span>
-              <span class="obs-meta-label">DR</span>
-              <span class="obs-meta-value">{{ obs.dr }}</span>
-            </div>
-            <div class="obs-meta-row" *ngIf="obs.sup">
-              <span class="obs-meta-icon"><i class="ti ti-users"></i></span>
-              <span class="obs-meta-label">Sup</span>
-              <span class="obs-meta-value">{{ obs.sup }}</span>
-            </div>
-            <div class="obs-meta-row" *ngIf="obs.asm">
-              <span class="obs-meta-icon"><i class="ti ti-layers"></i></span>
-              <span class="obs-meta-label">ASM</span>
-              <span class="obs-meta-value">{{ obs.asm }}</span>
-            </div>
+            @if (obs.dr) {
+              <div class="obs-meta-row">
+                <span class="obs-meta-icon"><i class="ti ti-user-check"></i></span>
+                <span class="obs-meta-label">DR</span>
+                <span class="obs-meta-value">{{ obs.dr }}</span>
+              </div>
+            }
+            @if (obs.sup) {
+              <div class="obs-meta-row">
+                <span class="obs-meta-icon"><i class="ti ti-users"></i></span>
+                <span class="obs-meta-label">Sup</span>
+                <span class="obs-meta-value">{{ obs.sup }}</span>
+              </div>
+            }
+            @if (obs.asm) {
+              <div class="obs-meta-row">
+                <span class="obs-meta-icon"><i class="ti ti-layers"></i></span>
+                <span class="obs-meta-label">ASM</span>
+                <span class="obs-meta-value">{{ obs.asm }}</span>
+              </div>
+            }
           </div>
         </div>
       </div>
+      }
     </div>
+    }
 
     <!-- ═══════════════════════════════════════════════════════════════════
          TABLE VIEW
     ══════════════════════════════════════════════════════════════════════ -->
-    <div *ngIf="!isLoading() && hasData() && viewMode() === 'table'" class="card mb-4">
+    @if (!isLoading() && hasData() && viewMode() === 'table') {
+      <div class="card mb-4">
       <div class="card-body p-0">
         <div class="table-responsive">
           <table class="table table-hover obs-table mb-0">
@@ -232,7 +251,8 @@
               </tr>
             </thead>
             <tbody>
-              <tr *ngFor="let obs of observations(); trackBy: trackByUuid">
+              @for (obs of observations(); track obs.uuid) {
+              <tr>
                 <!-- Agent -->
                 <td>
                   <div class="d-flex align-items-center gap-2">
@@ -258,35 +278,46 @@
                 <td class="obs-text-sm">
                   <div>{{ obs.province_name }}</div>
                   <div class="text-muted">{{ obs.area_name }}</div>
-                  <div class="text-muted" *ngIf="obs.commune_name">{{ obs.commune_name }}</div>
+                  @if (obs.commune_name) {
+                    <div class="text-muted">{{ obs.commune_name }}</div>
+                  }
                 </td>
                 <!-- Hierarchy -->
                 <td class="obs-text-sm">
-                  <div *ngIf="obs.asm">
-                    <span class="text-muted">ASM:</span> {{ obs.asm }}
-                  </div>
-                  <div *ngIf="obs.sup">
-                    <span class="text-muted">Sup:</span> {{ obs.sup }}
-                  </div>
-                  <div *ngIf="obs.dr">
-                    <span class="text-muted">DR:</span> {{ obs.dr }}
-                  </div>
+                  @if (obs.asm) {
+                    <div>
+                      <span class="text-muted">ASM:</span> {{ obs.asm }}
+                    </div>
+                  }
+                  @if (obs.sup) {
+                    <div>
+                      <span class="text-muted">Sup:</span> {{ obs.sup }}
+                    </div>
+                  }
+                  @if (obs.dr) {
+                    <div>
+                      <span class="text-muted">DR:</span> {{ obs.dr }}
+                    </div>
+                  }
                 </td>
                 <!-- Date -->
                 <td class="text-end obs-text-sm text-muted" [title]="obs.updated_at | date:'dd/MM/yyyy HH:mm'">
                   {{ formatRelativeDate(obs.updated_at) }}
                 </td>
               </tr>
+              }
             </tbody>
           </table>
         </div>
       </div>
     </div>
+    }
 
     <!-- ═══════════════════════════════════════════════════════════════════
          PAGINATION
     ══════════════════════════════════════════════════════════════════════ -->
-    <div *ngIf="!isLoading() && hasData() && pagination()" class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
+    @if (!isLoading() && hasData() && pagination()) {
+      <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
       <span class="text-muted small">
         Page <strong>{{ pagination()!.current_page }}</strong> sur <strong>{{ pagination()!.total_pages }}</strong>
         &mdash; {{ pagination()!.total_records | number }} résultat{{ pagination()!.total_records !== 1 ? 's' : '' }}
@@ -299,21 +330,23 @@
               <i class="ti ti-chevron-left"></i>
             </a>
           </li>
-          <ng-container *ngFor="let p of pages()">
-            <li
-              class="page-item"
-              *ngIf="p === 1 || p === pagination()!.total_pages || (p >= pagination()!.current_page - 2 && p <= pagination()!.current_page + 2)"
-              [class.active]="p === pagination()!.current_page"
-            >
-              <a class="page-link" href="javascript:void(0);" (click)="onPageChange(p)">{{ p }}</a>
-            </li>
-            <li
-              class="page-item disabled"
-              *ngIf="(p === pagination()!.current_page - 3 || p === pagination()!.current_page + 3) && p > 1 && p < pagination()!.total_pages"
-            >
-              <span class="page-link">…</span>
-            </li>
-          </ng-container>
+          @for (p of pages(); track p) {
+            @if (p === 1 || p === pagination()!.total_pages || (p >= pagination()!.current_page - 2 && p <= pagination()!.current_page + 2)) {
+              <li
+                class="page-item"
+                [class.active]="p === pagination()!.current_page"
+              >
+                <a class="page-link" href="javascript:void(0);" (click)="onPageChange(p)">{{ p }}</a>
+              </li>
+            }
+            @if ((p === pagination()!.current_page - 3 || p === pagination()!.current_page + 3) && p > 1 && p < pagination()!.total_pages) {
+              <li
+                class="page-item disabled"
+              >
+                <span class="page-link">…</span>
+              </li>
+            }
+          }
           <li class="page-item" [class.disabled]="pagination()!.current_page === pagination()!.total_pages">
             <a class="page-link" href="javascript:void(0);" (click)="onPageChange(pagination()!.current_page + 1)">
               <i class="ti ti-chevron-right"></i>
@@ -321,7 +354,8 @@
           </li>
         </ul>
       </nav>
-    </div>
+      </div>
+    }
 
   </div><!-- /content -->
 </div><!-- /page-wrapper -->

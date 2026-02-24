@@ -1,0 +1,579 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// ND-DASHBOARD  —  Numeric Distribution Dashboard styles
+// Prefix: "nd-"  |  Palette: Indigo/Blue primary, semantic accents
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Page header badge ────────────────────────────────────────────────────────
+.nd-title-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #4361ee 0%, #3a0ca3 100%);
+  color: #fff;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+// ── Date range picker ────────────────────────────────────────────────────────
+.nd-date-form {
+  .nd-date-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    i {
+      position: absolute;
+      left: 10px;
+      color: #6c757d;
+      font-size: 1rem;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .nd-date-input {
+      padding-left: 34px;
+      border-radius: 8px;
+      border: 1px solid #dce1ff;
+      font-size: 0.82rem;
+      background-color: #f8f9ff;
+      min-width: 220px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+
+      &:focus {
+        border-color: #4361ee;
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.12);
+        background-color: #fff;
+      }
+    }
+  }
+}
+
+// ── Period dropdown ───────────────────────────────────────────
+.nd-period-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #dce1ff;
+  background: #f4f6ff;
+  color: #4361ee;
+  font-size: 0.82rem;
+  font-weight: 600;
+  gap: 4px;
+  transition: all 0.15s;
+
+  &:hover, &:focus {
+    background: #eef0ff;
+    border-color: #4361ee;
+    box-shadow: none;
+  }
+
+  &::after { margin-left: 4px; }
+}
+
+.nd-period-menu {
+  min-width: 160px;
+  border: 1px solid #dce1ff;
+  border-radius: 10px;
+  padding: 4px;
+  font-size: 0.82rem;
+}
+
+.nd-period-item {
+  border-radius: 7px;
+  color: #3a3a5c;
+  font-size: 0.82rem;
+  padding: 7px 12px;
+  display: flex;
+  align-items: center;
+
+  &:hover { background: #eef0ff; color: #4361ee; }
+
+  &.active {
+    background: #4361ee;
+    color: #fff;
+    font-weight: 600;
+  }
+}
+
+// ── Geo filter bar ───────────────────────────────────────────────────────────
+.nd-geo-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  background: #fff;
+  border: 1px solid #e9ecff;
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(67, 97, 238, 0.06);
+}
+
+.nd-geo-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 130px;
+
+  &.nd-geo-disabled {
+    opacity: 0.5;
+  }
+}
+
+.nd-geo-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
+.nd-select {
+  border-radius: 8px;
+  border: 1px solid #dce1ff;
+  background-color: #f8f9ff;
+  font-size: 0.8rem;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #4361ee;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+  }
+}
+
+// ── KPI skeleton ─────────────────────────────────────────────────────────────
+.nd-kpi-skeleton {
+  border-radius: 12px;
+  min-height: 80px;
+
+  .card-body { display: flex; flex-direction: column; gap: 12px; }
+
+  @keyframes shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+
+  .skeleton-line {
+    height: 14px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e2e8ff 50%, #f0f0f0 75%);
+    background-size: 400px 100%;
+    animation: shimmer 1.4s infinite;
+
+    &.short { width: 55%; height: 22px; }
+  }
+}
+
+// ── KPI cards ────────────────────────────────────────────────────────────────
+.nd-kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border: 1px solid transparent;
+  transition: transform 0.18s, box-shadow 0.18s;
+  min-height: 76px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  }
+
+  .nd-kpi-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .nd-kpi-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+  }
+
+  .nd-kpi-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6c757d;
+    white-space: nowrap;
+  }
+
+  .nd-kpi-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.1;
+    white-space: nowrap;
+  }
+
+  // accent variants
+  &.accent-blue   { border-color: #dce1ff; .nd-kpi-icon { background: #eef0ff; color: #4361ee; } .nd-kpi-value { color: #4361ee; } }
+  &.accent-teal   { border-color: #d0f8ef; .nd-kpi-icon { background: #e0faf4; color: #0fa97a; } .nd-kpi-value { color: #0c9b6e; } }
+  &.accent-green  { border-color: #d0fce6; .nd-kpi-icon { background: #e5fdf0; color: #06d6a0; } .nd-kpi-value { color: #05ba8b; } }
+  &.accent-indigo { border-color: #e0daff; .nd-kpi-icon { background: #ede8ff; color: #3a0ca3; } .nd-kpi-value { color: #3a0ca3; } }
+  &.accent-purple { border-color: #eadcff; .nd-kpi-icon { background: #f3eeff; color: #7209b7; } .nd-kpi-value { color: #7209b7; } }
+  &.accent-amber  { border-color: #fff3cc; .nd-kpi-icon { background: #fffae0; color: #e9a001; } .nd-kpi-value { color: #d48e00; } }
+  &.accent-pink   { border-color: #ffe0eb; .nd-kpi-icon { background: #fff0f5; color: #f72585; } .nd-kpi-value { color: #f72585; } }
+  &.accent-orange { border-color: #ffdec5; .nd-kpi-icon { background: #fff3e8; color: #e85d04; } .nd-kpi-value { color: #e85d04; } }
+}
+
+// ── Section nav ───────────────────────────────────────────────────────────────
+.nd-section-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-bottom: 2px solid #eef0ff;
+  padding-bottom: 8px;
+}
+
+.nd-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 16px;
+  border-radius: 8px 8px 0 0;
+  border: 1px solid transparent;
+  background: #f4f6ff;
+  color: #6c757d;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+  margin-bottom: -2px;
+
+  &:hover {
+    background: #eef0ff;
+    color: #4361ee;
+  }
+
+  &.active {
+    background: #fff;
+    color: #4361ee;
+    border-color: #dce1ff #dce1ff #fff;
+    font-weight: 600;
+    border-bottom-color: #fff;
+  }
+}
+
+// ── Geo crumb ─────────────────────────────────────────────────────────────────
+.nd-geo-crumb {
+  font-size: 0.8rem;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  .text-indigo { color: #3a0ca3; }
+}
+
+// ── Geo level tabs (tableview / barchart) ─────────────────────────────────────
+.nd-geo-level-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.nd-level-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid #dce1ff;
+  background: #f4f6ff;
+  color: #6c757d;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+
+  &:hover { background: #eef0ff; color: #4361ee; }
+
+  &.active {
+    background: #4361ee;
+    color: #fff;
+    border-color: #4361ee;
+    font-weight: 600;
+  }
+}
+
+// ── Pill (section internal level selector) ───────────────────────────────────
+.nd-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 1px solid #dce1ff;
+  background: #f4f6ff;
+  color: #6c757d;
+  font-size: 0.77rem;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { background: #eef0ff; color: #4361ee; }
+
+  &.active {
+    background: #4361ee;
+    color: #fff;
+    border-color: #4361ee;
+    font-weight: 600;
+  }
+}
+
+// ── Tableview card ───────────────────────────────────────────────────────────
+.nd-tableview-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.nd-tableview-header {
+  background: #f8f9ff;
+  border-bottom: 1px solid #eef0ff;
+}
+
+// ── Territory groups ─────────────────────────────────────────────────────────
+.nd-territory-group {
+  border-bottom: 2px solid #eef0ff;
+
+  &:last-child { border-bottom: none; }
+}
+
+.nd-territory-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: linear-gradient(90deg, #eef0ff 0%, #f8f9ff 100%);
+  font-size: 0.85rem;
+  color: #3a3a5c;
+  border-bottom: 1px solid #e8ecff;
+}
+
+// ── Tables ───────────────────────────────────────────────────────────────────
+.nd-table {
+  font-size: 0.82rem;
+
+  td, th { padding: 8px 12px; }
+}
+
+.nd-table-sm {
+  td, th { padding: 6px 10px; }
+}
+
+.nd-thead {
+  background: #f4f6ff;
+
+  th {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6c757d;
+    border-bottom: 2px solid #dce1ff;
+    white-space: nowrap;
+  }
+}
+
+.nd-rank-top {
+  background: linear-gradient(90deg, rgba(255,209,48,0.07), transparent);
+}
+
+// ── Progress bars ─────────────────────────────────────────────────────────────
+.nd-progress {
+  height: 6px;
+  border-radius: 4px;
+  background-color: #eef0ff;
+
+  .progress-bar { border-radius: 4px; }
+}
+
+.nd-progress-mini {
+  height: 4px;
+  border-radius: 3px;
+  background-color: #eef0ff;
+  width: 60px;
+  display: inline-flex;
+
+  .progress-bar { border-radius: 3px; }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.nd-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  color: #b0b7d8;
+  gap: 8px;
+
+  i {
+    font-size: 2.5rem;
+    opacity: 0.5;
+  }
+
+  p {
+    font-size: 0.85rem;
+    margin: 0;
+  }
+}
+
+// ── Bar territory list ────────────────────────────────────────────────────────
+.nd-bar-territory {
+  background: #fff;
+  transition: background 0.15s;
+
+  &:hover { background: #f8f9ff; }
+}
+
+// ── Ranking chart ─────────────────────────────────────────────────────────────
+// (no extra styles — handled by ApexCharts)
+
+// ── Gap Analysis — Zone cards ─────────────────────────────────────────────────
+.nd-zone-card {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid;
+  font-size: 0.8rem;
+
+  &.zone-a { background: #eafff7; border-color: #b2f2de; }
+  &.zone-b { background: #fffbec; border-color: #ffe9a0; }
+  &.zone-c { background: #fff1f4; border-color: #ffc5d0; }
+}
+
+.nd-zone-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+// ── Gap funnel bar ────────────────────────────────────────────────────────────
+.nd-funnel-bar {
+  display: flex;
+  height: 12px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: #f0f0f0;
+
+  .nd-funnel-zone {
+    height: 100%;
+    transition: width 0.4s;
+    min-width: 2px;
+
+    &.zone-a { background: #06d6a0; }
+    &.zone-b { background: #ffd166; }
+    &.zone-c { background: #ef476f; }
+  }
+}
+
+.nd-section-sub-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #888;
+}
+
+// ── Evolution cards ───────────────────────────────────────────────────────────
+.nd-evo-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  border: 1px solid #eef0ff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: transform 0.18s;
+
+  &:hover { transform: translateY(-2px); }
+
+  &.nd-evo-up {
+    border-top: 3px solid #06d6a0;
+  }
+
+  &.nd-evo-down {
+    border-top: 3px solid #ef476f;
+  }
+}
+
+.nd-evo-percent {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #3a3a5c;
+  line-height: 1.1;
+}
+
+.nd-evo-delta {
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+// ── Heatmap matrix table ──────────────────────────────────────────────────────
+.nd-matrix-table {
+  font-size: 0.75rem;
+
+  th, td { padding: 5px 8px; white-space: nowrap; }
+}
+
+.nd-matrix-brand-col {
+  background: #f4f6ff;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 120px;
+  font-size: 0.76rem;
+  border-right: 2px solid #dce1ff !important;
+}
+
+.nd-matrix-cell {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.72rem;
+  transition: opacity 0.2s;
+  min-width: 56px;
+
+  &:hover { opacity: 0.85; }
+}
+
+// ── Legend chips (heatmap) ────────────────────────────────────────────────────
+.nd-legend-chip {
+  display: inline-block;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+// ── Utility tweaks ────────────────────────────────────────────────────────────
+.text-indigo { color: #3a0ca3 !important; }
+
+.nd-gap-zone-badge {
+  display: inline-block;
+  border-radius: 6px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+
+  &.zone-a { background: #eafff7; color: #0fa97a; border: 1px solid #b2f2de; }
+  &.zone-b { background: #fffbec; color: #b38000; border: 1px solid #ffe9a0; }
+  &.zone-c { background: #fff1f4; color: #c0002a; border: 1px solid #ffc5d0; }
+}

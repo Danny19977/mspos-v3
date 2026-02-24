@@ -29,25 +29,29 @@ export class DataService {
           icon: 'layout-2',
           base: 'dashboard',
           subMenus: [
-            // {
-            //   menuValue: 'Summary',
-            //   route: routes.summaryDashboard,
-            // },
             {
               menuValue: 'Numeric distribution',
               route: routes.ndDashboard,
             },
-            // {
-            //   menuValue: 'Weighted distribution',
-            //   route: routes.wdDashboard,
-            // },
-            // {
-            //   menuValue: 'Share in shop handling',
-            //   route: routes.sishDashboard,
-            // },
             {
               menuValue: 'Out of stock',
               route: routes.oosDashboard,
+            },
+            {
+              menuValue: 'Maps DR',
+              route: routes.googleMapsDashboard,
+            },
+            {
+              menuValue: 'Weighted distribution',
+              route: routes.wdDashboard,
+            },
+            {
+              menuValue: 'Weighted sales',
+              route: routes.wsDashboard,
+            },
+            {
+              menuValue: 'Share in shop handling',
+              route: routes.sishDashboard,
             },
             {
               menuValue: 'Share of stock',
@@ -57,10 +61,7 @@ export class DataService {
               menuValue: 'Sales evolutions',
               route: routes.seDashboard,
             },
-            {
-              menuValue: 'Maps DR',
-              route: routes.googleMapsDashboard,
-            },
+
             {
               menuValue: 'KPI',
               route: routes.kpiDashboard,
@@ -102,6 +103,14 @@ export class DataService {
           hasSubRoute: false,
           showSubRoute: false,
           route: routes.posVente,
+        },
+        {
+          menuValue: 'Mon ND',
+          base: 'nd-individual',
+          icon: 'chart-bar',
+          hasSubRoute: false,
+          showSubRoute: false,
+          route: routes.ndIndividual,
         },
         {
           menuValue: 'Marques',
@@ -251,25 +260,29 @@ export class DataService {
           icon: 'layout-2',
           base: 'dashboard',
           subMenus: [
-            // {
-            //   menuValue: 'Summary',
-            //   route: routes.summaryDashboard,
-            // },
-            {
+             {
               menuValue: 'Numeric distribution',
               route: routes.ndDashboard,
             },
-            // {
-            //   menuValue: 'Weighted distribution',
-            //   route: routes.wdDashboard,
-            // },
-            // {
-            //   menuValue: 'Share in shop handling',
-            //   route: routes.sishDashboard,
-            // },
             {
               menuValue: 'Out of stock',
               route: routes.oosDashboard,
+            },
+            {
+              menuValue: 'Maps DR',
+              route: routes.googleMapsDashboard,
+            },
+            {
+              menuValue: 'Weighted distribution',
+              route: routes.wdDashboard,
+            },
+            {
+              menuValue: 'Weighted sales',
+              route: routes.wsDashboard,
+            },
+            {
+              menuValue: 'Share in shop handling',
+              route: routes.sishDashboard,
             },
             {
               menuValue: 'Share of stock',
@@ -279,10 +292,7 @@ export class DataService {
               menuValue: 'Sales evolutions',
               route: routes.seDashboard,
             },
-            {
-              menuValue: 'Maps DR',
-              route: routes.googleMapsDashboard,
-            },
+
             {
               menuValue: 'KPI',
               route: routes.kpiDashboard,
@@ -433,25 +443,29 @@ export class DataService {
           icon: 'layout-2',
           base: 'dashboard',
           subMenus: [
-            // {
-            //   menuValue: 'Summary',
-            //   route: routes.summaryDashboard,
-            // },
             {
               menuValue: 'Numeric distribution',
               route: routes.ndDashboard,
             },
-            // {
-            //   menuValue: 'Weighted distribution',
-            //   route: routes.wdDashboard,
-            // },
-            // {
-            //   menuValue: 'Share in shop handling',
-            //   route: routes.sishDashboard,
-            // },
             {
               menuValue: 'Out of stock',
               route: routes.oosDashboard,
+            },
+            {
+              menuValue: 'Maps DR',
+              route: routes.googleMapsDashboard,
+            },
+            {
+              menuValue: 'Weighted distribution',
+              route: routes.wdDashboard,
+            },
+            {
+              menuValue: 'Weighted sales',
+              route: routes.wsDashboard,
+            },
+            {
+              menuValue: 'Share in shop handling',
+              route: routes.sishDashboard,
             },
             {
               menuValue: 'Share of stock',
@@ -461,10 +475,7 @@ export class DataService {
               menuValue: 'Sales evolutions',
               route: routes.seDashboard,
             },
-            {
-              menuValue: 'Maps DR',
-              route: routes.googleMapsDashboard,
-            },
+
             {
               menuValue: 'KPI',
               route: routes.kpiDashboard,
@@ -737,25 +748,29 @@ export class DataService {
           icon: 'layout-2',
           base: 'dashboard',
           subMenus: [
-            // {
-            //   menuValue: 'Summary',
-            //   route: routes.summaryDashboard,
-            // },
             {
               menuValue: 'Numeric distribution',
               route: routes.ndDashboard,
             },
-            // {
-            //   menuValue: 'Weighted distribution',
-            //   route: routes.wdDashboard,
-            // },
-            // {
-            //   menuValue: 'Share in shop handling',
-            //   route: routes.sishDashboard,
-            // },
             {
               menuValue: 'Out of stock',
               route: routes.oosDashboard,
+            },
+            {
+              menuValue: 'Maps DR',
+              route: routes.googleMapsDashboard,
+            },
+            {
+              menuValue: 'Weighted distribution',
+              route: routes.wdDashboard,
+            },
+            {
+              menuValue: 'Weighted sales',
+              route: routes.wsDashboard,
+            },
+            {
+              menuValue: 'Share in shop handling',
+              route: routes.sishDashboard,
             },
             {
               menuValue: 'Share of stock',
@@ -765,10 +780,7 @@ export class DataService {
               menuValue: 'Sales evolutions',
               route: routes.seDashboard,
             },
-            {
-              menuValue: 'Maps DR',
-              route: routes.googleMapsDashboard,
-            },
+
             {
               menuValue: 'KPI',
               route: routes.kpiDashboard,
@@ -810,6 +822,14 @@ export class DataService {
           hasSubRoute: false,
           showSubRoute: false,
           route: routes.posVente,
+        },
+        {
+          menuValue: 'Mon ND',
+          base: 'nd-individual',
+          icon: 'chart-bar',
+          hasSubRoute: false,
+          showSubRoute: false,
+          route: routes.ndIndividual,
         },
         {
           menuValue: 'Brands',

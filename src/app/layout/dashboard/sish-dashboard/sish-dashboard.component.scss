@@ -1,0 +1,413 @@
+// ╔══════════════════════════════════════════════════════════════════════════╗
+// ║  SISH Dashboard — Share In Shop Styles                                   ║
+// ║  Primary: Rose #e11d48  Light: #fff1f2  Border: #fecdd3                 ║
+// ╚══════════════════════════════════════════════════════════════════════════╝
+
+:host {
+  --sish-primary:     #e11d48;
+  --sish-primary-lt:  #fff1f2;
+  --sish-primary-md:  #fda4af;
+  --sish-border:      #fecdd3;
+  --sish-dark:        #9f1239;
+  --sish-radius:      10px;
+  --sish-shadow:      0 1px 6px rgba(225, 29, 72, 0.08);
+}
+
+// ── Utility ────────────────────────────────────────────────────────────────
+.text-rose { color: var(--sish-primary) !important; }
+.btn-rose  {
+  background: var(--sish-primary);
+  border-color: var(--sish-primary);
+  color: #fff;
+  &:hover, &:focus { background: var(--sish-dark); border-color: var(--sish-dark); color: #fff; }
+}
+
+// ── Page Header Badge ──────────────────────────────────────────────────────
+.sish-title-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--sish-primary-lt);
+  color: var(--sish-primary);
+  font-size: 1.15rem;
+  vertical-align: middle;
+}
+
+// ── Period Dropdown ────────────────────────────────────────────────────────
+.sish-period-toggle {
+  background: var(--sish-primary-lt);
+  color: var(--sish-primary);
+  border: 1px solid var(--sish-border);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  padding: 6px 14px;
+  &:hover, &:focus { background: var(--sish-border); }
+}
+
+.sish-period-menu {
+  min-width: 140px;
+  border: 1px solid var(--sish-border);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.sish-period-item {
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  &.active {
+    background: var(--sish-primary);
+    color: #fff;
+  }
+  &:hover:not(.active) { background: var(--sish-primary-lt); }
+}
+
+// ── Date Range Form ────────────────────────────────────────────────────────
+.sish-date-form   { align-items: center; }
+.sish-date-field  { position: relative; }
+.sish-date-input  {
+  font-size: 0.85rem;
+  border-radius: 8px;
+  border-color: var(--sish-border);
+  min-width: 200px;
+  background: var(--sish-primary-lt);
+  &:focus { border-color: var(--sish-primary); box-shadow: 0 0 0 2px rgba(225,29,72,.12); }
+}
+
+// ── Geo Filter Bar ─────────────────────────────────────────────────────────
+.sish-geo-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px 16px;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: var(--sish-radius);
+  box-shadow: var(--sish-shadow);
+}
+
+.sish-geo-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+  flex: 1 1 140px;
+}
+
+.sish-geo-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.sish-geo-select {
+  font-size: 0.82rem;
+  border-radius: 7px;
+  border-color: #e2e8f0;
+  &:focus { border-color: var(--sish-primary); box-shadow: 0 0 0 2px rgba(225,29,72,.1); }
+}
+
+// ── KPI Cards ──────────────────────────────────────────────────────────────
+.sish-kpi-card {
+  border: none;
+  border-radius: var(--sish-radius);
+  box-shadow: var(--sish-shadow);
+  border-left: 3px solid transparent;
+  transition: transform 0.15s, box-shadow 0.15s;
+  cursor: default;
+  &:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(225,29,72,.14); }
+}
+
+.sish-kpi-rose   { border-left-color: #e11d48; }
+.sish-kpi-orange { border-left-color: #f97316; }
+.sish-kpi-teal   { border-left-color: #14b8a6; }
+.sish-kpi-indigo { border-left-color: #6366f1; }
+.sish-kpi-amber  { border-left-color: #f59e0b; }
+
+.sish-kpi-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.15rem;
+}
+
+.sish-icon-rose   { background: #fff1f2; color: #e11d48; }
+.sish-icon-orange { background: #fff7ed; color: #f97316; }
+.sish-icon-teal   { background: #f0fdfa; color: #14b8a6; }
+.sish-icon-indigo { background: #eef2ff; color: #6366f1; }
+.sish-icon-amber  { background: #fffbeb; color: #f59e0b; }
+
+.sish-kpi-label { font-size: 0.78rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em; }
+.sish-kpi-value { font-size: 1.6rem; font-weight: 700; color: #1e293b; line-height: 1.1; margin-bottom: 4px; }
+.sish-kpi-sub   { font-size: 0.78rem; }
+
+// ── Velocity Highlight Cards ───────────────────────────────────────────────
+.sish-velocity-highlight {
+  border-radius: var(--sish-radius);
+  &.fastest { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  &.slowest { background: #fff1f2; border: 1px solid var(--sish-border); }
+}
+
+.sish-vel-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
+  flex-shrink: 0;
+  &.fastest { background: #dcfce7; color: #16a34a; }
+  &.slowest { background: #ffe4e6; color: var(--sish-primary); }
+}
+
+// ── Section Nav ────────────────────────────────────────────────────────────
+.sish-section-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 14px;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: var(--sish-radius);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+
+.sish-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 14px;
+  border-radius: 7px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.83rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+
+  i { font-size: 0.9rem; }
+
+  &:hover:not(.active) {
+    background: var(--sish-primary-lt);
+    color: var(--sish-primary);
+    border-color: var(--sish-border);
+  }
+
+  &.active {
+    background: var(--sish-primary);
+    color: #fff;
+    border-color: var(--sish-primary);
+    box-shadow: 0 2px 6px rgba(225,29,72,.25);
+  }
+}
+
+// ── Shimmer Loading ────────────────────────────────────────────────────────
+.sish-shimmer {
+  border-radius: 8px;
+  background: linear-gradient(90deg, #f5f5f5 25%, #ececec 50%, #f5f5f5 75%);
+  background-size: 200% 100%;
+  animation: sish-shimmer-anim 1.4s infinite;
+}
+
+@keyframes sish-shimmer-anim {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+// ── Table Styles ───────────────────────────────────────────────────────────
+.sish-table-group {
+  border-bottom: 2px solid #f8fafc;
+  &:last-child { border-bottom: none; }
+}
+
+.sish-table-group-header {
+  padding: 8px 16px;
+  background: #fafafa;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #475569;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.sish-table {
+  font-size: 0.83rem;
+
+  tbody tr {
+    &:hover { background: var(--sish-primary-lt); }
+  }
+
+  td, th { padding: 8px 12px; vertical-align: middle; }
+}
+
+.sish-thead {
+  background: #f8fafc;
+  th {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #94a3b8;
+    border-bottom: 2px solid #f0f0f0;
+    white-space: nowrap;
+  }
+}
+
+// ── Progress Bar ───────────────────────────────────────────────────────────
+.sish-progress {
+  width: 60px;
+  height: 6px;
+  background: #f0f0f0;
+  border-radius: 3px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sish-progress-bar {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+// ── Drill-Down Button ──────────────────────────────────────────────────────
+.sish-drill-btn {
+  color: var(--sish-primary) !important;
+  font-size: 0.83rem;
+  font-weight: 500;
+  padding: 0;
+  &:hover { color: var(--sish-dark) !important; text-decoration: underline !important; }
+}
+
+.sish-drill-brand-name {
+  cursor: pointer;
+  color: var(--sish-primary);
+  font-weight: 500;
+  &:hover { text-decoration: underline; }
+}
+
+// ── Rank top ──────────────────────────────────────────────────────────────
+.sish-rank-top { font-size: 1.05rem; min-width: 36px; }
+
+// ── Evolution Cards ────────────────────────────────────────────────────────
+.sish-evo-card {
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #f0f0f0;
+  background: #fafafa;
+
+  &.sish-evo-up   { background: #f0fdf4; border-color: #bbf7d0; }
+  &.sish-evo-down { background: var(--sish-primary-lt); border-color: var(--sish-border); }
+  &.sish-evo-flat { background: #f8fafc; border-color: #e2e8f0; }
+}
+
+// ── Empty State ────────────────────────────────────────────────────────────
+.sish-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  color: #94a3b8;
+  text-align: center;
+
+  i { font-size: 2.5rem; margin-bottom: 12px; opacity: 0.5; }
+  p { font-size: 0.9rem; margin: 0; }
+}
+
+// ── Back Button ────────────────────────────────────────────────────────────
+.sish-back-btn {
+  font-size: 0.82rem;
+  border-radius: 7px;
+  border-color: #e2e8f0;
+  &:hover { background: var(--sish-primary-lt); border-color: var(--sish-border); color: var(--sish-primary); }
+}
+
+// ── Tooltip (scatter / velocity) ───────────────────────────────────────────
+.sish-tooltip-scatter {
+  padding: 8px 12px;
+  background: #1e293b;
+  color: #f1f5f9;
+  border-radius: 7px;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  max-width: 200px;
+}
+
+// ── Velocity Buckets ───────────────────────────────────────────────────────
+.sish-vel-bucket {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100px;
+  padding: 16px 12px;
+  border-radius: 10px;
+  text-align: center;
+
+  &.fast    { background: #f0fdf4; border: 1px solid #bbf7d0; }
+  &.aligned { background: #eff6ff; border: 1px solid #bfdbfe; }
+  &.slow    { background: var(--sish-primary-lt); border: 1px solid var(--sish-border); }
+}
+
+.sish-vel-bucket-count {
+  font-size: 1.9rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 4px;
+
+  .fast & { color: #16a34a; }
+  .aligned & { color: #2563eb; }
+  .slow & { color: var(--sish-primary); }
+}
+
+.sish-vel-bucket-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+// ── Position Chips (KPI section) ───────────────────────────────────────────
+.sish-pos-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+
+  &.fast-leader  { background: #f0fdf4; border-color: #bbf7d0; color: #16a34a; }
+  &.sell-star    { background: #eff6ff; border-color: #bfdbfe; color: #2563eb; }
+  &.hoarder      { background: #fffbeb; border-color: #fde68a; color: #92400e; }
+  &.under        { background: var(--sish-primary-lt); border-color: var(--sish-border); color: var(--sish-primary); }
+}
+
+// ── Quadrant Items (correlation section) ──────────────────────────────────
+.sish-quadrant-item {
+  border: 1px solid transparent;
+  cursor: default;
+
+  &.fast-leader  { background: #f0fdf4 !important; border-color: #bbf7d0 !important; }
+  &.sell-star    { background: #eff6ff !important; border-color: #bfdbfe !important; }
+  &.hoarder      { background: #fffbeb !important; border-color: #fde68a !important; }
+  &.under        { background: var(--sish-primary-lt) !important; border-color: var(--sish-border) !important; }
+}
+
+// ── Responsive ────────────────────────────────────────────────────────────
+@media (max-width: 576px) {
+  .sish-geo-bar     { gap: 8px; padding: 10px; }
+  .sish-section-nav { gap: 4px; padding: 8px; }
+  .sish-nav-btn     { padding: 5px 10px; font-size: 0.78rem; }
+  .sish-kpi-value   { font-size: 1.3rem; }
+  .sish-vel-bucket  { width: 80px; }
+}

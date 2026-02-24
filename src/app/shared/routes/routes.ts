@@ -51,6 +51,9 @@ export class routes {
   public static get wdDashboard(): string {
     return this.dashboard + '/weighted-distribution';
   }
+  public static get wsDashboard(): string {
+    return this.dashboard + '/weighted-sales';
+  }
   public static get sishDashboard(): string {
     return this.dashboard + '/share-in-shop-handling';
   }
@@ -173,6 +176,11 @@ export class routes {
 // Brands
   public static get brand(): string {
     return this.core + '/web/brands/list';
+  }
+
+  // ND Individuel
+  public static get ndIndividual(): string {
+    return this.core + '/web/nd-individual';
   }
 
 

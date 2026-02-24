@@ -261,10 +261,31 @@
     </div>
 
     <!-- Mobile Menu -->
+    <!-- Online/Offline + Sync - Mobile only -->
+    <div class="d-flex d-md-none align-items-center mobile-status-wrap">
+        <span class="mobile-net-dot"
+              [class.online]="onLine() && !isSyncing()"
+              [class.offline]="!onLine() && !isSyncing()"
+              [class.syncing]="isSyncing()"
+              [title]="isSyncing() ? 'Synchronisation...' : (onLine() ? 'En ligne' : 'Hors ligne')">
+        </span>
+    </div>
+    <!-- /Online/Offline + Sync - Mobile only -->
     <div class="dropdown mobile-user-menu">
         <a href="javascript:void(0);" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
             <i class="fa fa-ellipsis-v"></i></a>
         <div class="dropdown-menu">
+            <!-- Theme Toggle -->
+            <div class="dropdown-item d-flex align-items-center justify-content-between mobile-theme-item">
+                <span><i class="ti ti-brightness-half me-2"></i>Thème</span>
+                <div class="mobile-theme-toggle">
+                    <i class="ti ti-sun" [ngClass]="{'active': themeMode() === 'light_mode'}"
+                        (click)="changeThemeMode('light_mode')" title="Mode clair"></i>
+                    <i class="ti ti-moon" [ngClass]="{'active': themeMode() === 'dark_mode'}"
+                        (click)="changeThemeMode('dark_mode')" title="Mode sombre"></i>
+                </div>
+            </div>
+            <div class="dropdown-divider"></div>
             <!-- <a class="dropdown-item" [routerLink] = "routes.msposDashboard">  
                 <i class="ti ti-layout-2"></i> Dashboard
             </a> -->

@@ -1,48 +1,1381 @@
 <div class="page-wrapper">
   <div class="content">
-    <div class="row">
+
+    <!-- ── PAGE HEADER ──────────────────────────────────────────────────────── -->
+    <div class="row mb-3">
       <div class="col-md-12">
-        <div class="page-header">
+        <div class="page-header mb-0">
           <div class="row align-items-center">
-            <div class="col-md-4">
-              <h3 class="page-title">SHARE OF STOCK</h3>
-              <h6></h6>
+            <div class="col-md-6">
+              <h3 class="page-title mb-0 d-flex align-items-center gap-2">
+                <span class="sos-title-badge"><i class="ti ti-chart-pie"></i></span>
+                SHARE OF STOCK
+              </h3>
+              <p class="text-muted small mb-0 mt-1">
+                SOS% = Fardes marque ÷ total fardes × 100 — plus élevé = meilleure présence
+              </p>
             </div>
-            <div class="col-md-8 float-end ms-auto">
-              @if (this.currentUser) {
-              <div class="d-flex title-head">
-                <div class="head-icons mb-0">
-                  <app-reload></app-reload>
-                  <app-collapse-header></app-collapse-header>
-                </div>
+            <div class="col-md-6 d-flex justify-content-end align-items-center gap-2 flex-wrap">
+
+              <!-- Period dropdown -->
+              <div class="dropdown">
+                <button class="btn sos-period-toggle dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                  aria-expanded="false">
+                  <i class="ti ti-calendar-stats me-1"></i>
+                  {{ getPeriodLabel() }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end sos-period-menu shadow-sm">
+                  @for (p of PERIODS; track p.key) {
+                  @if (p.key !== 'custom') {
+                  <li>
+                    <button class="dropdown-item sos-period-item" [class.active]="selectedPeriod() === p.key"
+                      (click)="setPeriod(p.key)">
+                      <i class="ti {{ selectedPeriod() === p.key ? 'ti-check' : 'ti-point' }} me-2"></i>
+                      {{ p.label }}
+                    </button>
+                  </li>
+                  }
+                  }
+                  <li>
+                    <hr class="dropdown-divider my-1">
+                  </li>
+                  <li>
+                    <button class="dropdown-item sos-period-item" [class.active]="selectedPeriod() === 'custom'"
+                      (click)="setPeriod('custom')">
+                      <i class="ti {{ selectedPeriod() === 'custom' ? 'ti-check' : 'ti-calendar-event' }} me-2"></i>
+                      Personnalisé
+                    </button>
+                  </li>
+                </ul>
               </div>
+
+              @if (selectedPeriod() === 'custom') {
+              <form [formGroup]="dateRange" class="sos-date-form">
+                <div class="sos-date-field">
+                  <i class="ti ti-calendar-event"></i>
+                  <input type="text" class="form-control bookingrange sos-date-input"
+                    placeholder="Sélectionner une période" bsDaterangepicker
+                    [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
+                    formControlName="rangeValue" />
+                </div>
+              </form>
               }
+
+              <div class="head-icons mb-0 d-flex gap-1">
+                <app-reload></app-reload>
+                <app-collapse-header></app-collapse-header>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- ── GEO FILTERS ─────────────────────────────────────────────────────── -->
+    <div class="sos-geo-bar mb-3">
+      <div class="sos-geo-item">
+        <label class="sos-geo-label"><i class="ti ti-world me-1"></i>Pays</label>
+        <select class="form-select form-select-sm sos-select" [(ngModel)]="selectedCountry"
+          (ngModelChange)="onCountryChange($event)">
+          @for (c of countryList(); track c.uuid) {
+          <option [ngValue]="c">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="sos-geo-item">
+        <label class="sos-geo-label"><i class="ti ti-map-2 me-1"></i>Province</label>
+        <select class="form-select form-select-sm sos-select" [(ngModel)]="selectedProvince"
+          (ngModelChange)="onProvinceChange($event)">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (p of provinceList(); track p.uuid) {
+          <option [ngValue]="p">{{ p.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="sos-geo-item" [class.sos-geo-disabled]="!selectedProvince">
+        <label class="sos-geo-label"><i class="ti ti-map-pin me-1"></i>Area</label>
+        <select class="form-select form-select-sm sos-select" [(ngModel)]="selectedArea"
+          (ngModelChange)="onAreaChange($event)" [disabled]="!selectedProvince">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (a of areaList(); track a.uuid) {
+          <option [ngValue]="a">{{ a.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="sos-geo-item" [class.sos-geo-disabled]="!selectedArea">
+        <label class="sos-geo-label"><i class="ti ti-location me-1"></i>Sub-Area</label>
+        <select class="form-select form-select-sm sos-select" [(ngModel)]="selectedSubArea"
+          (ngModelChange)="onSubAreaChange($event)" [disabled]="!selectedArea">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (s of subAreaList(); track s.uuid) {
+          <option [ngValue]="s">{{ s.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="sos-geo-item" [class.sos-geo-disabled]="!selectedSubArea">
+        <label class="sos-geo-label"><i class="ti ti-building-community me-1"></i>Commune</label>
+        <select class="form-select form-select-sm sos-select" [(ngModel)]="selectedCommune"
+          (ngModelChange)="onCommuneChange($event)" [disabled]="!selectedSubArea">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (c of communeList(); track c.uuid) {
+          <option [ngValue]="c">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+    </div>
 
-    <router-outlet />
-
-
-    <!-- <div class="row">
-      <div class="col-md-12 d-flex">
-        <div class="card w-100">
-          <div class="card-header border-0 pb-0">
-            <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
-              <h4><i class="ti ti-grip-vertical me-1"></i>SOS by Year</h4>
-            </div>
-          </div>
+    <!-- ── KPI CARDS ───────────────────────────────────────────────────────── -->
+    @if (isLoadingKpi()) {
+    <div class="row g-3 mb-3">
+      @for (i of [1,2,3,4,5,6]; track i) {
+      <div class="col-6 col-md-4 col-xl-auto flex-grow-1">
+        <div class="card border-0 shadow-sm sos-kpi-skeleton">
           <div class="card-body">
-            <app-sos-chart-line [isLoading]="isLoading" [ndYear]="ndYearList"></app-sos-chart-line>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line short"></div>
           </div>
         </div>
       </div>
-    </div> -->
+      }
+    </div>
+    }
+    @if (!isLoadingKpi() && kpiData()) {
+    <div class="row g-3 mb-3">
+      <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+        <div class="sos-kpi-card accent-blue">
+          <div class="sos-kpi-icon"><i class="ti ti-package"></i></div>
+          <div class="sos-kpi-body">
+            <span class="sos-kpi-label">Total Fardes</span>
+            <span class="sos-kpi-value">{{ kpiData()!.total_fardes | number }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+        <div class="sos-kpi-card accent-teal">
+          <div class="sos-kpi-icon"><i class="ti ti-building-store"></i></div>
+          <div class="sos-kpi-body">
+            <span class="sos-kpi-label">POS Visités</span>
+            <span class="sos-kpi-value">{{ kpiData()!.total_pos_visited | number }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+        <div class="sos-kpi-card accent-green">
+          <div class="sos-kpi-icon"><i class="ti ti-crown"></i></div>
+          <div class="sos-kpi-body">
+            <span class="sos-kpi-label">Marque Dominante</span>
+            <span class="sos-kpi-value small">{{ kpiData()!.dominant_brand }}</span>
+            <span class="sos-kpi-sub">{{ kpiData()!.dominant_sos | number:'1.1-1' }}% SOS</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+        <div class="sos-kpi-card accent-orange">
+          <div class="sos-kpi-icon"><i class="ti ti-arrow-down-circle"></i></div>
+          <div class="sos-kpi-body">
+            <span class="sos-kpi-label">Marque Faible</span>
+            <span class="sos-kpi-value small">{{ kpiData()!.weakest_brand }}</span>
+            <span class="sos-kpi-sub">{{ kpiData()!.weakest_sos | number:'1.1-1' }}% SOS</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+        <div class="sos-kpi-card accent-purple">
+          <div class="sos-kpi-icon"><i class="ti ti-brand-databricks"></i></div>
+          <div class="sos-kpi-body">
+            <span class="sos-kpi-label">Indice HHI</span>
+            <span class="sos-kpi-value">{{ kpiData()!.hhi_index | number:'1.0-0' }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+        <div class="sos-kpi-card accent-amber">
+          <div class="sos-kpi-icon"><i class="ti ti-chart-pie"></i></div>
+          <div class="sos-kpi-body">
+            <span class="sos-kpi-label">Structure Marché</span>
+            <span class="sos-kpi-value small">
+              <span [class]="getMarketStructureBadge(kpiData()!.market_structure)">
+                {{ kpiData()!.market_structure | titlecase }}
+              </span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+    }
 
-  </div>
+    <!-- ── SECTION NAV TABS ─────────────────────────────────────────────────── -->
+    <div class="sos-section-nav mb-3">
+      <button class="sos-nav-btn" [class.active]="activeSection() === 'kpi'" (click)="setSection('kpi')">
+        <i class="ti ti-dashboard me-1"></i>KPIs
+      </button>
+      <button class="sos-nav-btn" [class.active]="activeSection() === 'trend'" (click)="setSection('trend')">
+        <i class="ti ti-chart-line me-1"></i>Tendance
+      </button>
+      <button class="sos-nav-btn" [class.active]="activeSection() === 'tableview'" (click)="setSection('tableview')">
+        <i class="ti ti-table me-1"></i>Tables
+      </button>
+      <button class="sos-nav-btn" [class.active]="activeSection() === 'barchart'" (click)="setSection('barchart')">
+        <i class="ti ti-chart-bar me-1"></i>Barres
+      </button>
+      <button class="sos-nav-btn" [class.active]="activeSection() === 'ranking'" (click)="setSection('ranking')">
+        <i class="ti ti-trophy me-1"></i>Classement
+      </button>
+      <button class="sos-nav-btn" [class.active]="activeSection() === 'concentration'"
+        (click)="setSection('concentration')">
+        <i class="ti ti-brand-databricks me-1"></i>Concentration
+      </button>
+      <button class="sos-nav-btn" [class.active]="activeSection() === 'heatmap'" (click)="setSection('heatmap')">
+        <i class="ti ti-layout-grid me-1"></i>Heatmap
+      </button>
+      <button class="sos-nav-btn" [class.active]="activeSection() === 'evolution'" (click)="setSection('evolution')">
+        <i class="ti ti-trending-up me-1"></i>Évolution
+      </button>
+      <button class="sos-nav-btn" [class.active]="activeSection() === 'gap'" (click)="setSection('gap')">
+        <i class="ti ti-arrows-left-right me-1"></i>Gap
+      </button>
+      <button class="sos-nav-btn" [class.active]="activeSection() === 'drilldown'" (click)="setSection('drilldown')">
+        <i class="ti ti-zoom-in me-1"></i>Drill-Down POS
+      </button>
+      <button class="sos-nav-btn" [class.active]="activeSection() === 'vsnd'" (click)="setSection('vsnd')">
+        <i class="ti ti-dots-diagonal me-1"></i>SOS vs ND
+      </button>
+    </div>
 
- 
-</div>
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: TREND — SOS% par marque par mois
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'trend') {
+    <div class="row g-3">
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+            <h5 class="fw-semibold mb-0">
+              <i class="ti ti-chart-line me-2 text-primary"></i>
+              Tendance mensuelle SOS% par marque
+            </h5>
+            @if (isLoadingTrend()) { <div class="spinner-border spinner-border-sm text-primary"></div> }
+          </div>
+          <div class="card-body px-2 pt-2 pb-1">
+            @if (!isLoadingTrend() && chartTrendOpts()) {
+            <apx-chart #chartTrend [series]="chartTrendOpts()!.series" [chart]="chartTrendOpts()!.chart"
+              [colors]="chartTrendOpts()!.colors" [stroke]="chartTrendOpts()!.stroke"
+              [markers]="chartTrendOpts()!.markers" [dataLabels]="chartTrendOpts()!.dataLabels"
+              [xaxis]="chartTrendOpts()!.xaxis" [yaxis]="chartTrendOpts()!.yaxis" [legend]="chartTrendOpts()!.legend"
+              [tooltip]="chartTrendOpts()!.tooltip" [grid]="chartTrendOpts()!.grid">
+            </apx-chart>
+            } @else if (!isLoadingTrend()) {
+            <div class="sos-empty-state">
+              <i class="ti ti-chart-off"></i>
+              <p>Aucune donnée de tendance disponible</p>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly detail table -->
+      @if (!isLoadingTrend() && trendData().length > 0) {
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header border-0 pb-0 pt-3 px-3">
+            <h6 class="fw-semibold mb-0 text-secondary">
+              <i class="ti ti-table me-2 text-primary"></i>
+              Détail mensuel SOS% par marque
+            </h6>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 sos-table">
+                <thead class="sos-thead">
+                  <tr>
+                    <th>Marque</th>
+                    <th>Mois</th>
+                    <th class="text-end">Fardes Marque</th>
+                    <th class="text-end">Total Fardes</th>
+                    <th class="text-end">SOS %</th>
+                    <th class="text-center">Niveau</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (brand of trendData(); track brand.brand_uuid) {
+                  @for (pt of brand.data; track pt.month) {
+                  <tr>
+                    <td class="fw-semibold text-primary">{{ brand.brand_name }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ pt.month }}</span></td>
+                    <td class="text-end">{{ pt.brand_fardes | number }}</td>
+                    <td class="text-end text-muted">{{ pt.total_fardes | number }}</td>
+                    <td class="text-end fw-bold">
+                      <span [class]="getSosBadge(pt.sos_percent)">{{ pt.sos_percent | number:'1.1-1' }}%</span>
+                    </td>
+                    <td class="text-center">
+                      <div class="progress sos-progress-mini">
+                        <div
+                          class="progress-bar {{ pt.sos_percent >= 50 ? 'bg-success' : pt.sos_percent >= 30 ? 'bg-info' : pt.sos_percent >= 15 ? 'bg-warning' : 'bg-secondary' }}"
+                          [style.width]="pt.sos_percent + '%'">
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  }
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: TABLE VIEW — Grille territoire × marque
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'tableview') {
+    <div class="card border-0 shadow-sm sos-tableview-card">
+      <div class="card-header sos-tableview-header px-3 py-2">
+        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <!-- Geo breadcrumb -->
+          <div class="sos-geo-crumb">
+            <i class="ti ti-map me-1 text-primary"></i>
+            <span>{{ selectedCountry?.name ?? '—' }}</span>
+            @if (selectedProvince) {
+            <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+            <span class="text-primary">{{ selectedProvince.name }}</span>
+            }
+            @if (selectedArea) {
+            <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+            <span class="text-warning">{{ selectedArea.name }}</span>
+            }
+            @if (selectedSubArea) {
+            <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+            <span>{{ selectedSubArea.name }}</span>
+            }
+            @if (selectedCommune) {
+            <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+            <span class="text-success fw-bold">{{ selectedCommune.name }}</span>
+            }
+          </div>
+          <!-- Geo level tabs -->
+          <div class="sos-geo-level-tabs">
+            @for (lvl of ['province','area','subarea','commune']; track lvl) {
+            <button class="sos-level-btn" [class.active]="geoLevel() === lvl" (click)="onGeoLevelChange($any(lvl))">
+              <i
+                class="ti {{ lvl === 'province' ? 'ti-map-2' : lvl === 'area' ? 'ti-map-pin' : lvl === 'subarea' ? 'ti-location' : 'ti-building-community' }}"></i>
+              {{ lvl | titlecase }}
+            </button>
+            }
+            @if (isLoadingTable()) {
+            <div class="spinner-border spinner-border-sm text-primary ms-2"></div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="card-body p-0">
+        @if (isLoadingTable()) {
+        <div class="d-flex justify-content-center p-5">
+          <div class="spinner-border text-primary"></div>
+        </div>
+        } @else if (tableGrouped().length === 0) {
+        <div class="sos-empty-state"><i class="ti ti-table-off"></i>
+          <p>Aucune donnée</p>
+        </div>
+        } @else {
+        @for (group of tableGrouped(); track group.territory_uuid) {
+        <div class="sos-territory-group">
+          <div class="sos-territory-header">
+            <i class="ti ti-map-2 me-2 text-primary"></i>
+            <span class="fw-semibold">{{ group.territory_name }}</span>
+            <span class="badge bg-light text-dark border ms-2">{{ group.rows.length }} marques</span>
+          </div>
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 sos-table">
+              <thead class="sos-thead">
+                <tr>
+                  <th>Marque</th>
+                  <th class="text-end">Fardes Marque</th>
+                  <th class="text-end">Total Fardes</th>
+                  <th class="text-end">Nb POS</th>
+                  <th class="text-end">Total POS</th>
+                  <th class="text-end">Moy. SOS/POS</th>
+                  <th class="text-end">SOS %</th>
+                  <th class="text-center" style="width:100px">Niveau</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of group.rows; track row.brand_uuid) {
+                <tr>
+                  <td class="fw-semibold text-primary">{{ row.brand_name }}</td>
+                  <td class="text-end">{{ row.brand_fardes | number }}</td>
+                  <td class="text-end text-muted">{{ row.total_fardes | number }}</td>
+                  <td class="text-end">{{ row.pos_count | number }}</td>
+                  <td class="text-end text-muted">{{ row.total_pos | number }}</td>
+                  <td class="text-end text-muted small">{{ row.avg_sos_per_pos | number:'1.1-1' }}</td>
+                  <td class="text-end">
+                    <span [class]="getSosBadge(row.sos_percent)">{{ row.sos_percent | number:'1.1-1' }}%</span>
+                  </td>
+                  <td>
+                    <div class="progress sos-progress">
+                      <div
+                        class="progress-bar {{ row.sos_percent >= 50 ? 'bg-success' : row.sos_percent >= 30 ? 'bg-info' : row.sos_percent >= 15 ? 'bg-warning' : 'bg-secondary' }}"
+                        [style.width]="row.sos_percent + '%'" [title]="row.sos_percent + '%'">
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        }
+        }
+      </div>
+    </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: BAR CHART — SOS% par territoire et marque
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'barchart') {
+    <div class="row g-3">
+      <!-- Geo level selector -->
+      <div class="col-12 d-flex align-items-center gap-2 mb-1">
+        <span class="text-muted small fw-semibold">Niveau :</span>
+        @for (lvl of ['province','area','subarea','commune']; track lvl) {
+        <button class="sos-pill" [class.active]="geoLevel() === lvl" (click)="onGeoLevelChange($any(lvl))">
+          {{ lvl | titlecase }}
+        </button>
+        }
+        @if (isLoadingBar()) { <div class="spinner-border spinner-border-sm text-primary ms-2"></div> }
+      </div>
+
+      <!-- Bar chart -->
+      <div class="col-xl-8">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+            <h6 class="fw-semibold mb-0 text-secondary">
+              <i class="ti ti-chart-bar-popular me-2 text-primary"></i>
+              SOS% par territoire — Barres groupées par marque
+            </h6>
+          </div>
+          <div class="card-body px-2 pt-2">
+            @if (!isLoadingBar() && chartBarOpts()) {
+            <apx-chart #chartBar [series]="chartBarOpts()!.series" [chart]="chartBarOpts()!.chart"
+              [colors]="chartBarOpts()!.colors" [plotOptions]="chartBarOpts()!.plotOptions"
+              [dataLabels]="chartBarOpts()!.dataLabels" [xaxis]="chartBarOpts()!.xaxis" [yaxis]="chartBarOpts()!.yaxis"
+              [legend]="chartBarOpts()!.legend" [tooltip]="chartBarOpts()!.tooltip">
+            </apx-chart>
+            } @else if (!isLoadingBar()) {
+            <div class="sos-empty-state"><i class="ti ti-chart-off"></i>
+              <p>Aucune donnée</p>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Brand series detail panel -->
+      <div class="col-xl-4">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header border-0 pb-0 pt-3 px-3">
+            <h6 class="fw-semibold mb-0 text-secondary">
+              <i class="ti ti-list me-2 text-primary"></i>
+              SOS% par marque / territoire
+            </h6>
+          </div>
+          <div class="card-body p-0" style="overflow-y:auto;max-height:400px">
+            @if (isLoadingBar()) {
+            <div class="d-flex justify-content-center p-4">
+              <div class="spinner-border text-primary"></div>
+            </div>
+            } @else {
+            @for (group of barData(); track group.territory_uuid) {
+            <div class="sos-bar-group px-3 py-2 border-bottom">
+              <div class="d-flex align-items-center justify-content-between mb-1">
+                <span class="fw-semibold small text-primary">{{ group.territory_name }}</span>
+                <span class="text-muted" style="font-size:.72rem">{{ group.total_fardes | number }} fardes</span>
+              </div>
+              @for (brand of group.brands; track brand.brand_uuid) {
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <span class="text-muted"
+                  style="width:90px;font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{
+                  brand.brand_name }}</span>
+                <div class="progress flex-grow-1 sos-progress">
+                  <div
+                    class="progress-bar {{ brand.sos_percent >= 50 ? 'bg-success' : brand.sos_percent >= 30 ? 'bg-info' : brand.sos_percent >= 15 ? 'bg-warning' : 'bg-secondary' }}"
+                    [style.width]="brand.sos_percent + '%'">
+                  </div>
+                </div>
+                <span class="fw-semibold" style="width:38px;text-align:right;font-size:.75rem">{{ brand.sos_percent
+                  }}%</span>
+              </div>
+              }
+            </div>
+            }
+            @if (barData().length === 0) {
+            <div class="sos-empty-state"><i class="ti ti-table-off"></i>
+              <p>Aucune donnée</p>
+            </div>
+            }
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: RANKING — Classement des marques par SOS%
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'ranking') {
+    <div class="row g-3">
+      <!-- Horizontal bar chart -->
+      <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+            <h6 class="fw-semibold mb-0 text-secondary">
+              <i class="ti ti-trophy me-2 text-primary"></i>
+              Classement Marques — SOS%
+            </h6>
+            @if (isLoadingRanking()) { <div class="spinner-border spinner-border-sm text-primary"></div> }
+          </div>
+          <div class="card-body px-2 pt-2">
+            @if (!isLoadingRanking() && chartRankingOpts()) {
+            <apx-chart #chartRanking [series]="chartRankingOpts()!.series" [chart]="chartRankingOpts()!.chart"
+              [colors]="chartRankingOpts()!.colors" [plotOptions]="chartRankingOpts()!.plotOptions"
+              [dataLabels]="chartRankingOpts()!.dataLabels" [xaxis]="chartRankingOpts()!.xaxis"
+              [legend]="chartRankingOpts()!.legend" [tooltip]="chartRankingOpts()!.tooltip">
+            </apx-chart>
+            } @else if (!isLoadingRanking()) {
+            <div class="sos-empty-state"><i class="ti ti-trophy-off"></i>
+              <p>Aucune donnée</p>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Full ranking table -->
+      <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header border-0 pb-0 pt-3 px-3">
+            <h6 class="fw-semibold mb-0 text-secondary">
+              <i class="ti ti-list-numbers me-2 text-primary"></i>
+              Part de marché complète par marque
+            </h6>
+          </div>
+          <div class="card-body p-0">
+            @if (isLoadingRanking()) {
+            <div class="d-flex justify-content-center p-4">
+              <div class="spinner-border text-primary"></div>
+            </div>
+            } @else {
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 sos-table">
+                <thead class="sos-thead">
+                  <tr>
+                    <th class="text-center">Rang</th>
+                    <th>Marque</th>
+                    <th class="text-end">Fardes</th>
+                    <th class="text-end">Total</th>
+                    <th class="text-end">SOS %</th>
+                    <th class="text-end">SOS Cumulé</th>
+                    <th class="text-center">Position</th>
+                    <th style="width:80px">Part</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of rankingData(); track row.brand_uuid) {
+                  <tr [class.sos-rank-top]="row.rank <= 3">
+                    <td class="text-center fw-bold">{{ getRankMedal(row.rank) }}</td>
+                    <td class="fw-semibold text-primary">
+                      <button class="btn btn-link btn-sm p-0 text-primary text-decoration-none fw-semibold"
+                        (click)="selectDrillBrand(row.brand_uuid, row.brand_name)">
+                        {{ row.brand_name }}
+                        <i class="ti ti-zoom-in ms-1" style="font-size:.7rem"></i>
+                      </button>
+                    </td>
+                    <td class="text-end">{{ row.brand_fardes | number }}</td>
+                    <td class="text-end text-muted">{{ row.total_fardes | number }}</td>
+                    <td class="text-end">
+                      <span [class]="getSosBadge(row.sos_percent)">{{ row.sos_percent | number:'1.1-1' }}%</span>
+                    </td>
+                    <td class="text-end text-muted small">{{ row.cumulative_sos | number:'1.1-1' }}%</td>
+                    <td class="text-center">
+                      <span [class]="getDominanceBadge(row.dominance)">{{ row.dominance | titlecase }}</span>
+                    </td>
+                    <td>
+                      <div class="progress sos-progress">
+                        <div
+                          class="progress-bar {{ row.sos_percent >= 50 ? 'bg-success' : row.sos_percent >= 30 ? 'bg-info' : row.sos_percent >= 15 ? 'bg-warning' : 'bg-secondary' }}"
+                          [style.width]="row.sos_percent + '%'">
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  }
+                  @empty {
+                  <tr>
+                    <td colspan="8" class="text-center text-muted py-4">Aucune donnée</td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: CONCENTRATION — HHI par territoire
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'concentration') {
+    <div class="row g-3">
+      <!-- Level selector -->
+      <div class="col-12 d-flex align-items-center gap-2 mb-1">
+        <span class="text-muted small fw-semibold">Niveau territorial :</span>
+        @for (lvl of ['province','area','subarea','commune']; track lvl) {
+        <button class="sos-pill" [class.active]="concentrationLevel() === lvl"
+          (click)="onConcentrationLevelChange($any(lvl))">
+          {{ lvl | titlecase }}
+        </button>
+        }
+        @if (isLoadingConcentration()) { <div class="spinner-border spinner-border-sm text-primary ms-2"></div> }
+      </div>
+
+      <!-- HHI Legend -->
+      <div class="col-12">
+        <div class="row g-2 mb-1">
+          <div class="col-md-4">
+            <div class="sos-hhi-card hhi-competitive">
+              <div class="d-flex align-items-center gap-2">
+                <div class="sos-hhi-dot hhi-competitive-dot"></div>
+                <div>
+                  <div class="fw-semibold small">Compétitif (HHI &lt; 1500)</div>
+                  <div class="text-muted" style="font-size:.72rem">Distribution équilibrée entre marques</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="sos-hhi-card hhi-moderate">
+              <div class="d-flex align-items-center gap-2">
+                <div class="sos-hhi-dot hhi-moderate-dot"></div>
+                <div>
+                  <div class="fw-semibold small">Modéré (1500–2500)</div>
+                  <div class="text-muted" style="font-size:.72rem">Légère concentration du marché</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="sos-hhi-card hhi-concentrated">
+              <div class="d-flex align-items-center gap-2">
+                <div class="sos-hhi-dot hhi-concentrated-dot"></div>
+                <div>
+                  <div class="fw-semibold small">Concentré (HHI &gt; 2500)</div>
+                  <div class="text-muted" style="font-size:.72rem">Une ou deux marques dominent</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- HHI chart -->
+      <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+            <div>
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-brand-databricks me-2 text-primary"></i>
+                Indice HHI par territoire ({{ concentrationLevel() | titlecase }})
+              </h6>
+              <small class="text-muted">Herfindahl-Hirschman Index — mesure la concentration du marché</small>
+            </div>
+          </div>
+          <div class="card-body px-2 pt-2">
+            @if (!isLoadingConcentration() && chartConcentrationOpts()) {
+            <apx-chart #chartConcentration [series]="chartConcentrationOpts()!.series"
+              [chart]="chartConcentrationOpts()!.chart" [colors]="chartConcentrationOpts()!.colors"
+              [plotOptions]="chartConcentrationOpts()!.plotOptions" [dataLabels]="chartConcentrationOpts()!.dataLabels"
+              [xaxis]="chartConcentrationOpts()!.xaxis" [yaxis]="chartConcentrationOpts()!.yaxis"
+              [legend]="chartConcentrationOpts()!.legend" [tooltip]="chartConcentrationOpts()!.tooltip">
+            </apx-chart>
+            } @else if (!isLoadingConcentration()) {
+            <div class="sos-empty-state"><i class="ti ti-chart-off"></i>
+              <p>Aucune donnée</p>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Concentration detail table -->
+      <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header border-0 pb-0 pt-3 px-3">
+            <h6 class="fw-semibold mb-0 text-secondary">
+              <i class="ti ti-list me-2 text-primary"></i>
+              Détail par territoire
+            </h6>
+          </div>
+          <div class="card-body p-0" style="overflow-y:auto;max-height:460px">
+            @if (isLoadingConcentration()) {
+            <div class="d-flex justify-content-center p-4">
+              <div class="spinner-border text-primary"></div>
+            </div>
+            } @else {
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 sos-table sos-table-sm">
+                <thead class="sos-thead">
+                  <tr>
+                    <th>Territoire</th>
+                    <th class="text-end">HHI</th>
+                    <th class="text-center">Structure</th>
+                    <th>Top Marque</th>
+                    <th class="text-end">SOS Top</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of concentrationData(); track row.territory_uuid) {
+                  <tr>
+                    <td class="fw-semibold small">{{ row.territory_name }}</td>
+                    <td class="text-end fw-bold">{{ row.hhi_index | number:'1.0-0' }}</td>
+                    <td class="text-center">
+                      <span [class]="getMarketStructureBadge(row.market_structure)">
+                        {{ row.market_structure | titlecase }}
+                      </span>
+                    </td>
+                    <td class="text-primary small">{{ row.top_brand_name }}</td>
+                    <td class="text-end">
+                      <span [class]="getSosBadge(row.top_brand_sos)">{{ row.top_brand_sos | number:'1.1-1' }}%</span>
+                    </td>
+                  </tr>
+                  }
+                  @empty {
+                  <tr>
+                    <td colspan="5" class="text-center text-muted py-4">Aucune donnée</td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: HEATMAP — Matrice Marque × Territoire
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'heatmap') {
+    <div class="row g-3">
+      <!-- Level selector -->
+      <div class="col-12 d-flex align-items-center gap-2 mb-1">
+        <span class="text-muted small fw-semibold">Niveau territorial :</span>
+        @for (lvl of ['province','area','subarea','commune']; track lvl) {
+        <button class="sos-pill" [class.active]="heatmapLevel() === lvl" (click)="onHeatmapLevelChange($any(lvl))">
+          {{ lvl | titlecase }}
+        </button>
+        }
+        @if (isLoadingHeatmap()) { <div class="spinner-border spinner-border-sm text-primary ms-2"></div> }
+      </div>
+
+      <!-- Heatmap chart -->
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+            <div>
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-layout-grid me-2 text-primary"></i>
+                Matrice SOS% — Marque × Territoire ({{ heatmapLevel() | titlecase }})
+              </h6>
+              <small class="text-muted">Chaque cellule = SOS% de la marque dans le territoire — bleu foncé = forte
+                présence</small>
+            </div>
+          </div>
+          <div class="card-body px-2 pt-1 pb-1">
+            @if (!isLoadingHeatmap() && chartHeatmapOpts()) {
+            <apx-chart #chartHeatmap [series]="chartHeatmapOpts()!.series" [chart]="chartHeatmapOpts()!.chart"
+              [colors]="chartHeatmapOpts()!.colors" [dataLabels]="chartHeatmapOpts()!.dataLabels"
+              [plotOptions]="chartHeatmapOpts()!.plotOptions" [legend]="chartHeatmapOpts()!.legend"
+              [tooltip]="chartHeatmapOpts()!.tooltip">
+            </apx-chart>
+            } @else if (!isLoadingHeatmap()) {
+            <div class="sos-empty-state">
+              <i class="ti ti-layout-grid-remove"></i>
+              <p>Aucune donnée pour la heatmap</p>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Color legend + raw matrix table -->
+      @if (!isLoadingHeatmap() && heatmapData().brands.length > 0) {
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div
+            class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <h6 class="fw-semibold mb-0 text-secondary">
+              <i class="ti ti-table me-2 text-primary"></i>
+              Matrice numérique complète
+            </h6>
+            <!-- Legend -->
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+              <span class="sos-legend-chip" style="background:#f5f5ff;color:#666">Absent (0%)</span>
+              <span class="sos-legend-chip" style="background:#bfdbfe;color:#333">Faible (1-15%)</span>
+              <span class="sos-legend-chip" style="background:#60a5fa;color:#fff">Moyen (16-30%)</span>
+              <span class="sos-legend-chip" style="background:#3b82f6;color:#fff">Élevé (31-50%)</span>
+              <span class="sos-legend-chip" style="background:#1d4ed8;color:#fff">Leader (&gt;50%)</span>
+            </div>
+          </div>
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-bordered align-middle mb-0 sos-matrix-table">
+                <thead class="sos-thead">
+                  <tr>
+                    <th class="sos-matrix-brand-col">Marque</th>
+                    @for (t of heatmapData().territories; track t.uuid) {
+                    <th class="text-center small">{{ t.name }}</th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (b of heatmapData().brands; track b.uuid; let bi = $index) {
+                  <tr>
+                    <td class="fw-semibold text-primary small">{{ b.name }}</td>
+                    @for (t of heatmapData().territories; track t.uuid; let ti = $index) {
+                    <td class="text-center sos-matrix-cell" [style.background]="
+                                heatmapData().matrix[bi][ti] === 0 ? '#f5f5ff'
+                                : heatmapData().matrix[bi][ti] <= 15 ? '#bfdbfe'
+                                : heatmapData().matrix[bi][ti] <= 30 ? '#60a5fa'
+                                : heatmapData().matrix[bi][ti] <= 50 ? '#3b82f6'
+                                : '#1d4ed8'" [style.color]="heatmapData().matrix[bi][ti] > 15 ? '#fff' : '#333'">
+                      {{ heatmapData().matrix[bi][ti] > 0 ? (heatmapData().matrix[bi][ti] | number:'1.0-0') + '%' : '—'
+                      }}
+                    </td>
+                    }
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: EVOLUTION — Période sur Période (PoP)
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'evolution') {
+    <div class="row g-3">
+      <!-- Combo chart -->
+      <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+            <div>
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-trending-up me-2 text-primary"></i>
+                SOS% Courant vs Précédent — Delta en pp
+              </h6>
+              <small class="text-muted">Comparaison sur la période sélectionnée vs période égale précédente</small>
+            </div>
+            @if (isLoadingEvolution()) { <div class="spinner-border spinner-border-sm text-primary"></div> }
+          </div>
+          <div class="card-body px-2 pt-2">
+            @if (!isLoadingEvolution() && chartEvolutionOpts()) {
+            <apx-chart #chartEvolution [series]="chartEvolutionOpts()!.series" [chart]="chartEvolutionOpts()!.chart"
+              [colors]="chartEvolutionOpts()!.colors" [stroke]="chartEvolutionOpts()!.stroke"
+              [plotOptions]="chartEvolutionOpts()!.plotOptions" [dataLabels]="chartEvolutionOpts()!.dataLabels"
+              [xaxis]="chartEvolutionOpts()!.xaxis" [yaxis]="chartEvolutionOpts()!.yaxis"
+              [legend]="chartEvolutionOpts()!.legend" [tooltip]="chartEvolutionOpts()!.tooltip">
+            </apx-chart>
+            } @else if (!isLoadingEvolution()) {
+            <div class="sos-empty-state"><i class="ti ti-chart-off"></i>
+              <p>Aucune donnée d'évolution</p>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Evolution scorecard table -->
+      <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header border-0 pb-0 pt-3 px-3">
+            <h6 class="fw-semibold mb-0 text-secondary">
+              <i class="ti ti-list me-2 text-primary"></i>
+              Scorecard PoP par marque
+            </h6>
+          </div>
+          <div class="card-body p-0" style="overflow-y:auto;max-height:420px">
+            @if (isLoadingEvolution()) {
+            <div class="d-flex justify-content-center p-4">
+              <div class="spinner-border text-primary"></div>
+            </div>
+            } @else {
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 sos-table">
+                <thead class="sos-thead">
+                  <tr>
+                    <th>Marque</th>
+                    <th class="text-end">SOS% Act.</th>
+                    <th class="text-end">SOS% Préc.</th>
+                    <th class="text-end">Δ pp</th>
+                    <th class="text-center">Tendance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of evolutionData(); track row.brand_uuid) {
+                  <tr>
+                    <td class="fw-semibold text-primary small">{{ row.brand_name }}</td>
+                    <td class="text-end">
+                      <span [class]="getSosBadge(row.current_sos_percent)">
+                        {{ row.current_sos_percent | number:'1.1-1' }}%
+                      </span>
+                    </td>
+                    <td class="text-end text-muted small">{{ row.previous_sos_percent | number:'1.1-1' }}%</td>
+                    <td class="text-end fw-bold" [class]="getDeltaClass(row.delta)">
+                      {{ row.delta > 0 ? '+' : '' }}{{ row.delta | number:'1.1-1' }}pp
+                    </td>
+                    <td class="text-center">
+                      <i class="{{ getTrendIcon(row.trend) }} fs-5"></i>
+                    </td>
+                  </tr>
+                  }
+                  @empty {
+                  <tr>
+                    <td colspan="5" class="text-center text-muted py-4">Aucune donnée</td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary cards for top movers -->
+      @if (!isLoadingEvolution() && evolutionData().length > 0) {
+      <div class="col-12">
+        <div class="row g-2">
+          @for (row of evolutionData().slice(0, 4); track row.brand_uuid) {
+          <div class="col-6 col-md-3">
+            <div class="sos-evo-card" [class.sos-evo-gaining]="row.trend === 'gaining'"
+              [class.sos-evo-losing]="row.trend === 'losing'">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="fw-semibold small text-truncate pe-1">{{ row.brand_name }}</span>
+                <span [class]="getTrendBadge(row.trend)" class="flex-shrink-0">
+                  {{ row.trend | titlecase }}
+                </span>
+              </div>
+              <div class="sos-evo-percent">{{ row.current_sos_percent | number:'1.1-1' }}%</div>
+              <div class="sos-evo-delta" [class]="getDeltaClass(row.delta)">
+                <i [class]="getTrendIcon(row.trend)"></i>
+                {{ row.delta > 0 ? '+' : '' }}{{ row.delta | number:'1.1-1' }}pp vs précédent
+              </div>
+              <div class="progress mt-2 sos-progress">
+                <div
+                  class="progress-bar {{ row.current_sos_percent >= 50 ? 'bg-success' : row.current_sos_percent >= 30 ? 'bg-info' : row.current_sos_percent >= 15 ? 'bg-warning' : 'bg-secondary' }}"
+                  [style.width]="row.current_sos_percent + '%'">
+                </div>
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+      </div>
+      }
+    </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: GAP ANALYSIS — Écart vs cible de part égale
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'gap') {
+    <div class="row g-3">
+
+      <!-- Target input -->
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body py-2 px-3 d-flex align-items-center gap-3 flex-wrap">
+            <div class="d-flex align-items-center gap-2">
+              <i class="ti ti-target text-primary fs-5"></i>
+              <span class="fw-semibold small">Cible SOS% personnalisée :</span>
+            </div>
+            <div class="input-group" style="width:200px">
+              <input type="number" class="form-control form-control-sm" placeholder="Ex: 25" min="0" max="100"
+                [value]="gapTarget() ?? ''" #gapInput />
+              <span class="input-group-text small">%</span>
+            </div>
+            <button class="btn btn-sm btn-primary" (click)="applyGapTarget(gapInput.value ? +gapInput.value : null)">
+              <i class="ti ti-refresh me-1"></i>Appliquer
+            </button>
+            @if (gapTarget() !== null) {
+            <span class="badge bg-primary-subtle text-primary">
+              Cible : {{ gapTarget() }}%
+            </span>
+            } @else {
+            <span class="text-muted small">Part égale automatique (100% ÷ nb marques)</span>
+            }
+            @if (isLoadingGap()) { <div class="spinner-border spinner-border-sm text-primary ms-2"></div> }
+          </div>
+        </div>
+      </div>
+
+      <!-- Gap stacked bar chart -->
+      <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+            <div>
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-arrows-left-right me-2 text-primary"></i>
+                SOS% vs Cible — Écart par marque
+              </h6>
+              <small class="text-muted">Positif = au-dessus de la cible, négatif = sous la cible</small>
+            </div>
+          </div>
+          <div class="card-body px-2 pt-2">
+            @if (!isLoadingGap() && chartGapOpts()) {
+            <apx-chart #chartGap [series]="chartGapOpts()!.series" [chart]="chartGapOpts()!.chart"
+              [colors]="chartGapOpts()!.colors" [plotOptions]="chartGapOpts()!.plotOptions"
+              [dataLabels]="chartGapOpts()!.dataLabels" [xaxis]="chartGapOpts()!.xaxis" [yaxis]="chartGapOpts()!.yaxis"
+              [legend]="chartGapOpts()!.legend" [tooltip]="chartGapOpts()!.tooltip">
+            </apx-chart>
+            } @else if (!isLoadingGap()) {
+            <div class="sos-empty-state"><i class="ti ti-chart-off"></i>
+              <p>Aucune donnée de gap</p>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Gap detail table -->
+      <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header border-0 pb-0 pt-3 px-3">
+            <h6 class="fw-semibold mb-0 text-secondary">
+              <i class="ti ti-list me-2 text-primary"></i>
+              Détail Gap par marque
+            </h6>
+          </div>
+          <div class="card-body p-0" style="overflow-y:auto;max-height:420px">
+            @if (isLoadingGap()) {
+            <div class="d-flex justify-content-center p-4">
+              <div class="spinner-border text-primary"></div>
+            </div>
+            } @else {
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 sos-table">
+                <thead class="sos-thead">
+                  <tr>
+                    <th>Marque</th>
+                    <th class="text-end">SOS %</th>
+                    <th class="text-end">Cible %</th>
+                    <th class="text-end">Gap pp</th>
+                    <th class="text-end">Gap Fardes</th>
+                    <th class="text-center">Statut</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of gapData(); track row.brand_uuid) {
+                  <tr>
+                    <td class="fw-semibold text-primary small">{{ row.brand_name }}</td>
+                    <td class="text-end">
+                      <span [class]="getSosBadge(row.sos_percent)">{{ row.sos_percent | number:'1.1-1' }}%</span>
+                    </td>
+                    <td class="text-end text-muted small">{{ row.equal_share_target | number:'1.1-1' }}%</td>
+                    <td class="text-end fw-bold" [class]="getDeltaClass(row.gap)">
+                      {{ row.gap > 0 ? '+' : '' }}{{ row.gap | number:'1.1-1' }}pp
+                    </td>
+                    <td class="text-end text-muted small">{{ row.gap_fardes | number:'1.0-0' }}</td>
+                    <td class="text-center">
+                      <span [class]="getStatusBadge(row.status)">
+                        {{ row.status === 'above_target' ? 'Au-dessus' : 'En dessous' }}
+                      </span>
+                    </td>
+                  </tr>
+                  }
+                  @empty {
+                  <tr>
+                    <td colspan="6" class="text-center text-muted py-4">Aucune donnée de gap</td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: DRILL-DOWN POS — Détail par point de vente
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'drilldown') {
+    <div class="row g-3">
+
+      <!-- Brand selector + current brand banner -->
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-body py-2 px-3 d-flex align-items-center gap-3 flex-wrap">
+            @if (drillBrandName()) {
+            <div class="d-flex align-items-center gap-2">
+              <i class="ti ti-zoom-in text-primary fs-5"></i>
+              <span class="fw-semibold">Marque sélectionnée :</span>
+              <span class="badge bg-primary fs-6 px-3">{{ drillBrandName() }}</span>
+            </div>
+            @if (isLoadingDrillDown()) {
+            <div class="spinner-border spinner-border-sm text-primary ms-2"></div>
+            }
+            <button class="btn btn-sm btn-outline-secondary ms-auto" (click)="setSection('ranking')">
+              <i class="ti ti-arrow-left me-1"></i>Changer de marque
+            </button>
+            } @else {
+            <div class="d-flex align-items-center gap-2 text-muted">
+              <i class="ti ti-info-circle fs-5"></i>
+              <span>Sélectionnez une marque dans le
+                <button class="btn btn-link btn-sm p-0 text-primary" (click)="setSection('ranking')">classement</button>
+                pour voir le détail par POS.
+              </span>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      @if (drillBrandName()) {
+      <div class="col-12">
+        <div class="card border-0 shadow-sm">
+          <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+            <h6 class="fw-semibold mb-0 text-secondary">
+              <i class="ti ti-building-store me-2 text-primary"></i>
+              Détail SOS% par point de vente — {{ drillBrandName() }}
+            </h6>
+            <span class="badge bg-light text-dark border">{{ drillDownData().length }} POS</span>
+          </div>
+          <div class="card-body p-0">
+            @if (isLoadingDrillDown()) {
+            <div class="d-flex justify-content-center p-5">
+              <div class="spinner-border text-primary"></div>
+            </div>
+            } @else {
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 sos-table">
+                <thead class="sos-thead">
+                  <tr>
+                    <th>POS</th>
+                    <th>Enseigne</th>
+                    <th>Type</th>
+                    <th class="text-end">Fardes</th>
+                    <th class="text-end">Total</th>
+                    <th class="text-end">Min SOS</th>
+                    <th class="text-end">Max SOS</th>
+                    <th class="text-end">Moy SOS</th>
+                    <th class="text-end">SOS %</th>
+                    <th class="text-end">Visites</th>
+                    <th>Dernière visite</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of drillDownData(); track row.pos_uuid) {
+                  <tr>
+                    <td class="fw-semibold small">{{ row.pos_name }}</td>
+                    <td class="text-muted small">{{ row.pos_shop }}</td>
+                    <td>
+                      <span class="badge bg-light text-dark border small">{{ row.pos_type }}</span>
+                    </td>
+                    <td class="text-end">{{ row.brand_fardes | number }}</td>
+                    <td class="text-end text-muted">{{ row.total_fardes | number }}</td>
+                    <td class="text-end text-muted small">{{ row.min_sos | number:'1.1-1' }}%</td>
+                    <td class="text-end text-muted small">{{ row.max_sos | number:'1.1-1' }}%</td>
+                    <td class="text-end">
+                      <span [class]="getSosBadge(row.avg_sos)">{{ row.avg_sos | number:'1.1-1' }}%</span>
+                    </td>
+                    <td class="text-end">
+                      <span [class]="getSosBadge(row.sos_percent)">{{ row.sos_percent | number:'1.1-1' }}%</span>
+                    </td>
+                    <td class="text-end text-muted small">{{ row.visit_count }}</td>
+                    <td class="text-muted small">{{ row.last_visit | date:'dd/MM/yy' }}</td>
+                  </tr>
+                  }
+                  @empty {
+                  <tr>
+                    <td colspan="11" class="text-center text-muted py-4">Aucun POS trouvé</td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+      }
+    </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: SOS VS ND — Corrélation SOS% vs Distribution Numérique
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'vsnd') {
+    <div class="row g-3">
+
+      <!-- Quadrant legend -->
+      <div class="col-12">
+        <div class="row g-2 mb-1">
+          <div class="col-6 col-md-3">
+            <div class="sos-quad-card quad-leader">
+              <div class="d-flex align-items-center gap-2">
+                <div class="sos-quad-dot quad-leader-dot"></div>
+                <div>
+                  <div class="fw-semibold small">Leader</div>
+                  <div class="text-muted" style="font-size:.72rem">ND élevée &amp; SOS élevé</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="sos-quad-card quad-present">
+              <div class="d-flex align-items-center gap-2">
+                <div class="sos-quad-dot quad-present-dot"></div>
+                <div>
+                  <div class="fw-semibold small">Présent / non dominant</div>
+                  <div class="text-muted" style="font-size:.72rem">ND élevée, SOS faible</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="sos-quad-card quad-stocked">
+              <div class="d-flex align-items-center gap-2">
+                <div class="sos-quad-dot quad-stocked-dot"></div>
+                <div>
+                  <div class="fw-semibold small">Stocké / non distribué</div>
+                  <div class="text-muted" style="font-size:.72rem">SOS élevé, ND faible</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-6 col-md-3">
+            <div class="sos-quad-card quad-niche">
+              <div class="d-flex align-items-center gap-2">
+                <div class="sos-quad-dot quad-niche-dot"></div>
+                <div>
+                  <div class="fw-semibold small">Niche</div>
+                  <div class="text-muted" style="font-size:.72rem">ND faible &amp; SOS faible</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bubble / scatter chart -->
+      <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+            <div>
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-dots-diagonal me-2 text-primary"></i>
+                Corrélation SOS% vs ND% — Positionnement par marque
+              </h6>
+              <small class="text-muted">Axe X = Distribution Numérique (ND%) — Axe Y = Share Of Stock (SOS%)</small>
+            </div>
+            @if (isLoadingVsND()) { <div class="spinner-border spinner-border-sm text-primary"></div> }
+          </div>
+          <div class="card-body px-2 pt-2">
+            @if (!isLoadingVsND() && chartVsNdOpts()) {
+            <apx-chart #chartVsNd [series]="chartVsNdOpts()!.series" [chart]="chartVsNdOpts()!.chart"
+              [colors]="chartVsNdOpts()!.colors" [dataLabels]="chartVsNdOpts()!.dataLabels"
+              [markers]="chartVsNdOpts()!.markers" [xaxis]="chartVsNdOpts()!.xaxis" [yaxis]="chartVsNdOpts()!.yaxis"
+              [legend]="chartVsNdOpts()!.legend" [tooltip]="chartVsNdOpts()!.tooltip"
+              [annotations]="chartVsNdOpts()!.annotations">
+            </apx-chart>
+            } @else if (!isLoadingVsND()) {
+            <div class="sos-empty-state"><i class="ti ti-chart-off"></i>
+              <p>Aucune donnée de corrélation</p>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- VS-ND quadrant table -->
+      <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header border-0 pb-0 pt-3 px-3">
+            <h6 class="fw-semibold mb-0 text-secondary">
+              <i class="ti ti-list me-2 text-primary"></i>
+              Tableau quadrant SOS × ND
+            </h6>
+          </div>
+          <div class="card-body p-0" style="overflow-y:auto;max-height:460px">
+            @if (isLoadingVsND()) {
+            <div class="d-flex justify-content-center p-4">
+              <div class="spinner-border text-primary"></div>
+            </div>
+            } @else {
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 sos-table sos-table-sm">
+                <thead class="sos-thead">
+                  <tr>
+                    <th>Marque</th>
+                    <th class="text-end">ND %</th>
+                    <th class="text-end">SOS %</th>
+                    <th class="text-end">Δ ND–SOS</th>
+                    <th class="text-center">Position</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of vsNdData(); track row.brand_uuid) {
+                  <tr>
+                    <td class="fw-semibold small text-primary">{{ row.brand_name }}</td>
+                    <td class="text-end">{{ row.nd_percent | number:'1.1-1' }}%</td>
+                    <td class="text-end">
+                      <span [class]="getSosBadge(row.sos_percent)">{{ row.sos_percent | number:'1.1-1' }}%</span>
+                    </td>
+                    <td class="text-end fw-semibold" [class]="getDeltaClass(row.delta_nd_sos)">
+                      {{ row.delta_nd_sos > 0 ? '+' : '' }}{{ row.delta_nd_sos | number:'1.1-1' }}pp
+                    </td>
+                    <td class="text-center">
+                      <span [class]="getPositionBadge(row.position)">
+                        {{ getPositionLabel(row.position) }}
+                      </span>
+                    </td>
+                  </tr>
+                  }
+                  @empty {
+                  <tr>
+                    <td colspan="5" class="text-center text-muted py-4">Aucune donnée</td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+    </div>
+    }
+
+  </div><!-- /content -->
+</div><!-- /page-wrapper -->

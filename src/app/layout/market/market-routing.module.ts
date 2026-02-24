@@ -11,6 +11,7 @@ import { PosFilterListComponent } from './pos-vente/pos-filter-list/pos-filter-l
 import { BrandFilterListComponent } from './brand/brand-filter-list/brand-filter-list.component';
 import { PostformListComponent } from './posform/postform-list/postform-list.component';
 import { PosformFilterComponent } from './posform/posform-filter/posform-filter.component';
+import { NdIndividualComponent } from './nd-individual/nd-individual.component';
 
 const routes: Routes = [
   {
@@ -53,7 +54,11 @@ const routes: Routes = [
   {
     path: 'brands-filter/:name/:uuid',
     component: BrandFilterListComponent,
-  }
+  },
+  {
+    path: 'nd-individual',
+    component: NdIndividualComponent,
+  },
 ];
 
 @NgModule({

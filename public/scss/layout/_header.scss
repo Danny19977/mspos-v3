@@ -740,20 +740,60 @@
             background: $success;
         }
     }
+    // Online/Offline dot - mobile only
+    .mobile-status-wrap {
+        @include position(absolute, 0, 60px, null, null);
+        height: 60px;
+        display: none;
+        align-items: center;
+        padding: 0 6px;
+        z-index: 10;
+        @include respond-below(custom991) {
+            display: flex;
+        }
+        .mobile-net-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+            transition: background 0.3s ease;
+            &.online {
+                background: #28a745;
+                box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25);
+            }
+            &.offline {
+                background: #dc3545;
+                box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+            }
+            &.syncing {
+                background: #0d6efd;
+                box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+                animation: sync-pulse 1s ease-in-out infinite;
+            }
+            @keyframes sync-pulse {
+                0%, 100% { opacity: 1; transform: scale(1); }
+                50% { opacity: 0.6; transform: scale(1.2); }
+            }
+        }
+    }
+
     .mobile-user-menu {
         color: $white;
         display: none;
         float: right;
         font-size: $font-size-24;
         height: 60px;
-        line-height: 60px;
+        line-height: 1;
         text-align: right;
         width: 60px;
         z-index: 10;
         @include margin-padding(null, 0 20px);
         @include position(absolute,0,0,null,null);
         @include respond-below(custom991) {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
         a{
             color: $primary;
@@ -768,6 +808,31 @@
                 color:$gray-800;
                 line-height: 40px; 
                 @include margin-padding(null, 0 10px);
+            }
+            // Theme toggle row
+            .mobile-theme-item {
+                line-height: 40px;
+                padding: 0 10px;
+                cursor: default;
+                color: $gray-800;
+                font-size: 14px;
+                .mobile-theme-toggle {
+                    display: flex;
+                    gap: 10px;
+                    align-items: center;
+                    i {
+                        font-size: 18px;
+                        color: $gray-500;
+                        cursor: pointer;
+                        transition: color 0.2s;
+                        &.active {
+                            color: $primary;
+                        }
+                        &:hover {
+                            color: $primary;
+                        }
+                    }
+                }
             }
         }
     }

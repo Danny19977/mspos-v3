@@ -11,21 +11,28 @@ import { Subject, takeUntil } from 'rxjs';
   template: `
     <div class="sync-status-container">
       <!-- Network Status Badge -->
-      <div class="network-badge" [class.online]="isOnline" [class.offline]="!isOnline">
-        <span class="status-icon">{{ isOnline ? '🟢' : '🔴' }}</span>
+      <div class="network-badge" [class.online]="isOnline" [class.offline]="!isOnline"
+           [title]="isOnline ? 'En ligne' : 'Hors ligne'">
+        <span class="status-dot"></span>
         <span class="status-text">{{ isOnline ? 'En ligne' : 'Hors ligne' }}</span>
       </div>
 
+      <!-- Last Sync Time -->
+      <div class="last-sync" *ngIf="lastSyncTime">
+        <small>Dernière sync: {{ formatSyncTime(lastSyncTime) }}</small>
+      </div>
+
       <!-- Pending Operations Counter -->
-      <div class="pending-badge" *ngIf="pendingCount > 0" [class.syncing]="isSyncing">
+      <div class="pending-badge" *ngIf="pendingCount > 0" [class.syncing]="isSyncing"
+           [title]="pendingCount + (pendingCount === 1 ? ' opération en attente' : ' opérations en attente')">
         <span class="count">{{ pendingCount }}</span>
         <span class="label">{{ pendingCount === 1 ? 'opération en attente' : 'opérations en attente' }}</span>
       </div>
 
       <!-- Sync Status Indicator -->
-      <div class="sync-indicator" *ngIf="isSyncing">
+      <div class="sync-indicator" *ngIf="isSyncing" title="Synchronisation en cours...">
         <span class="spinner"></span>
-        <span>Synchronisation...</span>
+        <span class="sync-text">Synchronisation...</span>
       </div>
 
       <!-- Manual Sync Button -->
@@ -34,28 +41,23 @@ import { Subject, takeUntil } from 'rxjs';
         *ngIf="isOnline && pendingCount > 0 && !isSyncing"
         (click)="manualSync()"
         title="Synchroniser maintenant">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
         </svg>
-        <span>Synchroniser</span>
+        <span class="sync-label">Synchroniser</span>
       </button>
-
-      <!-- Last Sync Time -->
-      <div class="last-sync" *ngIf="lastSyncTime">
-        <small>Dernière sync: {{ formatSyncTime(lastSyncTime) }}</small>
-      </div>
     </div>
   `,
   styles: [`
     .sync-status-container {
       display: flex;
       align-items: center;
-      gap: 12px;
-      padding: 8px 16px;
+      gap: 10px;
+      padding: 6px 14px;
       background: white;
       border-radius: 8px;
       box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-      flex-wrap: wrap;
+      flex-wrap: nowrap;
     }
 
     .network-badge {
@@ -79,8 +81,21 @@ import { Subject, takeUntil } from 'rxjs';
       color: #721c24;
     }
 
-    .status-icon {
-      font-size: 10px;
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .network-badge.online .status-dot {
+      background: #28a745;
+      box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.3);
+    }
+
+    .network-badge.offline .status-dot {
+      background: #dc3545;
+      box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.3);
     }
 
     .pending-badge {
@@ -107,6 +122,7 @@ import { Subject, takeUntil } from 'rxjs';
       padding: 2px 8px;
       border-radius: 12px;
       font-size: 12px;
+      flex-shrink: 0;
     }
 
     .sync-indicator {
@@ -124,6 +140,7 @@ import { Subject, takeUntil } from 'rxjs';
       border-top-color: #0d6efd;
       border-radius: 50%;
       animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
     }
 
     @keyframes spin {
@@ -163,28 +180,59 @@ import { Subject, takeUntil } from 'rxjs';
     .last-sync {
       color: #6c757d;
       font-size: 12px;
-      margin-left: auto;
     }
 
+    /* ── Mobile: icons only (≤ 768px) ── */
     @media (max-width: 768px) {
       .sync-status-container {
-        padding: 6px 12px;
-        gap: 8px;
+        padding: 4px 8px;
+        gap: 6px;
+        background: transparent;
+        box-shadow: none;
+        border-radius: 0;
       }
 
-      .network-badge, .pending-badge, .sync-indicator {
-        font-size: 12px;
+      /* Network badge: keep dot, hide text */
+      .network-badge {
+        padding: 4px 6px;
+        gap: 0;
       }
 
+      .status-text {
+        display: none;
+      }
+
+      /* Pending badge: keep count badge, hide label */
+      .pending-badge {
+        padding: 3px 6px;
+        gap: 4px;
+      }
+
+      .pending-badge .label {
+        display: none;
+      }
+
+      /* Sync indicator: keep spinner, hide text */
+      .sync-text {
+        display: none;
+      }
+
+      /* Sync button: icon only */
       .sync-button {
-        padding: 5px 10px;
-        font-size: 12px;
+        padding: 5px 7px;
+        border-radius: 50%;
+        min-width: 30px;
+        min-height: 30px;
+        justify-content: center;
       }
 
+      .sync-label {
+        display: none;
+      }
+
+      /* Hide last sync on mobile */
       .last-sync {
-        width: 100%;
-        text-align: center;
-        margin-left: 0;
+        display: none;
       }
     }
   `]

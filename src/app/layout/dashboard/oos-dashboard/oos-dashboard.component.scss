@@ -1,0 +1,593 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// OOS-DASHBOARD  —  Out-Of-Stock Dashboard styles
+// Prefix: "oos-"  |  Palette: Red/Orange/Amber danger, semantic accents
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Page header badge ────────────────────────────────────────────────────────
+.oos-title-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #ef476f 0%, #dc2626 100%);
+  color: #fff;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+// ── Date range picker ────────────────────────────────────────────────────────
+.oos-date-form {
+  .oos-date-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    i {
+      position: absolute;
+      left: 10px;
+      color: #6c757d;
+      font-size: 1rem;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .oos-date-input {
+      padding-left: 34px;
+      border-radius: 8px;
+      border: 1px solid #ffd0d8;
+      font-size: 0.82rem;
+      background-color: #fff8f8;
+      min-width: 220px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+
+      &:focus {
+        border-color: #ef476f;
+        box-shadow: 0 0 0 3px rgba(239, 71, 111, 0.12);
+        background-color: #fff;
+      }
+    }
+  }
+}
+
+// ── Period dropdown ───────────────────────────────────────────
+.oos-period-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #ffd0d8;
+  background: #fff5f6;
+  color: #ef476f;
+  font-size: 0.82rem;
+  font-weight: 600;
+  gap: 4px;
+  transition: all 0.15s;
+
+  &:hover, &:focus {
+    background: #ffe8ec;
+    border-color: #ef476f;
+    box-shadow: none;
+  }
+
+  &::after { margin-left: 4px; }
+}
+
+.oos-period-menu {
+  min-width: 160px;
+  border: 1px solid #ffd0d8;
+  border-radius: 10px;
+  padding: 4px;
+  font-size: 0.82rem;
+}
+
+.oos-period-item {
+  border-radius: 7px;
+  color: #5c1a2a;
+  font-size: 0.82rem;
+  padding: 7px 12px;
+  display: flex;
+  align-items: center;
+
+  &:hover { background: #ffe8ec; color: #ef476f; }
+
+  &.active {
+    background: #ef476f;
+    color: #fff;
+    font-weight: 600;
+  }
+}
+
+// ── Geo filter bar ───────────────────────────────────────────────────────────
+.oos-geo-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  background: #fff;
+  border: 1px solid #ffe2e8;
+  border-radius: 12px;
+  padding: 12px 16px;
+  box-shadow: 0 1px 4px rgba(239, 71, 111, 0.06);
+}
+
+.oos-geo-item {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 130px;
+
+  &.oos-geo-disabled {
+    opacity: 0.5;
+  }
+}
+
+.oos-geo-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6c757d;
+  margin-bottom: 0;
+}
+
+.oos-select {
+  border-radius: 8px;
+  border: 1px solid #ffd0d8;
+  background-color: #fff8f8;
+  font-size: 0.8rem;
+  transition: border-color 0.2s;
+
+  &:focus {
+    border-color: #ef476f;
+    box-shadow: 0 0 0 3px rgba(239, 71, 111, 0.1);
+  }
+}
+
+// ── KPI skeleton ─────────────────────────────────────────────────────────────
+.oos-kpi-skeleton {
+  border-radius: 12px;
+  min-height: 80px;
+
+  .card-body { display: flex; flex-direction: column; gap: 12px; }
+
+  @keyframes shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+
+  .skeleton-line {
+    height: 14px;
+    border-radius: 6px;
+    background: linear-gradient(90deg, #f0f0f0 25%, #ffe2e8 50%, #f0f0f0 75%);
+    background-size: 400px 100%;
+    animation: shimmer 1.4s infinite;
+
+    &.short { width: 55%; height: 22px; }
+  }
+}
+
+// ── KPI cards ────────────────────────────────────────────────────────────────
+.oos-kpi-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #fff;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  border: 1px solid transparent;
+  transition: transform 0.18s, box-shadow 0.18s;
+  min-height: 76px;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+  }
+
+  .oos-kpi-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .oos-kpi-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    overflow: hidden;
+  }
+
+  .oos-kpi-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6c757d;
+    white-space: nowrap;
+  }
+
+  .oos-kpi-value {
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: 1.1;
+    white-space: nowrap;
+
+    &.small { font-size: 0.92rem; }
+  }
+
+  // accent variants
+  &.accent-blue    { border-color: #dce1ff; .oos-kpi-icon { background: #eef0ff; color: #4361ee; } .oos-kpi-value { color: #4361ee; } }
+  &.accent-red     { border-color: #ffd0d8; .oos-kpi-icon { background: #fff0f2; color: #ef476f; } .oos-kpi-value { color: #dc2626; } }
+  &.accent-orange  { border-color: #ffdec5; .oos-kpi-icon { background: #fff3e8; color: #ea580c; } .oos-kpi-value { color: #ea580c; } }
+  &.accent-crimson { border-color: #ffc5d0; .oos-kpi-icon { background: #fff0f3; color: #be123c; } .oos-kpi-value { color: #be123c; font-size: 0.95rem; } }
+  &.accent-green   { border-color: #d0fce6; .oos-kpi-icon { background: #e5fdf0; color: #16a34a; } .oos-kpi-value { color: #15803d; font-size: 0.95rem; } }
+  &.accent-amber   { border-color: #fff3cc; .oos-kpi-icon { background: #fffae0; color: #d97706; } .oos-kpi-value { color: #b45309; } }
+}
+
+// ── Section nav ───────────────────────────────────────────────────────────────
+.oos-section-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  border-bottom: 2px solid #ffe8ec;
+  padding-bottom: 8px;
+}
+
+.oos-nav-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 16px;
+  border-radius: 8px 8px 0 0;
+  border: 1px solid transparent;
+  background: #fff5f6;
+  color: #6c757d;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+  margin-bottom: -2px;
+
+  &:hover {
+    background: #ffe8ec;
+    color: #ef476f;
+  }
+
+  &.active {
+    background: #fff;
+    color: #ef476f;
+    border-color: #ffd0d8 #ffd0d8 #fff;
+    font-weight: 600;
+  }
+
+  // Alert tab special emphasis
+  &.oos-nav-alert {
+    &:hover { color: #dc2626; }
+    &.active {
+      color: #dc2626;
+      border-top: 3px solid #dc2626;
+    }
+  }
+}
+
+// ── Geo crumb ─────────────────────────────────────────────────────────────────
+.oos-geo-crumb {
+  font-size: 0.8rem;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+
+  .text-orange { color: #ea580c; }
+}
+
+// ── Geo level tabs ─────────────────────────────────────────────────────────────
+.oos-geo-level-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.oos-level-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  border: 1px solid #ffd0d8;
+  background: #fff5f6;
+  color: #6c757d;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.18s;
+
+  &:hover { background: #ffe8ec; color: #ef476f; }
+
+  &.active {
+    background: #ef476f;
+    color: #fff;
+    border-color: #ef476f;
+    font-weight: 600;
+  }
+}
+
+// ── Pill (section internal level selector) ───────────────────────────────────
+.oos-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 14px;
+  border-radius: 20px;
+  border: 1px solid #ffd0d8;
+  background: #fff5f6;
+  color: #6c757d;
+  font-size: 0.77rem;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { background: #ffe8ec; color: #ef476f; }
+
+  &.active {
+    background: #ef476f;
+    color: #fff;
+    border-color: #ef476f;
+    font-weight: 600;
+  }
+}
+
+// ── Tableview card ───────────────────────────────────────────────────────────
+.oos-tableview-card {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.oos-tableview-header {
+  background: #fff8f8;
+  border-bottom: 1px solid #ffe8ec;
+}
+
+// ── Territory groups ─────────────────────────────────────────────────────────
+.oos-territory-group {
+  border-bottom: 2px solid #ffe8ec;
+
+  &:last-child { border-bottom: none; }
+}
+
+.oos-territory-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: linear-gradient(90deg, #fff0f2 0%, #fff8f8 100%);
+  font-size: 0.85rem;
+  color: #5c1a2a;
+  border-bottom: 1px solid #ffe4e8;
+}
+
+// ── Tables ───────────────────────────────────────────────────────────────────
+.oos-table {
+  font-size: 0.82rem;
+
+  td, th { padding: 8px 12px; }
+}
+
+.oos-table-sm {
+  td, th { padding: 6px 10px; }
+}
+
+.oos-thead {
+  background: #fff5f6;
+
+  th {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #6c757d;
+    border-bottom: 2px solid #ffd0d8;
+    white-space: nowrap;
+  }
+}
+
+.oos-rank-top {
+  background: linear-gradient(90deg, rgba(239, 71, 111, 0.07), transparent);
+}
+
+// ── Severity row highlights ───────────────────────────────────────────────────
+.oos-severity-critical-row { background: rgba(220, 38, 38, 0.05) !important; }
+.oos-severity-high-row     { background: rgba(234, 88, 12, 0.05) !important; }
+.oos-severity-medium-row   { background: rgba(217, 119, 6, 0.04) !important; }
+
+// ── Severity badge classes ────────────────────────────────────────────────────
+.oos-severity-critical {
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 2px 8px;
+  letter-spacing: 0.02em;
+}
+
+.oos-severity-high {
+  background: #ea580c;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 2px 8px;
+  letter-spacing: 0.02em;
+}
+
+.oos-severity-medium {
+  background: #d97706;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 2px 8px;
+  letter-spacing: 0.02em;
+}
+
+.oos-severity-low {
+  background: #16a34a;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  border-radius: 6px;
+  padding: 2px 8px;
+  letter-spacing: 0.02em;
+}
+
+// ── Progress bars ─────────────────────────────────────────────────────────────
+.oos-progress {
+  height: 6px;
+  border-radius: 4px;
+  background-color: #fff0f2;
+
+  .progress-bar { border-radius: 4px; }
+}
+
+.oos-progress-mini {
+  height: 4px;
+  border-radius: 3px;
+  background-color: #fff0f2;
+  width: 60px;
+  display: inline-flex;
+
+  .progress-bar { border-radius: 3px; }
+}
+
+// ── Empty state ───────────────────────────────────────────────────────────────
+.oos-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 180px;
+  color: #d8b0b8;
+  gap: 8px;
+
+  i {
+    font-size: 2.5rem;
+    opacity: 0.5;
+  }
+
+  p {
+    font-size: 0.85rem;
+    margin: 0;
+  }
+}
+
+// ── Bar brand list panel ──────────────────────────────────────────────────────
+.oos-bar-brand {
+  background: #fff;
+  transition: background 0.15s;
+
+  &:hover { background: #fff8f8; }
+}
+
+// ── Severity cards (alert section legend) ────────────────────────────────────
+.oos-sev-card {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid;
+  font-size: 0.8rem;
+}
+
+.sev-critical { background: #fef2f2; border-color: #fca5a5; }
+.sev-high     { background: #fff7ed; border-color: #fdba74; }
+.sev-medium   { background: #fffbeb; border-color: #fcd34d; }
+.sev-low      { background: #f0fdf4; border-color: #86efac; }
+
+.oos-sev-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.sev-critical-dot { background: #dc2626; }
+.sev-high-dot     { background: #ea580c; }
+.sev-medium-dot   { background: #d97706; }
+.sev-low-dot      { background: #16a34a; }
+
+// ── Evolution cards ───────────────────────────────────────────────────────────
+.oos-evo-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  border: 1px solid #ffe8ec;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: transform 0.18s;
+
+  &:hover { transform: translateY(-2px); }
+
+  &.oos-evo-worsening {
+    border-top: 3px solid #dc2626;
+  }
+
+  &.oos-evo-improving {
+    border-top: 3px solid #16a34a;
+  }
+}
+
+.oos-evo-percent {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #5c1a2a;
+  line-height: 1.1;
+}
+
+.oos-evo-delta {
+  font-size: 0.78rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+}
+
+// ── Heatmap matrix table ──────────────────────────────────────────────────────
+.oos-matrix-table {
+  font-size: 0.75rem;
+
+  th, td { padding: 5px 8px; white-space: nowrap; }
+}
+
+.oos-matrix-brand-col {
+  background: #fff5f6;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 120px;
+  font-size: 0.76rem;
+  border-right: 2px solid #ffd0d8 !important;
+}
+
+.oos-matrix-cell {
+  text-align: center;
+  font-weight: 600;
+  font-size: 0.72rem;
+  transition: opacity 0.2s;
+  min-width: 56px;
+
+  &:hover { opacity: 0.85; }
+}
+
+// ── Legend chips (heatmap) ────────────────────────────────────────────────────
+.oos-legend-chip {
+  display: inline-block;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  border: 1px solid rgba(0,0,0,0.08);
+}

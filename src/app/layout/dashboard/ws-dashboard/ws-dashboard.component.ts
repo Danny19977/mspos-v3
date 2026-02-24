@@ -15,7 +15,7 @@ import { ChartComponent } from 'ng-apexcharts';
 import { routes } from '../../../shared/routes/routes';
 import { CommonService } from '../../../shared/common/common.service';
 import { AuthService } from '../../../auth/auth.service';
-import { NdService } from '../services/nd.service';
+import { WsService } from '../services/ws.service';
 import { CountryService } from '../../territories/country/country.service';
 import { ProvinceService } from '../../territories/province/province.service';
 import { AreaService } from '../../territories/areas/area.service';
@@ -30,122 +30,130 @@ import { ISubArea } from '../../territories/subarea/models/subarea.model';
 import { ICommune } from '../../territories/commune/models/commune.model';
 
 import {
-  NDSummaryKPIModel,
-  NDBrandRankModel,
-  NDGapRowModel,
-  NDEvolutionRowModel,
-  NDHeatmapModel,
-  NDBrandSeriesModel,
-  NDTableRowModel,
-  NDBarGroupModel,
+  WSSummaryKPIModel,
+  WSBrandRankModel,
+  WSGapRowModel,
+  WSEvolutionRowModel,
+  WSHeatmapModel,
+  WSHeatmapRawRowModel,
+  WSTrendSeriesModel,
+  WSTrendRowModel,
+  WSTableRowModel,
+  WSBarGroupModel,
+  WSBarRawRowModel,
+  WSvsNDRowModel,
+  WSPosDrillRowModel,
 } from '../models/dashboard.models';
 
-export type NDSection =
-  'kpi' | 'trend' | 'tableview' | 'barchart' | 'ranking' | 'gap' | 'evolution' | 'heatmap';
+export type WSSection =
+  | 'kpi' | 'trend' | 'tableview' | 'barchart'
+  | 'ranking' | 'gap' | 'evolution' | 'heatmap'
+  | 'correlation' | 'drilldown';
+
 export type GeoLevel = 'province' | 'area' | 'subarea' | 'commune';
 
 @Component({
-  selector: 'app-nd-dashboard',
+  selector: 'app-ws-dashboard',
   standalone: false,
-  templateUrl: './nd-dashboard.component.html',
-  styleUrl: './nd-dashboard.component.scss',
+  templateUrl: './ws-dashboard.component.html',
+  styleUrl: './ws-dashboard.component.scss',
 })
-export class NdDashboardComponent implements OnInit {
+export class WsDashboardComponent implements OnInit {
 
-  // ── DI via inject() ────────────────────────────────────────────────────────
+  // ── DI ────────────────────────────────────────────────────────────────────
   private common          = inject(CommonService);
   private renderer        = inject(Renderer2);
   private fb              = inject(FormBuilder);
   private cdr             = inject(ChangeDetectorRef);
   private authService     = inject(AuthService);
-  private ndService       = inject(NdService);
+  private wsService       = inject(WsService);
   private countryService  = inject(CountryService);
   private provinceService = inject(ProvinceService);
   private areaService     = inject(AreaService);
   private subAreaService  = inject(SubareaService);
   private communeService  = inject(CommuneService);
 
-  // ── Router helpers ─────────────────────────────────────────────────────────
   public routes = routes;
   base = ''; page = ''; last = '';
 
-  // ── Auth ───────────────────────────────────────────────────────────────────
   currentUser!: IUser;
 
   // ── Date range ─────────────────────────────────────────────────────────────
   dateRange!: FormGroup;
   start_date = '';
   end_date   = '';
-
   selectedPeriod = signal<string>('1m');
 
   readonly PERIODS = [
-    { key: 'today', label: "Aujourd'hui" },
-    { key: '1w',   label: '1 semaine'   },
-    { key: '1m',   label: '1 mois'      },
-    { key: '3m',   label: '3 mois'      },
-    { key: '6m',   label: '6 mois'      },
-    { key: '1y',   label: '1 an'        },
+    { key: 'today',  label: "Aujourd'hui" },
+    { key: '1w',     label: '1 semaine'   },
+    { key: '1m',     label: '1 mois'      },
+    { key: '3m',     label: '3 mois'      },
+    { key: '6m',     label: '6 mois'      },
+    { key: '1y',     label: '1 an'        },
     { key: 'custom', label: 'Personnalisé' },
   ];
 
-  // ── Geography — lists as signals ───────────────────────────────────────────
+  // ── Geography ─────────────────────────────────────────────────────────────
   countryList  = signal<ICountry[]>([]);
   provinceList = signal<IProvince[]>([]);
   areaList     = signal<IArea[]>([]);
   subAreaList  = signal<ISubArea[]>([]);
   communeList  = signal<ICommune[]>([]);
 
-  countrySearch     = signal('');
-  filteredCountries = computed(() =>
-    this.countryList().filter(c =>
-      c.name.toLowerCase().includes(this.countrySearch().toLowerCase())
-    )
-  );
-
-  // geo selections kept as plain optionals — bound via [(ngModel)] in template
   selectedCountry?:  ICountry;
   selectedProvince?: IProvince;
   selectedArea?:     IArea;
   selectedSubArea?:  ISubArea;
   selectedCommune?:  ICommune;
 
-  // ── Geo / section level — signals ──────────────────────────────────────────
-  activeSection  = signal<NDSection>('trend');
+  // ── Active section / geo level ─────────────────────────────────────────────
+  activeSection  = signal<WSSection>('kpi');
   geoLevel       = signal<GeoLevel>('province');
   heatmapLevel   = signal<GeoLevel>('province');
 
-  // ── Loading flags — signals ────────────────────────────────────────────────
-  isLoadingKpi       = signal(false);
-  isLoadingTrend     = signal(false);
-  isLoadingTable     = signal(false);
-  isLoadingBar       = signal(false);
-  isLoadingRanking   = signal(false);
-  isLoadingGap       = signal(false);
-  isLoadingEvolution = signal(false);
-  isLoadingHeatmap   = signal(false);
+  // ── WS vs ND threshold ─────────────────────────────────────────────────────
+  correlationThreshold = signal<number>(50);
 
-  // ── Data — signals ─────────────────────────────────────────────────────────
-  kpiData       = signal<NDSummaryKPIModel | null>(null);
-  trendData     = signal<NDBrandSeriesModel[]>([]);
-  tableData     = signal<NDTableRowModel[]>([]);
-  barData       = signal<NDBarGroupModel[]>([]);
-  rankingData   = signal<NDBrandRankModel[]>([]);
-  gapData       = signal<NDGapRowModel[]>([]);
-  evolutionData = signal<NDEvolutionRowModel[]>([]);
-  heatmapData   = signal<NDHeatmapModel>({ brands: [], territories: [], matrix: [] });
+  // ── Drill-down state ───────────────────────────────────────────────────────
+  drillBrand = signal<{ uuid: string; name: string } | null>(null);
 
-  // ── Chart options — signals ────────────────────────────────────────────────
-  chartTrendOpts     = signal<any>(null);
-  chartBarOpts       = signal<any>(null);
-  chartGapOpts       = signal<any>(null);
-  chartEvolutionOpts = signal<any>(null);
-  chartHeatmapOpts   = signal<any>(null);
-  chartRankingOpts   = signal<any>(null);
+  // ── Loading flags ──────────────────────────────────────────────────────────
+  isLoadingKpi         = signal(false);
+  isLoadingTrend       = signal(false);
+  isLoadingTable       = signal(false);
+  isLoadingBar         = signal(false);
+  isLoadingRanking     = signal(false);
+  isLoadingGap         = signal(false);
+  isLoadingEvolution   = signal(false);
+  isLoadingHeatmap     = signal(false);
+  isLoadingCorrelation = signal(false);
+  isLoadingDrilldown   = signal(false);
 
-  // ── TableView computed grouping ────────────────────────────────────────────
-  tableGrouped = computed<{ territory_name: string; territory_uuid: string; rows: NDTableRowModel[] }[]>(() => {
-    const map = new Map<string, NDTableRowModel[]>();
+  // ── Data signals ───────────────────────────────────────────────────────────
+  kpiData         = signal<WSSummaryKPIModel | null>(null);
+  trendData       = signal<WSTrendSeriesModel[]>([]);
+  tableData       = signal<WSTableRowModel[]>([]);
+  barData         = signal<WSBarGroupModel[]>([]);
+  rankingData     = signal<WSBrandRankModel[]>([]);
+  gapData         = signal<WSGapRowModel[]>([]);
+  evolutionData   = signal<WSEvolutionRowModel[]>([]);
+  heatmapData     = signal<WSHeatmapModel>({ brands: [], territories: [], matrix: [] });
+  correlationData = signal<WSvsNDRowModel[]>([]);
+  drilldownData   = signal<WSPosDrillRowModel[]>([]);
+
+  // ── Chart options ──────────────────────────────────────────────────────────
+  chartTrendOpts       = signal<any>(null);
+  chartBarOpts         = signal<any>(null);
+  chartGapOpts         = signal<any>(null);
+  chartEvolutionOpts   = signal<any>(null);
+  chartHeatmapOpts     = signal<any>(null);
+  chartRankingOpts     = signal<any>(null);
+  chartCorrelationOpts = signal<any>(null);
+
+  // ── Table view grouping ────────────────────────────────────────────────────
+  tableGrouped = computed<{ territory_name: string; territory_uuid: string; rows: WSTableRowModel[] }[]>(() => {
+    const map = new Map<string, WSTableRowModel[]>();
     for (const row of this.tableData()) {
       if (!map.has(row.territory_uuid)) map.set(row.territory_uuid, []);
       map.get(row.territory_uuid)!.push(row);
@@ -157,18 +165,28 @@ export class NdDashboardComponent implements OnInit {
     }));
   });
 
+  // ── Gap zone computed ──────────────────────────────────────────────────────
+  gapZoneCounts = computed(() => {
+    const counts = { strong: 0, mid: 0, weak: 0 };
+    for (const r of this.gapData()) {
+      if (r.zone in counts) counts[r.zone as keyof typeof counts]++;
+    }
+    return counts;
+  });
+
   // ── Chart ViewChilds ───────────────────────────────────────────────────────
-  @ViewChild('chartTrend')     chartTrendRef!:     ChartComponent;
-  @ViewChild('chartBar')       chartBarRef!:       ChartComponent;
-  @ViewChild('chartGap')       chartGapRef!:       ChartComponent;
-  @ViewChild('chartEvolution') chartEvolutionRef!: ChartComponent;
-  @ViewChild('chartHeatmap')   chartHeatmapRef!:   ChartComponent;
-  @ViewChild('chartRanking')   chartRankingRef!:   ChartComponent;
+  @ViewChild('chartTrend')       chartTrendRef!:       ChartComponent;
+  @ViewChild('chartBar')         chartBarRef!:         ChartComponent;
+  @ViewChild('chartGap')         chartGapRef!:         ChartComponent;
+  @ViewChild('chartEvolution')   chartEvolutionRef!:   ChartComponent;
+  @ViewChild('chartHeatmap')     chartHeatmapRef!:     ChartComponent;
+  @ViewChild('chartRanking')     chartRankingRef!:     ChartComponent;
+  @ViewChild('chartCorrelation') chartCorrelationRef!: ChartComponent;
 
   readonly BRAND_COLORS = [
-    '#4361ee','#f72585','#06d6a0','#ffd166','#ef476f',
-    '#118ab2','#7209b7','#3a0ca3','#4cc9f0','#ff9f1c',
-    '#e63946','#2a9d8f','#e9c46a','#f4a261','#264653',
+    '#0ea5e9','#2dd4bf','#a855f7','#f97316','#10b981',
+    '#f43f5e','#6366f1','#eab308','#14b8a6','#8b5cf6',
+    '#ec4899','#3b82f6','#84cc16','#f59e0b','#06b6d4',
   ];
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
@@ -195,7 +213,6 @@ export class NdDashboardComponent implements OnInit {
               ? res.data[0]
               : res.data.find((c: ICountry) => c.uuid === user.country_uuid) ?? res.data[0];
           this.selectedCountry = defaultCountry;
-
           this.provinceService.getAll().subscribe(pr => {
             this.provinceList.set(pr.data);
             const defaultProvince =
@@ -251,12 +268,13 @@ export class NdDashboardComponent implements OnInit {
     this.loadGap();
     this.loadEvolution();
     this.loadHeatmap();
+    this.loadCorrelation();
   }
 
   loadKpi(): void {
     if (!this.country_uuid) return;
     this.isLoadingKpi.set(true);
-    this.ndService.NdSummaryKPI(this.geoParams).subscribe({
+    this.wsService.WsSummaryKPI(this.geoParams).subscribe({
       next: res => { this.kpiData.set(res.data); this.isLoadingKpi.set(false); },
       error: ()  => this.isLoadingKpi.set(false),
     });
@@ -265,9 +283,17 @@ export class NdDashboardComponent implements OnInit {
   loadTrend(): void {
     if (!this.country_uuid) return;
     this.isLoadingTrend.set(true);
-    this.ndService.NdLineChartByMonth(this.geoParams).subscribe({
+    this.wsService.WsLineChartByMonth(this.geoParams).subscribe({
       next: res => {
-        this.trendData.set(res.data ?? []);
+        const flat: WSTrendRowModel[] = res.data ?? [];
+        const map = new Map<string, WSTrendSeriesModel>();
+        for (const r of flat) {
+          if (!map.has(r.brand_uuid)) {
+            map.set(r.brand_uuid, { brand_name: r.brand_name, brand_uuid: r.brand_uuid, points: [] });
+          }
+          map.get(r.brand_uuid)!.points.push(r);
+        }
+        this.trendData.set([...map.values()]);
         this.buildTrendChart();
         this.isLoadingTrend.set(false);
       },
@@ -279,10 +305,10 @@ export class NdDashboardComponent implements OnInit {
     if (!this.country_uuid) return;
     this.isLoadingTable.set(true);
     const call =
-      this.geoLevel() === 'province' ? this.ndService.NdTableViewProvince(this.geoParams)
-    : this.geoLevel() === 'area'      ? this.ndService.NdTableViewArea(this.geoParams)
-    : this.geoLevel() === 'subarea'   ? this.ndService.NdTableViewSubArea(this.geoParams)
-    :                                   this.ndService.NdTableViewCommune(this.geoParams);
+      this.geoLevel() === 'province' ? this.wsService.WsTableViewProvince(this.geoParams)
+    : this.geoLevel() === 'area'     ? this.wsService.WsTableViewArea(this.geoParams)
+    : this.geoLevel() === 'subarea'  ? this.wsService.WsTableViewSubArea(this.geoParams)
+    :                                  this.wsService.WsTableViewCommune(this.geoParams);
     call.subscribe({
       next: res => { this.tableData.set(res.data ?? []); this.isLoadingTable.set(false); },
       error: ()  => this.isLoadingTable.set(false),
@@ -293,13 +319,32 @@ export class NdDashboardComponent implements OnInit {
     if (!this.country_uuid) return;
     this.isLoadingBar.set(true);
     const call =
-      this.geoLevel() === 'province' ? this.ndService.NdBarChartProvince(this.geoParams)
-    : this.geoLevel() === 'area'      ? this.ndService.NdBarChartArea(this.geoParams)
-    : this.geoLevel() === 'subarea'   ? this.ndService.NdBarChartSubArea(this.geoParams)
-    :                                   this.ndService.NdBarChartCommune(this.geoParams);
+      this.geoLevel() === 'province' ? this.wsService.WsBarChartProvince(this.geoParams)
+    : this.geoLevel() === 'area'     ? this.wsService.WsBarChartArea(this.geoParams)
+    : this.geoLevel() === 'subarea'  ? this.wsService.WsBarChartSubArea(this.geoParams)
+    :                                  this.wsService.WsBarChartCommune(this.geoParams);
     call.subscribe({
       next: res => {
-        this.barData.set(res.data ?? []);
+        const flat: WSBarRawRowModel[] = res.data ?? [];
+        const map = new Map<string, WSBarGroupModel>();
+        for (const r of flat) {
+          if (!map.has(r.territory_uuid)) {
+            map.set(r.territory_uuid, {
+              territory_name: r.territory_name,
+              territory_uuid: r.territory_uuid,
+              total_sold: r.total_sold,
+              brands: [],
+            });
+          }
+          map.get(r.territory_uuid)!.brands.push({
+            brand_name: r.brand_name,
+            brand_uuid: r.brand_uuid,
+            brand_sold: r.brand_sold,
+            total_sold: r.total_sold,
+            ws_percent: r.ws_percent,
+          });
+        }
+        this.barData.set([...map.values()]);
         this.buildBarChart();
         this.isLoadingBar.set(false);
       },
@@ -310,7 +355,7 @@ export class NdDashboardComponent implements OnInit {
   loadRanking(): void {
     if (!this.country_uuid) return;
     this.isLoadingRanking.set(true);
-    this.ndService.NdBrandRanking(this.geoParams).subscribe({
+    this.wsService.WsBrandRanking(this.geoParams).subscribe({
       next: res => {
         this.rankingData.set(res.data ?? []);
         this.buildRankingChart();
@@ -323,7 +368,7 @@ export class NdDashboardComponent implements OnInit {
   loadGap(): void {
     if (!this.country_uuid) return;
     this.isLoadingGap.set(true);
-    this.ndService.NdGapAnalysis(this.geoParams).subscribe({
+    this.wsService.WsGapAnalysis(this.geoParams).subscribe({
       next: res => {
         this.gapData.set(res.data ?? []);
         this.buildGapChart();
@@ -336,7 +381,7 @@ export class NdDashboardComponent implements OnInit {
   loadEvolution(): void {
     if (!this.country_uuid) return;
     this.isLoadingEvolution.set(true);
-    this.ndService.NdEvolution(this.geoParams).subscribe({
+    this.wsService.WsEvolution(this.geoParams).subscribe({
       next: res => {
         this.evolutionData.set(res.data ?? []);
         this.buildEvolutionChart();
@@ -349,13 +394,56 @@ export class NdDashboardComponent implements OnInit {
   loadHeatmap(): void {
     if (!this.country_uuid) return;
     this.isLoadingHeatmap.set(true);
-    this.ndService.NdHeatmap(this.geoParams, this.heatmapLevel()).subscribe({
+    this.wsService.WsHeatmap(this.geoParams, this.heatmapLevel()).subscribe({
       next: res => {
-        this.heatmapData.set(res.data);
+        // Assemble matrix from flat rows
+        const flat: WSHeatmapRawRowModel[] = res.data ?? [];
+        const brandMap  = new Map<string, string>();
+        const terrMap   = new Map<string, string>();
+        for (const r of flat) {
+          brandMap.set(r.brand_uuid, r.brand_name);
+          terrMap.set(r.territory_uuid, r.territory_name);
+        }
+        const brands      = [...brandMap.entries()].map(([uuid, name]) => ({ uuid, name }));
+        const territories = [...terrMap.entries()].map(([uuid, name]) => ({ uuid, name }));
+        const matrix: number[][] = brands.map(b =>
+          territories.map(t => {
+            const r = flat.find(f => f.brand_uuid === b.uuid && f.territory_uuid === t.uuid);
+            return r?.ws_percent ?? 0;
+          })
+        );
+        this.heatmapData.set({ brands, territories, matrix });
         this.buildHeatmapChart();
         this.isLoadingHeatmap.set(false);
       },
       error: () => this.isLoadingHeatmap.set(false),
+    });
+  }
+
+  loadCorrelation(): void {
+    if (!this.country_uuid) return;
+    this.isLoadingCorrelation.set(true);
+    this.wsService.WsVsNDCorrelation(this.geoParams, this.correlationThreshold()).subscribe({
+      next: res => {
+        this.correlationData.set(res.data ?? []);
+        this.buildCorrelationChart();
+        this.isLoadingCorrelation.set(false);
+      },
+      error: () => this.isLoadingCorrelation.set(false),
+    });
+  }
+
+  loadDrilldown(brandUuid: string, brandName: string): void {
+    if (!this.country_uuid || !brandUuid) return;
+    this.drillBrand.set({ uuid: brandUuid, name: brandName });
+    this.activeSection.set('drilldown');
+    this.isLoadingDrilldown.set(true);
+    this.wsService.WsPosDrillDown(this.geoParams, brandUuid).subscribe({
+      next: res => {
+        this.drilldownData.set(res.data ?? []);
+        this.isLoadingDrilldown.set(false);
+      },
+      error: () => this.isLoadingDrilldown.set(false),
     });
   }
 
@@ -366,7 +454,7 @@ export class NdDashboardComponent implements OnInit {
     const months = [...new Set(data.flatMap(s => s.points.map(p => p.month)))].sort();
     const series = data.map(s => ({
       name: s.brand_name,
-      data: months.map(m => s.points.find(p => p.month === m)?.nd_percent ?? 0),
+      data: months.map(m => s.points.find(p => p.month === m)?.ws_percent ?? 0),
     }));
     this.chartTrendOpts.set({
       series,
@@ -376,10 +464,13 @@ export class NdDashboardComponent implements OnInit {
       markers:    { size: 4, hover: { size: 6 } },
       dataLabels: { enabled: false },
       xaxis:      { categories: months, labels: { rotate: -30 } },
-      yaxis:      { title: { text: 'ND %' }, labels: { formatter: (v: number) => `${v}%` }, min: 0, max: 100 },
+      yaxis:      { title: { text: 'WS %' }, labels: { formatter: (v: number) => `${v}%` }, min: 0, max: 100 },
       legend:     { position: 'top' },
-      tooltip:    { shared: true, intersect: false, y: { formatter: (v: number) => `${v.toFixed(1)}%` } },
-      grid:       { strokeDashArray: 4 },
+      tooltip:    {
+        shared: true, intersect: false,
+        y: { formatter: (v: number) => `${v.toFixed(1)}%` },
+      },
+      grid: { strokeDashArray: 4 },
     });
   }
 
@@ -390,7 +481,7 @@ export class NdDashboardComponent implements OnInit {
     const territories = data.map(g => g.territory_name);
     const series = allBrands.map(brand => ({
       name: brand,
-      data: data.map(g => g.brands.find(b => b.brand_name === brand)?.nd_percent ?? 0),
+      data: data.map(g => g.brands.find(b => b.brand_name === brand)?.ws_percent ?? 0),
     }));
     this.chartBarOpts.set({
       series,
@@ -399,7 +490,7 @@ export class NdDashboardComponent implements OnInit {
       plotOptions: { bar: { horizontal: false, columnWidth: '60%', borderRadius: 3 } },
       dataLabels:  { enabled: false },
       xaxis:       { categories: territories, labels: { rotate: -30 } },
-      yaxis:       { title: { text: 'ND %' }, min: 0, max: 100, labels: { formatter: (v: number) => `${v}%` } },
+      yaxis:       { title: { text: 'WS %' }, min: 0, max: 100, labels: { formatter: (v: number) => `${v}%` } },
       legend:      { position: 'top' },
       tooltip:     { y: { formatter: (v: number) => `${v.toFixed(1)}%` } },
     });
@@ -408,20 +499,22 @@ export class NdDashboardComponent implements OnInit {
   buildGapChart(): void {
     const data = this.gapData();
     if (!data.length) { this.chartGapOpts.set(null); return; }
+    const strong = data.filter(d => d.zone === 'strong');
+    const mid    = data.filter(d => d.zone === 'mid');
+    const weak   = data.filter(d => d.zone === 'weak');
     this.chartGapOpts.set({
       series: [
-        { name: 'Zone A — ND',          data: data.map(d => d.nd_pos) },
-        { name: 'Zone B — Visited Gap',  data: data.map(d => d.visited_gap_pos) },
-        { name: 'Zone C — Universe Gap', data: data.map(d => d.universe_gap_pos) },
+        { name: 'Fort (≥ 66%)',    data: strong.map(d => +d.ws_percent.toFixed(1)) },
+        { name: 'Moyen (33–66%)',  data: mid.map(d => +d.ws_percent.toFixed(1)) },
+        { name: 'Faible (< 33%)', data: weak.map(d => +d.ws_percent.toFixed(1)) },
       ],
-      chart:       { type: 'bar', height: 320, stacked: true, toolbar: { show: false } },
-      colors:      ['#06d6a0', '#ffd166', '#ef476f'],
-      plotOptions: { bar: { horizontal: false, columnWidth: '55%', borderRadius: 3 } },
-      dataLabels:  { enabled: false },
-      xaxis:       { categories: data.map(d => d.brand_name), labels: { rotate: -30 } },
-      yaxis:       { title: { text: 'POS Count' } },
+      chart:       { type: 'bar', height: 300, stacked: false, toolbar: { show: false } },
+      colors:      ['#10b981', '#f59e0b', '#f43f5e'],
+      plotOptions: { bar: { horizontal: true, barHeight: '55%', borderRadius: 3 } },
+      dataLabels:  { enabled: true, formatter: (v: number) => `${v}%` },
+      xaxis:       { categories: data.map(d => d.brand_name), max: 100, labels: { formatter: (v: number) => `${v}%` } },
       legend:      { position: 'top' },
-      tooltip:     { shared: true, intersect: false },
+      tooltip:     { y: { formatter: (v: number) => `${v.toFixed(1)}%` } },
     });
   }
 
@@ -430,22 +523,24 @@ export class NdDashboardComponent implements OnInit {
     if (!data.length) { this.chartEvolutionOpts.set(null); return; }
     this.chartEvolutionOpts.set({
       series: [
-        { name: 'ND% Courant',   data: data.map(d => d.current_nd_percent),  type: 'bar' },
-        { name: 'ND% Précédent', data: data.map(d => d.previous_nd_percent), type: 'bar' },
-        { name: 'Delta (pp)',    data: data.map(d => d.delta),                type: 'line' },
+        { name: 'WS% Courant',   data: data.map(d => d.curr_ws_percent),  type: 'bar' },
+        { name: 'WS% Précédent', data: data.map(d => d.prev_ws_percent),  type: 'bar' },
+        { name: 'Delta (pp)',    data: data.map(d => d.delta_ws),          type: 'line' },
       ],
       chart:       { height: 320, toolbar: { show: false } },
-      colors:      ['#4361ee', '#94a3b8', '#f72585'],
+      colors:      ['#0ea5e9', '#94a3b8', '#f43f5e'],
       stroke:      { width: [0, 0, 2.5], curve: 'smooth' },
       plotOptions: { bar: { horizontal: false, columnWidth: '45%', borderRadius: 3 } },
       dataLabels:  { enabled: false },
       xaxis:       { categories: data.map(d => d.brand_name), labels: { rotate: -30 } },
       yaxis: [
-        { seriesName: 'ND% Courant',   title: { text: 'ND %' },
-          labels: { formatter: (v: number) => `${v}%` } },
-        { seriesName: 'ND% Précédent', show: false },
-        { seriesName: 'Delta (pp)',    opposite: true, title: { text: 'Δ pp' },
-          labels: { formatter: (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(1)}pp` } },
+        { seriesName: 'WS% Courant',   title: { text: 'WS %' }, labels: { formatter: (v: number) => `${v}%` } },
+        { seriesName: 'WS% Précédent', show: false },
+        {
+          seriesName: 'Delta (pp)', opposite: true,
+          title: { text: 'Δ pp' },
+          labels: { formatter: (v: number) => `${v > 0 ? '+' : ''}${v.toFixed(1)}pp` },
+        },
       ],
       legend:  { position: 'top' },
       tooltip: { shared: true, intersect: false },
@@ -457,12 +552,14 @@ export class NdDashboardComponent implements OnInit {
     if (!data.length) { this.chartRankingOpts.set(null); return; }
     const top10 = data.slice(0, 10);
     this.chartRankingOpts.set({
-      series: [{ name: 'ND %', data: top10.map(d => d.nd_percent) }],
+      series: [{ name: 'WS %', data: top10.map(d => d.ws_percent) }],
       chart:       { type: 'bar', height: 300, toolbar: { show: false } },
-      colors:      ['#4361ee'],
+      colors:      ['#0ea5e9'],
       plotOptions: {
-        bar: { horizontal: true, barHeight: '65%', borderRadius: 4,
-          dataLabels: { position: 'top' } },
+        bar: {
+          horizontal: true, barHeight: '65%', borderRadius: 4,
+          dataLabels: { position: 'top' },
+        },
       },
       dataLabels: {
         enabled: true, offsetX: 4,
@@ -495,7 +592,7 @@ export class NdDashboardComponent implements OnInit {
         style: { fontSize: '10px' },
         formatter: (v: number) => v > 0 ? `${v}%` : '',
       },
-      colors: ['#4361ee'],
+      colors: ['#0ea5e9'],
       plotOptions: {
         heatmap: {
           shadeIntensity: 0.7,
@@ -503,17 +600,65 @@ export class NdDashboardComponent implements OnInit {
           enableShades: true,
           colorScale: {
             ranges: [
-              { from: 0,  to: 0,   color: '#f1f3ff', name: 'Absent'    },
-              { from: 1,  to: 25,  color: '#cdd5fb', name: 'Faible'    },
-              { from: 26, to: 50,  color: '#7b8fe9', name: 'Moyen'     },
-              { from: 51, to: 75,  color: '#4361ee', name: 'Bon'       },
-              { from: 76, to: 100, color: '#1d3086', name: 'Excellent' },
+              { from: 0,  to: 0,   color: '#f0f9ff', name: 'Absent'    },
+              { from: 1,  to: 25,  color: '#bae6fd', name: 'Faible'    },
+              { from: 26, to: 50,  color: '#38bdf8', name: 'Moyen'     },
+              { from: 51, to: 75,  color: '#0ea5e9', name: 'Bon'       },
+              { from: 76, to: 100, color: '#0369a1', name: 'Excellent' },
             ],
           },
         },
       },
       legend:  { position: 'top' },
       tooltip: { y: { formatter: (v: number) => `${v}%` } },
+    });
+  }
+
+  buildCorrelationChart(): void {
+    const data = this.correlationData();
+    if (!data.length) { this.chartCorrelationOpts.set(null); return; }
+    const threshold = this.correlationThreshold();
+    const segColors: Record<string, string> = {
+      leader:  '#10b981',
+      niche:   '#0ea5e9',
+      volume:  '#f59e0b',
+      laggard: '#f43f5e',
+    };
+    const bySeg: Record<string, any[]> = { leader: [], niche: [], volume: [], laggard: [] };
+    for (const d of data) bySeg[d.segment]?.push({ x: d.ws_percent, y: d.nd_percent, brand: d.brand_name });
+
+    const series = Object.entries(bySeg)
+      .filter(([, pts]) => pts.length)
+      .map(([seg, pts]) => ({
+        name: seg === 'leader' ? 'Leader' : seg === 'niche' ? 'Niche (vol. ↑ diffus ↓)' : seg === 'volume' ? 'Volume (diffus ↑ vol. ↓)' : 'Retardataire',
+        data: pts.map(p => ({ x: p.x, y: p.y })),
+      }));
+
+    this.chartCorrelationOpts.set({
+      series,
+      chart:      { type: 'scatter', height: 380, toolbar: { show: false }, zoom: { enabled: true } },
+      colors:     [segColors['leader'], segColors['niche'], segColors['volume'], segColors['laggard']],
+      dataLabels: { enabled: false },
+      markers:    { size: 8, hover: { size: 10 } },
+      xaxis: { title: { text: 'WS %' }, min: 0, max: 100, labels: { formatter: (v: number) => `${v}%` } },
+      yaxis: { title: { text: 'ND %' }, min: 0, max: 100, labels: { formatter: (v: number) => `${v}%` } },
+      annotations: {
+        xaxis: [{ x: threshold, borderColor: '#888', label: { text: `WS seuil ${threshold}%`, position: 'bottom' } }],
+        yaxis: [{ y: threshold, borderColor: '#888', label: { text: `ND seuil ${threshold}%` } }],
+      },
+      legend:  { position: 'top' },
+      tooltip: {
+        shared: false, intersect: true,
+        custom: ({ dataPointIndex, seriesIndex, w }: any) => {
+          const pt = w.config.series[seriesIndex]?.data?.[dataPointIndex];
+          if (!pt) return '';
+          const match = data.find(d => Math.abs(d.ws_percent - pt.x) < 0.01 && Math.abs(d.nd_percent - pt.y) < 0.01);
+          return `<div class="ws-tooltip-scatter">
+            <strong>${match?.brand_name ?? ''}</strong><br/>
+            WS: ${pt.x}% &nbsp;|&nbsp; ND: ${pt.y}%
+          </div>`;
+        },
+      },
     });
   }
 
@@ -592,39 +737,33 @@ export class NdDashboardComponent implements OnInit {
     this.loadHeatmap();
   }
 
-  setSection(section: NDSection): void {
+  onThresholdChange(t: number): void {
+    this.correlationThreshold.set(t);
+    this.loadCorrelation();
+  }
+
+  setSection(section: WSSection): void {
     this.activeSection.set(section);
   }
 
   setPeriod(key: string): void {
     this.selectedPeriod.set(key);
     if (key === 'custom') return;
-    const now = new Date();
+    const now   = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     let start: Date;
     let end: Date = new Date(today);
     switch (key) {
-      case 'today':
-        start = new Date(today);
-        break;
-      case '1w':
-        start = new Date(today); start.setDate(today.getDate() - 7);
-        break;
+      case 'today': start = new Date(today); break;
+      case '1w':    start = new Date(today); start.setDate(today.getDate() - 7); break;
       case '1m':
         start = new Date(now.getFullYear(), now.getMonth(), 1);
         end   = new Date(now.getFullYear(), now.getMonth() + 1, 0);
         break;
-      case '3m':
-        start = new Date(today); start.setMonth(today.getMonth() - 3);
-        break;
-      case '6m':
-        start = new Date(today); start.setMonth(today.getMonth() - 6);
-        break;
-      case '1y':
-        start = new Date(today); start.setFullYear(today.getFullYear() - 1);
-        break;
-      default:
-        return;
+      case '3m': start = new Date(today); start.setMonth(today.getMonth() - 3); break;
+      case '6m': start = new Date(today); start.setMonth(today.getMonth() - 6); break;
+      case '1y': start = new Date(today); start.setFullYear(today.getFullYear() - 1); break;
+      default: return;
     }
     this.start_date = formatDate(start, 'yyyy-MM-dd', 'en-US');
     this.end_date   = formatDate(end,   'yyyy-MM-dd', 'en-US');
@@ -636,28 +775,71 @@ export class NdDashboardComponent implements OnInit {
     return this.PERIODS.find(p => p.key === this.selectedPeriod())?.label ?? 'Période';
   }
 
-  getTrendIcon(trend: string): string {
-    if (trend === 'up')   return 'ti ti-trending-up text-success';
-    if (trend === 'down') return 'ti ti-trending-down text-danger';
-    return 'ti ti-minus text-warning';
-  }
-
   getTrendClass(value: number): string {
     if (value > 0) return 'text-success';
     if (value < 0) return 'text-danger';
     return 'text-muted';
   }
 
-  getTrendBadge(trend: string): string {
-    if (trend === 'up')   return 'badge bg-success';
-    if (trend === 'down') return 'badge bg-danger';
-    return 'badge bg-warning text-dark';
+  getWsBadge(ws: number): string {
+    if (ws >= 75) return 'badge bg-success';
+    if (ws >= 40) return 'badge bg-warning text-dark';
+    return 'badge bg-danger';
   }
 
-  getNdBadge(nd: number): string {
-    if (nd >= 75) return 'badge bg-success';
-    if (nd >= 40) return 'badge bg-warning text-dark';
+  getWsProgressClass(ws: number): string {
+    if (ws >= 75) return 'bg-success';
+    if (ws >= 40) return 'bg-warning';
+    return 'bg-danger';
+  }
+
+  getZoneBadge(zone: string): string {
+    if (zone === 'strong') return 'badge bg-success';
+    if (zone === 'mid')    return 'badge bg-warning text-dark';
     return 'badge bg-danger';
+  }
+
+  getZoneLabel(zone: string): string {
+    if (zone === 'strong') return 'Fort ≥ 66%';
+    if (zone === 'mid')    return 'Moyen 33–66%';
+    return 'Faible < 33%';
+  }
+
+  getGapBadge(gap: number): string {
+    if (gap > 5)  return 'badge bg-success-subtle text-success';
+    if (gap < -5) return 'badge bg-danger-subtle text-danger';
+    return 'badge bg-secondary-subtle text-secondary';
+  }
+
+  getGapLabel(gap: number): string {
+    const sign = gap > 0 ? '+' : '';
+    if (gap > 5)  return `${sign}${gap.toFixed(1)}pp (Qualité)`;
+    if (gap < -5) return `${gap.toFixed(1)}pp (Diffus)`;
+    return `${sign}${gap.toFixed(1)}pp`;
+  }
+
+  getSegBadge(seg: string): string {
+    const map: Record<string, string> = {
+      leader:  'badge bg-success',
+      niche:   'badge bg-info text-dark',
+      volume:  'badge bg-warning text-dark',
+      laggard: 'badge bg-danger',
+    };
+    return map[seg] ?? 'badge bg-secondary';
+  }
+
+  getSegLabel(seg: string): string {
+    const map: Record<string, string> = {
+      leader:  'Leader',
+      niche:   'Niche',
+      volume:  'Volume',
+      laggard: 'Retardataire',
+    };
+    return map[seg] ?? seg;
+  }
+
+  getSegCount(seg: string): number {
+    return this.correlationData().filter(d => d.segment === seg).length;
   }
 
   getRankMedal(rank: number): string {
@@ -665,5 +847,11 @@ export class NdDashboardComponent implements OnInit {
     if (rank === 2) return '🥈';
     if (rank === 3) return '🥉';
     return `#${rank}`;
+  }
+
+  formatSold(v: number): string {
+    if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
+    if (v >= 1_000)     return `${(v / 1_000).toFixed(1)}K`;
+    return v.toFixed(0);
   }
 }

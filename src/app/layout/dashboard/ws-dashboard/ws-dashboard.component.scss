@@ -1,36 +1,36 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// SOS-DASHBOARD  —  Share Of Stock Dashboard styles
-// Prefix: "sos-"  |  Palette: Indigo/Violet primary, semantic accents
-// SOS = Fardes marque ÷ total fardes × 100 — part de linéaire physique
+// WS-DASHBOARD  —  Weighted Sales Dashboard styles
+// Prefix: "ws-"  |  Palette: Teal/Cyan primary, semantic accents
+// WS differs from WD (orange) and ND (purple): it weights POS by units SOLD.
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── CSS custom property tokens ────────────────────────────────────────────────
 :host {
-  --sos-primary:    #6366f1;
-  --sos-primary-lt: #eef2ff;
-  --sos-primary-md: #e0e7ff;
-  --sos-border:     #c7d2fe;
-  --sos-bg-soft:    #f5f6ff;
-  --sos-bg-card:    #fafbff;
+  --ws-primary:    #0ea5e9;
+  --ws-primary-lt: #e0f4fe;
+  --ws-primary-md: #bae6fd;
+  --ws-border:     #bae6fd;
+  --ws-bg-soft:    #f0f9ff;
+  --ws-bg-card:    #f8fcff;
 }
 
 // ── Page header badge ─────────────────────────────────────────────────────────
-.sos-title-badge {
+.ws-title-badge {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 36px;
   height: 36px;
   border-radius: 10px;
-  background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+  background: linear-gradient(135deg, #0ea5e9 0%, #2dd4bf 100%);
   color: #fff;
   font-size: 1rem;
   flex-shrink: 0;
 }
 
 // ── Date range picker ─────────────────────────────────────────────────────────
-.sos-date-form {
-  .sos-date-field {
+.ws-date-form {
+  .ws-date-field {
     position: relative;
     display: flex;
     align-items: center;
@@ -44,18 +44,18 @@
       z-index: 1;
     }
 
-    .sos-date-input {
+    .ws-date-input {
       padding-left: 34px;
       border-radius: 8px;
-      border: 1px solid var(--sos-border);
+      border: 1px solid var(--ws-border);
       font-size: 0.82rem;
-      background-color: var(--sos-bg-soft);
+      background-color: var(--ws-bg-soft);
       min-width: 220px;
       transition: border-color 0.2s, box-shadow 0.2s;
 
       &:focus {
-        border-color: var(--sos-primary);
-        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.12);
+        border-color: var(--ws-primary);
+        box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.12);
         background-color: #fff;
       }
     }
@@ -63,37 +63,37 @@
 }
 
 // ── Period dropdown ───────────────────────────────────────────────────────────
-.sos-period-toggle {
+.ws-period-toggle {
   display: inline-flex;
   align-items: center;
   padding: 6px 14px;
   border-radius: 8px;
-  border: 1px solid var(--sos-border);
-  background: var(--sos-bg-soft);
-  color: var(--sos-primary);
+  border: 1px solid var(--ws-border);
+  background: var(--ws-bg-soft);
+  color: var(--ws-primary);
   font-size: 0.82rem;
   font-weight: 600;
   gap: 4px;
   transition: all 0.15s;
 
   &:hover, &:focus {
-    background: var(--sos-primary-lt);
-    border-color: var(--sos-primary);
+    background: var(--ws-primary-lt);
+    border-color: var(--ws-primary);
     box-shadow: none;
   }
 
   &::after { margin-left: 4px; }
 }
 
-.sos-period-menu {
+.ws-period-menu {
   min-width: 160px;
-  border: 1px solid var(--sos-border);
+  border: 1px solid var(--ws-border);
   border-radius: 10px;
   padding: 4px;
   font-size: 0.82rem;
 }
 
-.sos-period-item {
+.ws-period-item {
   border-radius: 7px;
   color: #3a3a5c;
   font-size: 0.82rem;
@@ -101,39 +101,39 @@
   display: flex;
   align-items: center;
 
-  &:hover { background: var(--sos-primary-lt); color: var(--sos-primary); }
+  &:hover { background: var(--ws-primary-lt); color: var(--ws-primary); }
 
   &.active {
-    background: var(--sos-primary);
+    background: var(--ws-primary);
     color: #fff;
     font-weight: 600;
   }
 }
 
 // ── Geo filter bar ────────────────────────────────────────────────────────────
-.sos-geo-bar {
+.ws-geo-bar {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   align-items: flex-end;
   background: #fff;
-  border: 1px solid var(--sos-border);
+  border: 1px solid var(--ws-border);
   border-radius: 12px;
   padding: 12px 16px;
-  box-shadow: 0 1px 4px rgba(99, 102, 241, 0.07);
+  box-shadow: 0 1px 4px rgba(14, 165, 233, 0.07);
 }
 
-.sos-geo-item {
+.ws-geo-item {
   display: flex;
   flex-direction: column;
   gap: 4px;
   flex: 1;
   min-width: 130px;
 
-  &.sos-geo-disabled { opacity: 0.5; }
+  &.ws-geo-disabled { opacity: 0.5; }
 }
 
-.sos-geo-label {
+.ws-geo-label {
   font-size: 0.7rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -142,32 +142,32 @@
   margin-bottom: 0;
 }
 
-.sos-select {
+.ws-select {
   border-radius: 8px;
-  border: 1px solid var(--sos-border);
-  background-color: var(--sos-bg-soft);
+  border: 1px solid var(--ws-border);
+  background-color: var(--ws-bg-soft);
   font-size: 0.8rem;
   transition: border-color 0.2s;
 
   &:focus {
-    border-color: var(--sos-primary);
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+    border-color: var(--ws-primary);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
   }
 }
 
-// ── Spinner override ──────────────────────────────────────────────────────────
-.sos-spinner {
-  color: var(--sos-primary) !important;
+// ── Spinner ───────────────────────────────────────────────────────────────────
+.ws-spinner {
+  color: var(--ws-primary) !important;
 }
 
 // ── KPI skeleton ──────────────────────────────────────────────────────────────
-.sos-kpi-skeleton {
+.ws-kpi-skeleton {
   border-radius: 12px;
   min-height: 80px;
 
   .card-body { display: flex; flex-direction: column; gap: 12px; }
 
-  @keyframes sos-shimmer {
+  @keyframes ws-shimmer {
     0%   { background-position: -400px 0; }
     100% { background-position: 400px 0; }
   }
@@ -175,33 +175,33 @@
   .skeleton-line {
     height: 14px;
     border-radius: 6px;
-    background: linear-gradient(90deg, #f0f1ff 25%, #e0e7ff 50%, #f0f1ff 75%);
+    background: linear-gradient(90deg, #e8f5fd 25%, #bae6fd 50%, #e8f5fd 75%);
     background-size: 400px 100%;
-    animation: sos-shimmer 1.4s infinite;
+    animation: ws-shimmer 1.4s infinite;
 
     &.short { width: 55%; height: 22px; }
   }
 }
 
 // ── KPI cards ─────────────────────────────────────────────────────────────────
-.sos-kpi-card {
+.ws-kpi-card {
   display: flex;
   align-items: center;
   gap: 14px;
   background: #fff;
   border-radius: 14px;
   padding: 14px 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   border: 1px solid transparent;
   transition: transform 0.18s, box-shadow 0.18s;
   min-height: 76px;
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
   }
 
-  .sos-kpi-icon {
+  .ws-kpi-icon {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -212,7 +212,7 @@
     flex-shrink: 0;
   }
 
-  .sos-kpi-body {
+  .ws-kpi-body {
     display: flex;
     flex-direction: column;
     gap: 2px;
@@ -220,7 +220,7 @@
     min-width: 0;
   }
 
-  .sos-kpi-label {
+  .ws-kpi-label {
     font-size: 0.7rem;
     font-weight: 600;
     text-transform: uppercase;
@@ -229,51 +229,43 @@
     white-space: nowrap;
   }
 
-  .sos-kpi-value {
+  .ws-kpi-value {
     font-size: 1.35rem;
     font-weight: 700;
     line-height: 1.1;
     white-space: nowrap;
   }
 
-  .sos-kpi-brand {
-    font-size: 0.95rem;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .sos-kpi-sub {
+  .ws-kpi-sub {
     font-size: 0.72rem;
     color: #6c757d;
   }
 
   // accent variants
-  &.accent-blue   { border-color: #c7d2fe; .sos-kpi-icon { background: #eef2ff; color: #6366f1; } .sos-kpi-value { color: #4f46e5; } }
-  &.accent-teal   { border-color: #d0f8ef; .sos-kpi-icon { background: #e0faf4; color: #0fa97a; } .sos-kpi-value { color: #0c9b6e; } }
-  &.accent-green  { border-color: #d0fce6; .sos-kpi-icon { background: #e5fdf0; color: #06d6a0; } .sos-kpi-value { color: #05ba8b; } }
-  &.accent-orange { border-color: #fddcae; .sos-kpi-icon { background: #fff3e0; color: #f77f00; } .sos-kpi-value { color: #dc7000; } }
-  &.accent-purple { border-color: #e9d5ff; .sos-kpi-icon { background: #f5f3ff; color: #7c3aed; } .sos-kpi-value { color: #6d28d9; } }
-  &.accent-amber  { border-color: #fff3cc; .sos-kpi-icon { background: #fffae0; color: #e9a001; } .sos-kpi-value { color: #d48e00; } }
-  &.accent-rose   { border-color: #ffc5d0; .sos-kpi-icon { background: #fff0f3; color: #e11d48; } .sos-kpi-value { color: #e11d48; } }
-  &.accent-indigo { border-color: #e0daff; .sos-kpi-icon { background: #ede8ff; color: #4361ee; } .sos-kpi-value { color: #4361ee; } }
+  &.accent-cyan   { border-color: #a5f3fc; .ws-kpi-icon { background: #ecfeff; color: #0891b2; } .ws-kpi-value { color: #0891b2; } }
+  &.accent-sky    { border-color: #bae6fd; .ws-kpi-icon { background: #e0f4fe; color: #0ea5e9; } .ws-kpi-value { color: #0ea5e9; } }
+  &.accent-teal   { border-color: #99f6e4; .ws-kpi-icon { background: #e0fdf4; color: #0d9488; } .ws-kpi-value { color: #0d9488; } }
+  &.accent-indigo { border-color: #c7d2fe; .ws-kpi-icon { background: #eef2ff; color: #4f46e5; } .ws-kpi-value { color: #4f46e5; } }
+  &.accent-green  { border-color: #bbf7d0; .ws-kpi-icon { background: #f0fdf4; color: #16a34a; } .ws-kpi-value { color: #16a34a; } }
+  &.accent-rose   { border-color: #fecdd3; .ws-kpi-icon { background: #fff1f2; color: #e11d48; } .ws-kpi-value { color: #e11d48; } }
 }
 
 // ── Section nav ───────────────────────────────────────────────────────────────
-.sos-section-nav {
+.ws-section-nav {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  border-bottom: 2px solid var(--sos-border);
+  border-bottom: 2px solid var(--ws-border);
   padding-bottom: 8px;
 }
 
-.sos-nav-btn {
+.ws-nav-btn {
   display: inline-flex;
   align-items: center;
   padding: 7px 16px;
   border-radius: 8px 8px 0 0;
   border: 1px solid transparent;
-  background: var(--sos-bg-soft);
+  background: var(--ws-bg-soft);
   color: #6c757d;
   font-size: 0.8rem;
   font-weight: 500;
@@ -282,33 +274,33 @@
   margin-bottom: -2px;
 
   &:hover {
-    background: var(--sos-primary-lt);
-    color: var(--sos-primary);
+    background: var(--ws-primary-lt);
+    color: var(--ws-primary);
   }
 
   &.active {
     background: #fff;
-    color: var(--sos-primary);
-    border-color: var(--sos-border) var(--sos-border) #fff;
+    color: var(--ws-primary);
+    border-color: var(--ws-border) var(--ws-border) #fff;
     font-weight: 600;
   }
 
-  &.sos-nav-drill {
-    background: var(--sos-primary-lt);
-    color: var(--sos-primary);
+  &.ws-nav-drill {
+    background: var(--ws-primary-lt);
+    color: var(--ws-primary);
     font-weight: 600;
-    border: 1px solid var(--sos-border);
+    border: 1px solid var(--ws-border);
 
     &.active {
-      background: var(--sos-primary);
+      background: var(--ws-primary);
       color: #fff;
-      border-color: var(--sos-primary);
+      border-color: var(--ws-primary);
     }
   }
 }
 
 // ── Geo crumb ─────────────────────────────────────────────────────────────────
-.sos-geo-crumb {
+.ws-geo-crumb {
   font-size: 0.8rem;
   color: #6c757d;
   display: flex;
@@ -316,104 +308,89 @@
   flex-wrap: wrap;
 }
 
-.sos-text-primary { color: var(--sos-primary) !important; }
+.ws-text-primary { color: var(--ws-primary) !important; }
 
 // ── Geo level tabs ────────────────────────────────────────────────────────────
-.sos-geo-level-tabs {
+.ws-geo-level-tabs {
   display: flex;
   flex-wrap: wrap;
   gap: 4px;
   align-items: center;
 }
 
-.sos-level-btn {
+.ws-level-btn {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 4px 12px;
   border-radius: 20px;
-  border: 1px solid var(--sos-border);
-  background: var(--sos-bg-soft);
+  border: 1px solid var(--ws-border);
+  background: var(--ws-bg-soft);
   color: #6c757d;
   font-size: 0.75rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.18s;
 
-  &:hover { background: var(--sos-primary-lt); color: var(--sos-primary); }
+  &:hover { background: var(--ws-primary-lt); color: var(--ws-primary); }
 
   &.active {
-    background: var(--sos-primary);
+    background: var(--ws-primary);
     color: #fff;
-    border-color: var(--sos-primary);
+    border-color: var(--ws-primary);
     font-weight: 600;
   }
 }
 
 // ── Pill ──────────────────────────────────────────────────────────────────────
-.sos-pill {
+.ws-pill {
   display: inline-flex;
   align-items: center;
   padding: 4px 14px;
   border-radius: 20px;
-  border: 1px solid var(--sos-border);
-  background: var(--sos-bg-soft);
+  border: 1px solid var(--ws-border);
+  background: var(--ws-bg-soft);
   color: #6c757d;
   font-size: 0.77rem;
   cursor: pointer;
   transition: all 0.15s;
 
-  &:hover { background: var(--sos-primary-lt); color: var(--sos-primary); }
+  &:hover { background: var(--ws-primary-lt); color: var(--ws-primary); }
 
   &.active {
-    background: var(--sos-primary);
+    background: var(--ws-primary);
     color: #fff;
-    border-color: var(--sos-primary);
+    border-color: var(--ws-primary);
     font-weight: 600;
   }
 }
 
-// ── Tableview card ────────────────────────────────────────────────────────────
-.sos-tableview-card {
-  border-radius: 12px;
-  overflow: hidden;
-}
-
-.sos-tableview-header {
-  background: var(--sos-bg-soft);
-  border-bottom: 1px solid var(--sos-border);
-}
+// ── Table view card ───────────────────────────────────────────────────────────
+.ws-tableview-card   { border-radius: 12px; overflow: hidden; }
+.ws-tableview-header { background: var(--ws-bg-soft); border-bottom: 1px solid var(--ws-border); }
 
 // ── Territory groups ──────────────────────────────────────────────────────────
-.sos-territory-group {
-  border-bottom: 2px solid var(--sos-primary-lt);
-
+.ws-territory-group {
+  border-bottom: 2px solid var(--ws-primary-lt);
   &:last-child { border-bottom: none; }
 }
 
-.sos-territory-header {
+.ws-territory-header {
   display: flex;
   align-items: center;
   padding: 10px 16px;
-  background: linear-gradient(90deg, #eef2ff 0%, #f8f9ff 100%);
+  background: linear-gradient(90deg, #e0f4fe 0%, #f8fcff 100%);
   font-size: 0.85rem;
-  color: #3a3a5c;
-  border-bottom: 1px solid var(--sos-border);
+  color: #1e3a5f;
+  border-bottom: 1px solid var(--ws-border);
 }
 
 // ── Tables ────────────────────────────────────────────────────────────────────
-.sos-table {
-  font-size: 0.82rem;
+.ws-table    { font-size: 0.82rem; td, th { padding: 8px 12px; } }
+.ws-table-sm { td, th { padding: 6px 10px; } }
 
-  td, th { padding: 8px 12px; }
-}
-
-.sos-table-sm {
-  td, th { padding: 6px 10px; }
-}
-
-.sos-thead {
-  background: var(--sos-bg-soft);
+.ws-thead {
+  background: var(--ws-bg-soft);
 
   th {
     font-size: 0.72rem;
@@ -421,28 +398,28 @@
     text-transform: uppercase;
     letter-spacing: 0.04em;
     color: #6c757d;
-    border-bottom: 2px solid var(--sos-border);
+    border-bottom: 2px solid var(--ws-border);
     white-space: nowrap;
   }
 }
 
-.sos-rank-top {
-  background: linear-gradient(90deg, rgba(99,102,241,0.06), transparent);
+.ws-rank-top {
+  background: linear-gradient(90deg, rgba(14, 165, 233, 0.06), transparent);
 }
 
 // ── Progress bars ─────────────────────────────────────────────────────────────
-.sos-progress {
+.ws-progress {
   height: 6px;
   border-radius: 4px;
-  background-color: var(--sos-primary-lt);
+  background-color: var(--ws-primary-lt);
 
   .progress-bar { border-radius: 4px; }
 }
 
-.sos-progress-mini {
+.ws-progress-mini {
   height: 4px;
   border-radius: 3px;
-  background-color: var(--sos-primary-lt);
+  background-color: var(--ws-primary-lt);
   width: 60px;
   display: inline-flex;
 
@@ -450,126 +427,84 @@
 }
 
 // ── Empty state ───────────────────────────────────────────────────────────────
-.sos-empty-state {
+.ws-empty-state {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   min-height: 180px;
-  color: #a0a0c8;
+  color: #90caf9;
   gap: 8px;
 
-  i {
-    font-size: 2.5rem;
-    opacity: 0.5;
-  }
-
-  p {
-    font-size: 0.85rem;
-    margin: 0;
-  }
+  i   { font-size: 2.5rem; opacity: 0.5; }
+  p   { font-size: 0.85rem; margin: 0; }
 }
 
 // ── Bar territory list ────────────────────────────────────────────────────────
-.sos-bar-territory {
+.ws-bar-territory {
   background: #fff;
   transition: background 0.15s;
 
-  &:hover { background: var(--sos-bg-soft); }
+  &:hover { background: var(--ws-bg-soft); }
 }
 
-// ── Ranking drill button ──────────────────────────────────────────────────────
-.sos-drill-btn {
+// ── Drill button ──────────────────────────────────────────────────────────────
+.ws-drill-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  border: 1px solid var(--sos-border);
-  background: var(--sos-bg-soft);
-  color: var(--sos-primary);
+  border: 1px solid var(--ws-border);
+  background: var(--ws-bg-soft);
+  color: var(--ws-primary);
   padding: 0;
   transition: all 0.18s;
 
   &:hover {
-    background: var(--sos-primary);
+    background: var(--ws-primary);
     color: #fff;
-    border-color: var(--sos-primary);
+    border-color: var(--ws-primary);
   }
 }
 
-// ── Zone / concentration cards ────────────────────────────────────────────────
-.sos-zone-dot {
+// ── Gap Analysis — Zone cards ─────────────────────────────────────────────────
+.ws-zone-strong { background: #f0fdf4; border-color: #bbf7d0; }
+.ws-zone-mid    { background: #fffbeb; border-color: #fde68a; }
+.ws-zone-weak   { background: #fff1f2; border-color: #fecdd3; }
+
+.ws-zone-dot {
   width: 12px;
   height: 12px;
   border-radius: 50%;
   flex-shrink: 0;
 }
 
-.sos-seg-summary-card {
-  background: #fff;
-  border-radius: 12px;
-  padding: 14px 16px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  border: 1px solid var(--sos-border);
-  border-top-width: 4px;
-  text-align: center;
-}
-
-.sos-seg-count {
-  font-size: 2rem;
-  font-weight: 800;
-  line-height: 1;
-  color: var(--sos-primary);
-}
-
-.sos-seg-name {
-  font-size: 0.82rem;
-  font-weight: 700;
-  color: #3a3a5c;
-  margin-top: 4px;
-}
-
-.sos-seg-desc {
-  font-size: 0.72rem;
-  color: #888;
-  margin-top: 2px;
-}
-
-// ── Section sub-title ─────────────────────────────────────────────────────────
-.sos-section-sub-title {
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #888;
-}
-
 // ── Evolution cards ───────────────────────────────────────────────────────────
-.sos-evo-card {
+.ws-evo-card {
   background: #fff;
   border-radius: 12px;
   padding: 14px 16px;
-  border: 1px solid var(--sos-border);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  border: 1px solid var(--ws-border);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   transition: transform 0.18s;
 
   &:hover { transform: translateY(-2px); }
 
-  &.sos-evo-up   { border-top: 3px solid #06d6a0; }
-  &.sos-evo-down { border-top: 3px solid #ef476f; }
-  &.sos-evo-flat { border-top: 3px solid #adb5bd; }
+  &.ws-evo-up   { border-top: 3px solid #10b981; }
+  &.ws-evo-down { border-top: 3px solid #f43f5e; }
+  &.ws-evo-flat { border-top: 3px solid #94a3b8; }
 }
 
-.sos-evo-percent {
+.ws-evo-percent {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--sos-primary);
+  color: var(--ws-primary);
   line-height: 1.1;
 }
 
-.sos-evo-delta {
+.ws-evo-delta {
   font-size: 0.78rem;
   font-weight: 600;
   display: flex;
@@ -579,23 +514,22 @@
 }
 
 // ── Heatmap matrix table ──────────────────────────────────────────────────────
-.sos-matrix-table {
+.ws-matrix-table {
   font-size: 0.75rem;
-
   th, td { padding: 5px 8px; white-space: nowrap; }
 }
 
-.sos-matrix-brand-col {
-  background: var(--sos-bg-soft);
+.ws-matrix-brand-col {
+  background: var(--ws-bg-soft);
   position: sticky;
   left: 0;
   z-index: 1;
   min-width: 120px;
   font-size: 0.76rem;
-  border-right: 2px solid var(--sos-border) !important;
+  border-right: 2px solid var(--ws-border) !important;
 }
 
-.sos-matrix-cell {
+.ws-matrix-cell {
   text-align: center;
   font-weight: 600;
   font-size: 0.72rem;
@@ -606,72 +540,82 @@
 }
 
 // ── Legend chips ──────────────────────────────────────────────────────────────
-.sos-legend-chip {
+.ws-legend-chip {
   display: inline-block;
   border-radius: 4px;
   padding: 2px 8px;
   font-size: 0.7rem;
   font-weight: 500;
-  border: 1px solid rgba(0,0,0,0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
 }
 
-// ── Scatter / correlation tooltip ─────────────────────────────────────────────
-.sos-tooltip-scatter {
+// ── WS × ND Correlation ───────────────────────────────────────────────────────
+.ws-seg-summary-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e0f4fe;
+  border-top-width: 4px;
+  text-align: center;
+}
+
+.ws-seg-count {
+  font-size: 2rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.ws-seg-name {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1e3a5f;
+  margin-top: 4px;
+}
+
+.ws-seg-desc {
+  font-size: 0.72rem;
+  color: #888;
+  margin-top: 2px;
+}
+
+// ── Scatter tooltip ───────────────────────────────────────────────────────────
+.ws-tooltip-scatter {
   padding: 8px 12px;
   background: #fff;
-  border: 1px solid var(--sos-border);
+  border: 1px solid var(--ws-border);
   border-radius: 8px;
   font-size: 0.8rem;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 
-  strong { display: block; margin-bottom: 2px; color: var(--sos-primary); }
+  strong { display: block; margin-bottom: 2px; color: var(--ws-primary); }
 }
 
 // ── POS Drill-Down ────────────────────────────────────────────────────────────
-.sos-back-btn {
+.ws-back-btn {
   display: inline-flex;
   align-items: center;
   padding: 6px 14px;
   border-radius: 8px;
-  border: 1px solid var(--sos-border);
-  background: var(--sos-bg-soft);
-  color: var(--sos-primary);
+  border: 1px solid var(--ws-border);
+  background: var(--ws-bg-soft);
+  color: var(--ws-primary);
   font-size: 0.82rem;
   font-weight: 600;
   transition: all 0.15s;
 
   &:hover {
-    background: var(--sos-primary);
+    background: var(--ws-primary);
     color: #fff;
-    border-color: var(--sos-primary);
+    border-color: var(--ws-primary);
   }
 }
 
-.sos-drill-brand-name {
-  font-size: 1.1rem;
+.ws-drill-brand-name  { font-size: 1.1rem; font-weight: 700; color: var(--ws-primary); }
+.ws-section-sub-title {
+  font-size: 0.72rem;
   font-weight: 700;
-  color: var(--sos-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #888;
 }
-
-// ── Concentration HHI card ────────────────────────────────────────────────────
-.sos-hhi-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 0.78rem;
-  font-weight: 600;
-
-  &.hhi-competitive  { background: #d1fae5; color: #059669; }
-  &.hhi-moderate     { background: #fef3c7; color: #d97706; }
-  &.hhi-concentrated { background: #fee2e2; color: #dc2626; }
-}
-
-// ── Zone cards inside KPI section ─────────────────────────────────────────────
-.sos-zone-strong { background: #f0fdf4; border-color: #bbf7d0 !important; }
-.sos-zone-mid    { background: #fffbeb; border-color: #fde68a !important; }
-.sos-zone-weak   { background: #fff1f2; border-color: #fecdd3 !important; }
-
-// ── Utility tweaks ────────────────────────────────────────────────────────────
-.text-indigo { color: #3a0ca3 !important; }

@@ -1,1 +1,1084 @@
-<p>sish-dashboard works!</p>
+<!-- ╔══════════════════════════════════════════════════════════════════════════╗ -->
+<!-- ║  SISH DASHBOARD — Share In Shop Analytics                               ║ -->
+<!-- ║  SISH% = SUM(brand_sold) / SUM(total_sold) × 100                        ║ -->
+<!-- ║  Velocity = SISH% / SOS%  (>1 fast mover | <1 slow mover)               ║ -->
+<!-- ╚══════════════════════════════════════════════════════════════════════════╝ -->
+<div class="page-wrapper">
+  <div class="content">
+
+    <!-- ── Page Header ────────────────────────────────────────────────────── -->
+    <div class="d-md-flex d-block align-items-center justify-content-between mb-3">
+      <div class="my-auto mb-2">
+        <h3 class="page-title mb-1">
+          <span class="sish-title-badge me-2">
+            <i class="ti ti-shopping-cart-share"></i>
+          </span>
+          Share In Shop
+        </h3>
+        <nav>
+          <ol class="breadcrumb mb-0">
+            <li class="breadcrumb-item"><a [routerLink]="routes.dashboard">Dashboard</a></li>
+            <li class="breadcrumb-item active">SISH Analytics</li>
+          </ol>
+        </nav>
+      </div>
+
+      <!-- Period selector -->
+      <div class="d-flex align-items-center flex-wrap row-gap-2">
+        <div class="dropdown me-2">
+          <button class="btn sish-period-toggle dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            <i class="ti ti-calendar me-1"></i>{{ getPeriodLabel() }}
+          </button>
+          <ul class="dropdown-menu sish-period-menu p-1">
+            @for (p of PERIODS; track p.key) {
+              <li>
+                <button
+                  class="dropdown-item sish-period-item rounded"
+                  [class.active]="selectedPeriod() === p.key"
+                  (click)="setPeriod(p.key)">
+                  {{ p.label }}
+                </button>
+              </li>
+            }
+          </ul>
+        </div>
+        @if (selectedPeriod() === 'custom') {
+          <form [formGroup]="dateRange" class="sish-date-form d-flex gap-2">
+            <div class="sish-date-field">
+              <input type="text" class="sish-date-input form-control"
+                bsDaterangepicker formControlName="rangeValue"
+                [bsConfig]="{ containerClass: 'theme-default', showWeekNumbers: false, dateInputFormat: 'DD/MM/YYYY', isAnimated: true }"
+                placeholder="Du — Au" readonly>
+            </div>
+          </form>
+        }
+      </div>
+    </div>
+
+    <!-- ── Geo Filter Bar ─────────────────────────────────────────────────── -->
+    <div class="sish-geo-bar mb-4">
+      <!-- Country -->
+      <div class="sish-geo-item">
+        <label class="sish-geo-label"><i class="ti ti-world me-1"></i>Pays</label>
+        <select class="sish-geo-select form-select form-select-sm"
+          (change)="onCountryChange(countryList()[$any($event).target.selectedIndex])">
+          @for (c of countryList(); track c.uuid) {
+            <option [value]="c.uuid" [selected]="c.uuid === selectedCountry?.uuid">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+      <!-- Province -->
+      <div class="sish-geo-item">
+        <label class="sish-geo-label"><i class="ti ti-map-2 me-1"></i>Province</label>
+        <select class="sish-geo-select form-select form-select-sm"
+          (change)="onProvinceChange(provinceList()[$any($event).target.selectedIndex - 1])">
+          <option value="">Toutes</option>
+          @for (p of provinceList(); track p.uuid) {
+            <option [value]="p.uuid" [selected]="p.uuid === selectedProvince?.uuid">{{ p.name }}</option>
+          }
+        </select>
+      </div>
+      <!-- Area -->
+      <div class="sish-geo-item">
+        <label class="sish-geo-label"><i class="ti ti-map me-1"></i>Area</label>
+        <select class="sish-geo-select form-select form-select-sm"
+          (change)="onAreaChange(areaList()[$any($event).target.selectedIndex - 1])">
+          <option value="">Toutes</option>
+          @for (a of areaList(); track a.uuid) {
+            <option [value]="a.uuid" [selected]="a.uuid === selectedArea?.uuid">{{ a.name }}</option>
+          }
+        </select>
+      </div>
+      <!-- Sub-Area -->
+      <div class="sish-geo-item">
+        <label class="sish-geo-label"><i class="ti ti-map-pin me-1"></i>Sub-Area</label>
+        <select class="sish-geo-select form-select form-select-sm"
+          (change)="onSubAreaChange(subAreaList()[$any($event).target.selectedIndex - 1])">
+          <option value="">Toutes</option>
+          @for (s of subAreaList(); track s.uuid) {
+            <option [value]="s.uuid" [selected]="s.uuid === selectedSubArea?.uuid">{{ s.name }}</option>
+          }
+        </select>
+      </div>
+      <!-- Commune -->
+      <div class="sish-geo-item">
+        <label class="sish-geo-label"><i class="ti ti-home me-1"></i>Commune</label>
+        <select class="sish-geo-select form-select form-select-sm"
+          (change)="onCommuneChange(communeList()[$any($event).target.selectedIndex - 1])">
+          <option value="">Toutes</option>
+          @for (c of communeList(); track c.uuid) {
+            <option [value]="c.uuid" [selected]="c.uuid === selectedCommune?.uuid">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <!-- ── KPI Cards ──────────────────────────────────────────────────────── -->
+    @if (isLoadingKpi()) {
+      <div class="row g-3 mb-4">
+        @for (i of [1,2,3,4,5]; track i) {
+          <div class="col-xxl col-xl-4 col-sm-6">
+            <div class="card sish-kpi-card placeholder-glow mb-0">
+              <div class="card-body">
+                <div class="placeholder col-6 mb-2 rounded"></div>
+                <div class="placeholder col-4 mb-1 rounded" style="height:28px"></div>
+                <div class="placeholder col-8 rounded"></div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+    @if (!isLoadingKpi() && kpiData()) {
+      <div class="row g-3 mb-4">
+        <!-- Total Sold -->
+        <div class="col-xxl col-xl-4 col-sm-6">
+          <div class="card sish-kpi-card sish-kpi-rose mb-0">
+            <div class="card-body">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="sish-kpi-label">Ventes Totales</span>
+                <span class="sish-kpi-icon sish-icon-rose"><i class="ti ti-shopping-cart"></i></span>
+              </div>
+              <div class="sish-kpi-value">{{ formatSold(kpiData()!.total_sold) }}</div>
+              <small class="sish-kpi-sub text-muted">Unités vendues</small>
+            </div>
+          </div>
+        </div>
+        <!-- Total Fardes -->
+        <div class="col-xxl col-xl-4 col-sm-6">
+          <div class="card sish-kpi-card sish-kpi-orange mb-0">
+            <div class="card-body">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="sish-kpi-label">Stock Total</span>
+                <span class="sish-kpi-icon sish-icon-orange"><i class="ti ti-package"></i></span>
+              </div>
+              <div class="sish-kpi-value">{{ formatSold(kpiData()!.total_fardes) }}</div>
+              <small class="sish-kpi-sub text-muted">Fardes en stock</small>
+            </div>
+          </div>
+        </div>
+        <!-- Avg SISH -->
+        <div class="col-xxl col-xl-4 col-sm-6">
+          <div class="card sish-kpi-card sish-kpi-teal mb-0">
+            <div class="card-body">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="sish-kpi-label">SISH% Moyen</span>
+                <span class="sish-kpi-icon sish-icon-teal"><i class="ti ti-chart-pie-2"></i></span>
+              </div>
+              <div class="sish-kpi-value">{{ kpiData()!.avg_sish_percent | number:'1.1-1' }}%</div>
+              <small class="sish-kpi-sub">
+                <span [class]="getSishBadge(kpiData()!.avg_sish_percent)">{{ kpiData()!.total_brands }} marques</span>
+              </small>
+            </div>
+          </div>
+        </div>
+        <!-- Market Entropy -->
+        <div class="col-xxl col-xl-4 col-sm-6">
+          <div class="card sish-kpi-card sish-kpi-indigo mb-0">
+            <div class="card-body">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="sish-kpi-label">Entropie Marché</span>
+                <span class="sish-kpi-icon sish-icon-indigo"><i class="ti ti-atom"></i></span>
+              </div>
+              <div class="sish-kpi-value">{{ kpiData()!.market_entropy | number:'1.3-3' }}</div>
+              <small class="sish-kpi-sub">
+                <span [class]="getEntropyBadge(kpiData()!.market_entropy)">{{ formatEntropy(kpiData()!.market_entropy) }}</span>
+              </small>
+            </div>
+          </div>
+        </div>
+        <!-- Top Brand -->
+        <div class="col-xxl col-xl-4 col-sm-6">
+          <div class="card sish-kpi-card sish-kpi-amber mb-0">
+            <div class="card-body">
+              <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="sish-kpi-label">Top Marque SISH</span>
+                <span class="sish-kpi-icon sish-icon-amber"><i class="ti ti-award"></i></span>
+              </div>
+              <div class="sish-kpi-value" style="font-size:1rem">{{ kpiData()!.top_brand_by_sish.brand_name }}</div>
+              <small class="sish-kpi-sub">
+                <span class="badge bg-success-subtle text-success">{{ kpiData()!.top_brand_by_sish.sish_percent | number:'1.1-1' }}% SISH</span>
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Velocity highlight row -->
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <div class="card border-0 sish-velocity-highlight fastest mb-0">
+            <div class="card-body d-flex align-items-center gap-3">
+              <div class="sish-vel-icon fastest"><i class="ti ti-rocket"></i></div>
+              <div>
+                <div class="fw-semibold small text-muted mb-1">Marque la plus rapide (Velocity ↑)</div>
+                <div class="fw-bold">{{ kpiData()!.fastest_brand.brand_name }}</div>
+                <small class="text-success fw-medium">
+                  Velocity × {{ kpiData()!.fastest_brand.velocity_index | number:'1.2-2' }}
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card border-0 sish-velocity-highlight slowest mb-0">
+            <div class="card-body d-flex align-items-center gap-3">
+              <div class="sish-vel-icon slowest"><i class="ti ti-snail"></i></div>
+              <div>
+                <div class="fw-semibold small text-muted mb-1">Marque la plus lente (Velocity ↓)</div>
+                <div class="fw-bold">{{ kpiData()!.slowest_brand.brand_name }}</div>
+                <small class="text-danger fw-medium">
+                  Velocity × {{ kpiData()!.slowest_brand.velocity_index | number:'1.2-2' }}
+                </small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── Section Navigation ─────────────────────────────────────────────── -->
+    <div class="sish-section-nav mb-4">
+      <button class="sish-nav-btn" [class.active]="activeSection()==='kpi'"         (click)="setSection('kpi')">
+        <i class="ti ti-dashboard me-1"></i>KPI
+      </button>
+      <button class="sish-nav-btn" [class.active]="activeSection()==='trend'"       (click)="setSection('trend')">
+        <i class="ti ti-trending-up me-1"></i>Tendance
+      </button>
+      <button class="sish-nav-btn" [class.active]="activeSection()==='tableview'"   (click)="setSection('tableview')">
+        <i class="ti ti-table me-1"></i>Tableau
+      </button>
+      <button class="sish-nav-btn" [class.active]="activeSection()==='barchart'"    (click)="setSection('barchart')">
+        <i class="ti ti-chart-bar me-1"></i>Bar Chart
+      </button>
+      <button class="sish-nav-btn" [class.active]="activeSection()==='ranking'"     (click)="setSection('ranking')">
+        <i class="ti ti-podium me-1"></i>Classement
+      </button>
+      <button class="sish-nav-btn" [class.active]="activeSection()==='velocity'"    (click)="setSection('velocity')">
+        <i class="ti ti-rocket me-1"></i>Velocity
+      </button>
+      <button class="sish-nav-btn" [class.active]="activeSection()==='gap'"         (click)="setSection('gap')">
+        <i class="ti ti-arrows-minimize me-1"></i>Gap
+      </button>
+      <button class="sish-nav-btn" [class.active]="activeSection()==='evolution'"   (click)="setSection('evolution')">
+        <i class="ti ti-activity me-1"></i>Évolution
+      </button>
+      <button class="sish-nav-btn" [class.active]="activeSection()==='heatmap'"     (click)="setSection('heatmap')">
+        <i class="ti ti-grid-dots me-1"></i>Heatmap
+      </button>
+      <button class="sish-nav-btn" [class.active]="activeSection()==='correlation'" (click)="setSection('correlation')">
+        <i class="ti ti-scatter-plot me-1"></i>SISH×SOS
+      </button>
+      <button class="sish-nav-btn" [class.active]="activeSection()==='drilldown'"   (click)="setSection('drilldown')">
+        <i class="ti ti-zoom-in me-1"></i>Drill-Down
+      </button>
+    </div>
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: KPI (shown by default alongside cards) -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'kpi') {
+      <div class="row g-3">
+        <!-- Velocity bucket summary -->
+        <div class="col-lg-6">
+          <div class="card mb-0">
+            <div class="card-header border-0">
+              <h5 class="card-title mb-0"><i class="ti ti-gauge me-2 text-rose"></i>Répartition Velocity Index</h5>
+            </div>
+            <div class="card-body pt-2">
+              @if (isLoadingVelocity()) {
+                <div class="sish-shimmer" style="height:80px"></div>
+              } @else {
+                <div class="d-flex gap-3 flex-wrap">
+                  <div class="sish-vel-bucket fast">
+                    <div class="sish-vel-bucket-count">{{ velocityBuckets().fast_mover }}</div>
+                    <div class="sish-vel-bucket-label">Rapides<br/><small>(V &gt; 1.1)</small></div>
+                  </div>
+                  <div class="sish-vel-bucket aligned">
+                    <div class="sish-vel-bucket-count">{{ velocityBuckets().aligned }}</div>
+                    <div class="sish-vel-bucket-label">Équilibrés<br/><small>(0.9–1.1)</small></div>
+                  </div>
+                  <div class="sish-vel-bucket slow">
+                    <div class="sish-vel-bucket-count">{{ velocityBuckets().slow_mover }}</div>
+                    <div class="sish-vel-bucket-label">Lents<br/><small>(V &lt; 0.9)</small></div>
+                  </div>
+                </div>
+                <div class="mt-3 small text-muted">
+                  <i class="ti ti-info-circle me-1"></i>
+                  Velocity = SISH% / SOS% — rapide = la marque se vend plus vite qu'elle ne stocke
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+        <!-- SISH vs SOS correlation positions -->
+        <div class="col-lg-6">
+          <div class="card mb-0">
+            <div class="card-header border-0">
+              <h5 class="card-title mb-0"><i class="ti ti-quadrant me-2 text-rose"></i>Positions SISH × SOS</h5>
+            </div>
+            <div class="card-body pt-2">
+              @if (isLoadingCorrelation()) {
+                <div class="sish-shimmer" style="height:80px"></div>
+              } @else {
+                <div class="d-flex flex-wrap gap-2">
+                  <div class="sish-pos-chip fast-leader">
+                    <i class="ti ti-rocket me-1"></i>Fast Leader
+                    <span class="badge bg-success ms-1">{{ getPosCount('fast_leader') }}</span>
+                  </div>
+                  <div class="sish-pos-chip sell-star">
+                    <i class="ti ti-star me-1"></i>Star Vente
+                    <span class="badge bg-info ms-1">{{ getPosCount('sell_through_star') }}</span>
+                  </div>
+                  <div class="sish-pos-chip hoarder">
+                    <i class="ti ti-package me-1"></i>Accumulateur
+                    <span class="badge bg-warning ms-1">{{ getPosCount('shelf_hoarder') }}</span>
+                  </div>
+                  <div class="sish-pos-chip under">
+                    <i class="ti ti-alert-triangle me-1"></i>Sous-performer
+                    <span class="badge bg-danger ms-1">{{ getPosCount('underperformer') }}</span>
+                  </div>
+                </div>
+                <div class="mt-3 small text-muted">
+                  <strong>Fast Leader:</strong> SISH élevé + SOS élevé &nbsp;|&nbsp;
+                  <strong>Star Vente:</strong> SISH élevé + SOS bas
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: TREND -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'trend') {
+      <div class="card mb-0">
+        <div class="card-header border-0 d-flex align-items-center justify-content-between">
+          <h5 class="card-title mb-0"><i class="ti ti-trending-up me-2 text-rose"></i>Tendance SISH% mensuelle par marque</h5>
+          <small class="text-muted">Ligne pointillée rouge = seuil 33%</small>
+        </div>
+        <div class="card-body pt-0">
+          @if (isLoadingTrend()) {
+            <div class="sish-shimmer" style="height:340px"></div>
+          } @else if (chartTrendOpts()) {
+            <apx-chart #chartTrend
+              [series]="chartTrendOpts().series"
+              [chart]="chartTrendOpts().chart"
+              [colors]="chartTrendOpts().colors"
+              [stroke]="chartTrendOpts().stroke"
+              [markers]="chartTrendOpts().markers"
+              [dataLabels]="chartTrendOpts().dataLabels"
+              [xaxis]="chartTrendOpts().xaxis"
+              [yaxis]="chartTrendOpts().yaxis"
+              [legend]="chartTrendOpts().legend"
+              [tooltip]="chartTrendOpts().tooltip"
+              [grid]="chartTrendOpts().grid"
+              [annotations]="chartTrendOpts().annotations">
+            </apx-chart>
+          } @else {
+            <div class="sish-empty-state"><i class="ti ti-chart-line"></i><p>Aucune donnée de tendance</p></div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: TABLE VIEW -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'tableview') {
+      <div class="card mb-0">
+        <div class="card-header border-0 d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <h5 class="card-title mb-0"><i class="ti ti-table me-2 text-rose"></i>Vue Tableau — SISH% / SISH en Boutique / SOS% / Velocity</h5>
+          <div class="btn-group btn-group-sm" role="group">
+            @for (lvl of ['province','area','subarea','commune']; track lvl) {
+              <button type="button" class="btn"
+                [class.btn-rose]="geoLevel() === lvl"
+                [class.btn-outline-secondary]="geoLevel() !== lvl"
+                (click)="onGeoLevelChange($any(lvl))">
+                {{ lvl | titlecase }}
+              </button>
+            }
+          </div>
+        </div>
+        <div class="card-body p-0">
+          @if (isLoadingTable()) {
+            <div class="sish-shimmer m-3" style="height:300px"></div>
+          } @else if (tableGrouped().length) {
+            @for (group of tableGrouped(); track group.territory_uuid) {
+              <div class="sish-table-group">
+                <div class="sish-table-group-header">
+                  <i class="ti ti-map-pin me-2"></i>{{ group.territory_name }}
+                  <span class="badge bg-secondary ms-2">{{ group.rows.length }} marques</span>
+                </div>
+                <div class="table-responsive">
+                  <table class="sish-table table mb-0">
+                    <thead class="sish-thead">
+                      <tr>
+                        <th>Marque</th>
+                        <th class="text-end">Vendus</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-end">SISH%</th>
+                        <th class="text-end">SISH en boutique</th>
+                        <th class="text-end">SOS%</th>
+                        <th class="text-end">Velocity</th>
+                        <th class="text-end">POS actifs</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of group.rows; track row.brand_uuid) {
+                        <tr>
+                          <td class="fw-medium">
+                            <button class="btn btn-link btn-sm p-0 text-decoration-none sish-drill-btn"
+                              (click)="loadDrilldown(row.brand_uuid, row.brand_name)">
+                              {{ row.brand_name }}
+                            </button>
+                          </td>
+                          <td class="text-end">{{ formatSold(row.brand_sold) }}</td>
+                          <td class="text-end text-muted">{{ formatSold(row.total_sold) }}</td>
+                          <td class="text-end">
+                            <div class="d-flex align-items-center justify-content-end gap-2">
+                              <div class="sish-progress">
+                                <div class="sish-progress-bar" [class]="getSishProgressClass(row.sish_percent)"
+                                  [style.width.%]="row.sish_percent"></div>
+                              </div>
+                              <span [class]="getSishBadge(row.sish_percent)">{{ row.sish_percent | number:'1.1-1' }}%</span>
+                            </div>
+                          </td>
+                          <td class="text-end">
+                            <span class="text-muted small">{{ row.sish_in_shop | number:'1.1-1' }}%</span>
+                          </td>
+                          <td class="text-end">
+                            <span class="text-muted small">{{ row.sos_percent | number:'1.1-1' }}%</span>
+                          </td>
+                          <td class="text-end">
+                            <span [class]="getVelocityBadge(row.velocity_index)">
+                              ×{{ row.velocity_index | number:'1.2-2' }}
+                            </span>
+                          </td>
+                          <td class="text-end text-muted small">{{ row.pos_with_sales }}/{{ row.total_pos }}</td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+          } @else {
+            <div class="sish-empty-state"><i class="ti ti-table"></i><p>Aucune donnée</p></div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: BAR CHART -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'barchart') {
+      <div class="card mb-0">
+        <div class="card-header border-0 d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <h5 class="card-title mb-0"><i class="ti ti-chart-bar me-2 text-rose"></i>SISH% par Territoire &amp; Marque</h5>
+          <div class="btn-group btn-group-sm">
+            @for (lvl of ['province','area','subarea','commune']; track lvl) {
+              <button type="button" class="btn"
+                [class.btn-rose]="geoLevel() === lvl"
+                [class.btn-outline-secondary]="geoLevel() !== lvl"
+                (click)="onGeoLevelChange($any(lvl))">
+                {{ lvl | titlecase }}
+              </button>
+            }
+          </div>
+        </div>
+        <div class="card-body pt-0">
+          @if (isLoadingBar()) {
+            <div class="sish-shimmer" style="height:360px"></div>
+          } @else if (chartBarOpts()) {
+            <apx-chart #chartBar
+              [series]="chartBarOpts().series"
+              [chart]="chartBarOpts().chart"
+              [colors]="chartBarOpts().colors"
+              [plotOptions]="chartBarOpts().plotOptions"
+              [dataLabels]="chartBarOpts().dataLabels"
+              [xaxis]="chartBarOpts().xaxis"
+              [yaxis]="chartBarOpts().yaxis"
+              [legend]="chartBarOpts().legend"
+              [tooltip]="chartBarOpts().tooltip">
+            </apx-chart>
+          } @else {
+            <div class="sish-empty-state"><i class="ti ti-chart-bar"></i><p>Aucune donnée</p></div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: RANKING -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'ranking') {
+      <div class="row g-3">
+        <!-- Chart -->
+        <div class="col-lg-7">
+          <div class="card mb-0 h-100">
+            <div class="card-header border-0">
+              <h5 class="card-title mb-0"><i class="ti ti-podium me-2 text-rose"></i>Top 10 — SISH% vs SOS%</h5>
+            </div>
+            <div class="card-body pt-0">
+              @if (isLoadingRanking()) {
+                <div class="sish-shimmer" style="height:320px"></div>
+              } @else if (chartRankingOpts()) {
+                <apx-chart #chartRanking
+                  [series]="chartRankingOpts().series"
+                  [chart]="chartRankingOpts().chart"
+                  [colors]="chartRankingOpts().colors"
+                  [plotOptions]="chartRankingOpts().plotOptions"
+                  [dataLabels]="chartRankingOpts().dataLabels"
+                  [xaxis]="chartRankingOpts().xaxis"
+                  [legend]="chartRankingOpts().legend"
+                  [tooltip]="chartRankingOpts().tooltip">
+                </apx-chart>
+              } @else {
+                <div class="sish-empty-state"><i class="ti ti-podium"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+        <!-- Table -->
+        <div class="col-lg-5">
+          <div class="card mb-0 h-100">
+            <div class="card-header border-0">
+              <h5 class="card-title mb-0"><i class="ti ti-list-numbers me-2 text-rose"></i>Classement complet</h5>
+            </div>
+            <div class="card-body p-0">
+              @if (isLoadingRanking()) {
+                <div class="sish-shimmer m-3" style="height:260px"></div>
+              } @else if (rankingData().length) {
+                <div class="table-responsive" style="max-height:380px;overflow-y:auto">
+                  <table class="sish-table table mb-0">
+                    <thead class="sish-thead sticky-top">
+                      <tr>
+                        <th>#</th>
+                        <th>Marque</th>
+                        <th class="text-end">SISH%</th>
+                        <th class="text-end">Δ SOS</th>
+                        <th>Cat.</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (r of rankingData(); track r.brand_uuid) {
+                        <tr>
+                          <td class="sish-rank-top text-center">{{ getRankMedal(r.rank) }}</td>
+                          <td>
+                            <button class="btn btn-link btn-sm p-0 text-decoration-none sish-drill-btn"
+                              (click)="loadDrilldown(r.brand_uuid, r.brand_name)">
+                              {{ r.brand_name }}
+                            </button>
+                          </td>
+                          <td class="text-end">
+                            <span [class]="getSishBadge(r.sish_percent)">{{ r.sish_percent | number:'1.1-1' }}%</span>
+                          </td>
+                          <td class="text-end">
+                            <span [class]="getTrendClass(r.sish_sos_delta)" class="small fw-medium">
+                              {{ r.sish_sos_delta > 0 ? '+' : '' }}{{ r.sish_sos_delta | number:'1.1-1' }}pp
+                            </span>
+                          </td>
+                          <td>
+                            <span [class]="getCategoryBadge(r.category)">{{ getCategoryLabel(r.category) }}</span>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              } @else {
+                <div class="sish-empty-state"><i class="ti ti-list"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: VELOCITY INDEX -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'velocity') {
+      <div class="row g-3">
+        <!-- Chart -->
+        <div class="col-lg-7">
+          <div class="card mb-0 h-100">
+            <div class="card-header border-0">
+              <h5 class="card-title mb-0">
+                <i class="ti ti-rocket me-2 text-rose"></i>Velocity Index par marque
+                <small class="text-muted ms-2 fw-normal">&gt;1.1 rapide · 0.9–1.1 équilibré · &lt;0.9 lent</small>
+              </h5>
+            </div>
+            <div class="card-body pt-0">
+              @if (isLoadingVelocity()) {
+                <div class="sish-shimmer" style="height:320px"></div>
+              } @else if (chartVelocityOpts()) {
+                <apx-chart #chartVelocity
+                  [series]="chartVelocityOpts().series"
+                  [chart]="chartVelocityOpts().chart"
+                  [colors]="chartVelocityOpts().colors"
+                  [plotOptions]="chartVelocityOpts().plotOptions"
+                  [dataLabels]="chartVelocityOpts().dataLabels"
+                  [xaxis]="chartVelocityOpts().xaxis"
+                  [yaxis]="chartVelocityOpts().yaxis"
+                  [legend]="chartVelocityOpts().legend"
+                  [tooltip]="chartVelocityOpts().tooltip"
+                  [annotations]="chartVelocityOpts().annotations">
+                </apx-chart>
+              } @else {
+                <div class="sish-empty-state"><i class="ti ti-rocket"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+        <!-- Velocity table -->
+        <div class="col-lg-5">
+          <div class="card mb-0 h-100">
+            <div class="card-header border-0">
+              <h5 class="card-title mb-0"><i class="ti ti-list me-2 text-rose"></i>Détail Velocity</h5>
+            </div>
+            <div class="card-body p-0">
+              @if (isLoadingVelocity()) {
+                <div class="sish-shimmer m-3" style="height:260px"></div>
+              } @else if (velocityData().length) {
+                <div class="table-responsive" style="max-height:380px;overflow-y:auto">
+                  <table class="sish-table table mb-0">
+                    <thead class="sish-thead sticky-top">
+                      <tr>
+                        <th>Marque</th>
+                        <th class="text-end">Velocity</th>
+                        <th class="text-end">Stock tour</th>
+                        <th>Statut</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (v of velocityData(); track v.brand_uuid) {
+                        <tr>
+                          <td class="fw-medium">
+                            <button class="btn btn-link btn-sm p-0 text-decoration-none sish-drill-btn"
+                              (click)="loadDrilldown(v.brand_uuid, v.brand_name)">
+                              {{ v.brand_name }}
+                            </button>
+                          </td>
+                          <td class="text-end">
+                            <span [class]="getVelocityBadge(v.velocity_index)">
+                              ×{{ v.velocity_index | number:'1.3-3' }}
+                            </span>
+                          </td>
+                          <td class="text-end text-muted small">
+                            {{ v.stock_turn_days > 0 ? (v.stock_turn_days | number:'1.1-1') + ' j' : '—' }}
+                          </td>
+                          <td>
+                            <span [class]="getVelocityCatBadge(v.velocity_category)">
+                              {{ getVelocityCatLabel(v.velocity_category) }}
+                            </span>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              } @else {
+                <div class="sish-empty-state"><i class="ti ti-rocket"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: GAP ANALYSIS -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'gap') {
+      <div class="row g-3">
+        <!-- Chart -->
+        <div class="col-lg-7">
+          <div class="card mb-0 h-100">
+            <div class="card-header border-0 d-flex align-items-center justify-content-between">
+              <h5 class="card-title mb-0"><i class="ti ti-arrows-minimize me-2 text-rose"></i>Gap SISH% vs Cible (part égale)</h5>
+              <div class="d-flex gap-2 small">
+                <span class="badge bg-success-subtle text-success">{{ gapStatusCounts().above }} au-dessus</span>
+                <span class="badge bg-danger-subtle text-danger">{{ gapStatusCounts().below }} en dessous</span>
+              </div>
+            </div>
+            <div class="card-body pt-0">
+              @if (isLoadingGap()) {
+                <div class="sish-shimmer" style="height:320px"></div>
+              } @else if (chartGapOpts()) {
+                <apx-chart #chartGap
+                  [series]="chartGapOpts().series"
+                  [chart]="chartGapOpts().chart"
+                  [colors]="chartGapOpts().colors"
+                  [plotOptions]="chartGapOpts().plotOptions"
+                  [dataLabels]="chartGapOpts().dataLabels"
+                  [xaxis]="chartGapOpts().xaxis"
+                  [legend]="chartGapOpts().legend"
+                  [tooltip]="chartGapOpts().tooltip">
+                </apx-chart>
+              } @else {
+                <div class="sish-empty-state"><i class="ti ti-arrows-minimize"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+        <!-- Gap table -->
+        <div class="col-lg-5">
+          <div class="card mb-0 h-100">
+            <div class="card-header border-0">
+              <h5 class="card-title mb-0"><i class="ti ti-list me-2 text-rose"></i>Détail Gap par marque</h5>
+            </div>
+            <div class="card-body p-0">
+              @if (isLoadingGap()) {
+                <div class="sish-shimmer m-3" style="height:260px"></div>
+              } @else if (gapData().length) {
+                <div class="table-responsive" style="max-height:380px;overflow-y:auto">
+                  <table class="sish-table table mb-0">
+                    <thead class="sish-thead sticky-top">
+                      <tr>
+                        <th>Marque</th>
+                        <th class="text-end">SISH%</th>
+                        <th class="text-end">Gap</th>
+                        <th class="text-end">Manque</th>
+                        <th>Statut</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (g of gapData(); track g.brand_uuid) {
+                        <tr>
+                          <td>
+                            <button class="btn btn-link btn-sm p-0 text-decoration-none sish-drill-btn"
+                              (click)="loadDrilldown(g.brand_uuid, g.brand_name)">
+                              {{ g.brand_name }}
+                            </button>
+                          </td>
+                          <td class="text-end">
+                            <span [class]="getSishBadge(g.sish_percent)">{{ g.sish_percent | number:'1.1-1' }}%</span>
+                          </td>
+                          <td class="text-end small fw-medium" [class]="getTrendClass(g.gap)">
+                            {{ g.gap > 0 ? '+' : '' }}{{ g.gap | number:'1.1-1' }} pp
+                          </td>
+                          <td class="text-end text-muted small">
+                            {{ g.gap_units > 0 ? (g.gap_units | number:'1.0-0') + ' u.' : '—' }}
+                          </td>
+                          <td>
+                            <span [class]="getGapBadge(g.status)">{{ getGapLabel(g.status) }}</span>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              } @else {
+                <div class="sish-empty-state"><i class="ti ti-arrows-minimize"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: EVOLUTION -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'evolution') {
+      <div class="row g-3">
+        <!-- Chart -->
+        <div class="col-lg-8">
+          <div class="card mb-0 h-100">
+            <div class="card-header border-0">
+              <h5 class="card-title mb-0"><i class="ti ti-activity me-2 text-rose"></i>SISH% Période précédente vs courante</h5>
+            </div>
+            <div class="card-body pt-0">
+              @if (isLoadingEvolution()) {
+                <div class="sish-shimmer" style="height:340px"></div>
+              } @else if (chartEvolutionOpts()) {
+                <apx-chart #chartEvolution
+                  [series]="chartEvolutionOpts().series"
+                  [chart]="chartEvolutionOpts().chart"
+                  [colors]="chartEvolutionOpts().colors"
+                  [stroke]="chartEvolutionOpts().stroke"
+                  [plotOptions]="chartEvolutionOpts().plotOptions"
+                  [dataLabels]="chartEvolutionOpts().dataLabels"
+                  [xaxis]="chartEvolutionOpts().xaxis"
+                  [yaxis]="chartEvolutionOpts().yaxis"
+                  [legend]="chartEvolutionOpts().legend"
+                  [tooltip]="chartEvolutionOpts().tooltip">
+                </apx-chart>
+              } @else {
+                <div class="sish-empty-state"><i class="ti ti-activity"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+        <!-- Evolution cards -->
+        <div class="col-lg-4">
+          <div class="card mb-0 h-100">
+            <div class="card-header border-0">
+              <h5 class="card-title mb-0"><i class="ti ti-trending-up me-2 text-rose"></i>Synthèse</h5>
+            </div>
+            <div class="card-body p-2" style="overflow-y:auto;max-height:400px">
+              @if (isLoadingEvolution()) {
+                @for (i of [1,2,3,4]; track i) {
+                  <div class="sish-evo-card mb-2 sish-shimmer" style="height:64px"></div>
+                }
+              } @else {
+                @for (evo of evolutionData(); track evo.brand_uuid) {
+                  <div class="sish-evo-card mb-2" [ngClass]="{
+                    'sish-evo-up':   evo.trend === 'gaining',
+                    'sish-evo-down': evo.trend === 'losing',
+                    'sish-evo-flat': evo.trend === 'stable'
+                  }">
+                    <div class="d-flex justify-content-between align-items-start mb-1">
+                      <span class="fw-medium small">{{ evo.brand_name }}</span>
+                      <span [class]="getTrendBadge(evo.trend)">{{ getTrendLabel(evo.trend) }}</span>
+                    </div>
+                    <div class="d-flex gap-3 small text-muted">
+                      <span>Courant: <strong class="text-body">{{ evo.current_sish_percent | number:'1.1-1' }}%</strong></span>
+                      <span>Préc: <strong class="text-body">{{ evo.previous_sish_percent | number:'1.1-1' }}%</strong></span>
+                      <span [class]="getTrendClass(evo.delta)">
+                        Δ {{ evo.delta > 0 ? '+' : '' }}{{ evo.delta | number:'1.1-1' }}pp
+                      </span>
+                    </div>
+                    @if (evo.velocity_delta !== 0) {
+                      <div class="small mt-1">
+                        <span class="text-muted">Δ Velocity:</span>
+                        <span [class]="getTrendClass(evo.velocity_delta)" class="ms-1 fw-medium">
+                          {{ evo.velocity_delta > 0 ? '+' : '' }}{{ evo.velocity_delta | number:'1.3-3' }}
+                        </span>
+                      </div>
+                    }
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: HEATMAP -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'heatmap') {
+      <div class="card mb-0">
+        <div class="card-header border-0 d-flex align-items-center justify-content-between flex-wrap gap-2">
+          <h5 class="card-title mb-0"><i class="ti ti-grid-dots me-2 text-rose"></i>Heatmap SISH% — Marque × Territoire</h5>
+          <div class="btn-group btn-group-sm">
+            @for (lvl of ['province','area','subarea','commune']; track lvl) {
+              <button type="button" class="btn"
+                [class.btn-rose]="heatmapLevel() === lvl"
+                [class.btn-outline-secondary]="heatmapLevel() !== lvl"
+                (click)="onHeatmapLevelChange($any(lvl))">
+                {{ lvl | titlecase }}
+              </button>
+            }
+          </div>
+        </div>
+        <div class="card-body pt-0">
+          @if (isLoadingHeatmap()) {
+            <div class="sish-shimmer" style="height:300px"></div>
+          } @else if (chartHeatmapOpts()) {
+            <apx-chart #chartHeatmap
+              [series]="chartHeatmapOpts().series"
+              [chart]="chartHeatmapOpts().chart"
+              [colors]="chartHeatmapOpts().colors"
+              [dataLabels]="chartHeatmapOpts().dataLabels"
+              [plotOptions]="chartHeatmapOpts().plotOptions"
+              [legend]="chartHeatmapOpts().legend"
+              [tooltip]="chartHeatmapOpts().tooltip">
+            </apx-chart>
+          } @else {
+            <div class="sish-empty-state"><i class="ti ti-grid-dots"></i><p>Aucune donnée</p></div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: SISH × SOS CORRELATION -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'correlation') {
+      <div class="row g-3">
+        <!-- Chart -->
+        <div class="col-lg-8">
+          <div class="card mb-0 h-100">
+            <div class="card-header border-0">
+              <h5 class="card-title mb-0">
+                <i class="ti ti-scatter-plot me-2 text-rose"></i>Matrice SISH% × SOS%
+              </h5>
+              <small class="text-muted d-block mt-1">
+                Axe X = SISH% (part de marché des ventes) · Axe Y = SOS% (part du stock)
+              </small>
+            </div>
+            <div class="card-body pt-0">
+              @if (isLoadingCorrelation()) {
+                <div class="sish-shimmer" style="height:400px"></div>
+              } @else if (chartCorrelationOpts()) {
+                <apx-chart #chartCorrelation
+                  [series]="chartCorrelationOpts().series"
+                  [chart]="chartCorrelationOpts().chart"
+                  [colors]="chartCorrelationOpts().colors"
+                  [dataLabels]="chartCorrelationOpts().dataLabels"
+                  [markers]="chartCorrelationOpts().markers"
+                  [xaxis]="chartCorrelationOpts().xaxis"
+                  [yaxis]="chartCorrelationOpts().yaxis"
+                  [annotations]="chartCorrelationOpts().annotations"
+                  [legend]="chartCorrelationOpts().legend"
+                  [tooltip]="chartCorrelationOpts().tooltip">
+                </apx-chart>
+              } @else {
+                <div class="sish-empty-state"><i class="ti ti-scatter-plot"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+        <!-- Quadrant summary + table -->
+        <div class="col-lg-4">
+          <!-- Quadrant legend -->
+          <div class="card mb-3">
+            <div class="card-header border-0">
+              <h6 class="card-title mb-0">Positions stratégiques</h6>
+            </div>
+            <div class="card-body p-3">
+              <div class="sish-quadrant-item fast-leader mb-2 p-2 rounded">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="fw-semibold small">🚀 Fast Leader</span>
+                  <span class="badge bg-success">{{ getPosCount('fast_leader') }}</span>
+                </div>
+                <small class="text-muted">SISH élevé + SOS élevé → dominant</small>
+              </div>
+              <div class="sish-quadrant-item sell-star mb-2 p-2 rounded">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="fw-semibold small">⭐ Star Vente</span>
+                  <span class="badge bg-info">{{ getPosCount('sell_through_star') }}</span>
+                </div>
+                <small class="text-muted">SISH élevé + SOS bas → restock urgent</small>
+              </div>
+              <div class="sish-quadrant-item hoarder mb-2 p-2 rounded">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="fw-semibold small">📦 Accumulateur</span>
+                  <span class="badge bg-warning">{{ getPosCount('shelf_hoarder') }}</span>
+                </div>
+                <small class="text-muted">SOS élevé + SISH bas → problème exécution</small>
+              </div>
+              <div class="sish-quadrant-item under mb-2 p-2 rounded">
+                <div class="d-flex justify-content-between align-items-center">
+                  <span class="fw-semibold small">⚠️ Sous-performer</span>
+                  <span class="badge bg-danger">{{ getPosCount('underperformer') }}</span>
+                </div>
+                <small class="text-muted">Pas présent + pas de vente</small>
+              </div>
+            </div>
+          </div>
+          <!-- Top performers table -->
+          <div class="card mb-0">
+            <div class="card-header border-0"><h6 class="card-title mb-0">Détail marques</h6></div>
+            <div class="card-body p-0" style="max-height:200px;overflow-y:auto">
+              <table class="sish-table table mb-0">
+                <thead class="sish-thead sticky-top">
+                  <tr>
+                    <th>Marque</th>
+                    <th class="text-end">SISH</th>
+                    <th class="text-end">Vel.</th>
+                    <th>Position</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (c of correlationData(); track c.brand_uuid) {
+                    <tr>
+                      <td class="small sish-drill-brand-name" (click)="loadDrilldown(c.brand_uuid, c.brand_name)">{{ c.brand_name }}</td>
+                      <td class="text-end small">{{ c.sish_percent | number:'1.1-1' }}%</td>
+                      <td class="text-end small">×{{ c.velocity_index | number:'1.2-2' }}</td>
+                      <td><span [class]="getPosBadge(c.position)" style="font-size:9px">{{ c.position.replace('_',' ') }}</span></td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: DRILL-DOWN -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'drilldown') {
+      <div class="card mb-0">
+        <div class="card-header border-0 d-flex align-items-center justify-content-between">
+          <h5 class="card-title mb-0">
+            <i class="ti ti-zoom-in me-2 text-rose"></i>
+            Drill-Down POS — {{ drillBrand()?.name ?? 'Sélectionner une marque' }}
+          </h5>
+          <button class="btn btn-sm btn-outline-secondary sish-back-btn" (click)="setSection('ranking')">
+            <i class="ti ti-arrow-left me-1"></i>Retour
+          </button>
+        </div>
+        <div class="card-body p-0">
+          @if (!drillBrand()) {
+            <div class="sish-empty-state">
+              <i class="ti ti-cursor-text"></i>
+              <p>Cliquez sur une marque dans le classement, le tableau ou la velocity pour démarrer</p>
+            </div>
+          } @else if (isLoadingDrilldown()) {
+            <div class="sish-shimmer m-3" style="height:300px"></div>
+          } @else if (drilldownData().length) {
+            <div class="table-responsive">
+              <table class="sish-table table mb-0">
+                <thead class="sish-thead">
+                  <tr>
+                    <th>POS</th>
+                    <th>Type</th>
+                    <th class="text-end">Vendus</th>
+                    <th class="text-end">Total PDV</th>
+                    <th class="text-end">SISH@PDV</th>
+                    <th class="text-end">SOS@PDV</th>
+                    <th class="text-end">Velocity@PDV</th>
+                    <th class="text-end">Visites</th>
+                    <th>Dernière visite</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (d of drilldownData(); track d.pos_uuid) {
+                    <tr>
+                      <td>
+                        <div class="fw-medium small">{{ d.pos_name }}</div>
+                        @if (d.pos_shop) {
+                          <small class="text-muted">{{ d.pos_shop }}</small>
+                        }
+                      </td>
+                      <td><span class="badge bg-secondary-subtle text-secondary small">{{ d.pos_type }}</span></td>
+                      <td class="text-end small">{{ formatSold(d.brand_sold) }}</td>
+                      <td class="text-end small text-muted">{{ formatSold(d.total_sold_at_pos) }}</td>
+                      <td class="text-end">
+                        <span [class]="getSishBadge(d.sish_at_pos)">{{ d.sish_at_pos | number:'1.1-1' }}%</span>
+                      </td>
+                      <td class="text-end small text-muted">{{ d.sos_at_pos | number:'1.1-1' }}%</td>
+                      <td class="text-end">
+                        <span [class]="getVelocityBadge(d.velocity_at_pos)">×{{ d.velocity_at_pos | number:'1.2-2' }}</span>
+                      </td>
+                      <td class="text-end small text-muted">{{ d.visit_count }}</td>
+                      <td class="small text-muted">{{ d.last_visit | date:'dd/MM/yy' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          } @else {
+            <div class="sish-empty-state">
+              <i class="ti ti-database-off"></i>
+              <p>Aucun POS trouvé pour <strong>{{ drillBrand()?.name }}</strong> sur cette période</p>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+  </div>
+</div>
+

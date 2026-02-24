@@ -1,1 +1,1215 @@
-<p>wd-dashboard works!</p>
+<div class="page-wrapper">
+  <div class="content">
+
+    <!-- ── PAGE HEADER ──────────────────────────────────────────────────────── -->
+    <div class="row mb-3">
+      <div class="col-md-12">
+        <div class="page-header mb-0">
+          <div class="row align-items-center">
+            <div class="col-md-6">
+              <h3 class="page-title mb-0 d-flex align-items-center gap-2">
+                <span class="wd-title-badge"><i class="ti ti-chart-treemap"></i></span>
+                WEIGHTED DISTRIBUTION
+              </h3>
+              <p class="text-muted small mb-0 mt-1">
+                WD% = Σ fardes aux POS présents ÷ Σ fardes totaux visités × 100
+              </p>
+            </div>
+            <div class="col-md-6 d-flex justify-content-end align-items-center gap-2 flex-wrap">
+              <div class="dropdown">
+                <button class="btn wd-period-toggle dropdown-toggle" type="button"
+                  data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="ti ti-calendar-stats me-1"></i>
+                  {{ getPeriodLabel() }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end wd-period-menu shadow-sm">
+                  @for (p of PERIODS; track p.key) {
+                    @if (p.key !== 'custom') {
+                      <li>
+                        <button class="dropdown-item wd-period-item"
+                          [class.active]="selectedPeriod() === p.key"
+                          (click)="setPeriod(p.key)">
+                          <i class="ti {{ selectedPeriod() === p.key ? 'ti-check' : 'ti-point' }} me-2"></i>
+                          {{ p.label }}
+                        </button>
+                      </li>
+                    }
+                  }
+                  <li><hr class="dropdown-divider my-1"></li>
+                  <li>
+                    <button class="dropdown-item wd-period-item"
+                      [class.active]="selectedPeriod() === 'custom'"
+                      (click)="setPeriod('custom')">
+                      <i class="ti {{ selectedPeriod() === 'custom' ? 'ti-check' : 'ti-calendar-event' }} me-2"></i>
+                      Personnalisé
+                    </button>
+                  </li>
+                </ul>
+              </div>
+              @if (selectedPeriod() === 'custom') {
+                <form [formGroup]="dateRange" class="wd-date-form">
+                  <div class="wd-date-field">
+                    <i class="ti ti-calendar-event"></i>
+                    <input type="text" class="form-control bookingrange wd-date-input"
+                      placeholder="Sélectionner une période"
+                      bsDaterangepicker
+                      [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
+                      formControlName="rangeValue" />
+                  </div>
+                </form>
+              }
+              <div class="head-icons mb-0 d-flex gap-1">
+                <app-reload></app-reload>
+                <app-collapse-header></app-collapse-header>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── GEO FILTERS ─────────────────────────────────────────────────────── -->
+    <div class="wd-geo-bar mb-3">
+      <div class="wd-geo-item">
+        <label class="wd-geo-label"><i class="ti ti-world me-1"></i>Pays</label>
+        <select class="form-select form-select-sm wd-select"
+          [(ngModel)]="selectedCountry" (ngModelChange)="onCountryChange($event)">
+          @for (c of countryList(); track c.uuid) {
+            <option [ngValue]="c">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="wd-geo-item">
+        <label class="wd-geo-label"><i class="ti ti-map-2 me-1"></i>Province</label>
+        <select class="form-select form-select-sm wd-select"
+          [(ngModel)]="selectedProvince" (ngModelChange)="onProvinceChange($event)">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (p of provinceList(); track p.uuid) {
+            <option [ngValue]="p">{{ p.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="wd-geo-item" [class.wd-geo-disabled]="!selectedProvince">
+        <label class="wd-geo-label"><i class="ti ti-map-pin me-1"></i>Area</label>
+        <select class="form-select form-select-sm wd-select"
+          [(ngModel)]="selectedArea" (ngModelChange)="onAreaChange($event)"
+          [disabled]="!selectedProvince">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (a of areaList(); track a.uuid) {
+            <option [ngValue]="a">{{ a.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="wd-geo-item" [class.wd-geo-disabled]="!selectedArea">
+        <label class="wd-geo-label"><i class="ti ti-location me-1"></i>Sub-Area</label>
+        <select class="form-select form-select-sm wd-select"
+          [(ngModel)]="selectedSubArea" (ngModelChange)="onSubAreaChange($event)"
+          [disabled]="!selectedArea">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (s of subAreaList(); track s.uuid) {
+            <option [ngValue]="s">{{ s.name }}</option>
+          }
+        </select>
+      </div>
+      <div class="wd-geo-item" [class.wd-geo-disabled]="!selectedSubArea">
+        <label class="wd-geo-label"><i class="ti ti-building-community me-1"></i>Commune</label>
+        <select class="form-select form-select-sm wd-select"
+          [(ngModel)]="selectedCommune" (ngModelChange)="onCommuneChange($event)"
+          [disabled]="!selectedSubArea">
+          <option [ngValue]="null">— Toutes —</option>
+          @for (c of communeList(); track c.uuid) {
+            <option [ngValue]="c">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+    </div>
+
+    <!-- ── KPI CARDS ───────────────────────────────────────────────────────── -->
+    @if (isLoadingKpi()) {
+      <div class="row g-3 mb-3">
+        @for (i of [1,2,3,4,5,6]; track i) {
+          <div class="col-6 col-md-3 col-xl-auto flex-grow-1">
+            <div class="card border-0 shadow-sm wd-kpi-skeleton">
+              <div class="card-body">
+                <div class="skeleton-line"></div>
+                <div class="skeleton-line short"></div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+    @if (!isLoadingKpi() && kpiData()) {
+      <div class="row g-3 mb-3">
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="wd-kpi-card accent-orange">
+            <div class="wd-kpi-icon"><i class="ti ti-boxes"></i></div>
+            <div class="wd-kpi-body">
+              <span class="wd-kpi-label">Volume Total</span>
+              <span class="wd-kpi-value">{{ formatVolume(kpiData()!.total_volume) }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="wd-kpi-card accent-teal">
+            <div class="wd-kpi-icon"><i class="ti ti-building-store"></i></div>
+            <div class="wd-kpi-body">
+              <span class="wd-kpi-label">POS Visités</span>
+              <span class="wd-kpi-value">{{ kpiData()!.total_pos | number }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="wd-kpi-card accent-indigo">
+            <div class="wd-kpi-icon"><i class="ti ti-percentage"></i></div>
+            <div class="wd-kpi-body">
+              <span class="wd-kpi-label">WD% Moyen</span>
+              <span class="wd-kpi-value">{{ kpiData()!.avg_wd_percent | number:'1.1-1' }}%</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="wd-kpi-card accent-green">
+            <div class="wd-kpi-icon"><i class="ti ti-crown"></i></div>
+            <div class="wd-kpi-body">
+              <span class="wd-kpi-label">Meilleure Marque</span>
+              <span class="wd-kpi-value wd-kpi-brand" [title]="kpiData()!.best_brand_name">
+                {{ kpiData()!.best_brand_name }}
+              </span>
+              <span class="wd-kpi-sub">{{ kpiData()!.best_brand_wd | number:'1.1-1' }}%</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="wd-kpi-card accent-red">
+            <div class="wd-kpi-icon"><i class="ti ti-trending-down"></i></div>
+            <div class="wd-kpi-body">
+              <span class="wd-kpi-label">Marque Faible</span>
+              <span class="wd-kpi-value wd-kpi-brand" [title]="kpiData()!.worst_brand_name">
+                {{ kpiData()!.worst_brand_name }}
+              </span>
+              <span class="wd-kpi-sub">{{ kpiData()!.worst_brand_wd | number:'1.1-1' }}%</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="wd-kpi-card accent-amber">
+            <div class="wd-kpi-icon"><i class="ti ti-star"></i></div>
+            <div class="wd-kpi-body">
+              <span class="wd-kpi-label">Marques ≥ 50%</span>
+              <span class="wd-kpi-value">{{ kpiData()!.brands_above_50pct }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ── SECTION NAV TABS ─────────────────────────────────────────────────── -->
+    <div class="wd-section-nav mb-3">
+      <button class="wd-nav-btn" [class.active]="activeSection() === 'trend'"       (click)="setSection('trend')">
+        <i class="ti ti-chart-line me-1"></i>Tendance
+      </button>
+      <button class="wd-nav-btn" [class.active]="activeSection() === 'tableview'"   (click)="setSection('tableview')">
+        <i class="ti ti-table me-1"></i>Tables
+      </button>
+      <button class="wd-nav-btn" [class.active]="activeSection() === 'barchart'"    (click)="setSection('barchart')">
+        <i class="ti ti-chart-bar me-1"></i>Barres
+      </button>
+      <button class="wd-nav-btn" [class.active]="activeSection() === 'ranking'"     (click)="setSection('ranking')">
+        <i class="ti ti-trophy me-1"></i>Classement
+      </button>
+      <button class="wd-nav-btn" [class.active]="activeSection() === 'gap'"         (click)="setSection('gap')">
+        <i class="ti ti-chart-area me-1"></i>Gap Volume
+      </button>
+      <button class="wd-nav-btn" [class.active]="activeSection() === 'evolution'"   (click)="setSection('evolution')">
+        <i class="ti ti-trending-up me-1"></i>Évolution PoP
+      </button>
+      <button class="wd-nav-btn" [class.active]="activeSection() === 'heatmap'"     (click)="setSection('heatmap')">
+        <i class="ti ti-layout-grid me-1"></i>Heatmap
+      </button>
+      <button class="wd-nav-btn" [class.active]="activeSection() === 'correlation'" (click)="setSection('correlation')">
+        <i class="ti ti-arrows-diagonal me-1"></i>WD × ND
+      </button>
+      @if (drillBrand()) {
+        <button class="wd-nav-btn wd-nav-drill" [class.active]="activeSection() === 'drilldown'" (click)="setSection('drilldown')">
+          <i class="ti ti-zoom-in me-1"></i>{{ drillBrand()!.name }}
+        </button>
+      }
+    </div>
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: TREND — WD% par marque par mois
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'trend') {
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h5 class="fw-semibold mb-0">
+                <i class="ti ti-chart-line me-2 text-warning"></i>
+                Tendance mensuelle WD% par marque
+              </h5>
+              @if (isLoadingTrend()) { <div class="spinner-border spinner-border-sm wd-spinner"></div> }
+            </div>
+            <div class="card-body px-2 pt-2 pb-1">
+              @if (!isLoadingTrend() && chartTrendOpts()) {
+                <apx-chart #chartTrend
+                  [series]="chartTrendOpts()!.series"
+                  [chart]="chartTrendOpts()!.chart"
+                  [colors]="chartTrendOpts()!.colors"
+                  [stroke]="chartTrendOpts()!.stroke"
+                  [markers]="chartTrendOpts()!.markers"
+                  [dataLabels]="chartTrendOpts()!.dataLabels"
+                  [xaxis]="chartTrendOpts()!.xaxis"
+                  [yaxis]="chartTrendOpts()!.yaxis"
+                  [legend]="chartTrendOpts()!.legend"
+                  [tooltip]="chartTrendOpts()!.tooltip"
+                  [grid]="chartTrendOpts()!.grid">
+                </apx-chart>
+              } @else if (!isLoadingTrend()) {
+                <div class="wd-empty-state">
+                  <i class="ti ti-chart-off"></i>
+                  <p>Aucune donnée de tendance disponible</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Monthly detail table -->
+        @if (!isLoadingTrend() && trendData().length > 0) {
+          <div class="col-12">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header border-0 pb-0 pt-3 px-3">
+                <h6 class="fw-semibold mb-0 text-secondary">
+                  <i class="ti ti-table me-2 text-warning"></i>
+                  Détail mensuel par marque
+                </h6>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 wd-table">
+                    <thead class="wd-thead">
+                      <tr>
+                        <th>Marque</th>
+                        <th>Mois</th>
+                        <th class="text-end">Volume Marque</th>
+                        <th class="text-end">Volume Total</th>
+                        <th class="text-end">WD %</th>
+                        <th class="text-center">Niveau</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (brand of trendData(); track brand.brand_uuid) {
+                        @for (pt of brand.points; track pt.month) {
+                          <tr>
+                            <td class="fw-semibold wd-text-primary">{{ pt.brand_name }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ pt.month }}</span></td>
+                            <td class="text-end fw-semibold">{{ formatVolume(pt.brand_volume) }}</td>
+                            <td class="text-end text-muted">{{ formatVolume(pt.total_volume) }}</td>
+                            <td class="text-end fw-bold">
+                              <span [class]="getWdBadge(pt.wd_percent)">{{ pt.wd_percent | number:'1.1-1' }}%</span>
+                            </td>
+                            <td class="text-center">
+                              <div class="progress wd-progress-mini">
+                                <div class="progress-bar {{ getWdProgressClass(pt.wd_percent) }}"
+                                  [style.width]="pt.wd_percent + '%'">
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        }
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: TABLE VIEW — Grille territoire × marque
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'tableview') {
+      <div class="card border-0 shadow-sm wd-tableview-card">
+        <div class="card-header wd-tableview-header px-3 py-2">
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+            <div class="wd-geo-crumb">
+              <i class="ti ti-map me-1 text-warning"></i>
+              <span>{{ selectedCountry?.name ?? '—' }}</span>
+              @if (selectedProvince) {
+                <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+                <span class="wd-text-primary">{{ selectedProvince.name }}</span>
+              }
+              @if (selectedArea) {
+                <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+                <span class="text-indigo">{{ selectedArea.name }}</span>
+              }
+              @if (selectedSubArea) {
+                <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+                <span>{{ selectedSubArea.name }}</span>
+              }
+              @if (selectedCommune) {
+                <i class="ti ti-chevron-right mx-1 text-muted" style="font-size:.7rem"></i>
+                <span class="text-success fw-bold">{{ selectedCommune.name }}</span>
+              }
+            </div>
+            <div class="wd-geo-level-tabs">
+              @for (lvl of ['province','area','subarea','commune']; track lvl) {
+                <button class="wd-level-btn"
+                  [class.active]="geoLevel() === lvl"
+                  (click)="onGeoLevelChange($any(lvl))">
+                  <i class="ti {{ lvl === 'province' ? 'ti-map-2' : lvl === 'area' ? 'ti-map-pin' : lvl === 'subarea' ? 'ti-location' : 'ti-building-community' }}"></i>
+                  {{ lvl | titlecase }}
+                </button>
+              }
+              @if (isLoadingTable()) {
+                <div class="spinner-border spinner-border-sm wd-spinner ms-2"></div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          @if (isLoadingTable()) {
+            <div class="d-flex justify-content-center p-5">
+              <div class="spinner-border wd-spinner"></div>
+            </div>
+          } @else if (tableGrouped().length === 0) {
+            <div class="wd-empty-state"><i class="ti ti-table-off"></i><p>Aucune donnée</p></div>
+          } @else {
+            @for (group of tableGrouped(); track group.territory_uuid) {
+              <div class="wd-territory-group">
+                <div class="wd-territory-header">
+                  <i class="ti ti-map-2 me-2 text-warning"></i>
+                  <span class="fw-semibold">{{ group.territory_name }}</span>
+                  <span class="badge bg-light text-dark border ms-2">{{ group.rows.length }} marques</span>
+                </div>
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 wd-table">
+                    <thead class="wd-thead">
+                      <tr>
+                        <th>Marque</th>
+                        <th class="text-end">Volume Marque</th>
+                        <th class="text-end">Volume Total</th>
+                        <th class="text-end">WD %</th>
+                        <th class="text-end">POS en ND</th>
+                        <th class="text-end">Total POS</th>
+                        <th class="text-end">ND %</th>
+                        <th class="text-center" style="width:100px">WD Progression</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of group.rows; track row.brand_uuid) {
+                        <tr>
+                          <td class="fw-semibold wd-text-primary">{{ row.brand_name }}</td>
+                          <td class="text-end fw-semibold">{{ formatVolume(row.brand_volume) }}</td>
+                          <td class="text-end text-muted">{{ formatVolume(row.total_volume) }}</td>
+                          <td class="text-end">
+                            <span [class]="getWdBadge(row.wd_percent)">{{ row.wd_percent | number:'1.1-1' }}%</span>
+                          </td>
+                          <td class="text-end">{{ row.nd_pos | number }}</td>
+                          <td class="text-end text-muted">{{ row.total_pos | number }}</td>
+                          <td class="text-end text-muted small">{{ row.nd_percent | number:'1.1-1' }}%</td>
+                          <td>
+                            <div class="progress wd-progress">
+                              <div class="progress-bar {{ getWdProgressClass(row.wd_percent) }}"
+                                [style.width]="row.wd_percent + '%'"
+                                [title]="row.wd_percent + '%'">
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: BAR CHART — WD% par territoire et marque
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'barchart') {
+      <div class="row g-3">
+        <div class="col-12 d-flex align-items-center gap-2 mb-1">
+          <span class="text-muted small fw-semibold">Niveau :</span>
+          @for (lvl of ['province','area','subarea','commune']; track lvl) {
+            <button class="wd-pill" [class.active]="geoLevel() === lvl"
+              (click)="onGeoLevelChange($any(lvl))">
+              {{ lvl | titlecase }}
+            </button>
+          }
+          @if (isLoadingBar()) { <div class="spinner-border spinner-border-sm wd-spinner ms-2"></div> }
+        </div>
+
+        <div class="col-xl-8">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-chart-bar-popular me-2 text-warning"></i>
+                WD% par territoire — Barres groupées par marque
+              </h6>
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingBar() && chartBarOpts()) {
+                <apx-chart #chartBar
+                  [series]="chartBarOpts()!.series"
+                  [chart]="chartBarOpts()!.chart"
+                  [colors]="chartBarOpts()!.colors"
+                  [plotOptions]="chartBarOpts()!.plotOptions"
+                  [dataLabels]="chartBarOpts()!.dataLabels"
+                  [xaxis]="chartBarOpts()!.xaxis"
+                  [yaxis]="chartBarOpts()!.yaxis"
+                  [legend]="chartBarOpts()!.legend"
+                  [tooltip]="chartBarOpts()!.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingBar()) {
+                <div class="wd-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="col-xl-4">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-list me-2 text-warning"></i>
+                Détail par territoire
+              </h6>
+            </div>
+            <div class="card-body p-0" style="overflow-y:auto;max-height:400px">
+              @if (isLoadingBar()) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border wd-spinner"></div></div>
+              } @else {
+                @for (group of barData(); track group.territory_uuid) {
+                  <div class="wd-bar-territory px-3 py-2 border-bottom">
+                    <div class="d-flex align-items-center justify-content-between mb-1">
+                      <span class="fw-semibold small">{{ group.territory_name }}</span>
+                      <span class="badge bg-light text-dark border small">
+                        Vol: {{ formatVolume(group.total_volume) }}
+                      </span>
+                    </div>
+                    @for (b of group.brands; track b.brand_uuid) {
+                      <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="text-muted" style="width:90px;font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ b.brand_name }}</span>
+                        <div class="progress flex-grow-1 wd-progress">
+                          <div class="progress-bar {{ getWdProgressClass(b.wd_percent) }}"
+                            [style.width]="b.wd_percent + '%'">
+                          </div>
+                        </div>
+                        <span class="fw-semibold" style="width:38px;text-align:right;font-size:.75rem">{{ b.wd_percent }}%</span>
+                      </div>
+                    }
+                  </div>
+                }
+                @empty {
+                  <div class="wd-empty-state"><i class="ti ti-table-off"></i><p>Aucune donnée</p></div>
+                }
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: RANKING — Classement des marques par WD%
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'ranking') {
+      <div class="row g-3">
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-trophy me-2 text-warning"></i>
+                Top 10 Marques — WD%
+              </h6>
+              @if (isLoadingRanking()) { <div class="spinner-border spinner-border-sm wd-spinner"></div> }
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingRanking() && chartRankingOpts()) {
+                <apx-chart #chartRanking
+                  [series]="chartRankingOpts()!.series"
+                  [chart]="chartRankingOpts()!.chart"
+                  [colors]="chartRankingOpts()!.colors"
+                  [plotOptions]="chartRankingOpts()!.plotOptions"
+                  [dataLabels]="chartRankingOpts()!.dataLabels"
+                  [xaxis]="chartRankingOpts()!.xaxis"
+                  [legend]="chartRankingOpts()!.legend"
+                  [tooltip]="chartRankingOpts()!.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingRanking()) {
+                <div class="wd-empty-state"><i class="ti ti-trophy-off"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-list-numbers me-2 text-warning"></i>
+                Classement complet — WD% & Écart WD−ND
+              </h6>
+            </div>
+            <div class="card-body p-0">
+              @if (isLoadingRanking()) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border wd-spinner"></div></div>
+              } @else {
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 wd-table">
+                    <thead class="wd-thead">
+                      <tr>
+                        <th class="text-center">Rang</th>
+                        <th>Marque</th>
+                        <th class="text-end">Volume</th>
+                        <th class="text-end">WD %</th>
+                        <th class="text-end">ND %</th>
+                        <th class="text-end">Écart WD−ND</th>
+                        <th style="width:80px">Niveau</th>
+                        <th class="text-center">POS Drill</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of rankingData(); track row.brand_uuid) {
+                        <tr [class.wd-rank-top]="row.rank <= 3">
+                          <td class="text-center fw-bold">{{ getRankMedal(row.rank) }}</td>
+                          <td class="fw-semibold wd-text-primary">{{ row.brand_name }}</td>
+                          <td class="text-end fw-semibold">{{ formatVolume(row.brand_volume) }}</td>
+                          <td class="text-end">
+                            <span [class]="getWdBadge(row.wd_percent)">{{ row.wd_percent | number:'1.1-1' }}%</span>
+                          </td>
+                          <td class="text-end text-muted small">{{ row.nd_percent | number:'1.1-1' }}%</td>
+                          <td class="text-end">
+                            <span [class]="getGapBadge(row.wd_nd_gap)">{{ getGapLabel(row.wd_nd_gap) }}</span>
+                          </td>
+                          <td>
+                            <div class="progress wd-progress">
+                              <div class="progress-bar {{ getWdProgressClass(row.wd_percent) }}"
+                                [style.width]="row.wd_percent + '%'">
+                              </div>
+                            </div>
+                          </td>
+                          <td class="text-center">
+                            <button class="btn btn-sm wd-drill-btn"
+                              (click)="loadDrilldown(row.brand_uuid, row.brand_name)"
+                              title="Voir détail POS">
+                              <i class="ti ti-zoom-in"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      }
+                      @empty {
+                        <tr><td colspan="8" class="text-center text-muted py-4">Aucune donnée</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: GAP VOLUME ANALYSIS
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'gap') {
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="row g-2 mb-1">
+            <div class="col-6">
+              <div class="wd-zone-card zone-a">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="wd-zone-dot" style="background:#06d6a0"></div>
+                  <div>
+                    <div class="fw-semibold small">Zone A — Volume WD présent</div>
+                    <div class="text-muted" style="font-size:.72rem">Fardes aux POS où la marque est présente (counter &gt; 0)</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="wd-zone-card zone-b">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="wd-zone-dot" style="background:#ffd166"></div>
+                  <div>
+                    <div class="fw-semibold small">Zone B — Volume non atteint</div>
+                    <div class="text-muted" style="font-size:.72rem">Fardes des POS visités sans la marque = opportunité volume</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-chart-area me-2 text-warning"></i>
+                Entonnoir de volume par marque
+              </h6>
+              @if (isLoadingGap()) { <div class="spinner-border spinner-border-sm wd-spinner"></div> }
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingGap() && chartGapOpts()) {
+                <apx-chart #chartGap
+                  [series]="chartGapOpts()!.series"
+                  [chart]="chartGapOpts()!.chart"
+                  [colors]="chartGapOpts()!.colors"
+                  [plotOptions]="chartGapOpts()!.plotOptions"
+                  [dataLabels]="chartGapOpts()!.dataLabels"
+                  [xaxis]="chartGapOpts()!.xaxis"
+                  [yaxis]="chartGapOpts()!.yaxis"
+                  [legend]="chartGapOpts()!.legend"
+                  [tooltip]="chartGapOpts()!.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingGap()) {
+                <div class="wd-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-table me-2 text-warning"></i>
+                Analyse volume par marque
+              </h6>
+            </div>
+            <div class="card-body p-0" style="overflow-y:auto;max-height:440px">
+              @if (isLoadingGap()) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border wd-spinner"></div></div>
+              } @else {
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 wd-table wd-table-sm">
+                    <thead class="wd-thead">
+                      <tr>
+                        <th>Marque</th>
+                        <th class="text-end">WD%</th>
+                        <th class="text-end">Vol. Présent</th>
+                        <th class="text-end text-danger">Opportunité</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of gapData(); track row.brand_uuid) {
+                        <tr>
+                          <td class="fw-semibold wd-text-primary small">{{ row.brand_name }}</td>
+                          <td class="text-end">
+                            <span [class]="getWdBadge(row.wd_percent)">{{ row.wd_percent | number:'1.1-1' }}%</span>
+                          </td>
+                          <td class="text-end small">{{ formatVolume(row.brand_volume) }}</td>
+                          <td class="text-end fw-bold text-danger small">
+                            +{{ row.opportunity_pct | number:'1.1-1' }}%
+                          </td>
+                        </tr>
+                      }
+                      @empty {
+                        <tr><td colspan="4" class="text-center text-muted py-4">Aucune donnée</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+                @if (gapData().length > 0) {
+                  <div class="px-3 pt-2 pb-3">
+                    <div class="wd-section-sub-title mb-2">Top 5 — Décomposition du volume</div>
+                    @for (row of gapData().slice(0, 5); track row.brand_uuid) {
+                      <div class="mb-2">
+                        <div class="d-flex justify-content-between small mb-1">
+                          <span class="fw-semibold">{{ row.brand_name }}</span>
+                          <span class="text-muted">{{ formatVolume(row.total_volume) }} fardes total</span>
+                        </div>
+                        <div class="wd-funnel-bar">
+                          <div class="wd-funnel-zone zone-a"
+                            [style.width]="row.wd_percent + '%'"
+                            [title]="'Zone A: ' + formatVolume(row.brand_volume) + ' fardes'">
+                          </div>
+                          <div class="wd-funnel-zone zone-b"
+                            [style.width]="row.opportunity_pct + '%'"
+                            [title]="'Zone B: ' + formatVolume(row.visited_gap_volume) + ' fardes'">
+                          </div>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                }
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: EVOLUTION — Période sur Période (PoP)
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'evolution') {
+      <div class="row g-3">
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <div>
+                <h6 class="fw-semibold mb-0 text-secondary">
+                  <i class="ti ti-trending-up me-2 text-warning"></i>
+                  WD% Courant vs Précédent — Delta en pp
+                </h6>
+                <small class="text-muted">Période sélectionnée vs période égale précédente</small>
+              </div>
+              @if (isLoadingEvolution()) { <div class="spinner-border spinner-border-sm wd-spinner"></div> }
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingEvolution() && chartEvolutionOpts()) {
+                <apx-chart #chartEvolution
+                  [series]="chartEvolutionOpts()!.series"
+                  [chart]="chartEvolutionOpts()!.chart"
+                  [colors]="chartEvolutionOpts()!.colors"
+                  [stroke]="chartEvolutionOpts()!.stroke"
+                  [plotOptions]="chartEvolutionOpts()!.plotOptions"
+                  [dataLabels]="chartEvolutionOpts()!.dataLabels"
+                  [xaxis]="chartEvolutionOpts()!.xaxis"
+                  [yaxis]="chartEvolutionOpts()!.yaxis"
+                  [legend]="chartEvolutionOpts()!.legend"
+                  [tooltip]="chartEvolutionOpts()!.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingEvolution()) {
+                <div class="wd-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée d'évolution</p></div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-list me-2 text-warning"></i>
+                Scorecard PoP par marque
+              </h6>
+            </div>
+            <div class="card-body p-0" style="overflow-y:auto;max-height:420px">
+              @if (isLoadingEvolution()) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border wd-spinner"></div></div>
+              } @else {
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 wd-table">
+                    <thead class="wd-thead">
+                      <tr>
+                        <th>Marque</th>
+                        <th class="text-end">WD% Act.</th>
+                        <th class="text-end">WD% Préc.</th>
+                        <th class="text-end">Δ pp</th>
+                        <th class="text-center">Tendance</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of evolutionData(); track row.brand_uuid) {
+                        <tr>
+                          <td class="fw-semibold wd-text-primary small">{{ row.brand_name }}</td>
+                          <td class="text-end">
+                            <span [class]="getWdBadge(row.current_wd_percent)">
+                              {{ row.current_wd_percent | number:'1.1-1' }}%
+                            </span>
+                          </td>
+                          <td class="text-end text-muted small">{{ row.previous_wd_percent | number:'1.1-1' }}%</td>
+                          <td class="text-end fw-bold {{ getTrendClass(row.delta) }}">
+                            {{ row.delta > 0 ? '+' : '' }}{{ row.delta | number:'1.1-1' }}pp
+                          </td>
+                          <td class="text-center">
+                            <i class="{{ getTrendIcon(row.trend) }} fs-5"></i>
+                          </td>
+                        </tr>
+                      }
+                      @empty {
+                        <tr><td colspan="5" class="text-center text-muted py-4">Aucune donnée</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        @if (!isLoadingEvolution() && evolutionData().length > 0) {
+          <div class="col-12">
+            <div class="row g-2">
+              @for (row of evolutionData().slice(0, 4); track row.brand_uuid) {
+                <div class="col-6 col-md-3">
+                  <div class="wd-evo-card" [class.wd-evo-up]="row.trend === 'up'" [class.wd-evo-down]="row.trend === 'down'">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                      <span class="fw-semibold small text-truncate pe-1">{{ row.brand_name }}</span>
+                      <span [class]="getTrendBadge(row.trend)" class="flex-shrink-0">
+                        {{ row.trend | titlecase }}
+                      </span>
+                    </div>
+                    <div class="wd-evo-percent">{{ row.current_wd_percent | number:'1.1-1' }}%</div>
+                    <div class="wd-evo-delta {{ getTrendClass(row.delta) }}">
+                      <i class="{{ getTrendIcon(row.trend) }}"></i>
+                      {{ row.delta > 0 ? '+' : '' }}{{ row.delta | number:'1.1-1' }}pp vs précédent
+                    </div>
+                    <div class="progress mt-2 wd-progress">
+                      <div class="progress-bar {{ getWdProgressClass(row.current_wd_percent) }}"
+                        [style.width]="row.current_wd_percent + '%'">
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: HEATMAP — Matrice Marque × Territoire
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'heatmap') {
+      <div class="row g-3">
+        <div class="col-12 d-flex align-items-center gap-2 mb-1">
+          <span class="text-muted small fw-semibold">Niveau territorial :</span>
+          @for (lvl of ['province','area','subarea','commune']; track lvl) {
+            <button class="wd-pill" [class.active]="heatmapLevel() === lvl"
+              (click)="onHeatmapLevelChange($any(lvl))">
+              {{ lvl | titlecase }}
+            </button>
+          }
+          @if (isLoadingHeatmap()) { <div class="spinner-border spinner-border-sm wd-spinner ms-2"></div> }
+        </div>
+
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <div>
+                <h6 class="fw-semibold mb-0 text-secondary">
+                  <i class="ti ti-layout-grid me-2 text-warning"></i>
+                  Matrice WD% — Marque × Territoire ({{ heatmapLevel() | titlecase }})
+                </h6>
+                <small class="text-muted">Chaque cellule = WD% pondéré par volume de la marque dans le territoire</small>
+              </div>
+            </div>
+            <div class="card-body px-2 pt-1 pb-1">
+              @if (!isLoadingHeatmap() && chartHeatmapOpts()) {
+                <apx-chart #chartHeatmap
+                  [series]="chartHeatmapOpts()!.series"
+                  [chart]="chartHeatmapOpts()!.chart"
+                  [colors]="chartHeatmapOpts()!.colors"
+                  [dataLabels]="chartHeatmapOpts()!.dataLabels"
+                  [plotOptions]="chartHeatmapOpts()!.plotOptions"
+                  [legend]="chartHeatmapOpts()!.legend"
+                  [tooltip]="chartHeatmapOpts()!.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingHeatmap()) {
+                <div class="wd-empty-state">
+                  <i class="ti ti-layout-grid-remove"></i>
+                  <p>Aucune donnée pour la heatmap</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+
+        @if (!isLoadingHeatmap() && heatmapData().brands.length > 0) {
+          <div class="col-12">
+            <div class="card border-0 shadow-sm">
+              <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between flex-wrap gap-2">
+                <h6 class="fw-semibold mb-0 text-secondary">
+                  <i class="ti ti-table me-2 text-warning"></i>
+                  Matrice numérique complète
+                </h6>
+                <div class="d-flex gap-2 align-items-center flex-wrap">
+                  <span class="wd-legend-chip" style="background:#fff8f0;color:#666">Absent (0%)</span>
+                  <span class="wd-legend-chip" style="background:#fde6c3;color:#333">Faible (1-25%)</span>
+                  <span class="wd-legend-chip" style="background:#fcbf49;color:#333">Moyen (26-50%)</span>
+                  <span class="wd-legend-chip" style="background:#f77f00;color:#fff">Bon (51-75%)</span>
+                  <span class="wd-legend-chip" style="background:#b35700;color:#fff">Excellent (76%+)</span>
+                </div>
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive">
+                  <table class="table table-bordered align-middle mb-0 wd-matrix-table">
+                    <thead class="wd-thead">
+                      <tr>
+                        <th class="wd-matrix-brand-col">Marque</th>
+                        @for (t of heatmapData().territories; track t.uuid) {
+                          <th class="text-center small">{{ t.name }}</th>
+                        }
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (b of heatmapData().brands; track b.uuid; let bi = $index) {
+                        <tr>
+                          <td class="fw-semibold wd-text-primary small">{{ b.name }}</td>
+                          @for (t of heatmapData().territories; track t.uuid; let ti = $index) {
+                            <td class="text-center wd-matrix-cell"
+                              [style.background]="
+                                heatmapData().matrix[bi][ti] === 0 ? '#fff8f0'
+                                : heatmapData().matrix[bi][ti] <= 25 ? '#fde6c3'
+                                : heatmapData().matrix[bi][ti] <= 50 ? '#fcbf49'
+                                : heatmapData().matrix[bi][ti] <= 75 ? '#f77f00'
+                                : '#b35700'"
+                              [style.color]="heatmapData().matrix[bi][ti] > 25 ? '#fff' : '#333'">
+                              {{ heatmapData().matrix[bi][ti] > 0 ? (heatmapData().matrix[bi][ti] | number:'1.0-0') + '%' : '—' }}
+                            </td>
+                          }
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: CORRELATION — WD × ND Quadrant Matrix
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'correlation') {
+      <div class="row g-3">
+
+        <!-- Quadrant legend + threshold control -->
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-body py-2 px-3">
+              <div class="d-flex align-items-center gap-3 flex-wrap">
+                <span class="fw-semibold small text-secondary">Seuil de quadrant :</span>
+                <div class="d-flex align-items-center gap-2">
+                  @for (t of [25, 33, 50, 66, 75]; track t) {
+                    <button class="wd-pill" [class.active]="correlationThreshold() === t"
+                      (click)="onThresholdChange(t)">{{ t }}%</button>
+                  }
+                </div>
+                <div class="ms-auto d-flex gap-2 flex-wrap">
+                  <span class="wd-quad-badge" style="background:#06d6a0">Leader</span>
+                  <span class="wd-quad-badge" style="background:#f77f00">Focus Volume</span>
+                  <span class="wd-quad-badge" style="background:#4361ee">Diffusion Large</span>
+                  <span class="wd-quad-badge" style="background:#ef476f">Retardataire</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quadrant summary cards -->
+        @if (!isLoadingCorrelation() && correlationMeta()) {
+          <div class="col-12">
+            <div class="row g-2">
+              <div class="col-6 col-md-3">
+                <div class="wd-quad-summary-card" style="border-top-color:#06d6a0">
+                  <div class="wd-quad-count" style="color:#06d6a0">{{ correlationMeta()!.quadrant_summary['leader'] || 0 }}</div>
+                  <div class="wd-quad-name">Leaders</div>
+                  <div class="wd-quad-desc">WD ≥ {{ correlationThreshold() }}% ET ND ≥ {{ correlationThreshold() }}%</div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="wd-quad-summary-card" style="border-top-color:#f77f00">
+                  <div class="wd-quad-count" style="color:#f77f00">{{ correlationMeta()!.quadrant_summary['volume_focus'] || 0 }}</div>
+                  <div class="wd-quad-name">Focus Volume</div>
+                  <div class="wd-quad-desc">Haut volume, faible présence numérique</div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="wd-quad-summary-card" style="border-top-color:#4361ee">
+                  <div class="wd-quad-count" style="color:#4361ee">{{ correlationMeta()!.quadrant_summary['spread'] || 0 }}</div>
+                  <div class="wd-quad-name">Diffusion Large</div>
+                  <div class="wd-quad-desc">Présents partout mais faible volume par POS</div>
+                </div>
+              </div>
+              <div class="col-6 col-md-3">
+                <div class="wd-quad-summary-card" style="border-top-color:#ef476f">
+                  <div class="wd-quad-count" style="color:#ef476f">{{ correlationMeta()!.quadrant_summary['laggard'] || 0 }}</div>
+                  <div class="wd-quad-name">Retardataires</div>
+                  <div class="wd-quad-desc">Faible sur les deux dimensions</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        }
+
+        <!-- Scatter chart -->
+        <div class="col-lg-7">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <div>
+                <h6 class="fw-semibold mb-0 text-secondary">
+                  <i class="ti ti-arrows-diagonal me-2 text-warning"></i>
+                  Matrice WD% × ND% — Positionnement des marques
+                </h6>
+                <small class="text-muted">Axe X = WD% (volume) · Axe Y = ND% (présence numérique)</small>
+              </div>
+              @if (isLoadingCorrelation()) { <div class="spinner-border spinner-border-sm wd-spinner"></div> }
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingCorrelation() && chartCorrelationOpts()) {
+                <apx-chart #chartCorrelation
+                  [series]="chartCorrelationOpts()!.series"
+                  [chart]="chartCorrelationOpts()!.chart"
+                  [colors]="chartCorrelationOpts()!.colors"
+                  [dataLabels]="chartCorrelationOpts()!.dataLabels"
+                  [markers]="chartCorrelationOpts()!.markers"
+                  [xaxis]="chartCorrelationOpts()!.xaxis"
+                  [yaxis]="chartCorrelationOpts()!.yaxis"
+                  [annotations]="chartCorrelationOpts()!.annotations"
+                  [legend]="chartCorrelationOpts()!.legend"
+                  [tooltip]="chartCorrelationOpts()!.tooltip">
+                </apx-chart>
+              } @else if (!isLoadingCorrelation()) {
+                <div class="wd-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée</p></div>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Correlation detail table -->
+        <div class="col-lg-5">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-table me-2 text-warning"></i>
+                Positionnement par marque
+              </h6>
+            </div>
+            <div class="card-body p-0" style="overflow-y:auto;max-height:420px">
+              @if (isLoadingCorrelation()) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border wd-spinner"></div></div>
+              } @else {
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 wd-table wd-table-sm">
+                    <thead class="wd-thead">
+                      <tr>
+                        <th>Marque</th>
+                        <th class="text-end">WD%</th>
+                        <th class="text-end">ND%</th>
+                        <th class="text-center">Quadrant</th>
+                        <th class="text-center">Drill</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of correlationData(); track row.brand_uuid) {
+                        <tr>
+                          <td class="fw-semibold wd-text-primary small">{{ row.brand_name }}</td>
+                          <td class="text-end">
+                            <span [class]="getWdBadge(row.wd_percent)">{{ row.wd_percent | number:'1.1-1' }}%</span>
+                          </td>
+                          <td class="text-end text-muted small">{{ row.nd_percent | number:'1.1-1' }}%</td>
+                          <td class="text-center">
+                            <span [class]="getQuadrantBadge(row.quadrant)">{{ getQuadrantLabel(row.quadrant) }}</span>
+                          </td>
+                          <td class="text-center">
+                            <button class="btn btn-sm wd-drill-btn"
+                              (click)="loadDrilldown(row.brand_uuid, row.brand_name)">
+                              <i class="ti ti-zoom-in"></i>
+                            </button>
+                          </td>
+                        </tr>
+                      }
+                      @empty {
+                        <tr><td colspan="5" class="text-center text-muted py-4">Aucune donnée</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: POS DRILL-DOWN
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'drilldown') {
+      <div class="row g-3">
+        <!-- Back + brand header -->
+        <div class="col-12">
+          <div class="d-flex align-items-center gap-3 mb-1">
+            <button class="btn wd-back-btn" (click)="setSection('ranking')">
+              <i class="ti ti-arrow-left me-1"></i> Retour
+            </button>
+            @if (drillBrand()) {
+              <div class="wd-drill-header">
+                <span class="wd-drill-brand-name">{{ drillBrand()!.name }}</span>
+                <span class="text-muted small ms-2">— Détail WD par Point de Vente</span>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="col-12">
+          <div class="card border-0 shadow-sm">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h6 class="fw-semibold mb-0 text-secondary">
+                <i class="ti ti-building-store me-2 text-warning"></i>
+                POS où la marque est présente (counter &gt; 0)
+              </h6>
+              @if (isLoadingDrilldown()) { <div class="spinner-border spinner-border-sm wd-spinner"></div> }
+            </div>
+            <div class="card-body p-0">
+              @if (isLoadingDrilldown()) {
+                <div class="d-flex justify-content-center p-5"><div class="spinner-border wd-spinner"></div></div>
+              } @else if (drilldownData().length === 0) {
+                <div class="wd-empty-state"><i class="ti ti-building-store"></i><p>Aucun POS trouvé pour cette marque</p></div>
+              } @else {
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 wd-table">
+                    <thead class="wd-thead">
+                      <tr>
+                        <th>Point de Vente</th>
+                        <th>Type</th>
+                        <th class="text-end">Vol. Marque</th>
+                        <th class="text-end">Vol. Total POS</th>
+                        <th class="text-end">WD% POS</th>
+                        <th class="text-end">Nb Visites</th>
+                        <th style="width:100px">Contribution</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of drilldownData(); track row.pos_uuid) {
+                        <tr>
+                          <td class="fw-semibold wd-text-primary">{{ row.pos_name }}</td>
+                          <td><span class="badge bg-secondary-subtle text-secondary small">{{ row.pos_type }}</span></td>
+                          <td class="text-end fw-semibold">{{ formatVolume(row.pos_volume) }}</td>
+                          <td class="text-end text-muted">{{ formatVolume(row.total_volume) }}</td>
+                          <td class="text-end">
+                            <span [class]="getWdBadge(row.pos_wd_percent)">{{ row.pos_wd_percent | number:'1.1-1' }}%</span>
+                          </td>
+                          <td class="text-end text-muted">{{ row.visit_count | number }}</td>
+                          <td>
+                            <div class="progress wd-progress">
+                              <div class="progress-bar {{ getWdProgressClass(row.pos_wd_percent) }}"
+                                [style.width]="row.pos_wd_percent + '%'">
+                              </div>
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+  </div><!-- /content -->
+</div><!-- /page-wrapper -->

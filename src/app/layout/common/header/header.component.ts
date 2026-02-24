@@ -9,6 +9,7 @@ import { AuthService } from '../../../auth/auth.service';
 import { Router } from '@angular/router';
 import { LogsService } from '../../management/user-logs/logs.service';
 import { IUser } from '../../management/user/models/user.model';
+import { SyncQueueService } from '../../../shared/services/sync-queue.service';
 
 @Component({
   selector: 'app-header',
@@ -36,8 +37,15 @@ export class HeaderComponent implements OnInit {
   readonly currentUser = signal<IUser | null>(null);
   readonly isLoading = signal(false);
   readonly onLine = signal(navigator.onLine);
+  readonly isSyncing = signal(false);
+
+  private readonly syncQueue = inject(SyncQueueService);
 
   constructor() {
+    // Observer l'état de synchronisation
+    this.syncQueue.isSyncing$
+      .pipe(takeUntilDestroyed())
+      .subscribe(syncing => this.isSyncing.set(syncing));
     // Observer les changements de route
     this.common.base
       .pipe(takeUntilDestroyed())

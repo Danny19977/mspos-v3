@@ -135,6 +135,7 @@ export class LayoutComponent implements OnInit {
               url.includes('mspos-dashboard'),
               url.includes('numeric-distribution'),
               url.includes('weighted-distribution'),
+              url.includes('weighted-sales'),
               url.includes('share-in-shop-handling'),
               url.includes('out-of-stock'),
               url.includes('share-of-stock'),
