@@ -211,6 +211,24 @@
   }
 }
 
+.equipment-table-wrapper {
+  overflow-x: auto;
+
+  .equipment-table {
+    min-width: 900px;
+
+    th,
+    td {
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    td:last-child {
+      white-space: nowrap;
+    }
+  }
+}
+
 // Search and filter section
 .card-header {
   background-color: #f8f9fa;
@@ -250,6 +268,13 @@
 
 // Responsive improvements
 @media (max-width: 768px) {
+  .equipment-table-wrapper {
+    .equipment-table {
+      font-size: 0.875rem;
+      min-width: 820px;
+    }
+  }
+
   .modal-dialog {
     margin: 1rem;
     

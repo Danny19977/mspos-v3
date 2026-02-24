@@ -29,44 +29,46 @@
             </div>
         </div>
         <div class="card-body">
-            <table class="table table-bordered table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>Parasol</th>
-                        <th>Statut Parasol</th>
-                        <th>Stand</th>
-                        <th>Statut Stand</th>
-                        <th>Kiosque</th>
-                        <th>Statut Kiosque</th>
-                        <th>Date création</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @for (eq of equipmentList(); track eq) {
-                    <tr>
-                        <td>{{ eq.parasol }}</td>
-                        <td>{{ eq.parasol_status }}</td>
-                        <td>{{ eq.stand }}</td>
-                        <td>{{ eq.stand_status }}</td>
-                        <td>{{ eq.kiosk }}</td>
-                        <td>{{ eq.kiosk_status }}</td>
-                        <td>{{ eq.CreatedAt | date: 'dd/MM/yyyy' }}</td>
-                        <td>
-                            <button class="btn btn-sm btn-info me-1" (click)="editEquipment(eq)"><i
-                                    class="ti ti-edit"></i></button>
-                            <button class="btn btn-sm btn-danger" (click)="deleteEquipment(eq)"><i
-                                    class="ti ti-trash"></i></button>
-                        </td>
-                    </tr>
-                    }
-                    @if (equipmentList().length === 0) {
-                    <tr>
-                        <td colspan="8" class="text-center">Aucun équipement trouvé.</td>
-                    </tr>
-                    }
-                </tbody>
-            </table>
+            <div class="table-responsive equipment-table-wrapper">
+                <table class="table table-bordered table-hover equipment-table">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Parasol</th>
+                            <th>Statut Parasol</th>
+                            <th>Stand</th>
+                            <th>Statut Stand</th>
+                            <th>Kiosque</th>
+                            <th>Statut Kiosque</th>
+                            <th>Date création</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (eq of equipmentList(); track eq) {
+                        <tr>
+                            <td>{{ eq.parasol }}</td>
+                            <td>{{ eq.parasol_status }}</td>
+                            <td>{{ eq.stand }}</td>
+                            <td>{{ eq.stand_status }}</td>
+                            <td>{{ eq.kiosk }}</td>
+                            <td>{{ eq.kiosk_status }}</td>
+                            <td>{{ eq.CreatedAt | date: 'dd/MM/yyyy' }}</td>
+                            <td>
+                                <button class="btn btn-sm btn-info me-1" (click)="editEquipment(eq)"><i
+                                        class="ti ti-edit"></i></button>
+                                <button class="btn btn-sm btn-danger" (click)="deleteEquipment(eq)"><i
+                                        class="ti ti-trash"></i></button>
+                            </td>
+                        </tr>
+                        }
+                        @if (equipmentList().length === 0) {
+                        <tr>
+                            <td colspan="8" class="text-center">Aucun équipement trouvé.</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
             <!-- Pagination -->
             @if (total_pages() > 1) {
             <nav>
