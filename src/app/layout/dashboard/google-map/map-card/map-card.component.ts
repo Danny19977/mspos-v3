@@ -1,5 +1,4 @@
-import { Component, HostListener, Input, OnChanges, OnInit, SimpleChanges, ViewChild } from '@angular/core';
-import { _isNumberValue } from '@angular/cdk/coercion';
+import { Component, HostListener, Input, OnChanges, OnInit, SimpleChanges, ViewChild, inject, signal } from '@angular/core';
 import { GoogleMapModel } from '../../models/dashboard.models';
 import { MapInfoWindow, MapMarker } from '@angular/google-maps';
 import { GoogleMapsLoaderService } from '../../../../services/google-maps-loader.service';
@@ -8,17 +7,26 @@ interface Marker {
   position: google.maps.LatLngLiteral;
   name: string;
   label: string;
-  icon?: string | google.maps.Icon;
+  icon: google.maps.Icon;   // pre-computed — never changes reference after build
   zIndex?: number;
   category: string;
-  asm: string; // Province of the NameCentre
+  role: string;        // 'asm' | 'supervisor' | 'dr' | 'cyclo' | 'unknown'
+  asm: string;
   sup: string;
   dr: string;
   cyclo: string;
   date: string;
   signature: string;
-  url?: string; // Optional URL for the marker
+  url?: string;
 }
+
+// ─── Role colour palette ───────────────────────────────────────────────────────
+const ROLE_COLORS: Record<string, string> = {
+  asm:        '#F44336', // Red
+  supervisor: '#2196F3', // Blue
+  dr:         '#4CAF50', // Green
+  cyclo:      '#FF9800', // Orange
+};
 
 
 @Component({
@@ -27,35 +35,68 @@ interface Marker {
   templateUrl: './map-card.component.html',
   styleUrl: './map-card.component.scss'
 })
-export class MapCardComponent implements OnInit {
+export class MapCardComponent implements OnInit, OnChanges {
   @Input() isLoading!: boolean;
   @Input() googleMapList: GoogleMapModel[] = [];
   @ViewChild('infoWindow', { read: MapInfoWindow, static: false }) infoWindow!: MapInfoWindow;
 
+  // ─── Services ─────────────────────────────────────────────────────────────
+  private readonly googleMapsLoader = inject(GoogleMapsLoaderService);
 
-  // Propriétés pour les dimensions dynamiques de la carte
-  mapHeight = '800px';
-  mapWidth = '1100px';
-  hasMapError = false;
-  mapErrorMessage = '';
+  // ─── Signals ──────────────────────────────────────────────────────────────
+  readonly hasMapError    = signal(false);
+  readonly mapErrorMessage = signal('');
+  readonly mapHeight      = signal('800px');
+  readonly mapWidth       = signal('1100px');
+  readonly center         = signal<google.maps.LatLngLiteral>({ lat: -4.350900786588518, lng: 15.32577513250754 });
+  readonly zoom           = signal(12);
+  readonly markers        = signal<Marker[]>([]);
+  readonly selectedMarker = signal<Marker | null>(null);
 
-  center: google.maps.LatLngLiteral = { lat: -4.350900786588518, lng: 15.32577513250754 };
-  zoom = 12;
-  markers: Marker[] = [];
-  selectedMarker: Marker | null = null;
+  // ─── Role labels ──────────────────────────────────────────────────────────
+  readonly roleLabels: Record<string, string> = {
+    asm:        'ASM',
+    supervisor: 'Superviseur',
+    dr:         'DR',
+    cyclo:      'Cyclo',
+    unknown:    'Inconnu',
+  };
 
-  constructor(private googleMapsLoader: GoogleMapsLoaderService) { }
+  /** Returns a colored SVG pin icon for each role (call only from ngOnChanges). */
+  private buildMarkerIcon(role: string): google.maps.Icon {
+    const fill  = ROLE_COLORS[role] ?? '#9E9E9E';
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="42" viewBox="0 0 32 42">
+      <path d="M16 0C7.163 0 0 7.163 0 16c0 11.6 16 26 16 26S32 27.6 32 16C32 7.163 24.837 0 16 0z" fill="${fill}" stroke="rgba(0,0,0,0.25)" stroke-width="1"/>
+      <circle cx="16" cy="16" r="7" fill="#ffffff" opacity="0.9"/>
+    </svg>`;
+    return {
+      url:        'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg),
+      scaledSize: new google.maps.Size(32, 42),
+      anchor:     new google.maps.Point(16, 42),
+    };
+  }
+
+  /** @deprecated kept for template — use marker.icon directly instead. */
+  getMarkerIcon(role: string): google.maps.Icon {
+    return this.buildMarkerIcon(role);
+  }
+
+  /** CSS color for role (used in template). */
+  roleColor(role: string): string {
+    return ROLE_COLORS[role] ?? '#9E9E9E';
+  }
 
   ngOnInit(): void {
-    // Ensure Google Maps is loaded before initializing
-    this.googleMapsLoader.loadGoogleMaps().then(() => {
-      this.calculateMapDimensions();
-      this.hasMapError = false;
-    }).catch((error) => {
-      console.error('Failed to load Google Maps:', error);
-      this.hasMapError = true;
-      this.mapErrorMessage = 'Failed to load Google Maps. Please check your API key configuration.';
-    });
+    this.googleMapsLoader.loadGoogleMaps()
+      .then(() => {
+        this.calculateMapDimensions();
+        this.hasMapError.set(false);
+      })
+      .catch((error) => {
+        console.error('Failed to load Google Maps:', error);
+        this.hasMapError.set(true);
+        this.mapErrorMessage.set('Impossible de charger Google Maps. Vérifiez votre clé API.');
+      });
   }
 
   @HostListener('window:resize', ['$event'])
@@ -64,83 +105,67 @@ export class MapCardComponent implements OnInit {
   }
 
   private calculateMapDimensions(): void {
-    const screenWidth = window.innerWidth;
-    const screenHeight = window.innerHeight;
+    const w = window.innerWidth;
+    const h = window.innerHeight;
 
-    // Calcul de la largeur responsive
-    if (screenWidth <= 576) {
-      // Mobile (xs)
-      this.mapWidth = '100%';
-      this.mapHeight = '400px';
-    } else if (screenWidth <= 768) {
-      // Tablet portrait (sm)
-      this.mapWidth = '100%';
-      this.mapHeight = '500px';
-    } else if (screenWidth <= 992) {
-      // Tablet landscape (md)
-      this.mapWidth = '100%';
-      this.mapHeight = '600px';
-    } else if (screenWidth <= 1200) {
-      // Desktop small (lg)
-      this.mapWidth = '95%';
-      this.mapHeight = '700px';
-    } else {
-      // Desktop large (xl)
-      this.mapWidth = '1100px';
-      this.mapHeight = '800px';
-    }
+    let width = '1100px', height = '800px';
+    if      (w <= 576)  { width = '100%'; height = '400px'; }
+    else if (w <= 768)  { width = '100%'; height = '500px'; }
+    else if (w <= 992)  { width = '100%'; height = '600px'; }
+    else if (w <= 1200) { width = '95%';  height = '700px'; }
 
-    // Ajustement basé sur la hauteur de l'écran si nécessaire
-    if (screenHeight < 700) {
-      const currentHeightNum = parseInt(this.mapHeight.replace('px', ''));
-      this.mapHeight = Math.min(currentHeightNum, screenHeight * 0.6) + 'px';
+    if (h < 700) {
+      height = Math.min(parseInt(height), h * 0.6) + 'px';
     }
+    this.mapWidth.set(width);
+    this.mapHeight.set(height);
   }
 
-  ngOnChanges(_changes: SimpleChanges): void {
-    if (this.googleMapList && this.googleMapList.length > 0) {
-      // Update markers
-      this.markers = this.googleMapList.map(element => ({
-        position: { lat: element.latitude, lng: element.longitude },
-        name: element.pos_name,
-        label: element.pos_name,
-        category: element.postype,
-        asm: element.asm || '',
-        sup: element.sup || '',
-        dr: element.dr || '',
-        cyclo: element.cyclo || '',
-        date: element.created_at,
-        signature: element.signature,
-        url: element.pos_uuid
+  ngOnChanges(changes: SimpleChanges): void {
+    if (!changes['googleMapList']) return;
+
+    if (this.googleMapList?.length > 0) {
+      const built = this.googleMapList.map(el => ({
+        position:  { lat: el.latitude, lng: el.longitude },
+        name:      el.pos_name,
+        label:     el.pos_name,
+        icon:      this.buildMarkerIcon(el.role || 'unknown'),
+        category:  el.postype,
+        role:      el.role || 'unknown',
+        asm:       el.asm   || '',
+        sup:       el.sup   || '',
+        dr:        el.dr    || '',
+        cyclo:     el.cyclo || '',
+        date:      el.created_at,
+        signature: el.signature,
+        url:       el.pos_uuid,
       }));
+      this.markers.set(built);
 
-      // Update map center to the first position if not already set to a specific location
-      if (this.center.lat === -4.4419 && this.center.lng === 15.2663) {
-        this.center = {
-          lat: this.googleMapList[0].latitude,
-          lng: this.googleMapList[0].longitude
-        };
-      }
+      const latSum = built.reduce((s, m) => s + m.position.lat, 0);
+      const lngSum = built.reduce((s, m) => s + m.position.lng, 0);
+      this.center.set({ lat: latSum / built.length, lng: lngSum / built.length });
+    } else {
+      this.markers.set([]);
     }
   }
 
+  /** Stable trackBy so Angular reuses existing <map-marker> DOM nodes. */
+  trackByMarker(_index: number, m: Marker): string {
+    return `${m.position.lat},${m.position.lng},${m.role}`;
+  }
 
-  openInfoWindow(markerData: any, markerRef: MapMarker) {
-    this.selectedMarker = markerData;
 
+  openInfoWindow(markerData: Marker, markerRef: MapMarker): void {
+    this.selectedMarker.set(markerData);
     if (this.infoWindow && typeof this.infoWindow.open === 'function') {
       this.infoWindow.open(markerRef);
-    } else {
-      console.error('ERROR: InfoWindow is not correctly initialized or .open() is not a function.');
     }
   }
 
-  // NOUVELLE MÉTHODE pour fermer l'InfoWindow
-  public closeInfoWindowManual(): void {
-    if (this.infoWindow) {
-      this.infoWindow.close();
-    }
-    this.selectedMarker = null; // Optionnel: désélectionner le marqueur
+  closeInfoWindowManual(): void {
+    this.infoWindow?.close();
+    this.selectedMarker.set(null);
   }
 
 }

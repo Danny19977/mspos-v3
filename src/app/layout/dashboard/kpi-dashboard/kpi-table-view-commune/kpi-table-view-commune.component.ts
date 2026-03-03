@@ -1,14 +1,11 @@
-﻿import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { formatDate } from '@angular/common';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ISubArea } from '../../../territories/subarea/models/subarea.model';
-import { KPITableViewPriceModel } from '../../models/dashboard.models';
-import { SubareaService } from '../../../territories/subarea/subarea.service';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { formatDate } from '@angular/common';
+import { AuthService } from '../../../../auth/auth.service';
 import { KpiService } from '../../services/kpi.service';
-import { PERIOD_OPTIONS, PeriodKey, computeDateRange } from '../kpi-period.utils';
-
-// Displays flat per-user KPI filtered by Commune within a SubArea.
-// Route: commune/:subarea_uuid  |  Leaf node - no further drill-down.
+import { KPITableViewPriceModel } from '../../models/dashboard.models';
+import { KpiTableViewParams } from '../../services/kpi.service';
 
 @Component({
   selector: 'app-kpi-table-view-commune',
@@ -16,134 +13,99 @@ import { PERIOD_OPTIONS, PeriodKey, computeDateRange } from '../kpi-period.utils
   templateUrl: './kpi-table-view-commune.component.html',
   styleUrl: './kpi-table-view-commune.component.scss',
 })
-export class KpiTableViewCommuneComponent implements OnInit, OnDestroy {
+export class KpiTableViewCommuneComponent implements OnInit {
 
-  // DI
-  private route          = inject(ActivatedRoute);
-  private subareaService = inject(SubareaService);
-  private kpiService     = inject(KpiService);
+  private route       = inject(ActivatedRoute);
+  private authService = inject(AuthService);
+  private kpiService  = inject(KpiService);
+  private fb          = inject(FormBuilder);
 
-  // Signals
-  isLoading      = signal(false);
-  subarea        = signal<ISubArea | undefined>(undefined);
-  tableViewList  = signal<KPITableViewPriceModel[]>([]);
-  searchTerm     = signal('');
-  selectedTitle  = signal('');
-  selectedPeriod = signal<PeriodKey>('month');
-  customStart    = signal('');
-  customEnd      = signal('');
+  country_uuid  = '';
+  province_uuid = '';
+  area_uuid     = '';
+  sub_area_uuid = '';
+  start_date    = '';
+  end_date      = '';
+  dateRange!: FormGroup;
 
-  // Computed
-  filteredList = computed(() => {
-    let data = this.tableViewList();
-    const title = this.selectedTitle();
-    const term  = this.searchTerm().toLowerCase().trim();
-    if (title) data = data.filter(i => i.title === title);
-    if (term)  data = data.filter(i =>
-      i.signature.toLowerCase().includes(term) || i.name.toLowerCase().includes(term));
-    return data;
-  });
+  isLoading   = signal(false);
+  data        = signal<KPITableViewPriceModel[]>([]);
+  titleFilter = signal('');
 
-  totalAgents = computed(() => this.filteredList().length);
-  totalVisits = computed(() => this.filteredList().reduce((s, i) => s + i.total_visits, 0));
-  avgObjectif = computed(() => {
-    const list = this.filteredList();
-    if (!list.length) return 0;
-    return Math.round(list.reduce((s, i) => s + i.objectif, 0) / list.length * 100) / 100;
-  });
+  readonly TITLES = ['', 'ASM', 'Supervisor', 'DR', 'Cyclo'];
+  grouped = signal<{ name: string; uuid: string; rows: KPITableViewPriceModel[] }[]>([]);
 
-  // Config
-  readonly periodOptions = PERIOD_OPTIONS;
-  readonly titleOptions  = ['ASM', 'Supervisor', 'DR', 'Cyclo'];
-
-  private start_date    = '';
-  private end_date      = '';
-  private autoRefreshId?: ReturnType<typeof setInterval>;
-
-  // Lifecycle
   ngOnInit(): void {
-    this.applyPeriod('month');
+    const now      = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    this.start_date = formatDate(firstDay, 'yyyy-MM-dd', 'en-US');
+    this.end_date   = formatDate(lastDay,  'yyyy-MM-dd', 'en-US');
+    this.dateRange  = this.fb.group({ rangeValue: new FormControl([firstDay, lastDay]) });
+    this.sub_area_uuid = this.route.snapshot.params['subarea_uuid'] ?? '';
 
-    this.route.params.subscribe(params => {
-      const subarea_uuid: string = params['subarea_uuid'];
-      this.isLoading.set(true);
-      this.subareaService.getBy(subarea_uuid).subscribe({
-        next:  (res) => { this.subarea.set(res.data); this.loadData(); },
-        error: (err) => { console.error(err); this.isLoading.set(false); },
-      });
+    this.authService.user().subscribe(user => {
+      this.country_uuid  = user.country_uuid  ?? '';
+      this.province_uuid = user.province_uuid ?? '';
+      this.area_uuid     = user.area_uuid     ?? '';
+      if (!this.sub_area_uuid) this.sub_area_uuid = user.sub_area_uuid ?? '';
+      this.load();
     });
 
-    this.autoRefreshId = setInterval(() => this.loadData(), 30_000);
+    this.dateRange.valueChanges.subscribe(val => {
+      if (val.rangeValue?.[0] && val.rangeValue?.[1]) {
+        this.start_date = formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US');
+        const end = new Date(val.rangeValue[1]); end.setDate(end.getDate() + 1);
+        this.end_date = formatDate(end, 'yyyy-MM-dd', 'en-US');
+        this.load();
+      }
+    });
   }
 
-  ngOnDestroy(): void {
-    if (this.autoRefreshId) clearInterval(this.autoRefreshId);
-  }
-
-  // Period
-  applyPeriod(key: PeriodKey): void {
-    this.selectedPeriod.set(key);
-    if (key !== 'custom') {
-      const [s, e]    = computeDateRange(key);
-      this.start_date = s;
-      this.end_date   = e;
-    }
-  }
-
-  onPeriodChange(key: string): void {
-    this.applyPeriod(key as PeriodKey);
-    if (key !== 'custom') this.loadData();
-  }
-
-  onCustomDateChange(): void {
-    const s = this.customStart();
-    const e = this.customEnd();
-    if (s && e && s <= e) {
-      this.start_date = s;
-      this.end_date   = e;
-      this.loadData();
-    }
-  }
-
-  // Data
-  loadData(): void {
-    const sub = this.subarea();
-    if (!sub || !this.start_date || !this.end_date) return;
+  load(): void {
+    if (!this.country_uuid || !this.province_uuid || !this.area_uuid || !this.sub_area_uuid) return;
     this.isLoading.set(true);
-    this.kpiService.TableViewCommune(
-      sub.country_uuid, sub.province_uuid, sub.area_uuid, sub.uuid,
-      this.start_date, this.end_date,
-    ).subscribe({
-      next:  (res) => { this.tableViewList.set(res?.data ?? []); this.isLoading.set(false); },
-      error: ()    => { this.tableViewList.set([]); this.isLoading.set(false); },
+    const params: KpiTableViewParams = {
+      country_uuid:  this.country_uuid,
+      province_uuid: this.province_uuid,
+      area_uuid:     this.area_uuid,
+      sub_area_uuid: this.sub_area_uuid,
+      start_date:    this.start_date,
+      end_date:      this.end_date,
+      title:         this.titleFilter() || undefined,
+    };
+    this.kpiService.TableViewCommune(params).subscribe({
+      next: res => {
+        const rows: KPITableViewPriceModel[] = res.data ?? [];
+        this.data.set(rows);
+        this.buildGrouped(rows);
+        this.isLoading.set(false);
+      },
+      error: () => this.isLoading.set(false),
     });
   }
 
-  // Helpers
-  getPctClass(pct: number): string {
-    return pct >= 100 ? 'bg-success' : pct >= 75 ? 'bg-warning text-dark' : 'bg-danger';
+  // Backend returns uuid = communes.uuid — group by it
+  buildGrouped(rows: KPITableViewPriceModel[]): void {
+    const map = new Map<string, KPITableViewPriceModel[]>();
+    for (const r of rows) {
+      const key = r.uuid ?? r.name ?? 'all';
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(r);
+    }
+    this.grouped.set([...map.entries()].map(([uuid, rs]) => ({ uuid, name: rs[0].name, rows: rs })));
   }
 
-  getTitleBadgeClass(title: string): string {
-    const map: Record<string, string> = {
-      ASM: 'bg-primary', Supervisor: 'bg-success',
-      DR: 'bg-warning text-dark', Cyclo: 'bg-secondary',
-    };
-    return map[title] ?? 'bg-info';
+  onTitleChange(t: string): void { this.titleFilter.set(t); this.load(); }
+  getPctClass(p: number): string {
+    if (p >= 100) return 'text-success fw-bold';
+    if (p >= 80)  return 'text-primary';
+    if (p >= 50)  return 'text-warning';
+    return 'text-danger';
   }
-
-  exportToCSV(): void {
-    const list = this.filteredList();
-    if (!list.length) return;
-    const headers = ['Commune', 'Agent', 'Role', 'Visites', 'Cible', '% Objectif'];
-    const rows = list.map(i =>
-      [i.name, i.signature, i.title, i.total_visits, i.target, i.objectif].join(','));
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(
-      new Blob([[headers.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' }),
-    );
-    link.download = `kpi-commune-${formatDate(new Date(), 'yyyy-MM-dd', 'en-US')}.csv`;
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  getBarColor(p: number): string {
+    if (p >= 100) return 'bg-success'; if (p >= 80) return 'bg-primary';
+    if (p >= 50) return 'bg-warning'; return 'bg-danger';
   }
+  barWidth(p: number): string { return `${Math.min(p, 100)}%`; }
 }

@@ -1,0 +1,465 @@
+@if (currentUser) {
+
+<!-- ── KPI Cards ──────────────────────────────────────────────────────────── -->
+<div class="row g-3 mb-4">
+
+  <!-- ND% Gauge card -->
+  <div class="col-xl-3 col-sm-6">
+    <div class="card kpi-card h-100">
+      <div class="card-body text-center">
+        <div class="kpi-gauge-wrap mb-2">
+          <svg width="110" height="110" viewBox="0 0 110 110">
+            <circle cx="55" cy="55" r="45" fill="none" stroke="#E9EDF4" stroke-width="10"/>
+            <circle cx="55" cy="55" r="45" fill="none"
+                    [attr.stroke]="ndColor()"
+                    stroke-width="10"
+                    stroke-linecap="round"
+                    stroke-dasharray="282.7 282.7"
+                    [attr.stroke-dashoffset]="282.7 - (summary()?.nd_percent ?? 0) / 100 * 282.7"
+                    transform="rotate(-90 55 55)"
+                    style="transition: stroke-dashoffset .6s ease;"/>
+            <text x="55" y="60" text-anchor="middle"
+                  [attr.fill]="ndColor()"
+                  font-size="18" font-weight="700">
+              {{ summary()?.nd_percent ?? 0 | number:'1.1-1' }}%
+            </text>
+          </svg>
+        </div>
+        <div class="kpi-label">ND%</div>
+        <div class="kpi-sublabel text-muted">Distribution numérique</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reach Rate card -->
+  <div class="col-xl-3 col-sm-6">
+    <div class="card kpi-card h-100">
+      <div class="card-body text-center">
+        <div class="kpi-gauge-wrap mb-2">
+          <svg width="110" height="110" viewBox="0 0 110 110">
+            <circle cx="55" cy="55" r="45" fill="none" stroke="#E9EDF4" stroke-width="10"/>
+            <circle cx="55" cy="55" r="45" fill="none"
+                    [attr.stroke]="reachColor()"
+                    stroke-width="10"
+                    stroke-linecap="round"
+                    stroke-dasharray="282.7 282.7"
+                    [attr.stroke-dashoffset]="282.7 - (summary()?.reach_rate ?? 0) / 100 * 282.7"
+                    transform="rotate(-90 55 55)"
+                    style="transition: stroke-dashoffset .6s ease;"/>
+            <text x="55" y="60" text-anchor="middle"
+                  [attr.fill]="reachColor()"
+                  font-size="18" font-weight="700">
+              {{ summary()?.reach_rate ?? 0 | number:'1.1-1' }}%
+            </text>
+          </svg>
+        </div>
+        <div class="kpi-label">Taux de couverture</div>
+        <div class="kpi-sublabel text-muted">POS visités / Univers</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POS counters -->
+  <div class="col-xl-6 col-sm-12">
+    <div class="row g-3 h-100">
+
+      <div class="col-6">
+        <div class="card kpi-card-mini h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="kpi-icon bg-primary-light me-3">
+                <i class="ti ti-map-pin text-primary"></i>
+              </div>
+              <div>
+                <div class="kpi-value">{{ summary()?.total_pos_visited ?? 0 }}</div>
+                <div class="kpi-mini-label text-muted">POS visités</div>
+              </div>
+            </div>
+            <div class="progress mt-3" style="height:4px">
+              <div class="progress-bar bg-primary"
+                   [style.width.%]="summary()?.reach_rate ?? 0"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6">
+        <div class="card kpi-card-mini h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="kpi-icon bg-success-light me-3">
+                <i class="ti ti-check text-success"></i>
+              </div>
+              <div>
+                <div class="kpi-value text-success">{{ summary()?.nd_pos ?? 0 }}</div>
+                <div class="kpi-mini-label text-muted">POS ND actif</div>
+              </div>
+            </div>
+            <div class="progress mt-3" style="height:4px">
+              <div class="progress-bar bg-success"
+                   [style.width.%]="summary()?.nd_percent ?? 0"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6">
+        <div class="card kpi-card-mini h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="kpi-icon bg-warning-light me-3">
+                <i class="ti ti-world text-warning"></i>
+              </div>
+              <div>
+                <div class="kpi-value text-warning">{{ summary()?.universe_pos ?? 0 }}</div>
+                <div class="kpi-mini-label text-muted">Univers POS</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="col-6">
+        <div class="card kpi-card-mini h-100">
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="kpi-icon bg-info-light me-3">
+                <i class="ti ti-brand-appgallery text-info"></i>
+              </div>
+              <div>
+                <div class="kpi-value text-info">{{ brandList().length }}</div>
+                <div class="kpi-mini-label text-muted">Marques suivies</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+</div>
+<!-- /KPI Cards -->
+
+<!-- ── Top Brand Alert ────────────────────────────────────────────────────── -->
+@if (topBrand()) {
+<div class="alert alert-success d-flex align-items-center py-2 mb-3">
+  <i class="ti ti-trophy me-2 fs-5"></i>
+  <span>
+    Meilleure marque :
+    <strong>{{ topBrand()!.brand_name }}</strong>
+    avec un ND de <strong>{{ topBrand()!.nd_percent | number:'1.1-1' }}%</strong>
+    ({{ topBrand()!.nd_pos }} POS actifs sur {{ topBrand()!.total_pos }})
+  </span>
+</div>
+}
+
+<!-- ── Inner Tabs ─────────────────────────────────────────────────────────── -->
+<div class="card">
+  <div class="card-header p-0">
+    <ul class="nav nav-tabs card-header-tabs nd-tabs">
+      <li class="nav-item">
+        <button class="nav-link"
+                [class.active]="activeTab() === 'overview'"
+                (click)="activeTab.set('overview')">
+          <i class="ti ti-layout-dashboard me-1"></i>Vue d'ensemble
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link"
+                [class.active]="activeTab() === 'brands'"
+                (click)="activeTab.set('brands')">
+          <i class="ti ti-tags me-1"></i>Par Marque
+          <span class="badge bg-primary ms-1">{{ brandList().length }}</span>
+        </button>
+      </li>
+      <li class="nav-item">
+        <button class="nav-link"
+                [class.active]="activeTab() === 'pos'"
+                (click)="activeTab.set('pos')">
+          <i class="ti ti-list me-1"></i>Liste POS
+          <span class="badge bg-secondary ms-1">{{ posList().length }}</span>
+        </button>
+      </li>
+    </ul>
+  </div>
+
+  <div class="card-body">
+
+    <!-- Tab: Overview -->
+    @if (activeTab() === 'overview') {
+    <div class="row g-4">
+
+      <div class="col-lg-7">
+        <div class="chart-container">
+          <h6 class="chart-title">
+            <i class="ti ti-bar-chart me-1 text-primary"></i>
+            ND% par Marque (Top 15)
+          </h6>
+          @if (barChartOptions().series) {
+            <apx-chart
+              [series]="barChartOptions().series!"
+              [chart]="barChartOptions().chart!"
+              [plotOptions]="barChartOptions().plotOptions!"
+              [dataLabels]="barChartOptions().dataLabels!"
+              [stroke]="barChartOptions().stroke!"
+              [xaxis]="barChartOptions().xaxis!"
+              [yaxis]="barChartOptions().yaxis!"
+              [fill]="barChartOptions().fill!"
+              [tooltip]="$any(barChartOptions().tooltip)"
+              [legend]="barChartOptions().legend!"
+              [colors]="barChartOptions().colors!">
+            </apx-chart>
+          } @else {
+            <div class="empty-chart">Aucune donnée disponible</div>
+          }
+        </div>
+      </div>
+
+      <div class="col-lg-5">
+        <div class="chart-container">
+          <h6 class="chart-title">
+            <i class="ti ti-chart-donut me-1 text-success"></i>
+            Répartition POS ND actif (Top 8 Marques)
+          </h6>
+          @if (donutChartOptions().series && donutChartOptions().series!.length > 0) {
+            <apx-chart
+              [series]="donutChartOptions().series!"
+              [chart]="donutChartOptions().chart!"
+              [labels]="donutChartOptions().labels!"
+              [legend]="donutChartOptions().legend!"
+              [dataLabels]="donutChartOptions().dataLabels!"
+              [tooltip]="$any(donutChartOptions().tooltip)"
+              [responsive]="donutChartOptions().responsive!"
+              [colors]="donutChartOptions().colors!"
+              [plotOptions]="donutChartOptions().plotOptions!">
+            </apx-chart>
+          } @else {
+            <div class="empty-chart">Aucune donnée disponible</div>
+          }
+        </div>
+      </div>
+
+      <div class="col-12">
+        <h6 class="chart-title">
+          <i class="ti ti-list-check me-1 text-warning"></i>
+          Récapitulatif ND% par Marque
+        </h6>
+        @if (brandList().length === 0) {
+          <div class="empty-chart">Aucune donnée disponible</div>
+        } @else {
+          <div class="row g-2">
+            @for (brand of brandList(); track brand.brand_uuid) {
+            <div class="col-md-6 col-xl-4">
+              <div class="brand-progress-item">
+                <div class="d-flex justify-content-between mb-1">
+                  <span class="brand-name-text">{{ brand.brand_name }}</span>
+                  <span class="fw-semibold"
+                        [class.text-success]="brand.nd_percent >= 75"
+                        [class.text-warning]="brand.nd_percent >= 50 && brand.nd_percent < 75"
+                        [class.text-danger]="brand.nd_percent < 50">
+                    {{ brand.nd_percent | number:'1.1-1' }}%
+                  </span>
+                </div>
+                <div class="progress" style="height:5px; border-radius:3px">
+                  <div class="progress-bar"
+                       [class.bg-success]="brand.nd_percent >= 75"
+                       [class.bg-warning]="brand.nd_percent >= 50 && brand.nd_percent < 75"
+                       [class.bg-danger]="brand.nd_percent < 50"
+                       [style.width.%]="brand.nd_percent"
+                       style="transition: width .6s ease;">
+                  </div>
+                </div>
+                <div class="brand-sub text-muted">
+                  {{ brand.nd_pos }} / {{ brand.total_pos }} POS
+                </div>
+              </div>
+            </div>
+            }
+          </div>
+        }
+      </div>
+
+    </div>
+    }
+
+    <!-- Tab: Par Marque -->
+    @if (activeTab() === 'brands') {
+    <div>
+      @if (barChartOptions().series) {
+        <apx-chart
+          [series]="barChartOptions().series!"
+          [chart]="{ type: 'bar', height: 380, toolbar: { show: false }, fontFamily: 'inherit' }"
+          [plotOptions]="barChartOptions().plotOptions!"
+          [dataLabels]="barChartOptions().dataLabels!"
+          [stroke]="barChartOptions().stroke!"
+          [xaxis]="barChartOptions().xaxis!"
+          [yaxis]="barChartOptions().yaxis!"
+          [fill]="barChartOptions().fill!"
+          [tooltip]="$any(barChartOptions().tooltip)"
+          [legend]="barChartOptions().legend!"
+          [colors]="barChartOptions().colors!">
+        </apx-chart>
+      }
+
+      <div class="table-responsive mt-3">
+        <table class="table table-hover align-middle">
+          <thead class="table-light">
+            <tr>
+              <th>#</th>
+              <th>Marque</th>
+              <th class="text-end">POS ND actif</th>
+              <th class="text-end">Total POS visités</th>
+              <th>ND%</th>
+              <th>Statut</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (brand of brandList(); track brand.brand_uuid; let i = $index) {
+            <tr>
+              <td class="text-muted">{{ i + 1 }}</td>
+              <td><span class="fw-medium">{{ brand.brand_name }}</span></td>
+              <td class="text-end fw-semibold text-success">{{ brand.nd_pos }}</td>
+              <td class="text-end text-muted">{{ brand.total_pos }}</td>
+              <td style="min-width:160px">
+                <div class="d-flex align-items-center gap-2">
+                  <div class="progress flex-grow-1" style="height:6px">
+                    <div class="progress-bar"
+                         [class.bg-success]="brand.nd_percent >= 75"
+                         [class.bg-warning]="brand.nd_percent >= 50 && brand.nd_percent < 75"
+                         [class.bg-danger]="brand.nd_percent < 50"
+                         [style.width.%]="brand.nd_percent">
+                    </div>
+                  </div>
+                  <span class="fs-sm fw-semibold"
+                        [class.text-success]="brand.nd_percent >= 75"
+                        [class.text-warning]="brand.nd_percent >= 50 && brand.nd_percent < 75"
+                        [class.text-danger]="brand.nd_percent < 50">
+                    {{ brand.nd_percent | number:'1.1-1' }}%
+                  </span>
+                </div>
+              </td>
+              <td>
+                @if (brand.nd_percent >= 75) {
+                  <span class="badge bg-success-light text-success">Excellent</span>
+                } @else if (brand.nd_percent >= 50) {
+                  <span class="badge bg-warning-light text-warning">Moyen</span>
+                } @else {
+                  <span class="badge bg-danger-light text-danger">Faible</span>
+                }
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="6" class="text-center text-muted py-4">
+                <i class="ti ti-inbox me-2 fs-4"></i>Aucune donnée marque
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+    }
+
+    <!-- Tab: Liste POS -->
+    @if (activeTab() === 'pos') {
+    <div>
+
+      <div class="row g-2 mb-3 align-items-end">
+        <div class="col-sm-4">
+          <div class="icon-form">
+            <span class="form-icon"><i class="ti ti-search"></i></span>
+            <input type="text"
+                   class="form-control"
+                   placeholder="Rechercher POS, shop, commune..."
+                   (input)="searchPos.set($any($event.target).value)">
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <select class="form-select"
+                  (change)="filterBrand.set($any($event.target).value)">
+            <option value="">Toutes les marques</option>
+            @for (b of uniqueBrandsInPos(); track b) {
+              <option [value]="b">{{ b }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-sm-3">
+          <div class="form-check form-switch d-flex align-items-center gap-2 pt-1">
+            <input class="form-check-input" type="checkbox" id="ndOnlySwitch"
+                   [checked]="filterNdOnly()"
+                   (change)="filterNdOnly.set($any($event.target).checked)">
+            <label class="form-check-label" for="ndOnlySwitch">
+              Afficher ND actif seulement
+            </label>
+          </div>
+        </div>
+        <div class="col-sm-2 text-end">
+          <span class="badge bg-secondary">{{ filteredPosList().length }} ligne(s)</span>
+        </div>
+      </div>
+
+      <div class="table-responsive">
+        <table class="table table-hover align-middle nd-pos-table">
+          <thead class="table-light">
+            <tr>
+              <th>Date visite</th>
+              <th>POS</th>
+              <th>Shop</th>
+              <th>Commune</th>
+              <th>Marque</th>
+              <th class="text-center">Counter</th>
+              <th class="text-center">ND</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of filteredPosList(); track row.pos_uuid + row.brand_uuid + row.visit_date) {
+            <tr [class.row-nd-active]="row.nd_active">
+              <td class="text-muted small">{{ row.visit_date }}</td>
+              <td><span class="fw-medium">{{ row.pos_name }}</span></td>
+              <td class="text-muted">{{ row.shop }}</td>
+              <td class="text-muted">{{ row.commune }}</td>
+              <td><span class="badge bg-light text-dark border">{{ row.brand_name }}</span></td>
+              <td class="text-center fw-semibold">
+                <span [class.text-success]="row.counter > 0"
+                      [class.text-muted]="row.counter === 0">
+                  {{ row.counter }}
+                </span>
+              </td>
+              <td class="text-center">
+                @if (row.nd_active) {
+                  <span class="badge bg-success-light text-success">
+                    <i class="ti ti-check me-1"></i>Actif
+                  </span>
+                } @else {
+                  <span class="badge bg-danger-light text-danger">
+                    <i class="ti ti-x me-1"></i>Inactif
+                  </span>
+                }
+              </td>
+            </tr>
+            } @empty {
+            <tr>
+              <td colspan="7" class="text-center text-muted py-5">
+                <i class="ti ti-map-pin-off me-2 fs-4"></i>
+                Aucun POS trouvé pour cette période
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+    }
+
+  </div>
+</div>
+
+} @else {
+<div class="text-center py-5">
+  <span class="spinner-border text-primary" role="status"></span>
+  <p class="mt-2 text-muted">Chargement des données...</p>
+</div>
+}

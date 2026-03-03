@@ -1181,3 +1181,96 @@ export interface SISHPosDrillRowModel {
     sos_at_pos:        number;
     velocity_at_pos:   number;
 }
+
+// ─── Advanced KPI Dashboard Models ───────────────────────────────────────────
+// Used by: Territory Overview | Agent Performance | POS Insights
+//          Target vs Actual  | Absence Analysis  | Period Trends | ND Analysis
+
+/** Territory-level performance card (GetKPITerritoryOverview) */
+export interface KpiTerritoryOverviewModel {
+    territory_id:        string;
+    territory_uuid:      string;
+    territory_name:      string;
+    total_visits:        number;
+    pos_visited:         number;
+    total_pos:           number;
+    visited_percentage:  number;
+    team_members:        number;
+    pos_forms_count:     number;
+    unsynced_forms:      number;
+    sync_rate:           number;
+    posmm_percentage:    number;
+    overall_score:       number;
+    performance_rating:  string;
+}
+
+/** Per-agent performance row (KpiUserVisitSummary) */
+export interface KpiAgentVisitSummaryModel {
+    user_uuid:       string;
+    name:            string;
+    title:           string;
+    daily_visits:    number;
+    daily_target:    number;
+    daily_pct:       number;
+    monthly_visits:  number;
+    monthly_target:  number;
+    monthly_pct:     number;
+    yearly_visits:   number;
+    yearly_target:   number;
+    yearly_pct:      number;
+    total_visits:    number;
+    range_target:    number;
+    range_pct:       number;
+}
+
+/** POS coverage insight (GetPOSLevelInsights) */
+export interface KpiPOSInsightModel {
+    pos_uuid:             string;
+    pos_code:             string;
+    pos_name:             string;
+    pos_type:             string;
+    commune_name:         string;
+    visits_count:         number;
+    days_since_last_visit: number;
+    unique_agents:        number;
+    posmm_percentage:     number;
+    coverage_status:      string;
+}
+
+/** Target vs Actual achievement (GetKPITargetVsActual) */
+export interface KpiTargetVsActualModel {
+    territory:              string;
+    actual_visits:          number;
+    target_visits:          number;
+    achievement_percentage: number;
+    status:                 string;
+    risk_level:             string;
+}
+
+/** Inactive agent alert (GetTeamAbsenceAnalysis) */
+export interface KpiAbsenceAlertModel {
+    agent_uuid:   string;
+    agent_name:   string;
+    agent_title:  string;
+    days_inactive: number;
+    alert_level:  string;
+}
+
+/** Period comparison data point (GetPeriodComparison) */
+export interface KpiPeriodDataModel {
+    period_label:     string;
+    visits:           number;
+    pos_visited:      number;
+    sync_rate:        number;
+    posmm_percentage: number;
+}
+
+/** ND analysis by territory (GetNDAnalysisByTerritory) */
+export interface KpiNDAnalysisModel {
+    territory:        string;
+    total_pos_visited: number;
+    nd_percentage:    number;
+    oos_percentage:   number;
+    posmm_integration: number;
+    density_score:    number;
+}

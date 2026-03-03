@@ -29,8 +29,11 @@ import { BrandFilterListComponent } from './brand/brand-filter-list/brand-filter
 import { MarketRoutingModule } from './market-routing.module';
 import { PosformFilterComponent } from './posform/posform-filter/posform-filter.component';
 import { PostformListComponent } from './posform/postform-list/postform-list.component';
-import { NdIndividualComponent } from './nd-individual/nd-individual.component';
-import { NdIndividualService } from './nd-individual/nd-individual.service';
+import { NdIndividualComponent } from './individual/nd-individual/nd-individual.component';
+import { NdIndividualService } from './individual/nd-individual/nd-individual.service';
+import { SosIndividualComponent } from './individual/sos-individual/sos-individual.component';
+import { SosIndividualService } from './individual/sos-individual/sos-individual.service';
+import { IndividualComponent } from './individual/individual.component';
 
 @NgModule({
   declarations: [ 
@@ -41,6 +44,8 @@ import { NdIndividualService } from './nd-individual/nd-individual.service';
     PostformListComponent,
     PosformFilterComponent,
     NdIndividualComponent,
+    SosIndividualComponent,
+    IndividualComponent,
   ],
   imports: [
     CommonModule,
@@ -67,6 +72,7 @@ import { NdIndividualService } from './nd-individual/nd-individual.service';
     BrandService,
     GoogleMapsLoaderService,
     NdIndividualService,
+    SosIndividualService,
   ]
 })
 export class MarketModule { }

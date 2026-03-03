@@ -745,17 +745,28 @@ export class PosformsComponent implements OnInit, AfterViewInit {
 
   // PosFormItem
   getAllPosFormItem(uuid: string) {
+    if (!uuid || uuid.trim() === '') {
+      this.dataListPosFormItem.set([]);
+      return;
+    }
+    // Réinitialiser immédiatement pour éviter d'afficher les items du posform précédent
+    this.dataListPosFormItem.set([]);
     this.isLoadingPosFormItem.set(true);
     this.posformItemService.getAllById(uuid).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
-        this.dataListPosFormItem.set(res.data);
-        console.log('PosFormItem List:', this.dataListPosFormItem());
+        // Vérifier que l'UUID n'a pas changé entre le lancement et la résolution
+        if (this.idItem() !== uuid) {
+          console.warn(`⚠️ getAllPosFormItem: UUID changé pendant le chargement (${uuid} → ${this.idItem()}), résultat ignoré`);
+          this.isLoadingPosFormItem.set(false);
+          return;
+        }
+        this.dataListPosFormItem.set(res.data ?? []);
+        console.log(`📦 PosFormItem List (posform=${uuid}):`, this.dataListPosFormItem());
         this.getAllBrand(); // Refresh brand list to exclude used brands
         this.isLoadingPosFormItem.set(false);
       }, error: (err) => {
         this.isLoadingPosFormItem.set(false);
-        this.toastr.error(`${err.error.message}`, 'Oupss!');
-        console.log(err);
+        console.error('Erreur getAllPosFormItem:', err);
       }
     });
   }

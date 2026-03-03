@@ -1,0 +1,29 @@
+# Node dependencies (re-installed inside Docker)
+node_modules/
+
+# Previous build outputs
+dist/
+
+# Angular cache
+.angular/
+
+# Git
+.git/
+.gitignore
+
+# IDE / OS
+.vscode/
+.idea/
+*.DS_Store
+Thumbs.db
+
+# Test outputs
+coverage/
+
+# Docs / markdown
+*.md
+docs/
+
+# Env files (inject at runtime via env vars instead)
+.env
+.env.*

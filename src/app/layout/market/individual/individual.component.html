@@ -1,0 +1,116 @@
+<!-- Page Wrapper -->
+<div class="page-wrapper">
+  <div class="content">
+
+    <!-- ── Page Header ──────────────────────────────────────────────────────── -->
+    <div class="row">
+      <div class="col-md-12">
+        <div class="page-header">
+          <div class="row align-items-center">
+            <div class="col-sm-7">
+              <h4 class="page-title">
+                <i class="ti ti-user-check me-2 text-primary"></i>
+                Tableau de Bord Individuel
+                @if (currentUser()) {
+                <small class="text-muted fw-normal ms-2 fs-6">— {{ currentUser()?.fullname }}</small>
+                }
+              </h4>
+              <p class="text-muted mb-0" style="font-size:0.82rem">
+                <i class="ti ti-info-circle me-1"></i>
+                Consultez votre ND (Distribution Numérique) et votre SOS (Share of Stock) par marque
+              </p>
+            </div>
+
+            <!-- Period selector -->
+            <div class="col-sm-5 d-flex justify-content-sm-end mt-3 mt-sm-0">
+              <div class="d-inline-flex align-items-center gap-2 flex-wrap justify-content-end">
+                <select class="form-select form-select-sm"
+                        style="min-width:140px"
+                        [value]="selectedPeriod()"
+                        (change)="applyPeriod($any($event.target).value)">
+                  <option value="TODAY">Aujourd'hui</option>
+                  <option value="1W">1 Semaine</option>
+                  <option value="1M">1 Mois</option>
+                  <option value="3M">3 Mois</option>
+                  <option value="6M">6 Mois</option>
+                  <option value="1Y">1 An</option>
+                  <option value="CUSTOM">Personnalisé</option>
+                </select>
+                @if (selectedPeriod() === 'CUSTOM') {
+                <div class="d-flex align-items-center gap-2">
+                  <input type="date" class="form-control form-control-sm"
+                         style="min-width:130px"
+                         [value]="customStartDate()"
+                         (change)="customStartDate.set($any($event.target).value)">
+                  <span class="text-muted small">→</span>
+                  <input type="date" class="form-control form-control-sm"
+                         style="min-width:130px"
+                         [value]="customEndDate()"
+                         (change)="customEndDate.set($any($event.target).value)">
+                  <button class="btn btn-primary btn-sm"
+                          [disabled]="!customStartDate() || !customEndDate()"
+                          (click)="applyCustomPeriod()">
+                    <i class="ti ti-check"></i>
+                  </button>
+                </div>
+                }
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- /Page Header -->
+
+    <!-- ── Main Tabs ──────────────────────────────────────────────────────────── -->
+    <div class="individual-tabs-wrapper">
+      <ul class="nav nav-pills individual-tabs mb-4">
+        <li class="nav-item">
+          <button class="nav-link d-flex align-items-center gap-2"
+                  [class.active]="activeTab() === 'nd'"
+                  (click)="activeTab.set('nd')">
+            <i class="ti ti-chart-bar fs-5"></i>
+            <span>
+              ND Individuel
+              <small class="d-block lh-1 opacity-75" style="font-size:0.7rem">Distribution Numérique</small>
+            </span>
+          </button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link d-flex align-items-center gap-2"
+                  [class.active]="activeTab() === 'sos'"
+                  (click)="activeTab.set('sos')">
+            <i class="ti ti-chart-pie fs-5"></i>
+            <span>
+              SOS Individuel
+              <small class="d-block lh-1 opacity-75" style="font-size:0.7rem">Share of Stock</small>
+            </span>
+          </button>
+        </li>
+      </ul>
+
+      <!-- ── Tab Content ───────────────────────────────────────────────────────── -->
+      <div class="tab-content-panel">
+
+        @if (activeTab() === 'nd') {
+          <app-nd-individual
+            [startDate]="start_date()"
+            [endDate]="end_date()"
+            [currentUser]="currentUser()">
+          </app-nd-individual>
+        }
+
+        @if (activeTab() === 'sos') {
+          <app-sos-individual
+            [startDate]="start_date()"
+            [endDate]="end_date()"
+            [currentUser]="currentUser()">
+          </app-sos-individual>
+        }
+
+      </div>
+    </div>
+    <!-- /Main Tabs -->
+
+  </div>
+</div>

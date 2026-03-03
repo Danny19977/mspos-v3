@@ -15,11 +15,6 @@ import { SeDashboardComponent } from './se-dashboard/se-dashboard.component';
 import { GoogleMapComponent } from './google-map/google-map.component'; 
 import { GoogleMapsModule } from '@angular/google-maps';
 import { MapCardComponent } from './google-map/map-card/map-card.component';
-import { KpiDashboardComponent } from './kpi-dashboard/kpi-dashboard.component';
-import { KpiTableViewAreaComponent } from './kpi-dashboard/kpi-table-view-area/kpi-table-view-area.component';
-import { KpiTableViewCommuneComponent } from './kpi-dashboard/kpi-table-view-commune/kpi-table-view-commune.component';
-import { KpiTableViewProvinceComponent } from './kpi-dashboard/kpi-table-view-province/kpi-table-view-province.component';
-import { KpiTableViewSubareaComponent } from './kpi-dashboard/kpi-table-view-subarea/kpi-table-view-subarea.component';
 // Dashboard Services - Lazy loaded only when dashboard module is loaded
 import { GoogleMapService } from './services/google-map.service';
 import { KpiService } from './services/kpi.service';
@@ -29,8 +24,6 @@ import { SaleEvolutionService } from './services/sale-evolution.service';
 import { SosService } from './services/sos.service';
 import { SummaryService } from './services/summary.service';
 import { SummaryDashboardService } from './services/summary-dashboard.service';
-import { KpiTableViewCountryComponent } from './kpi-dashboard/kpi-table-view-country/kpi-table-view-country.component';
-import { KpiUserVisitSummaryComponent } from './kpi-dashboard/kpi-user-visit-summary/kpi-user-visit-summary.component';
 import { DataObservationsComponent } from './data-observations/data-observations.component';
 import { ObservationService } from './services/observation.service';
 import { SeTableViewProvinceComponent } from './se-dashboard/se-table-view-province/se-table-view-province.component';
@@ -40,6 +33,13 @@ import { SeTableViewCommuneComponent } from './se-dashboard/se-table-view-commun
 import { WsDashboardComponent } from './ws-dashboard/ws-dashboard.component';
 import { WsService } from './services/ws.service';
 import { SishService } from './services/sish.service';
+import { KpiDashboardComponent } from './kpi-dashboard/kpi-dashboard.component';
+import { KpiTableViewCountryComponent } from './kpi-dashboard/kpi-table-view-country/kpi-table-view-country.component';
+import { KpiTableViewProvinceComponent } from './kpi-dashboard/kpi-table-view-province/kpi-table-view-province.component';
+import { KpiTableViewAreaComponent } from './kpi-dashboard/kpi-table-view-area/kpi-table-view-area.component';
+import { KpiTableViewSubareaComponent } from './kpi-dashboard/kpi-table-view-subarea/kpi-table-view-subarea.component';
+import { KpiTableViewCommuneComponent } from './kpi-dashboard/kpi-table-view-commune/kpi-table-view-commune.component';
+import { KpiUserVisitSummaryComponent } from './kpi-dashboard/kpi-user-visit-summary/kpi-user-visit-summary.component';
 
 @NgModule({
   declarations: [
@@ -53,19 +53,19 @@ import { SishService } from './services/sish.service';
     SeDashboardComponent,
     GoogleMapComponent,
     MapCardComponent,
-    KpiDashboardComponent, 
-    KpiTableViewAreaComponent,
-    KpiTableViewCommuneComponent,
-    KpiTableViewProvinceComponent,
-    KpiTableViewSubareaComponent,
-    KpiTableViewCountryComponent,
-    KpiUserVisitSummaryComponent, 
     DataObservationsComponent,
     SeTableViewProvinceComponent,
     SeTableViewAreaComponent,
     SeTableViewSubareaComponent,
     SeTableViewCommuneComponent,
     WsDashboardComponent,
+    KpiDashboardComponent,
+    KpiTableViewCountryComponent,
+    KpiTableViewProvinceComponent,
+    KpiTableViewAreaComponent,
+    KpiTableViewSubareaComponent,
+    KpiTableViewCommuneComponent,
+    KpiUserVisitSummaryComponent,
   ],
   imports: [
     CommonModule,

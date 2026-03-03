@@ -1,77 +1,120 @@
-@if (isLoading) {
-<div class="text-center d-flex justify-content-center align-items-center">
-    <div class="spinner-border bs-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-    </div>
-</div>
-} @else if (hasMapError) {
-<div class="alert alert-warning" role="alert">
+<!-- Error state -->
+@if (hasMapError()) {
+  <div class="alert alert-warning" role="alert">
     <h5 class="alert-heading">Map Loading Error</h5>
-    <p>{{ mapErrorMessage }}</p>
+    <p>{{ mapErrorMessage() }}</p>
     <hr>
     <p class="mb-0">Veuillez vérifier votre clé API Google Maps et essayez de rafraîchir la page.</p>
-</div>
+  </div>
 } @else {
-<google-map [height]="mapHeight" [width]="mapWidth" [center]="center" [zoom]="zoom">
-    <map-marker *ngFor="let marker of markers" #markerRef="mapMarker" [position]="marker.position" [title]="marker.name"
-        [label]="zoom > 15 ? marker.name : ''" (mapClick)="openInfoWindow(marker, markerRef)"></map-marker>
 
-    <map-info-window #infoWindow>
-        <div *ngIf="selectedMarker" class="gmaps-infowindow">
-            <!-- En-tête avec titre et bouton X -->
+  <!-- Map wrapper — toujours dans le DOM pour éviter la destruction/recréation à chaque filtre -->
+  <div class="mc-map-wrapper">
+
+    <!-- Spinner en overlay CSS (ne démonte pas la carte) -->
+    <div class="mc-loading-overlay" [class.mc-loading-visible]="isLoading">
+      <div class="spinner-border bs-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <google-map [height]="mapHeight()" [width]="mapWidth()" [center]="center()" [zoom]="zoom()">
+
+      @for (marker of markers(); track trackByMarker($index, marker)) {
+        <map-marker
+          #markerRef="mapMarker"
+          [position]="marker.position"
+          [title]="marker.name"
+          [icon]="marker.icon"
+          (mapClick)="openInfoWindow(marker, markerRef)"
+        ></map-marker>
+      }
+
+      <map-info-window #infoWindow>
+        @if (selectedMarker(); as sm) {
+          <div class="gmaps-infowindow">
+            <!-- En-tête -->
             <div class="gmaps-header">
-                <h3 class="gmaps-title">{{ selectedMarker.name }}</h3>
-                <button (click)="closeInfoWindowManual()" class="gmaps-close" aria-label="Fermer">×</button>
+              <h3 class="gmaps-title">{{ sm.name }}</h3>
+              <button (click)="closeInfoWindowManual()" class="gmaps-close" aria-label="Fermer">×</button>
             </div>
-            
-            <!-- Corps du contenu -->
+
+            <!-- Badge rôle -->
+            <div class="gmaps-role-badge" [style.background]="roleColor(sm.role)">
+              <i class="ti ti-user me-1"></i>
+              {{ roleLabels[sm.role] || sm.role }}
+            </div>
+
+            <!-- Corps -->
             <div class="gmaps-body">
-                <!-- Informations principales -->
-                <div class="gmaps-info">
-                    <div class="info-row">
-                        <span class="label">Catégorie:</span>
-                        <span class="value">{{ selectedMarker.category }}</span>
-                    </div>
-                    
-                    <div class="info-row" *ngIf="selectedMarker.asm">
-                        <span class="label">ASM:</span>
-                        <span class="value">{{ selectedMarker.asm }}</span>
-                    </div>
-                    
-                    <div class="info-row" *ngIf="selectedMarker.sup">
-                        <span class="label">Sup:</span>
-                        <span class="value">{{ selectedMarker.sup }}</span>
-                    </div>
-                    
-                    <div class="info-row" *ngIf="selectedMarker.dr">
-                        <span class="label">DR:</span>
-                        <span class="value">{{ selectedMarker.dr }}</span>
-                    </div>
-                    
-                    <div class="info-row" *ngIf="selectedMarker.cyclo">
-                        <span class="label">Cyclo:</span>
-                        <span class="value">{{ selectedMarker.cyclo }}</span>
-                    </div>
-                    
-                    <div class="info-row">
-                        <span class="label">Date:</span>
-                        <span class="value">{{ selectedMarker.date | date: "dd/MM/yyyy HH:mm" }}</span>
-                    </div>
+              <div class="gmaps-info">
+                <div class="info-row">
+                  <span class="label">Catégorie:</span>
+                  <span class="value">{{ sm.category }}</span>
                 </div>
-
-                <!-- Image de localisation -->
-                <div class="gmaps-location-icon">
-                    <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4cd.png" 
-                         alt="Lieu" width="24" height="24">
+                @if (sm.asm) {
+                  <div class="info-row">
+                    <span class="label">ASM:</span>
+                    <span class="value">{{ sm.asm }}</span>
+                  </div>
+                }
+                @if (sm.sup) {
+                  <div class="info-row">
+                    <span class="label">Sup:</span>
+                    <span class="value">{{ sm.sup }}</span>
+                  </div>
+                }
+                @if (sm.dr) {
+                  <div class="info-row">
+                    <span class="label">DR:</span>
+                    <span class="value">{{ sm.dr }}</span>
+                  </div>
+                }
+                @if (sm.cyclo) {
+                  <div class="info-row">
+                    <span class="label">Cyclo:</span>
+                    <span class="value">{{ sm.cyclo }}</span>
+                  </div>
+                }
+                <div class="info-row">
+                  <span class="label">Date:</span>
+                  <span class="value">{{ sm.date | date: "dd/MM/yyyy HH:mm" }}</span>
                 </div>
+              </div>
 
-                <!-- Bouton d'action -->
-                <a [routerLink]="['/web/pos/pos-view', selectedMarker.url, 'posforms']" 
-                   class="gmaps-action-btn">
-                    Voir le détail
-                </a>
+              <div class="gmaps-location-icon">
+                <img src="https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72/1f4cd.png"
+                     alt="Lieu" width="24" height="24">
+              </div>
+
+              <a [routerLink]="['/web/pos/pos-view', sm.url, 'posforms']" class="gmaps-action-btn">
+                Voir le détail
+              </a>
             </div>
-        </div>
-    </map-info-window>
-</google-map>
+          </div>
+        }
+      </map-info-window>
+
+    </google-map>
+
+    <!-- Légende couleurs -->
+    <div class="gm-legend mt-3">
+      <div class="gm-legend-item">
+        <span class="gm-legend-dot" style="background:#F44336"></span>ASM
+      </div>
+      <div class="gm-legend-item">
+        <span class="gm-legend-dot" style="background:#2196F3"></span>Superviseur
+      </div>
+      <div class="gm-legend-item">
+        <span class="gm-legend-dot" style="background:#4CAF50"></span>DR
+      </div>
+      <div class="gm-legend-item">
+        <span class="gm-legend-dot" style="background:#FF9800"></span>Cyclo
+      </div>
+      <div class="gm-legend-count ms-auto">
+        <i class="ti ti-map-pin me-1"></i>{{ markers().length | number }} marqueur(s)
+      </div>
+    </div>
+
+  </div>
 }

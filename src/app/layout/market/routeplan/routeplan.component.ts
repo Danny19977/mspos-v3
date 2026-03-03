@@ -156,7 +156,14 @@ export class RouteplanComponent implements OnInit {
     const filterValue = this.pos_uuid?.nativeElement?.value || '';
 
     const processPosList = (posList: IPos[]) => {
-      this.posList.set(posList);
+      // Dédoublonnage par uuid pour éviter les entrées dupliquées dans IndexedDB
+      const seen = new Set<string>();
+      const unique = posList.filter(pos => {
+        if (!pos.uuid || seen.has(pos.uuid)) return false;
+        seen.add(pos.uuid);
+        return true;
+      });
+      this.posList.set(unique);
       const posUuidsInCurrentDataList = this.dataListItem().map(item => item.pos_uuid);
       const filtered = this.posList().filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
       this.posListFilter.set(filtered);
@@ -375,26 +382,39 @@ export class RouteplanComponent implements OnInit {
     this.isLoadingDataItem.set(true);
     this.uuidRoutePlanItem.set(value);
     this.routePlanItemService.getAllById(this.uuidRoutePlanItem()).subscribe({
-      next: (res) => {
+      next: async (res) => {
         const items: IRoutePlanItem[] = res.data || [];
-        this.dataListItem.set(items);
+
+        // Enrichir les items dont le Pos n'est pas peuple par l'API
+        const enrichedItems: IRoutePlanItem[] = await Promise.all(
+          items.map(async item => {
+            if (item.Pos && (item.Pos.name || item.Pos.shop)) return item;
+            const pos = await db.pos.where('uuid').equals(item.pos_uuid).first();
+            return {
+              ...item,
+              Pos: pos || item.Pos || { uuid: item.pos_uuid, name: item.pos_uuid, shop: '--', postype: '--', gerant: '--' } as IPos
+            };
+          })
+        );
+
+        this.dataListItem.set(enrichedItems);
         this.isLoadingDataItem.set(false);
 
-        // Si des items sont encore en attente et qu’on est online,
-        // déclencher la sync en arrière-plan puis rafraîchir la liste
+        // Si des items sont encore en attente et qu'on est online,
+        // declencher la sync en arriere-plan puis rafraichir la liste
         const hasPending = items.some((i: any) => i.sync_status === 'pending');
         if (hasPending && this.isOnline()) {
           this.syncQueueService.processQueue().then(() => {
-            // Re-fetch après sync pour mettre à jour les badges
+            // Re-fetch apres sync pour mettre a jour les badges
             this.routePlanItemService.getAllById(value).subscribe(fresh => {
               this.dataListItem.set(fresh.data || []);
               this.cdr.detectChanges();
             });
-          }).catch(err => console.warn('⚠️ sync items arrière-plan:', err?.message));
+          }).catch(err => console.warn('sync items arriere-plan:', err?.message));
         }
       },
       error: (err) => {
-        console.error('❌ Erreur chargement items (API), fallback local:', err);
+        console.error('Erreur chargement items (API), fallback local:', err);
         // Fallback : charger depuis le cache local
         this.getAllRoutePlanItemsLocal(value);
       }

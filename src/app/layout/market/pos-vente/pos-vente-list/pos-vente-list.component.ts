@@ -321,84 +321,43 @@ export class PosVenteListComponent implements OnInit {
 
   // Méthode de fallback avec l'ancienne logique
   fetchProductsOldMethod(currentUser: IUser) {
+    const applyResult = (res: any) => {
+      this.dataList.set(res.data);
+      this.originalDataList.set([...res.data]);
+      this.total_pages.set(res.pagination?.total_pages ?? 1);
+      this.total_records.set(res.pagination?.total_records ?? res.data?.length ?? 0);
+      this.dataSource.data = this.dataList();
+      this.updateUniqueValues();
+      this.isLoadingData.set(false);
+    };
+
     if (currentUser.role == 'Manager') {
-      this.posVenteService.getPaginated2(this.current_page(), this.page_size(), this.search(),
-      ).pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(res => {
-        this.dataList.set(res.data);
-        this.originalDataList.set([...res.data]);
-        this.total_pages.set(res.pagination.total_pages);
-        this.total_records.set(res.pagination.total_records);
-        this.dataSource.data = this.dataList();
-        this.updateUniqueValues();
-        this.isLoadingData.set(false);
-      });
+      // Manager → pays uniquement (/all/paginate/country/:country_uuid)
+      this.posVenteService.getPaginatedByCountryUUId(
+        currentUser.country_uuid, this.current_page(), this.page_size(), this.search()
+      ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(applyResult);
     } else if (currentUser.role == 'ASM') {
-      this.posVenteService.getPaginatedByProvinceId(currentUser.province_uuid, this.current_page(), this.page_size(), this.search(),
-
-      ).pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(res => {
-        this.dataList.set(res.data);
-        this.originalDataList.set([...res.data]);
-        console.log("dataList", this.dataList());
-        this.total_pages.set(res.pagination.total_pages);
-        this.total_records.set(res.pagination.total_records);
-        this.dataSource.data = this.dataList();
-        this.updateUniqueValues();
-        this.isLoadingData.set(false);
-      });
+      this.posVenteService.getPaginatedByProvinceId(
+        currentUser.province_uuid, this.current_page(), this.page_size(), this.search()
+      ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(applyResult);
     } else if (currentUser.role == 'Supervisor') {
-      this.posVenteService.getPaginatedByAreaId(currentUser.area_uuid, this.current_page(), this.page_size(), this.search(),
-
-      ).pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(res => {
-        this.dataList.set(res.data);
-        this.originalDataList.set([...res.data]);
-        this.total_pages.set(res.pagination.total_pages);
-        this.total_records.set(res.pagination.total_records);
-        this.dataSource.data = this.dataList();
-        this.updateUniqueValues();
-        this.isLoadingData.set(false);
-      });
+      this.posVenteService.getPaginatedByAreaId(
+        currentUser.area_uuid, this.current_page(), this.page_size(), this.search()
+      ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(applyResult);
     } else if (currentUser.role == 'DR') {
-      console.log("sub_area_uuid", currentUser.dr_uuid);
-      this.posVenteService.getPaginatedBySubAreaId(currentUser.sub_area_uuid, this.current_page(), this.page_size(), this.search(),
-
-      ).pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(res => {
-        this.dataList.set(res.data);
-        this.originalDataList.set([...res.data]);
-        this.total_pages.set(res.pagination.total_pages);
-        this.total_records.set(res.pagination.total_records);
-        this.dataSource.data = this.dataList();
-        this.updateUniqueValues();
-        this.isLoadingData.set(false);
-      });
+      this.posVenteService.getPaginatedBySubAreaId(
+        currentUser.sub_area_uuid, this.current_page(), this.page_size(), this.search()
+      ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(applyResult);
     } else if (currentUser.role == 'Cyclo') {
-      this.posVenteService.getPaginatedByCommuneId(currentUser.uuid, this.current_page(), this.page_size(), this.search(),
-      ).pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(res => {
-        this.dataList.set(res.data);
-        this.originalDataList.set([...res.data]);
-        this.total_pages.set(res.pagination.total_pages);
-        this.total_records.set(res.pagination.total_records);
-        this.dataSource.data = this.dataList();
-        this.updateUniqueValues();
-        this.isLoadingData.set(false);
-      });
+      // Cyclo → par user_uuid (/all/paginate/commune/:user_uuid)
+      this.posVenteService.getPaginatedByCommuneId(
+        currentUser.uuid, this.current_page(), this.page_size(), this.search()
+      ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(applyResult);
     } else {
-      this.posVenteService.getPaginated2(this.current_page(), this.page_size(), this.search(),
-      ).pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe(res => {
-        this.dataList.set(res.data);
-        this.originalDataList.set([...res.data]);
-        console.log("dataList", this.dataList());
-        this.total_pages.set(res.pagination.total_pages);
-        this.total_records.set(res.pagination.total_records);
-        this.dataSource.data = this.dataList();
-        this.updateUniqueValues();
-        this.isLoadingData.set(false);
-      });
+      // Support / Admin → tous les POS
+      this.posVenteService.getPaginated2(
+        this.current_page(), this.page_size(), this.search()
+      ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe(applyResult);
     }
   }
 

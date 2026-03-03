@@ -1,15 +1,11 @@
-﻿import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
-import { formatDate } from '@angular/common';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { ICountry } from '../../../territories/country/models/country.model';
-import { KPITableViewPriceModel } from '../../models/dashboard.models';
-import { CountryService } from '../../../territories/country/country.service';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
+import { formatDate } from '@angular/common';
 import { AuthService } from '../../../../auth/auth.service';
 import { KpiService } from '../../services/kpi.service';
-import { PERIOD_OPTIONS, PeriodKey, computeDateRange } from '../kpi-period.utils';
-
-// Displays flat per-user KPI aggregated at country level.
-// Route: country/:country  |  No geographic drill-down.
+import { KPITableViewPriceModel } from '../../models/dashboard.models';
+import { KpiTableViewParams } from '../../services/kpi.service';
 
 @Component({
   selector: 'app-kpi-table-view-country',
@@ -17,156 +13,101 @@ import { PERIOD_OPTIONS, PeriodKey, computeDateRange } from '../kpi-period.utils
   templateUrl: './kpi-table-view-country.component.html',
   styleUrl: './kpi-table-view-country.component.scss',
 })
-export class KpiTableViewCountryComponent implements OnInit, OnDestroy {
+export class KpiTableViewCountryComponent implements OnInit {
 
-  // DI
-  private route          = inject(ActivatedRoute);
-  private authService    = inject(AuthService);
-  private countryService = inject(CountryService);
-  private kpiService     = inject(KpiService);
+  private route       = inject(ActivatedRoute);
+  private authService = inject(AuthService);
+  private kpiService  = inject(KpiService);
+  private fb          = inject(FormBuilder);
 
-  // Signals
-  isLoading      = signal(false);
-  countryList    = signal<ICountry[]>([]);
-  selectedCountry = signal<ICountry | undefined>(undefined);
-  tableViewList  = signal<KPITableViewPriceModel[]>([]);
-  searchTerm     = signal('');
-  selectedTitle  = signal('');
-  selectedPeriod = signal<PeriodKey>('month');
-  customStart    = signal('');
-  customEnd      = signal('');
+  country_uuid = '';
+  start_date   = '';
+  end_date     = '';
+  dateRange!: FormGroup;
 
-  // Computed
-  filteredList = computed(() => {
-    let data = this.tableViewList();
-    const title = this.selectedTitle();
-    const term  = this.searchTerm().toLowerCase().trim();
-    if (title) data = data.filter(i => i.title === title);
-    if (term)  data = data.filter(i => i.signature.toLowerCase().includes(term));
-    return data;
-  });
+  isLoading = signal(false);
+  data      = signal<KPITableViewPriceModel[]>([]);
+  titleFilter = signal('');
 
-  totalAgents = computed(() => this.filteredList().length);
-  totalVisits = computed(() => this.filteredList().reduce((s, i) => s + i.total_visits, 0));
-  avgObjectif = computed(() => {
-    const list = this.filteredList();
-    if (!list.length) return 0;
-    return Math.round(list.reduce((s, i) => s + i.objectif, 0) / list.length * 100) / 100;
-  });
+  readonly TITLES = ['', 'ASM', 'Supervisor', 'DR', 'Cyclo'];
 
-  // Config
-  readonly periodOptions = PERIOD_OPTIONS;
-  readonly titleOptions  = ['ASM', 'Supervisor', 'DR', 'Cyclo'];
+  grouped = signal<{ name: string; uuid: string; rows: KPITableViewPriceModel[] }[]>([]);
 
-  private start_date    = '';
-  private end_date      = '';
-  private country_uuid  = '';
-  private autoRefreshId?: ReturnType<typeof setInterval>;
-
-  // Lifecycle
   ngOnInit(): void {
-    this.applyPeriod('month');
+    const now      = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    this.start_date = formatDate(firstDay, 'yyyy-MM-dd', 'en-US');
+    this.end_date   = formatDate(lastDay,  'yyyy-MM-dd', 'en-US');
+    this.dateRange  = this.fb.group({ rangeValue: new FormControl([firstDay, lastDay]) });
 
-    this.authService.user().subscribe({
-      next: (user) => {
-        const routeCountry = this.route.snapshot.params['country'];
-        this.countryService.getAll().subscribe({
-          next: (res) => {
-            const list: ICountry[] = res.data ?? [];
-            this.countryList.set(list);
-            const preferred = routeCountry
-              || (user.role === 'Managers' || user.role === 'Support' ? user.country_uuid : null)
-              || list[0]?.uuid;
-            const country = list.find(c => c.uuid === preferred) ?? list[0];
-            if (country) {
-              this.selectedCountry.set(country);
-              this.country_uuid = country.uuid;
-              this.loadData();
-            } else {
-              this.isLoading.set(false);
-            }
-          },
-          error: (err) => { console.error(err); this.isLoading.set(false); },
-        });
-      },
-      error: (err) => { console.error(err); this.isLoading.set(false); },
+    this.country_uuid = this.route.snapshot.params['country'] ?? '';
+
+    this.authService.user().subscribe(user => {
+      if (!this.country_uuid) this.country_uuid = user.country_uuid ?? '';
+      this.load();
     });
 
-    this.autoRefreshId = setInterval(() => this.loadData(), 30_000);
+    this.dateRange.valueChanges.subscribe(val => {
+      if (val.rangeValue?.[0] && val.rangeValue?.[1]) {
+        this.start_date = formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US');
+        const end = new Date(val.rangeValue[1]);
+        end.setDate(end.getDate() + 1);
+        this.end_date = formatDate(end, 'yyyy-MM-dd', 'en-US');
+        this.load();
+      }
+    });
   }
 
-  ngOnDestroy(): void {
-    if (this.autoRefreshId) clearInterval(this.autoRefreshId);
-  }
-
-  // Period
-  applyPeriod(key: PeriodKey): void {
-    this.selectedPeriod.set(key);
-    if (key !== 'custom') {
-      const [s, e]    = computeDateRange(key);
-      this.start_date = s;
-      this.end_date   = e;
-    }
-  }
-
-  onPeriodChange(key: string): void {
-    this.applyPeriod(key as PeriodKey);
-    if (key !== 'custom') this.loadData();
-  }
-
-  onCustomDateChange(): void {
-    const s = this.customStart();
-    const e = this.customEnd();
-    if (s && e && s <= e) {
-      this.start_date = s;
-      this.end_date   = e;
-      this.loadData();
-    }
-  }
-
-  // Country selector
-  onCountryChange(event: any): void {
-    const country: ICountry = event.value;
-    this.selectedCountry.set(country);
-    this.country_uuid = country.uuid;
-    this.loadData();
-  }
-
-  // Data
-  loadData(): void {
-    if (!this.country_uuid || !this.start_date || !this.end_date) return;
+  load(): void {
+    if (!this.country_uuid) return;
     this.isLoading.set(true);
-    this.kpiService.TableViewCountry(this.country_uuid, this.start_date, this.end_date).subscribe({
-      next:  (res) => { this.tableViewList.set(res?.data ?? []); this.isLoading.set(false); },
-      error: ()    => { this.tableViewList.set([]); this.isLoading.set(false); },
+    const params: KpiTableViewParams = {
+      country_uuid: this.country_uuid,
+      start_date:   this.start_date,
+      end_date:     this.end_date,
+      title:        this.titleFilter() || undefined,
+    };
+    this.kpiService.TableViewCountry(params).subscribe({
+      next: res => {
+        const rows: KPITableViewPriceModel[] = res.data ?? [];
+        this.data.set(rows);
+        this.buildGrouped(rows);
+        this.isLoading.set(false);
+      },
+      error: () => this.isLoading.set(false),
     });
   }
 
-  // Helpers
-  getPctClass(pct: number): string {
-    return pct >= 100 ? 'bg-success' : pct >= 75 ? 'bg-warning text-dark' : 'bg-danger';
+  // Backend already filters by title — group what's returned
+  buildGrouped(rows: KPITableViewPriceModel[]): void {
+    const map = new Map<string, KPITableViewPriceModel[]>();
+    for (const r of rows) {
+      const key = r.uuid ?? 'all';
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(r);
+    }
+    this.grouped.set([...map.entries()].map(([uuid, rs]) => ({ uuid, name: rs[0].name, rows: rs })));
   }
 
-  getTitleBadgeClass(title: string): string {
-    const map: Record<string, string> = {
-      ASM: 'bg-primary', Supervisor: 'bg-success',
-      DR: 'bg-warning text-dark', Cyclo: 'bg-secondary',
-    };
-    return map[title] ?? 'bg-info';
+  onTitleChange(t: string): void {
+    this.titleFilter.set(t);
+    this.load(); // server-side title filter
   }
 
-  exportToCSV(): void {
-    const list = this.filteredList();
-    if (!list.length) return;
-    const headers = ['Agent', 'Role', 'Visites', 'Cible', '% Objectif'];
-    const rows = list.map(i =>
-      [i.signature, i.title, i.total_visits, i.target, i.objectif].join(','));
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(
-      new Blob([[headers.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' }),
-    );
-    link.download = `kpi-pays-${formatDate(new Date(), 'yyyy-MM-dd', 'en-US')}.csv`;
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  getPctClass(p: number): string {
+    if (p >= 100) return 'text-success fw-bold';
+    if (p >= 80)  return 'text-primary';
+    if (p >= 50)  return 'text-warning';
+    return 'text-danger';
   }
+
+  getBarColor(p: number): string {
+    if (p >= 100) return 'bg-success';
+    if (p >= 80)  return 'bg-primary';
+    if (p >= 50)  return 'bg-warning';
+    return 'bg-danger';
+  }
+
+  barWidth(p: number): string { return `${Math.min(p, 100)}%`; }
 }

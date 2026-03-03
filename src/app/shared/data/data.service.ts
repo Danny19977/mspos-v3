@@ -38,7 +38,7 @@ export class DataService {
               route: routes.oosDashboard,
             },
             {
-              menuValue: 'Maps DR',
+              menuValue: 'Maps',
               route: routes.googleMapsDashboard,
             },
             {
@@ -105,8 +105,8 @@ export class DataService {
           route: routes.posVente,
         },
         {
-          menuValue: 'Mon ND',
-          base: 'nd-individual',
+          menuValue: 'ND / SOS',
+          base: 'individual',
           icon: 'chart-bar',
           hasSubRoute: false,
           showSubRoute: false,
@@ -269,7 +269,7 @@ export class DataService {
               route: routes.oosDashboard,
             },
             {
-              menuValue: 'Maps DR',
+              menuValue: 'Maps',
               route: routes.googleMapsDashboard,
             },
             {
@@ -334,6 +334,14 @@ export class DataService {
           hasSubRoute: false,
           showSubRoute: false,
           route: routes.posVente,
+        },
+        {
+          menuValue: 'ND / SOS',
+          base: 'individual',
+          icon: 'chart-bar',
+          hasSubRoute: false,
+          showSubRoute: false,
+          route: routes.ndIndividual,
         },
         {
           menuValue: 'Brands',
@@ -452,7 +460,7 @@ export class DataService {
               route: routes.oosDashboard,
             },
             {
-              menuValue: 'Maps DR',
+              menuValue: 'Maps',
               route: routes.googleMapsDashboard,
             },
             {
@@ -517,6 +525,14 @@ export class DataService {
           hasSubRoute: false,
           showSubRoute: false,
           route: routes.posVente,
+        },
+        {
+          menuValue: 'ND / SOS',
+          base: 'individual',
+          icon: 'chart-bar',
+          hasSubRoute: false,
+          showSubRoute: false,
+          route: routes.ndIndividual,
         },
       ],
     },
@@ -617,6 +633,14 @@ export class DataService {
           showSubRoute: false,
           route: routes.posVente,
         },
+        {
+          menuValue: 'ND / SOS',
+          base: 'individual',
+          icon: 'chart-bar',
+          hasSubRoute: false,
+          showSubRoute: false,
+          route: routes.ndIndividual,
+        },
       ],
     },
     {
@@ -699,6 +723,14 @@ export class DataService {
           showSubRoute: false,
           route: routes.posVente,
         },
+        {
+          menuValue: 'ND / SOS',
+          base: 'individual',
+          icon: 'chart-bar',
+          hasSubRoute: false,
+          showSubRoute: false,
+          route: routes.ndIndividual,
+        },
       ],
     },
     {
@@ -757,7 +789,7 @@ export class DataService {
               route: routes.oosDashboard,
             },
             {
-              menuValue: 'Maps DR',
+              menuValue: 'Maps',
               route: routes.googleMapsDashboard,
             },
             {
@@ -824,8 +856,8 @@ export class DataService {
           route: routes.posVente,
         },
         {
-          menuValue: 'Mon ND',
-          base: 'nd-individual',
+          menuValue: 'ND / SOS',
+          base: 'individual',
           icon: 'chart-bar',
           hasSubRoute: false,
           showSubRoute: false,
@@ -994,6 +1026,14 @@ export class DataService {
           hasSubRoute: false,
           showSubRoute: false,
           route: routes.posVente,
+        },
+        {
+          menuValue: 'ND / SOS',
+          base: 'individual',
+          icon: 'chart-bar',
+          hasSubRoute: false,
+          showSubRoute: false,
+          route: routes.ndIndividual,
         },
       ],
     },

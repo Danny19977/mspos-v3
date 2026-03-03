@@ -184,15 +184,22 @@ export class PosformItemService extends ApiService {
   }
 
   /**
-   * Récupère les items par posform_uuid
+   * Récupère les items par posform_uuid.
+   * Retourne toujours un tableau vide si l'UUID est absent pour éviter
+   * de retourner tous les items de la base.
    */
   async getItemsByPosformUuid(posform_uuid: string): Promise<IPosFormItem[]> {
+    if (!posform_uuid || posform_uuid.trim() === '') {
+      console.warn('⚠️ getItemsByPosformUuid appelé avec un UUID vide — retour []');
+      return [];
+    }
+
     const items = await db.posformItems
       .where('posform_uuid')
       .equals(posform_uuid)
       .toArray();
-    
-    console.log(`📦 ${items.length} PosformItems récupérés pour posform ${posform_uuid}`);
+
+    console.log(`📦 ${items.length} PosformItems récupérés pour posform_uuid=${posform_uuid}`);
     return items;
   }
 
@@ -202,6 +209,9 @@ export class PosformItemService extends ApiService {
    * Si en ligne, synchronise depuis le serveur en arrière-plan.
    */
   override getAllById(posformUuid: string): Observable<any> {
+    if (!posformUuid || posformUuid.trim() === '') {
+      return from(Promise.resolve({ data: [], total: 0, offline: true }));
+    }
     return from(this.getItemsByPosformUuid(posformUuid)).pipe(
       switchMap(async (localItems) => ({
         data: localItems,

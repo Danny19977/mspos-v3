@@ -409,9 +409,20 @@ export class OfflineService {
   }
 
   /**
-   * Query POS form items from cache
+   * Query POS form items from cache, filtered by posform_uuid extracted from URL.
+   * Example URL: /posform-items/all/{posform_uuid}
    */
   private async queryPosFormItems(url: string): Promise<any> {
+    const match = url.match(/\/all\/([a-f0-9-]{36})/i);
+    if (match && match[1]) {
+      const posformUuid = match[1];
+      const items = await (db.posformItems as any)
+        .where('posform_uuid')
+        .equals(posformUuid)
+        .toArray();
+      return { data: items };
+    }
+    // Fallback : aucun UUID dans l'URL, retourner tous les items
     const items = await db.posformItems.toArray();
     return { data: items };
   }

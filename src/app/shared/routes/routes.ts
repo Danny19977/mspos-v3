@@ -178,9 +178,12 @@ export class routes {
     return this.core + '/web/brands/list';
   }
 
-  // ND Individuel
+  // Tableau de bord individuel (ND + SOS)
   public static get ndIndividual(): string {
-    return this.core + '/web/nd-individual';
+    return this.core + '/web/individual';
+  }
+  public static get sosIndividual(): string {
+    return this.core + '/web/individual';
   }
 
 

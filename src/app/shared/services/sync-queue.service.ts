@@ -173,9 +173,18 @@ export class SyncQueueService {
         response = await firstValueFrom(
           this.http.post(`${endpoint}${tokenParam}`, operation.data)
         );
-        
-        // Update local entity with server-generated UUID
-        if (response?.data?.uuid && operation.tempId) {
+
+        if (operation.entityType === 'posform' && Array.isArray(operation.data?.PosFormItems) && operation.data.PosFormItems.length > 0) {
+          // Flux « posform avec items embarqués » :
+          // Les données locales sont déjà correctes — on les supprime simplement
+          // après une sync réussie. Pas de remappage d'UUID nécessaire.
+          if (operation.tempId) {
+            await db.posForms.where('uuid').equals(operation.tempId).delete();
+            await (db.posformItems as any).where('posform_uuid').equals(operation.tempId).delete();
+            console.log(`🗑️ Données locales supprimées après sync : posform ${operation.tempId} + ses items`);
+          }
+        } else if (response?.data?.uuid && operation.tempId) {
+          // Flux standard : mettre à jour l'UUID local avec celui du serveur
           await this.updateLocalEntityId(
             operation.entityType,
             operation.tempId,
@@ -187,6 +196,12 @@ export class SyncQueueService {
           // routeplanItems locaux et les entrées en attente dans la queue.
           if (operation.entityType === 'routeplan') {
             await this.propagateRoutePlanUuid(operation.tempId, response.data.uuid);
+          }
+
+          // Si c'est un posform (sans items embarqués), propager le nouvel UUID
+          // vers les posformItems locaux et les opérations en attente.
+          if (operation.entityType === 'posform') {
+            await this.propagatePosFormUuid(operation.tempId, response.data.uuid);
           }
         }
         break;
@@ -262,6 +277,38 @@ export class SyncQueueService {
   }
 
   /**
+   * Après la sync d'un posform, met à jour tous les posformItems locaux
+   * et les opérations en queue qui référencent l'ancien tempId.
+   */
+  private async propagatePosFormUuid(tempId: string, serverUuid: string): Promise<void> {
+    try {
+      // 1. Mettre à jour les items dans IndexedDB (posform_uuid)
+      const items = await (db.posformItems as any)
+        .where('posform_uuid')
+        .equals(tempId)
+        .toArray();
+      for (const item of items) {
+        await (db.posformItems as any).update(item.id!, { posform_uuid: serverUuid });
+      }
+      console.log(`🔄 Propagated posform UUID: ${tempId} -> ${serverUuid} (${items.length} items mis à jour)`);
+
+      // 2. Mettre à jour les opérations en attente dans la syncQueue
+      const pendingOps = await db.syncQueue
+        .where('status').equals('pending')
+        .filter(op => op.entityType === 'posformItem' && op.data?.posform_uuid === tempId)
+        .toArray();
+      for (const op of pendingOps) {
+        await db.syncQueue.update(op.id!, {
+          data: { ...op.data, posform_uuid: serverUuid },
+        });
+      }
+      console.log(`🔄 Queue posformItems mis à jour: ${pendingOps.length} opérations`);
+    } catch (err) {
+      console.error('Erreur propagatePosFormUuid:', err);
+    }
+  }
+
+  /**
    * Après la sync d'un routeplan, met à jour tous les routeplanItems locaux
    * et les opérations en queue qui référencent l'ancien tempId.
    */
@@ -307,7 +354,12 @@ export class SyncQueueService {
   }
 
   /**
-   * Update local entity with server-generated ID after creation
+   * Update local entity with server-generated ID after creation.
+   *
+   * ⚠️ Règle critique : on NE remplace jamais les clés étrangères locales
+   * (posform_uuid, routplan_uuid…) par celles du serveur si elles sont absentes
+   * ou nulles dans la réponse. Le serveur peut omettre ces champs, ce qui
+   * effacerait le lien parent-enfant en local.
    */
   private async updateLocalEntityId(
     entityType: string,
@@ -318,21 +370,45 @@ export class SyncQueueService {
     const table = this.getTableForEntity(entityType);
     if (!table) return;
 
-    // Find entity by temp ID and update with server data
+    // Lire l'enregistrement local AVANT de l'écraser pour préserver les FK locales
     const entity = await table.where('uuid').equals(tempId).first();
-    if (entity) {
-      await table.where('uuid').equals(tempId).modify({
-        ...serverData,
-        uuid: serverUuid,
-        sync_status: 'synced',
-        ID: serverData.ID || serverData.id
-      });
-      console.log(`🔄 Updated local ${entityType} ID: ${tempId} -> ${serverUuid}`);
+    if (!entity) return;
+
+    // Construire le patch de mise à jour : server data en base, FK locales en surcharge
+    const localFkOverride: any = {};
+
+    if (entityType === 'posformItem') {
+      // Toujours préserver posform_uuid depuis le local — le serveur peut ne pas le retourner
+      const localPosformUuid = entity.posform_uuid || serverData?.posform_uuid;
+      if (localPosformUuid) localFkOverride.posform_uuid = localPosformUuid;
     }
+
+    if (entityType === 'routeplanItem') {
+      // Toujours préserver routplan_uuid / routeplan_uuid depuis le local
+      const localRoutplanUuid = entity.routplan_uuid || entity.routeplan_uuid || serverData?.routplan_uuid;
+      if (localRoutplanUuid) {
+        localFkOverride.routplan_uuid = localRoutplanUuid;
+        localFkOverride.routeplan_uuid = localRoutplanUuid;
+      }
+    }
+
+    await table.where('uuid').equals(tempId).modify({
+      ...serverData,
+      ...localFkOverride,   // ← surcharge : FK locales ont priorité sur server data
+      uuid: serverUuid,
+      sync_status: 'synced',
+      ID: serverData.ID || serverData.id
+    });
+
+    console.log(`🔄 Updated local ${entityType} ID: ${tempId} -> ${serverUuid}`, localFkOverride);
   }
 
   /**
-   * Update local entity with server data after update
+   * Update local entity with server data after update.
+   *
+   * ⚠️ On force toujours `uuid` à la valeur connue pour éviter qu'un champ
+   * nul/absent dans la réponse serveur (serverData.uuid = null | undefined)
+   * n'écrase l'UUID local et fasse « disparaître » l'entité des requêtes Dexie.
    */
   private async updateLocalEntity(
     entityType: string,
@@ -344,6 +420,7 @@ export class SyncQueueService {
 
     await table.where('uuid').equals(uuid).modify({
       ...serverData,
+      uuid,              // ← toujours préserver l'UUID connu, prioritaire sur serverData
       sync_status: 'synced'
     });
   }

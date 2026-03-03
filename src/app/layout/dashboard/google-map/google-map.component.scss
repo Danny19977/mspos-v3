@@ -68,4 +68,131 @@ $gm-text-muted:  #6c757d;
   display: inline-block;
 }
 
- 
+// Period dropdown toggle (mirrors nd-period-toggle)
+.nd-period-toggle {
+  font-size: 0.82rem;
+  font-weight: 500;
+  border: 1px solid $gm-border;
+  background: #fff;
+  color: #344054;
+  border-radius: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  white-space: nowrap;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  transition: background .15s, border-color .15s;
+  &:hover { background: $gm-bg-light; border-color: $gm-accent; color: $gm-accent; }
+}
+.nd-period-menu { min-width: 160px; border-radius: 0.6rem; padding: 0.25rem 0; }
+.nd-period-item {
+  font-size: 0.82rem;
+  padding: 0.45rem 1rem;
+  &.active { color: $gm-accent; font-weight: 600; background: rgba($gm-accent,.07); }
+}
+
+// ─── Custom role dropdown ────────────────────────────────────────────────────
+.gm-role-dropdown { width: 100%; }
+
+.gm-role-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #212529;
+  background: #fff;
+  border: 1px solid $gm-border;
+  border-radius: 0.375rem;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: none;
+  transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  &::after {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  &:focus, &:active {
+    border-color: $gm-accent;
+    box-shadow: 0 0 0 0.2rem rgba($gm-accent, 0.25);
+    outline: none;
+  }
+}
+
+.gm-role-menu {
+  min-width: 100%;
+  border-radius: 0.5rem;
+  padding: 0.3rem 0;
+  border: 1px solid rgba(0,0,0,.08);
+}
+
+.gm-role-item {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.85rem;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  color: #212529;
+  transition: background .12s;
+
+  &:hover:not(.active) {
+    background: rgba(0, 0, 0, 0.04);
+  }
+
+  &.active {
+    // Fond neutre — le point coloré est l'unique indicateur de couleur du rôle
+    color: #212529;
+    font-weight: 600;
+    background: rgba(0, 0, 0, 0.06);
+
+    // Agrandit légèrement le point pour signaler la sélection
+    .gm-role-dot {
+      width: 13px;
+      height: 13px;
+      border-width: 2px;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+    }
+  }
+}
+
+.gm-role-dot {
+  display: inline-block;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  border: 1.5px solid rgba(0, 0, 0, 0.12);
+  transition: width .12s, height .12s, box-shadow .12s;
+}
+
+// Custom date-range input
+.gm-date-field {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: #fff;
+  border: 1px solid $gm-border;
+  border-radius: 0.5rem;
+  padding: 0.3rem 0.7rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+
+  i { color: $gm-accent; font-size: 1rem; flex-shrink: 0; }
+
+  .gm-date-input {
+    border: none;
+    outline: none;
+    box-shadow: none;
+    padding: 0;
+    font-size: 0.82rem;
+    min-width: 170px;
+    background: transparent;
+    &:focus { box-shadow: none; }
+  }
+}

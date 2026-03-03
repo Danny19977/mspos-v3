@@ -1,0 +1,89 @@
+// ── Main Tab Navigation ───────────────────────────────────────────────────────
+.individual-tabs-wrapper {
+  .individual-tabs {
+    gap: 0.5rem;
+    border-bottom: 2px solid #e9ecef;
+    padding-bottom: 0;
+    flex-wrap: nowrap;           // always one line on every screen size
+    overflow-x: auto;            // scroll if needed instead of wrapping
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    &::-webkit-scrollbar { display: none; }
+
+    .nav-item {
+      flex: 1;                   // share available width equally
+      min-width: 0;
+
+      .nav-link {
+        border-radius: 8px 8px 0 0;
+        border: 1px solid transparent;
+        border-bottom: none;
+        padding: 0.65rem 1.4rem;
+        color: #6b7280;
+        font-weight: 500;
+        font-size: 0.9rem;
+        background: #f8f9fa;
+        margin-bottom: -2px;
+        cursor: pointer;
+        transition: all 0.2s;
+        width: 100%;
+        white-space: nowrap;
+        justify-content: center;
+
+        &:hover:not(.active) {
+          color: var(--bs-primary, #3E7BFA);
+          background: #fff;
+          border-color: #e9ecef;
+        }
+
+        &.active {
+          color: var(--bs-primary, #3E7BFA);
+          background: #fff;
+          border-color: #e9ecef #e9ecef #fff;
+          border-bottom: 2px solid var(--bs-primary, #3E7BFA);
+          font-weight: 600;
+
+          i {
+            color: var(--bs-primary, #3E7BFA);
+          }
+        }
+
+        i {
+          color: #9ca3af;
+          transition: color 0.2s;
+        }
+      }
+    }
+  }
+
+  .tab-content-panel {
+    animation: fadeIn 0.2s ease;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ── Mobile: shrink tab text, hide subtitle ────────────────────────────────────
+@media (max-width: 576px) {
+  .individual-tabs-wrapper .individual-tabs {
+    gap: 0.25rem;
+
+    .nav-item .nav-link {
+      padding: 0.5rem 0.6rem;
+      font-size: 0.78rem;
+      gap: 0.3rem !important;
+
+      i { font-size: 1rem !important; }
+
+      small { display: none; }   // hide subtitle — saves horizontal space
+    }
+  }
+}
+
+// ── Page title ────────────────────────────────────────────────────────────────
+.page-title .ti {
+  vertical-align: middle;
+}

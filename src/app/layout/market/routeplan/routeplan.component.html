@@ -248,7 +248,17 @@
                                 <mat-autocomplete requireSelection #autopos1="matAutocomplete"
                                     (optionSelected)="optionSelected($event)" [displayWith]="displayFn">
                                     @for (item of filteredOptions(); track item) {
-                                    <mat-option [value]="item">{{item.name}} | {{item.shop}} | {{getAreaName(item)}} </mat-option>
+                                    <mat-option [value]="item">
+                                        <span class="fw-semibold">{{item.name}}</span>
+                                        <span class="text-muted ms-1">| {{item.shop || '--'}}</span>
+                                        <small class="d-block text-muted mt-1" style="font-size:11px; line-height:1.3;">
+                                            <span title="Commune">{{ item.commune_name || item.Commune?.name || '--' }}</span>
+                                            <span class="mx-1">›</span>
+                                            <span title="SubArea">{{ item.subarea_name || item.SubArea?.name || '--' }}</span>
+                                            <span class="mx-1">›</span>
+                                            <span title="Area">{{ item.area_name || item.Area?.name || '--' }}</span>
+                                        </small>
+                                    </mat-option>
                                     }
                                 </mat-autocomplete>
                             </div>

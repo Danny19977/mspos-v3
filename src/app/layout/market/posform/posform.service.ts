@@ -4,7 +4,6 @@ import { environment } from '../../../../environments/environment';
 import { HttpParams } from '@angular/common/http';
 import { Observable, from } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
-import { ApiResponse2 } from '../../../shared/model/api-response.model';
 import { IUser } from '../../management/user/models/user.model';
 import { IPosForm } from './models/posform.model';
 import { IPosFormItem } from './models/posform_item.model';
@@ -30,18 +29,6 @@ export class PosformService extends ApiService {
   // Modern Angular inject pattern
   private networkService = inject(NetworkService);
   private syncQueue = inject(SyncQueueService);
-
-  getPaginatedRangeDateByUserUUID(uuid: string, page: number, pageSize: number, search: string,
-    startDateStr: string, endDateStr: string
-  ): Observable<ApiResponse2> {
-    let params = new HttpParams()
-      .set("page", page.toString())
-      .set("limit", pageSize.toString())
-      .set("search", search)
-      .set("start_date", startDateStr)
-      .set("end_date", endDateStr)
-    return this.http.get<ApiResponse2>(`${this.endpoint}/all/paginate/user/${uuid}`, { params });
-  }
 
   /**
    * Récupère les posforms avec filtres avancés
@@ -311,40 +298,71 @@ export class PosformService extends ApiService {
 
   /**
    * Met à jour un Posform - OFFLINE FIRST
+   *
+   * ⚠️ Cas critique : si le posform n'a jamais été envoyé au serveur (sync_status = 'pending'),
+   * un PUT /update/:uuid échouerait silencieusement côté Go (record introuvable → Save sur struct
+   * vide → UUID perdu). On envoie donc un CREATE dans ce cas, après avoir annulé toute opération
+   * en attente pour éviter les doublons.
    */
   override update(uuid: string, data: Partial<IPosForm>): Observable<any> {
-    const posformData: Partial<IPosForm> = {
-      ...data,
-      uuid,
-      sync_status: 'pending',
-      UpdatedAt: new Date()
-    };
+    // Lire le sync_status AVANT la modification locale pour décider create vs update
+    return from(db.posForms.where('uuid').equals(uuid).first()).pipe(
+      switchMap(async (existing) => {
+        const neverSynced = !existing || existing.sync_status === 'pending' || existing.sync_status === 'error';
 
-    return from(this.updatePosformLocally(uuid, posformData)).pipe(
-      switchMap(async (updatedPosform) => {
-        // ✅ Ne synchroniser que si le posform a déjà un POS assigné
+        const posformData: Partial<IPosForm> = {
+          ...data,
+          uuid,
+          sync_status: 'pending',
+          UpdatedAt: new Date()
+        };
+
+        await this.updatePosformLocally(uuid, posformData);
+
         if (posformData.pos_uuid && posformData.pos_uuid.trim() !== '') {
-          await this.syncQueue.enqueue({
-            operationId: uuidv4(),
-            entityType: 'posform',
-            operation: 'update',
-            endpoint: `${this.endpoint}/update/${uuid}`,
-            data: posformData,
-            timestamp: new Date(),
-            retryCount: 0,
-            status: 'pending',
-            userId: data.user_uuid
-          });
-          console.log('✅ Posform modifié localement et mis en file de synchronisation');
+          if (neverSynced) {
+            // Annuler toute opération en attente liée à cet uuid (ex : un CREATE différé)
+            // pour éviter les doublons lors de la synchronisation.
+            await this.syncQueue.cancelPendingOperationsForEntity('posform', uuid);
+
+            // Le posform n'existe pas encore côté serveur : envoyer un CREATE
+            await this.syncQueue.enqueue({
+              operationId: uuidv4(),
+              entityType: 'posform',
+              operation: 'create',
+              endpoint: `${this.endpoint}/create`,
+              data: { ...data, uuid },
+              tempId: uuid,
+              timestamp: new Date(),
+              retryCount: 0,
+              status: 'pending',
+              userId: data.user_uuid
+            });
+            console.log(`✅ Posform jamais syncé → CREATE enqueué (uuid: ${uuid})`);
+          } else {
+            // Le posform existe déjà sur le serveur : envoyer un UPDATE normal
+            await this.syncQueue.enqueue({
+              operationId: uuidv4(),
+              entityType: 'posform',
+              operation: 'update',
+              endpoint: `${this.endpoint}/update/${uuid}`,
+              data: posformData,
+              timestamp: new Date(),
+              retryCount: 0,
+              status: 'pending',
+              userId: data.user_uuid
+            });
+            console.log('✅ Posform modifié localement et mis en file de synchronisation (UPDATE)');
+          }
         } else {
           console.log("⏸️ Posform modifié localement sans POS — synchronisation différée jusqu'à l'assignation d'un POS");
         }
-        
+
         return {
-          data: updatedPosform,
+          data: { ...posformData },
           offline: !this.networkService.isOnline(),
-          message: this.networkService.isOnline() 
-            ? 'Posform modifié, synchronisation en cours...' 
+          message: this.networkService.isOnline()
+            ? 'Posform modifié, synchronisation en cours...'
             : 'Posform modifié localement, sera synchronisé à la reconnexion'
         };
       })
@@ -459,6 +477,7 @@ export class PosformService extends ApiService {
   /**
    * Met à jour un Posform en local (IndexedDB)
    */
+
   private async updatePosformLocally(uuid: string, data: Partial<IPosForm>): Promise<Partial<IPosForm>> {
     // Utiliser as any pour éviter les références circulaires avec Dexie
     await (db.posForms.where('uuid').equals(uuid) as any).modify({
@@ -486,22 +505,6 @@ export class PosformService extends ApiService {
     });
 
     console.log(`💾 Posform ${uuid} marqué comme supprimé (sync_status: deleted)`);
-  }
-
-  /**
-   * Récupère les Posforms depuis le cache local
-   */
-  async getFromLocalCache(filters: any = {}): Promise<IPosForm[]> {
-    let collection = db.posForms.toCollection();
-    
-    // Appliquer les filtres
-    if (filters.user_uuid) {
-      collection = db.posForms.where('cyclo_uuid').equals(filters.user_uuid);
-    }
-    
-    const posforms = await collection.toArray();
-    console.log(`📦 ${posforms.length} Posforms récupérés du cache local`);
-    return posforms;
   }
 
   /**
@@ -561,6 +564,44 @@ export class PosformService extends ApiService {
         }));
 
       await db.posForms.bulkPut(posformsToStore as any);
+
+      // Sauvegarder aussi les PosFormItems reçus du serveur dans db.posformItems.
+      // Anti-doublons : même logique que pour les posforms — on récupère l'id local
+      // existant par uuid avant le bulkPut pour éviter d'insérer des doublons
+      // à chaque synchronisation.
+      const allIncomingItems: any[] = [];
+      for (const pf of posforms) {
+        if (!pf.uuid || !pf.PosFormItems?.length) continue;
+        for (const item of pf.PosFormItems) {
+          if (!item.uuid) continue;
+          allIncomingItems.push({ item, posform_uuid: pf.uuid });
+        }
+      }
+
+      if (allIncomingItems.length > 0) {
+        const incomingItemUuids = allIncomingItems.map(e => e.item.uuid as string);
+        const existingItems = await (db.posformItems as any).where('uuid').anyOf(incomingItemUuids).toArray();
+        const itemUuidToLocalId = new Map<string, number>();
+        for (const rec of existingItems) {
+          if (rec.uuid && rec.id != null) itemUuidToLocalId.set(rec.uuid, rec.id as number);
+        }
+
+        const itemsToStore = allIncomingItems.map(({ item, posform_uuid }) => ({
+          ...(itemUuidToLocalId.has(item.uuid) ? { id: itemUuidToLocalId.get(item.uuid) } : {}),
+          uuid: item.uuid,
+          posform_uuid,
+          brand_uuid: item.brand_uuid,
+          brand_name: item.brand_name,
+          number_farde: item.number_farde ?? 0,
+          counter: item.counter ?? 0,
+          sold: item.sold ?? 0,
+          sync_status: 'synced'
+        }));
+
+        await (db.posformItems as any).bulkPut(itemsToStore);
+        console.log(`💾 ${itemsToStore.length} PosFormItems mis à jour (${itemUuidToLocalId.size} existants, ${itemsToStore.length - itemUuidToLocalId.size} nouveaux)`);
+      }
+
       console.log(`💾 ${posformsToStore.length} Posforms mis à jour dans le cache local (${uuidToLocalId.size} existants, ${posformsToStore.length - uuidToLocalId.size} nouveaux)`);
     } catch (error) {
       console.error('Erreur lors de la mise à jour du cache local:', error);
@@ -653,8 +694,10 @@ export class PosformService extends ApiService {
     posforms = posforms.filter(pf => pf.sync_status !== 'deleted');
 
     // Filtrer par plage de dates
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    // Utiliser le temps local (T00:00:00 / T23:59:59.999 sans 'Z') pour éviter
+    // le problème de parsing UTC des chaînes ISO date-only (ex: '2026-03-03').
+    const start = new Date(startDate + 'T00:00:00');
+    const end = new Date(endDate + 'T23:59:59.999');
     posforms = posforms.filter(pf => {
       if (!pf.CreatedAt) return true;
       const d = new Date(pf.CreatedAt);
@@ -671,8 +714,12 @@ export class PosformService extends ApiService {
       );
     }
 
-    // Trier par date décroissante
+    // Trier : enregistrements locaux non-synchronisés (pending/error) en premier,
+    // puis par date décroissante
     posforms.sort((a, b) => {
+      const aIsLocal = a.sync_status === 'pending' || a.sync_status === 'error' ? 0 : 1;
+      const bIsLocal = b.sync_status === 'pending' || b.sync_status === 'error' ? 0 : 1;
+      if (aIsLocal !== bIsLocal) return aIsLocal - bIsLocal;
       const da = a.CreatedAt ? new Date(a.CreatedAt).getTime() : 0;
       const db2 = b.CreatedAt ? new Date(b.CreatedAt).getTime() : 0;
       return db2 - da;
@@ -718,7 +765,9 @@ export class PosformService extends ApiService {
     const hydratedPaginated = paginated.map(pf => ({
       ...pf,
       Pos: pf.pos_uuid ? (posMap.get(pf.pos_uuid) ?? pf.Pos) : pf.Pos,
-      PosFormItems: pf.uuid ? (posformItemsMap.get(pf.uuid) ?? pf.PosFormItems ?? []) : (pf.PosFormItems ?? [])
+      // ⚠️ On utilise UNIQUEMENT la map fraîche depuis db.posformItems.
+      // Pas de fallback sur pf.PosFormItems (données potentiellement obsolètes ou mal associées).
+      PosFormItems: pf.uuid ? (posformItemsMap.get(pf.uuid) ?? []) : []
     }));
 
     console.log(`📦 Posforms locaux: ${total_records} total, page ${page}/${total_pages}`);

@@ -1,31 +1,850 @@
 <div class="page-wrapper">
   <div class="content">
-    <!-- <div class="row">
+
+    <!-- ══ PAGE HEADER ══════════════════════════════════════════════════════ -->
+    <div class="row mb-3">
       <div class="col-md-12">
-        <div class="page-header">
+        <div class="page-header mb-0">
           <div class="row align-items-center">
-            <div class="col-md-4">
-              <h3 class="page-title">KEY-PERFORMANCE-INDICATEURS</h3>
+            <div class="col-md-6">
+              <h3 class="page-title mb-0 d-flex align-items-center gap-2">
+                <span class="kpi-title-badge"><i class="ti ti-target-arrow"></i></span>
+                KEY PERFORMANCE INDICATORS
+              </h3>
+              <p class="text-muted small mb-0 mt-1">
+                Suivi des visites · Objectifs terrain · Couverture POS · Alertes équipe
+              </p>
             </div>
-            <div class="col-md-8 float-end ms-auto">
-              @if (this.currentUser) {
-              <div class="d-flex title-head">
-                <div class="head-icons mb-0">
-                  <app-reload></app-reload>
-                  <app-collapse-header></app-collapse-header>
-                </div>
+            <div class="col-md-6 d-flex justify-content-end align-items-center gap-2 flex-wrap">
+              <!-- Period picker -->
+              <div class="dropdown">
+                <button class="btn kpi-period-toggle dropdown-toggle" type="button"
+                  data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="ti ti-calendar-stats me-1"></i>{{ getPeriodLabel() }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end kpi-period-menu shadow-sm">
+                  @for (p of PERIODS; track p.key) {
+                    @if (p.key !== 'custom') {
+                      <li>
+                        <button class="dropdown-item kpi-period-item"
+                          [class.active]="selectedPeriod() === p.key"
+                          (click)="setPeriod(p.key)">
+                          <i class="ti {{ selectedPeriod() === p.key ? 'ti-check' : 'ti-point' }} me-2"></i>
+                          {{ p.label }}
+                        </button>
+                      </li>
+                    }
+                  }
+                  <li><hr class="dropdown-divider my-1"></li>
+                  <li>
+                    <button class="dropdown-item kpi-period-item"
+                      [class.active]="selectedPeriod() === 'custom'"
+                      (click)="setPeriod('custom')">
+                      <i class="ti ti-calendar-event me-2"></i>Personnalisé
+                    </button>
+                  </li>
+                </ul>
               </div>
+              @if (selectedPeriod() === 'custom') {
+                <form [formGroup]="dateRange" class="kpi-date-form">
+                  <div class="kpi-date-field">
+                    <i class="ti ti-calendar-event"></i>
+                    <input type="text" class="form-control bookingrange kpi-date-input"
+                      placeholder="Sélectionner une période"
+                      bsDaterangepicker
+                      [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
+                      formControlName="rangeValue" />
+                  </div>
+                </form>
               }
             </div>
           </div>
         </div>
       </div>
-    </div> -->
+    </div>
 
+    <!-- ══ GEO FILTER TOOLBAR ════════════════════════════════════════════════ -->
+    <div class="kpi-filter-bar mb-3">
+      <!-- Country -->
+      <div class="kpi-filter-item">
+        <label class="kpi-filter-label"><i class="ti ti-world me-1"></i>Pays</label>
+        <select class="form-select form-select-sm kpi-select"
+          [(ngModel)]="selectedCountry" (ngModelChange)="onCountryChange($event)"
+          [compareWith]="compareById">
+          @for (c of countryList(); track c.uuid) {
+            <option [ngValue]="c">{{ c.name }}</option>
+          }
+        </select>
+      </div>
+      <!-- Province -->
+      @if (provinceList().length) {
+        <div class="kpi-filter-item">
+          <label class="kpi-filter-label"><i class="ti ti-map-2 me-1"></i>Province</label>
+          <select class="form-select form-select-sm kpi-select"
+            [(ngModel)]="selectedProvince" (ngModelChange)="onProvinceChange($event)"
+            [compareWith]="compareById">
+            <option [ngValue]="undefined">— Toutes —</option>
+            @for (p of provinceList(); track p.uuid) {
+              <option [ngValue]="p">{{ p.name }}</option>
+            }
+          </select>
+        </div>
+      }
+      <!-- Area -->
+      @if (areaList().length) {
+        <div class="kpi-filter-item">
+          <label class="kpi-filter-label"><i class="ti ti-map me-1"></i>Area</label>
+          <select class="form-select form-select-sm kpi-select"
+            [(ngModel)]="selectedArea" (ngModelChange)="onAreaChange($event)"
+            [compareWith]="compareById">
+            <option [ngValue]="undefined">— Toutes —</option>
+            @for (a of areaList(); track a.uuid) {
+              <option [ngValue]="a">{{ a.name }}</option>
+            }
+          </select>
+        </div>
+      }
+      <!-- Sub-Area -->
+      @if (subAreaList().length) {
+        <div class="kpi-filter-item">
+          <label class="kpi-filter-label"><i class="ti ti-map-pin me-1"></i>Sub-area</label>
+          <select class="form-select form-select-sm kpi-select"
+            [(ngModel)]="selectedSubArea" (ngModelChange)="onSubAreaChange($event)"
+            [compareWith]="compareById">
+            <option [ngValue]="undefined">— Toutes —</option>
+            @for (s of subAreaList(); track s.uuid) {
+              <option [ngValue]="s">{{ s.name }}</option>
+            }
+          </select>
+        </div>
+      }
+      <!-- Commune -->
+      @if (communeList().length) {
+        <div class="kpi-filter-item">
+          <label class="kpi-filter-label"><i class="ti ti-building-community me-1"></i>Commune</label>
+          <select class="form-select form-select-sm kpi-select"
+            [(ngModel)]="selectedCommune" (ngModelChange)="onCommuneChange($event)"
+            [compareWith]="compareById">
+            <option [ngValue]="undefined">— Toutes —</option>
+            @for (c of communeList(); track c.uuid) {
+              <option [ngValue]="c">{{ c.name }}</option>
+            }
+          </select>
+        </div>
+      }
+    </div>
 
-    <router-outlet />
+    <!-- ══ SECTION NAVIGATION ═════════════════════════════════════════════════ -->
+    <div class="kpi-section-nav mb-4">
+      <button class="kpi-nav-btn" [class.active]="activeSection() === 'overview'"
+        (click)="setSection('overview')">
+        <i class="ti ti-layout-dashboard"></i>
+        <span>Vue d'ensemble</span>
+      </button>
+      <button class="kpi-nav-btn" [class.active]="activeSection() === 'agents'"
+        (click)="setSection('agents')">
+        <i class="ti ti-users"></i>
+        <span>Équipe</span>
+        @if (agentsStats().underTarget > 0) {
+          <span class="kpi-nav-badge">{{ agentsStats().underTarget }}</span>
+        }
+      </button>
+      <button class="kpi-nav-btn" [class.active]="activeSection() === 'targets'"
+        (click)="setSection('targets')">
+        <i class="ti ti-target"></i>
+        <span>Objectifs</span>
+      </button>
+      <button class="kpi-nav-btn" [class.active]="activeSection() === 'absences'"
+        (click)="setSection('absences')">
+        <i class="ti ti-user-off"></i>
+        <span>Absences</span>
+        @if (absencesStats().critical > 0) {
+          <span class="kpi-nav-badge danger">{{ absencesStats().critical }}</span>
+        }
+      </button>
+      <button class="kpi-nav-btn" [class.active]="activeSection() === 'trends'"
+        (click)="setSection('trends')">
+        <i class="ti ti-trending-up"></i>
+        <span>Tendances</span>
+      </button>
+      <button class="kpi-nav-btn" [class.active]="activeSection() === 'nd'"
+        (click)="setSection('nd')">
+        <i class="ti ti-chart-grid-dots"></i>
+        <span>Distribution ND</span>
+      </button>
+      @if (commune_uuid) {
+        <button class="kpi-nav-btn" [class.active]="activeSection() === 'pos'"
+          (click)="setSection('pos')">
+          <i class="ti ti-building-store"></i>
+          <span>Points de Vente</span>
+        </button>
+      }
+      <button class="kpi-nav-btn" [class.active]="activeSection() === 'tableview'"
+        (click)="setSection('tableview')">
+        <i class="ti ti-table"></i>
+        <span>Tableaux</span>
+      </button>
+    </div>
 
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: OVERVIEW ─ Territory Score Cards                             -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'overview') {
+      <!-- Geo level selector -->
+      <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+        <span class="kpi-section-label">Niveau :</span>
+        @for (lvl of [['province','Province'],['area','Area'],['subarea','Sub-area'],['commune','Commune']]; track lvl[0]) {
+          <button class="btn btn-sm kpi-level-btn"
+            [class.active]="geoLevel() === lvl[0]"
+            (click)="onGeoLevelChange($any(lvl[0]))">
+            {{ lvl[1] }}
+          </button>
+        }
+      </div>
 
-  </div>
+      <!-- Summary ribbon -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-md-3">
+          <div class="kpi-ribbon-card kpi-ribbon-primary">
+            <div class="kpi-ribbon-icon"><i class="ti ti-map-search"></i></div>
+            <div class="kpi-ribbon-body">
+              <div class="kpi-ribbon-value">{{ overviewData().length }}</div>
+              <div class="kpi-ribbon-label">Territoires</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="kpi-ribbon-card kpi-ribbon-success">
+            <div class="kpi-ribbon-icon"><i class="ti ti-star-filled"></i></div>
+            <div class="kpi-ribbon-body">
+              <div class="kpi-ribbon-value">{{ overviewStats().excellent }}</div>
+              <div class="kpi-ribbon-label">Excellents</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="kpi-ribbon-card kpi-ribbon-warning">
+            <div class="kpi-ribbon-icon"><i class="ti ti-eye"></i></div>
+            <div class="kpi-ribbon-body">
+              <div class="kpi-ribbon-value">{{ overviewStats().avgPosVisited }}%</div>
+              <div class="kpi-ribbon-label">POS Visités Moy.</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-md-3">
+          <div class="kpi-ribbon-card kpi-ribbon-danger">
+            <div class="kpi-ribbon-icon"><i class="ti ti-alert-triangle"></i></div>
+            <div class="kpi-ribbon-body">
+              <div class="kpi-ribbon-value">{{ overviewStats().critical }}</div>
+              <div class="kpi-ribbon-label">En difficulté</div>
+            </div>
+          </div>
+        </div>
+      </div>
 
-</div>
+      <!-- Territory cards grid -->
+      @if (isLoadingOverview()) {
+        <div class="kpi-loading-pulse">
+          @for (i of [1,2,3,4,5,6]; track i) {
+            <div class="kpi-skeleton-card"></div>
+          }
+        </div>
+      } @else if (overviewData().length === 0) {
+        <div class="kpi-empty"><i class="ti ti-inbox"></i><p>Aucun territoire trouvé</p></div>
+      } @else {
+        <div class="kpi-territory-grid">
+          @for (t of overviewData(); track t.territory_uuid; let idx = $index) {
+            <div class="kpi-territory-card" [class]="getScoreClass(t.overall_score)">
+              <!-- card header -->
+              <div class="kpi-tc-header">
+                <div class="kpi-tc-rank">{{ idx + 1 }}</div>
+                <div class="kpi-tc-name" [title]="t.territory_name">{{ t.territory_name }}</div>
+                <div class="kpi-tc-score-ring"
+                  [style.--score-color]="getScoreColor(t.overall_score)"
+                  [style.--score-pct]="t.overall_score + '%'">
+                  <span class="kpi-tc-score-val">{{ t.overall_score }}</span>
+                </div>
+              </div>
+              <!-- rating badge -->
+              <div class="kpi-tc-rating">
+                <i [class]="getRatingIcon(t.performance_rating)"></i>
+                <span class="ms-1">{{ t.performance_rating }}</span>
+              </div>
+              <!-- metrics grid -->
+              <div class="kpi-tc-metrics">
+                <div class="kpi-tc-metric">
+                  <span class="kpi-tc-metric-label">Visites</span>
+                  <span class="kpi-tc-metric-val">{{ t.total_visits | number }}</span>
+                </div>
+                <div class="kpi-tc-metric">
+                  <span class="kpi-tc-metric-label">POS visités</span>
+                  <span class="kpi-tc-metric-val">{{ t.pos_visited }}</span>
+                </div>
+                <div class="kpi-tc-metric">
+                  <span class="kpi-tc-metric-label">Sync %</span>
+                  <span class="kpi-tc-metric-val" [class]="getPctClass(t.sync_rate)">
+                    {{ t.sync_rate }}%
+                  </span>
+                </div>
+                <div class="kpi-tc-metric">
+                  <span class="kpi-tc-metric-label">Équipe</span>
+                  <span class="kpi-tc-metric-val">{{ t.team_members }}</span>
+                </div>
+              </div>
+              <!-- progress bars -->
+              <div class="kpi-tc-bars">
+                <div class="kpi-tc-bar-row">
+                  <span class="kpi-tc-bar-label">POS Couverture</span>
+                  <div class="kpi-tc-bar-track">
+                    <div class="kpi-tc-bar-fill"
+                      [class]="getPctBarColor(t.visited_percentage)"
+                      [style.width]="getPctBarWidth(t.visited_percentage)"></div>
+                  </div>
+                  <span class="kpi-tc-bar-pct">{{ t.visited_percentage }}%</span>
+                </div>
+                <div class="kpi-tc-bar-row">
+                  <span class="kpi-tc-bar-label">POS-MM</span>
+                  <div class="kpi-tc-bar-track">
+                    <div class="kpi-tc-bar-fill"
+                      [class]="getPctBarColor(t.posmm_percentage)"
+                      [style.width]="getPctBarWidth(t.posmm_percentage)"></div>
+                  </div>
+                  <span class="kpi-tc-bar-pct">{{ t.posmm_percentage }}%</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: AGENTS ─ Team Visit Summary                                  -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'agents') {
+      <!-- Filters row -->
+      <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+        <span class="kpi-section-label">Titre :</span>
+        @for (t of TITLES; track t) {
+          <button class="btn btn-sm kpi-level-btn"
+            [class.active]="titleFilter() === t"
+            (click)="onTitleFilterChange(t)">
+            {{ t || 'Tous' }}
+          </button>
+        }
+        <div class="ms-auto kpi-agents-summary">
+          <span class="badge bg-success me-1">{{ agentsStats().onTrack }} ✓ En objectif</span>
+          <span class="badge bg-danger">{{ agentsStats().underTarget }} ✗ En retard</span>
+        </div>
+      </div>
+
+      @if (isLoadingAgents()) {
+        <div class="kpi-shimmer-table">
+          @for (i of [1,2,3,4,5]; track i) { <div class="kpi-shimmer-row"></div> }
+        </div>
+      } @else if (agentsData().length === 0) {
+        <div class="kpi-empty"><i class="ti ti-users-group"></i><p>Aucun agent trouvé</p></div>
+      } @else {
+        <div class="card shadow-sm border-0">
+          <div class="card-body p-0">
+            <div class="table-responsive">
+              <table class="table table-hover kpi-agents-table mb-0">
+                <thead>
+                  <tr>
+                    <th>Agent</th>
+                    <th>Titre</th>
+                    <th colspan="3" class="text-center kpi-col-group kpi-group-day">
+                      <i class="ti ti-sun me-1"></i>Aujourd'hui
+                    </th>
+                    <th colspan="3" class="text-center kpi-col-group kpi-group-month">
+                      <i class="ti ti-calendar me-1"></i>Ce mois
+                    </th>
+                    <th colspan="3" class="text-center kpi-col-group kpi-group-year">
+                      <i class="ti ti-calendar-year me-1"></i>Année
+                    </th>
+                    <th colspan="3" class="text-center kpi-col-group kpi-group-range">
+                      <i class="ti ti-calendar-stats me-1"></i>Période
+                    </th>
+                  </tr>
+                  <tr class="kpi-sub-header">
+                    <th></th><th></th>
+                    <th class="kpi-group-day">Visites</th>
+                    <th class="kpi-group-day">Obj.</th>
+                    <th class="kpi-group-day">%</th>
+                    <th class="kpi-group-month">Visites</th>
+                    <th class="kpi-group-month">Obj.</th>
+                    <th class="kpi-group-month">%</th>
+                    <th class="kpi-group-year">Visites</th>
+                    <th class="kpi-group-year">Obj.</th>
+                    <th class="kpi-group-year">%</th>
+                    <th class="kpi-group-range">Visites</th>
+                    <th class="kpi-group-range">Obj.</th>
+                    <th class="kpi-group-range">%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (a of agentsData(); track a.user_uuid) {
+                    <tr class="kpi-agent-row">
+                      <td>
+                        <div class="d-flex align-items-center gap-2">
+                          <div class="kpi-agent-avatar">
+                            <i [class]="getTitleIcon(a.title)"></i>
+                          </div>
+                          <span class="fw-semibold">{{ a.name }}</span>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="kpi-title-chip kpi-title-{{ a.title | lowercase }}">
+                          {{ a.title }}
+                        </span>
+                      </td>
+                      <!-- Daily -->
+                      <td class="text-center kpi-group-day">{{ a.daily_visits }}</td>
+                      <td class="text-center kpi-group-day text-muted">{{ a.daily_target }}</td>
+                      <td class="text-center kpi-group-day">
+                        <div class="kpi-mini-progress">
+                          <div class="kpi-mini-bar" [class]="getPctBarColor(a.daily_pct)"
+                            [style.width]="getPctBarWidth(a.daily_pct)"></div>
+                          <span [class]="getPctClass(a.daily_pct)">{{ a.daily_pct }}%</span>
+                        </div>
+                      </td>
+                      <!-- Monthly -->
+                      <td class="text-center kpi-group-month">{{ a.monthly_visits }}</td>
+                      <td class="text-center kpi-group-month text-muted">{{ a.monthly_target }}</td>
+                      <td class="text-center kpi-group-month">
+                        <div class="kpi-mini-progress">
+                          <div class="kpi-mini-bar" [class]="getPctBarColor(a.monthly_pct)"
+                            [style.width]="getPctBarWidth(a.monthly_pct)"></div>
+                          <span [class]="getPctClass(a.monthly_pct)">{{ a.monthly_pct }}%</span>
+                        </div>
+                      </td>
+                      <!-- Yearly -->
+                      <td class="text-center kpi-group-year">{{ a.yearly_visits }}</td>
+                      <td class="text-center kpi-group-year text-muted">{{ a.yearly_target }}</td>
+                      <td class="text-center kpi-group-year">
+                        <div class="kpi-mini-progress">
+                          <div class="kpi-mini-bar" [class]="getPctBarColor(a.yearly_pct)"
+                            [style.width]="getPctBarWidth(a.yearly_pct)"></div>
+                          <span [class]="getPctClass(a.yearly_pct)">{{ a.yearly_pct }}%</span>
+                        </div>
+                      </td>
+                      <!-- Range -->
+                      <td class="text-center kpi-group-range fw-semibold">{{ a.total_visits }}</td>
+                      <td class="text-center kpi-group-range text-muted">{{ a.range_target }}</td>
+                      <td class="text-center kpi-group-range">
+                        <div class="kpi-mini-progress">
+                          <div class="kpi-mini-bar" [class]="getPctBarColor(a.range_pct)"
+                            [style.width]="getPctBarWidth(a.range_pct)"></div>
+                          <span class="fw-semibold" [class]="getPctClass(a.range_pct)">{{ a.range_pct }}%</span>
+                        </div>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: TARGETS ─ Achievement vs Objectives                          -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'targets') {
+      <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+        <span class="kpi-section-label">Découpage :</span>
+        <button class="btn btn-sm kpi-level-btn" [class.active]="targetLevel() === 'province'"
+          (click)="onTargetLevelChange('province')">Province</button>
+        <button class="btn btn-sm kpi-level-btn" [class.active]="targetLevel() === 'area'"
+          (click)="onTargetLevelChange('area')">Area</button>
+      </div>
+
+      @if (isLoadingTargets()) {
+        <div class="kpi-chart-skeleton"></div>
+      } @else if (targetsData().length === 0) {
+        <div class="kpi-empty"><i class="ti ti-target"></i><p>Aucune donnée d'objectif disponible</p></div>
+      } @else {
+        <div class="row g-3">
+          <!-- Chart -->
+          <div class="col-md-7">
+            <div class="card shadow-sm border-0 h-100">
+              <div class="card-header kpi-card-header">
+                <i class="ti ti-chart-bar-popular me-2 text-primary"></i>
+                Réalisé vs Objectif — {{ targetLevel() === 'province' ? 'Province' : 'Area' }}
+              </div>
+              <div class="card-body">
+                @if (chartTargetOpts()) {
+                  <apx-chart
+                    [series]="chartTargetOpts().series"
+                    [chart]="chartTargetOpts().chart"
+                    [colors]="chartTargetOpts().colors"
+                    [plotOptions]="chartTargetOpts().plotOptions"
+                    [dataLabels]="chartTargetOpts().dataLabels"
+                    [xaxis]="chartTargetOpts().xaxis"
+                    [legend]="chartTargetOpts().legend"
+                    [tooltip]="chartTargetOpts().tooltip"
+                    [grid]="chartTargetOpts().grid">
+                  </apx-chart>
+                }
+              </div>
+            </div>
+          </div>
+          <!-- Table -->
+          <div class="col-md-5">
+            <div class="card shadow-sm border-0 h-100">
+              <div class="card-header kpi-card-header">
+                <i class="ti ti-list-details me-2 text-primary"></i>Détail par territoire
+              </div>
+              <div class="card-body p-0">
+                <div class="table-responsive" style="max-height:520px; overflow-y:auto;">
+                  <table class="table table-sm kpi-target-table mb-0">
+                    <thead>
+                      <tr>
+                        <th>Territoire</th>
+                        <th class="text-center">Réalisé</th>
+                        <th class="text-center">Objectif</th>
+                        <th>Taux</th>
+                        <th>Statut</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (t of targetsData(); track t.territory) {
+                        <tr>
+                          <td class="fw-semibold">{{ t.territory }}</td>
+                          <td class="text-center">{{ t.actual_visits | number }}</td>
+                          <td class="text-center text-muted">{{ t.target_visits | number }}</td>
+                          <td>
+                            <div class="kpi-mini-progress">
+                              <div class="kpi-mini-bar"
+                                [class]="getPctBarColor(t.achievement_percentage)"
+                                [style.width]="getPctBarWidth(t.achievement_percentage)"></div>
+                              <span [class]="getPctClass(t.achievement_percentage)">
+                                {{ t.achievement_percentage }}%
+                              </span>
+                            </div>
+                          </td>
+                          <td>
+                            <span [class]="getRiskBadge(t.risk_level)">{{ t.risk_level }}</span>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    }
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: ABSENCES ─ Inactive Agent Alerts                             -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'absences') {
+      <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+        <span class="kpi-section-label">Inactif depuis :</span>
+        @for (d of [3,7,14,30]; track d) {
+          <button class="btn btn-sm kpi-level-btn" [class.active]="daysInactive() === d"
+            (click)="onDaysInactiveChange(d)">
+            {{ d }}j+
+          </button>
+        }
+        <!-- Alert summary -->
+        <div class="ms-auto d-flex gap-2">
+          <span class="badge bg-danger py-2 px-3">
+            <i class="ti ti-alert-triangle me-1"></i>
+            {{ absencesStats().critical }} Critiques
+          </span>
+          <span class="badge bg-warning text-dark py-2 px-3">
+            <i class="ti ti-alert-circle me-1"></i>
+            {{ absencesStats().warning }} Avertissements
+          </span>
+        </div>
+      </div>
+
+      @if (isLoadingAbsences()) {
+        <div class="kpi-loading-pulse">
+          @for (i of [1,2,3,4]; track i) { <div class="kpi-skeleton-card"></div> }
+        </div>
+      } @else if (absencesData().length === 0) {
+        <div class="kpi-empty kpi-empty-success">
+          <i class="ti ti-circle-check text-success"></i>
+          <p class="text-success">Aucune absence détectée — Équipe au complet !</p>
+        </div>
+      } @else {
+        <div class="kpi-alerts-grid">
+          @for (a of absencesData(); track a.agent_uuid) {
+            <div class="kpi-alert-card" [class]="getAlertClass(a.alert_level)">
+              <div class="kpi-alert-avatar">
+                <i [class]="getTitleIcon(a.agent_title)"></i>
+              </div>
+              <div class="kpi-alert-body">
+                <div class="kpi-alert-name">{{ a.agent_name }}</div>
+                <div class="kpi-alert-title">
+                  <span class="kpi-title-chip kpi-title-{{ a.agent_title | lowercase }}">
+                    {{ a.agent_title }}
+                  </span>
+                </div>
+                <div class="kpi-alert-days">
+                  <i class="ti ti-clock me-1"></i>
+                  Inactif depuis <strong>{{ a.days_inactive }} jours</strong>
+                </div>
+              </div>
+              <div class="kpi-alert-level">
+                <span class="kpi-alert-dot kpi-alert-dot-{{ a.alert_level | lowercase | slice:0:4 }}"
+                  [title]="a.alert_level">
+                  <i [class]="getAlertIcon(a.alert_level)"></i>
+                </span>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: TRENDS ─ Period Comparison Chart                             -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'trends') {
+      <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+        <span class="kpi-section-label">Périodicité :</span>
+        <button class="btn btn-sm kpi-level-btn" [class.active]="trendPeriod() === 'monthly'"
+          (click)="onTrendPeriodChange('monthly')">Mensuelle</button>
+        <button class="btn btn-sm kpi-level-btn" [class.active]="trendPeriod() === 'weekly'"
+          (click)="onTrendPeriodChange('weekly')">Hebdomadaire</button>
+        <span class="kpi-section-label ms-3">Périodes :</span>
+        @for (n of [3,6,12]; track n) {
+          <button class="btn btn-sm kpi-level-btn" [class.active]="trendPeriods() === n"
+            (click)="trendPeriods.set(n); loadTrends()">{{ n }}</button>
+        }
+      </div>
+
+      <div class="card shadow-sm border-0">
+        <div class="card-header kpi-card-header">
+          <i class="ti ti-chart-area me-2 text-primary"></i>
+          Évolution {{ trendPeriod() === 'monthly' ? 'mensuelle' : 'hebdomadaire' }} des visites · Sync · POS-MM
+        </div>
+        <div class="card-body">
+          @if (isLoadingTrends()) {
+            <div class="kpi-chart-skeleton"></div>
+          } @else if (!chartTrendsOpts()) {
+            <div class="kpi-empty"><i class="ti ti-chart-area"></i><p>Aucune donnée disponible</p></div>
+          } @else {
+            <apx-chart
+              [series]="chartTrendsOpts().series"
+              [chart]="chartTrendsOpts().chart"
+              [colors]="chartTrendsOpts().colors"
+              [stroke]="chartTrendsOpts().stroke"
+              [plotOptions]="chartTrendsOpts().plotOptions"
+              [dataLabels]="chartTrendsOpts().dataLabels"
+              [xaxis]="chartTrendsOpts().xaxis"
+              [yaxis]="chartTrendsOpts().yaxis"
+              [legend]="chartTrendsOpts().legend"
+              [tooltip]="chartTrendsOpts().tooltip"
+              [grid]="chartTrendsOpts().grid">
+            </apx-chart>
+
+            <!-- Trend summary table -->
+            <div class="table-responsive mt-3">
+              <table class="table table-sm kpi-trend-summary-table">
+                <thead>
+                  <tr>
+                    <th>Période</th>
+                    <th class="text-center">Visites</th>
+                    <th class="text-center">POS Visités</th>
+                    <th class="text-center">Sync %</th>
+                    <th class="text-center">POS-MM %</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (p of trendsData(); track p.period_label) {
+                    <tr>
+                      <td class="fw-semibold">{{ p.period_label }}</td>
+                      <td class="text-center">{{ p.visits | number }}</td>
+                      <td class="text-center">{{ p.pos_visited | number }}</td>
+                      <td class="text-center">
+                        <span [class]="getPctClass(p.sync_rate)">{{ p.sync_rate }}%</span>
+                      </td>
+                      <td class="text-center">
+                        <span [class]="getPctClass(p.posmm_percentage)">{{ p.posmm_percentage }}%</span>
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: ND ANALYSIS ─ Numeric Distribution by Territory              -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'nd') {
+      <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+        <span class="kpi-section-label">Niveau :</span>
+        @for (lvl of [['province','Province'],['area','Area'],['commune','Commune']]; track lvl[0]) {
+          <button class="btn btn-sm kpi-level-btn"
+            [class.active]="ndLevel() === lvl[0]"
+            (click)="onNdLevelChange($any(lvl[0]))">
+            {{ lvl[1] }}
+          </button>
+        }
+      </div>
+
+      <div class="row g-3">
+        <!-- Radar Chart -->
+        <div class="col-md-6">
+          <div class="card shadow-sm border-0 h-100">
+            <div class="card-header kpi-card-header">
+              <i class="ti ti-radar me-2 text-primary"></i>
+              Radar de distribution ND · OOS · POS-MM
+            </div>
+            <div class="card-body">
+              @if (isLoadingND()) {
+                <div class="kpi-chart-skeleton"></div>
+              } @else if (!chartNDOpts()) {
+                <div class="kpi-empty"><i class="ti ti-chart-radar"></i><p>Aucune donnée</p></div>
+              } @else {
+                <apx-chart
+                  [series]="chartNDOpts().series"
+                  [chart]="chartNDOpts().chart"
+                  [colors]="chartNDOpts().colors"
+                  [stroke]="chartNDOpts().stroke"
+                  [fill]="chartNDOpts().fill"
+                  [markers]="chartNDOpts().markers"
+                  [xaxis]="chartNDOpts().xaxis"
+                  [yaxis]="chartNDOpts().yaxis"
+                  [dataLabels]="chartNDOpts().dataLabels"
+                  [legend]="chartNDOpts().legend"
+                  [tooltip]="chartNDOpts().tooltip">
+                </apx-chart>
+              }
+            </div>
+          </div>
+        </div>
+        <!-- ND Table -->
+        <div class="col-md-6">
+          <div class="card shadow-sm border-0 h-100">
+            <div class="card-header kpi-card-header">
+              <i class="ti ti-table-column me-2 text-primary"></i>Score de densité par territoire
+            </div>
+            <div class="card-body p-0">
+              @if (isLoadingND()) {
+                <div class="kpi-shimmer-table px-3 pt-3">
+                  @for (i of [1,2,3,4,5]; track i) { <div class="kpi-shimmer-row"></div> }
+                </div>
+              } @else {
+                <div class="table-responsive" style="max-height:380px; overflow-y:auto;">
+                  <table class="table table-sm kpi-nd-table mb-0">
+                    <thead>
+                      <tr>
+                        <th>Territoire</th>
+                        <th class="text-center">POS Vistés</th>
+                        <th class="text-center">ND %</th>
+                        <th class="text-center">OOS %</th>
+                        <th class="text-center">POS-MM %</th>
+                        <th class="text-center">Score</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (n of ndData(); track n.territory) {
+                        <tr>
+                          <td class="fw-semibold">{{ n.territory }}</td>
+                          <td class="text-center">{{ n.total_pos_visited }}</td>
+                          <td class="text-center">
+                            <span [class]="getPctClass(n.nd_percentage)">{{ n.nd_percentage }}%</span>
+                          </td>
+                          <td class="text-center">
+                            <span class="text-danger">{{ n.oos_percentage }}%</span>
+                          </td>
+                          <td class="text-center">
+                            <span [class]="getPctClass(n.posmm_integration)">{{ n.posmm_integration }}%</span>
+                          </td>
+                          <td class="text-center">
+                            <span class="kpi-density-badge" [class]="getNDDensityClass(n.density_score)">
+                              {{ n.density_score | number:'1.1-1' }}
+                            </span>
+                          </td>
+                        </tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: POS ─ POS Coverage Insights (commune required)               -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'pos') {
+      @if (!commune_uuid) {
+        <div class="kpi-empty">
+          <i class="ti ti-filter-search"></i>
+          <p>Sélectionnez une commune pour afficher les détails POS</p>
+        </div>
+      } @else if (isLoadingPOS()) {
+        <div class="kpi-shimmer-table">
+          @for (i of [1,2,3,4,5,6]; track i) { <div class="kpi-shimmer-row"></div> }
+        </div>
+      } @else {
+        <!-- POS status legend -->
+        <div class="kpi-pos-legend mb-3">
+          <span class="kpi-pos-legend-item"><i class="ti ti-circle-check text-success"></i> Bon coverage</span>
+          <span class="kpi-pos-legend-item"><i class="ti ti-alert-triangle text-warning"></i> Attention requise</span>
+          <span class="kpi-pos-legend-item"><i class="ti ti-alert-circle text-warning"></i> Attention</span>
+          <span class="kpi-pos-legend-item"><i class="ti ti-circle-x text-danger"></i> Non visité</span>
+        </div>
+        <div class="kpi-pos-grid">
+          @for (p of posData(); track p.pos_uuid) {
+            <div class="kpi-pos-card" [class.kpi-pos-not-visited]="p.visits_count === 0"
+              [class.kpi-pos-needs-attention]="p.days_since_last_visit > 21 && p.visits_count > 0">
+              <div class="kpi-pos-header">
+                <div class="kpi-pos-icon">
+                  <i [class]="getCoverageIcon(p.coverage_status)"></i>
+                </div>
+                <div class="kpi-pos-info">
+                  <div class="kpi-pos-name" [title]="p.pos_name">{{ p.pos_name }}</div>
+                  <div class="kpi-pos-meta">{{ p.pos_code }} · {{ p.pos_type }}</div>
+                </div>
+              </div>
+              <div class="kpi-pos-metrics">
+                <div class="kpi-pos-metric">
+                  <i class="ti ti-eye"></i>
+                  <span>{{ p.visits_count }} visites</span>
+                </div>
+                <div class="kpi-pos-metric" [class.text-danger]="p.days_since_last_visit > 14">
+                  <i class="ti ti-clock"></i>
+                  <span>{{ p.days_since_last_visit }}j depuis visite</span>
+                </div>
+                <div class="kpi-pos-metric">
+                  <i class="ti ti-users"></i>
+                  <span>{{ p.unique_agents }} agents</span>
+                </div>
+                <div class="kpi-pos-metric">
+                  <i class="ti ti-chart-bar"></i>
+                  <span>POS-MM : {{ p.posmm_percentage }}%</span>
+                </div>
+              </div>
+            </div>
+          }
+        </div>
+      }
+    }
+
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: TABLEVIEW ─ Child route outlet for drill-down tables         -->
+    <!-- ══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'tableview') {
+      <router-outlet></router-outlet>
+    }
+
+  </div><!-- /content -->
+</div><!-- /page-wrapper -->

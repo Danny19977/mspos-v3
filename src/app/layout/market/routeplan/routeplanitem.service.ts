@@ -228,12 +228,16 @@ export class RouteplanItemService extends ApiService {
   override update(uuid: string, data: Partial<IRoutePlanItem>): Observable<any> {
     return from(this.updateItemLocally(uuid, data)).pipe(
       switchMap(async (updatedItem) => {
+        // Récupérer l'item complet depuis IndexedDB pour envoyer toutes les données au serveur
+        // (évite d'envoyer seulement { uuid, status } dans un PUT qui remplacerait le record entier)
+        const fullItem = await db.routePlanItems.where('uuid').equals(uuid).first();
+        const syncData = { ...(fullItem ? this.stripRelations(fullItem) : {}), uuid, ...data };
         await this.syncQueue.enqueue({
           operationId: uuidv4(),
           entityType: 'routeplanItem',
           operation: 'update',
           endpoint: `${this.endpoint}/update/${uuid}`,
-          data: { uuid, ...data },
+          data: syncData,
           timestamp: new Date(),
           retryCount: 0,
           status: 'pending',
@@ -241,7 +245,7 @@ export class RouteplanItemService extends ApiService {
 
         if (this.networkService.isOnline()) {
           this.syncQueue.processQueue().catch(err =>
-            console.warn('⚠️ Sync arrière-plan routeplanItem update (non bloquant):', err?.message)
+            console.warn(`⚠️ Sync arrière-plan routeplanItem update (non bloquant):`, err?.message)
           );
         }
 
@@ -251,10 +255,18 @@ export class RouteplanItemService extends ApiService {
     );
   }
 
-  private async updateItemLocally(uuid: string, data: Partial<IRoutePlanItem>): Promise<Partial<IRoutePlanItem>> {
+  private async updateItemLocally(uuid: string, data: Partial<IRoutePlanItem>): Promise<any> {
     await (db.routePlanItems.where('uuid').equals(uuid) as any).modify(data);
+    // Retourner le record complet depuis IndexedDB (pas seulement les champs modifiés)
+    const updated = await db.routePlanItems.where('uuid').equals(uuid).first();
     console.log(`💾 RoutePlanItem ${uuid} mis à jour localement:`, data);
-    return { uuid, ...data };
+    return updated ?? { uuid, ...data };
+  }
+
+  /** Supprime les champs relationnels (Pos, RoutePlan) pour n'envoyer que les champs scalaires au serveur */
+  private stripRelations(item: any): any {
+    const { Pos, RoutePlan, ...scalar } = item;
+    return scalar;
   }
 
   /**

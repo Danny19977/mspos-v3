@@ -1,184 +1,150 @@
-﻿import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component, inject, OnInit, signal, computed,
+} from '@angular/core';
+import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { formatDate } from '@angular/common';
-import { ICountry } from '../../../territories/country/models/country.model';
-import { KpiUserVisitSummaryModel } from '../../models/dashboard.models';
 import { AuthService } from '../../../../auth/auth.service';
-import { CountryService } from '../../../territories/country/country.service';
 import { KpiService } from '../../services/kpi.service';
-import { PERIOD_OPTIONS, PeriodKey, computeDateRange } from '../kpi-period.utils';
+import { KpiUserVisitSummaryModel } from '../../models/dashboard.models';
+import { KpiTableViewParams } from '../../services/kpi.service';
 
 @Component({
   selector: 'app-kpi-user-visit-summary',
   standalone: false,
   templateUrl: './kpi-user-visit-summary.component.html',
-  styleUrl: './kpi-user-visit-summary.component.scss',
+  styleUrl:    './kpi-user-visit-summary.component.scss',
 })
-export class KpiUserVisitSummaryComponent implements OnInit, OnDestroy {
+export class KpiUserVisitSummaryComponent implements OnInit {
 
-  //  DI 
-  private authService    = inject(AuthService);
-  private countryService = inject(CountryService);
-  private kpiService     = inject(KpiService);
+  private auth       = inject(AuthService);
+  private kpiService = inject(KpiService);
+  private fb         = inject(FormBuilder);
 
-  //  Signals 
-  isLoading       = signal(false);
-  countryList     = signal<ICountry[]>([]);
-  selectedCountry = signal<ICountry | undefined>(undefined);
-  summaryList     = signal<KpiUserVisitSummaryModel[]>([]);
-  searchTerm      = signal('');
-  selectedTitle   = signal('');
-  selectedPeriod  = signal<PeriodKey>('month');
-  customStart     = signal('');
-  customEnd       = signal('');
+  // ── Date range ────────────────────────────────────────────────────────────
+  start_date = '';
+  end_date   = '';
+  dateRange!: FormGroup;
 
-  //  Computed 
-  filteredList = computed(() => {
-    let data = this.summaryList();
-    const title = this.selectedTitle();
-    const term  = this.searchTerm().toLowerCase().trim();
-    if (title) data = data.filter(i => i.title === title);
-    if (term)  data = data.filter(i =>
-      i.name.toLowerCase().includes(term) || i.title.toLowerCase().includes(term));
-    return data;
+  // ── User context ──────────────────────────────────────────────────────────
+  country_uuid  = '';
+  province_uuid = '';
+  area_uuid     = '';
+
+  // ── UI State ──────────────────────────────────────────────────────────────
+  isLoading   = signal(false);
+  titleFilter = signal('');
+  sortKey     = signal<'daily_pct' | 'monthly_pct' | 'yearly_pct' | 'range_pct' | 'name'>('monthly_pct');
+  sortDesc    = signal(true);
+  viewMode    = signal<'table' | 'cards'>('table');
+
+  readonly TITLES = ['', 'ASM', 'Supervisor', 'DR', 'Cyclo'];
+
+  // ── Data ──────────────────────────────────────────────────────────────────
+  private raw = signal<KpiUserVisitSummaryModel[]>([]);
+
+  // ── Computed: filter + sort ──────────────────────────────────────────────
+  rows = computed<KpiUserVisitSummaryModel[]>(() => {
+    let list = this.raw();
+    if (this.titleFilter()) list = list.filter(r => r.title === this.titleFilter());
+    const key  = this.sortKey();
+    const desc = this.sortDesc();
+    list = [...list].sort((a, b) => {
+      const av = (a as any)[key] ?? 0;
+      const bv = (b as any)[key] ?? 0;
+      return desc ? bv - av : av - bv;
+    });
+    return list;
   });
 
-  totalAgents       = computed(() => this.filteredList().length);
-  totalDailyVisits  = computed(() => this.filteredList().reduce((s, i) => s + i.daily_visits,   0));
-  totalMonthlyVisits= computed(() => this.filteredList().reduce((s, i) => s + i.monthly_visits, 0));
-  totalYearlyVisits = computed(() => this.filteredList().reduce((s, i) => s + i.yearly_visits,  0));
-  totalRangeVisits  = computed(() => this.filteredList().reduce((s, i) => s + i.total_visits,   0));
-  avgRangePct       = computed(() => {
-    const list = this.filteredList();
-    if (!list.length) return 0;
-    return Math.round(list.reduce((s, i) => s + i.range_pct, 0) / list.length * 100) / 100;
-  });
-
-  //  Config 
-  readonly periodOptions = PERIOD_OPTIONS;
-  readonly titleOptions  = ['ASM', 'Supervisor', 'DR', 'Cyclo'];
-
-  private start_date    = '';
-  private end_date      = '';
-  private country_uuid  = '';
-  private autoRefreshId?: ReturnType<typeof setInterval>;
-
-  //  Lifecycle 
-  ngOnInit(): void {
-    this.applyPeriod('month');
-
-    this.authService.user().subscribe({
-      next: (user) => {
-        this.countryService.getAll().subscribe({
-          next: (res) => {
-            const list: ICountry[] = res.data ?? [];
-            this.countryList.set(list);
-            const country = (user.role === 'Managers' || user.role === 'Support')
-              ? (list.find(c => c.uuid === user.country_uuid) ?? list[0])
-              : list[0];
-            if (country) {
-              this.selectedCountry.set(country);
-              this.country_uuid = country.uuid;
-              this.loadData();
-            } else {
-              this.isLoading.set(false);
-            }
-          },
-          error: (err) => { console.error(err); this.isLoading.set(false); },
-        });
-      },
-      error: (err) => { console.error(err); this.isLoading.set(false); },
-    });
-
-    this.autoRefreshId = setInterval(() => this.loadData(), 30_000);
-  }
-
-  ngOnDestroy(): void {
-    if (this.autoRefreshId) clearInterval(this.autoRefreshId);
-  }
-
-  //  Period 
-  applyPeriod(key: PeriodKey): void {
-    this.selectedPeriod.set(key);
-    if (key !== 'custom') {
-      const [s, e]    = computeDateRange(key);
-      this.start_date = s;
-      this.end_date   = e;
-    }
-  }
-
-  onPeriodChange(key: string): void {
-    this.applyPeriod(key as PeriodKey);
-    if (key !== 'custom') this.loadData();
-  }
-
-  onCustomDateChange(): void {
-    const s = this.customStart();
-    const e = this.customEnd();
-    if (s && e && s <= e) {
-      this.start_date = s;
-      this.end_date   = e;
-      this.loadData();
-    }
-  }
-
-  //  Country selector 
-  onCountryChange(event: any): void {
-    const country: ICountry = event.value;
-    this.selectedCountry.set(country);
-    this.country_uuid = country.uuid;
-    this.loadData();
-  }
-
-  //  Data 
-  loadData(): void {
-    if (!this.country_uuid || !this.start_date || !this.end_date) return;
-    this.isLoading.set(true);
-    this.kpiService.UserVisitSummary(
-      this.country_uuid, this.start_date, this.end_date,
-      { title: this.selectedTitle() },
-    ).subscribe({
-      next:  (res) => { this.summaryList.set(res?.data ?? []); this.isLoading.set(false); },
-      error: (err) => { console.error(err); this.summaryList.set([]); this.isLoading.set(false); },
-    });
-  }
-
-  //  Badge helpers 
-  getPctClass(pct: number): string {
-    return pct >= 100 ? 'bg-success' : pct >= 75 ? 'bg-warning text-dark' : 'bg-danger';
-  }
-
-  getTitleBadgeClass(title: string): string {
-    const map: Record<string, string> = {
-      ASM: 'bg-primary', Supervisor: 'bg-success',
-      DR: 'bg-warning text-dark', Cyclo: 'bg-secondary',
+  // ── Stats ───────────────────────────────────────────────────────────────
+  stats = computed(() => {
+    const list = this.rows();
+    if (!list.length) return null;
+    const sum = (k: keyof KpiUserVisitSummaryModel) =>
+      list.reduce((s, r) => s + ((r[k] as number) ?? 0), 0);
+    const above = (k: keyof KpiUserVisitSummaryModel, pct: number) =>
+      list.filter(r => ((r[k] as number) ?? 0) >= pct).length;
+    return {
+      total:      list.length,
+      onTarget:   above('monthly_pct', 100),
+      atRisk:     list.filter(r => r.monthly_pct >= 70 && r.monthly_pct < 100).length,
+      critical:   list.filter(r => r.monthly_pct < 70).length,
+      avgMonthly: Math.round(sum('monthly_pct') / list.length),
+      totalVisitsRange: sum('total_visits'),
     };
-    return map[title] ?? 'bg-info';
+  });
+
+  ngOnInit(): void {
+    const now      = new Date();
+    const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastDay  = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    this.start_date = formatDate(firstDay, 'yyyy-MM-dd', 'en-US');
+    this.end_date   = formatDate(lastDay,  'yyyy-MM-dd', 'en-US');
+    this.dateRange  = this.fb.group({ rangeValue: new FormControl([firstDay, lastDay]) });
+
+    this.auth.user().subscribe(user => {
+      this.country_uuid  = user.country_uuid  ?? '';
+      this.province_uuid = user.province_uuid ?? '';
+      this.area_uuid     = user.area_uuid     ?? '';
+      this.load();
+    });
+
+    this.dateRange.valueChanges.subscribe(val => {
+      if (val.rangeValue?.[0] && val.rangeValue?.[1]) {
+        this.start_date = formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US');
+        const end = new Date(val.rangeValue[1]);
+        end.setDate(end.getDate() + 1);
+        this.end_date = formatDate(end, 'yyyy-MM-dd', 'en-US');
+        this.load();
+      }
+    });
   }
 
-  //  Export 
-  exportToCSV(): void {
-    const list = this.filteredList();
-    if (!list.length) return;
-    const headers = [
-      'Nom', 'Titre',
-      'Visites Jour', 'Cible Jour', '% Jour',
-      'Visites Mois', 'Cible Mois', '% Mois',
-      'Visites Annee', 'Cible Annee', '% Annee',
-      'Visites Periode', 'Cible Periode', '% Periode',
-    ];
-    const rows = list.map(i => [
-      i.name, i.title,
-      i.daily_visits,   i.daily_target,   i.daily_pct,
-      i.monthly_visits, i.monthly_target, i.monthly_pct,
-      i.yearly_visits,  i.yearly_target,  i.yearly_pct,
-      i.total_visits,   i.range_target,   i.range_pct,
-    ].join(','));
-    const link = document.createElement('a');
-    link.href = URL.createObjectURL(
-      new Blob([[headers.join(','), ...rows].join('\n')], { type: 'text/csv;charset=utf-8;' }),
-    );
-    link.download = `kpi-user-summary-${formatDate(new Date(), 'yyyy-MM-dd', 'en-US')}.csv`;
-    link.style.visibility = 'hidden';
-    document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  load(): void {
+    if (!this.country_uuid) return;
+    this.isLoading.set(true);
+    const params: KpiTableViewParams = {
+      country_uuid:  this.country_uuid,
+      province_uuid: this.province_uuid || undefined,
+      area_uuid:     this.area_uuid     || undefined,
+      start_date:    this.start_date,
+      end_date:      this.end_date,
+      title:         this.titleFilter() || undefined,
+    };
+    this.kpiService.UserVisitSummary(params).subscribe({
+      next: res => {
+        this.raw.set(res.data ?? []);
+        this.isLoading.set(false);
+      },
+      error: () => this.isLoading.set(false),
+    });
   }
+
+  setTitle(t: string): void {
+    this.titleFilter.set(t);
+    this.load();
+  }
+
+  setSort(k: typeof this.sortKey extends () => infer T ? T : never): void {
+    if (this.sortKey() === k) { this.sortDesc.update(v => !v); } else { this.sortKey.set(k as any); this.sortDesc.set(true); }
+  }
+
+  sortIcon(k: string): string {
+    if (this.sortKey() !== k) return 'ti ti-selector';
+    return this.sortDesc() ? 'ti ti-sort-descending' : 'ti ti-sort-ascending';
+  }
+
+  barColor(pct: number): string {
+    if (pct >= 100) return '#06d6a0';
+    if (pct >=  70) return '#ffd166';
+    return '#ef476f';
+  }
+
+  statusClass(pct: number): string {
+    if (pct >= 100) return 'kpi-vs-success';
+    if (pct >=  70) return 'kpi-vs-warning';
+    return 'kpi-vs-danger';
+  }
+
+  trackBy(_: number, r: KpiUserVisitSummaryModel): string { return r.user_uuid; }
 }

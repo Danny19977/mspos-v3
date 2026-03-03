@@ -1,7 +1,7 @@
 import { Injectable, Injector } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, from, of, throwError } from 'rxjs';
-import { switchMap, catchError, tap } from 'rxjs/operators';
+import { switchMap, catchError, tap, map } from 'rxjs/operators';
 import { ApiService } from '../../../shared/services/api.service';
 import { environment } from '../../../../environments/environment';
 import { IUser } from '../../management/user/models/user.model';
@@ -39,8 +39,18 @@ export class PosVenteService extends ApiService {
   }
 
   /**
-   * Récupère les POS avec filtres avancés - OFFLINE FIRST
-   * Affiche toujours les données locales en premier pour une meilleure UX
+   * Pagination par commune UUID → /all/paginate/commune-filter/:commune_uuid
+   * Différent de getPaginatedByCommuneId qui filtre par user_uuid.
+   */
+  getPaginatedByCommuneFilterId(commune_uuid: string, page: number, pageSize: number, search: string): Observable<any> {
+    const params = this.buildFilterParams(page, pageSize, { search });
+    return this.http.get<any>(`${this.endpoint}/all/paginate/commune-filter/${commune_uuid}?${params.toString()}`);
+  }
+
+  /**
+   * Récupère les POS paginés avec filtres avancés.
+   * En ligne  → appel HTTP direct vers le backend (renvoie { data, pagination }).
+   * Hors ligne → lecture du cache IndexedDB avec structure pagination synthétique.
    */
   getPaginatedWithAdvancedFilters(
     currentUser: IUser,
@@ -48,54 +58,46 @@ export class PosVenteService extends ApiService {
     pageSize: number,
     filters: any = {}
   ): Observable<any> {
-    // Toujours retourner les données locales en premier (offline-first)
-    return from(this.getFromLocalCacheWithFilters(currentUser, filters)).pipe(
-      tap(localData => {
-        // Si online, synchroniser en arrière-plan sans bloquer l'affichage
-        if (this.networkService.isOnline()) {
-          this.syncPosInBackground(currentUser, page, pageSize, filters);
-        }
-      })
-    );
-  }
+    if (this.networkService.isOnline()) {
+      const params = this.buildFilterParams(page, pageSize, filters);
+      let baseUrl: string;
 
-  /**
-   * Synchronise les POS en arrière-plan (ne bloque pas l'affichage)
-   */
-  private syncPosInBackground(
-    currentUser: IUser,
-    page: number,
-    pageSize: number,
-    filters: any = {}
-  ): void {
-    let params = this.buildFilterParams(page, pageSize, filters);
-    let url: string;
+      if (currentUser.role === 'Manager') {
+        baseUrl = `${this.endpoint}/all/paginate/country/${currentUser.country_uuid}`;
+      } else if (currentUser.role === 'ASM') {
+        baseUrl = `${this.endpoint}/all/paginate/province/${currentUser.province_uuid}`;
+      } else if (currentUser.role === 'Supervisor') {
+        baseUrl = `${this.endpoint}/all/paginate/area/${currentUser.area_uuid}`;
+      } else if (currentUser.role === 'DR') {
+        baseUrl = `${this.endpoint}/all/paginate/subarea/${currentUser.sub_area_uuid}`;
+      } else if (currentUser.role === 'Cyclo') {
+        baseUrl = `${this.endpoint}/all/paginate/commune/${currentUser.uuid}`;
+      } else {
+        // Support / Admin — accès à tous les POS
+        baseUrl = `${this.endpoint}/all/paginate`;
+      }
 
-    if (currentUser.role == 'ASM') {
-      url = `${this.endpoint}/all/paginate/province/${currentUser.province_uuid}?${params.toString()}`;
-    } else if (currentUser.role == 'Supervisor') {
-      url = `${this.endpoint}/all/paginate/area/${currentUser.area_uuid}?${params.toString()}`;
-    } else if (currentUser.role == 'DR') {
-      url = `${this.endpoint}/all/paginate/subarea/${currentUser.sub_area_uuid}?${params.toString()}`;
-    } else if (currentUser.role == 'Cyclo') {
-      url = `${this.endpoint}/all/paginate/commune/${currentUser.uuid}?${params.toString()}`;
-    } else {
-      url = `${this.endpoint}/all/paginate?${params.toString()}`;
+      return this.http.get<any>(`${baseUrl}?${params.toString()}`).pipe(
+        tap(response => {
+          if (response?.data?.length) {
+            this.updateLocalPosCache(response.data);
+          }
+        })
+      );
     }
 
-    // Appeler le serveur en arrière-plan
-    this.http.get<any>(url).subscribe({
-      next: (response: any) => {
-        if (response?.data) {
-          this.updateLocalPosCache(response.data).then(() => {
-            console.log('🔄 POS synchronisés en arrière-plan');
-          });
+    // Hors ligne : lecture du cache local avec structure pagination synthétique
+    return from(this.getFromLocalCacheWithFilters(currentUser, filters)).pipe(
+      map((localData: any) => ({
+        data: localData.data,
+        pagination: {
+          total_records: localData.data.length,
+          total_pages: 1,
+          current_page: page,
+          page_size: pageSize
         }
-      },
-      error: (error: any) => {
-        console.log('⚠️ Erreur sync arrière-plan (non bloquant):', error.message);
-      }
-    });
+      }))
+    );
   }
 
   /**
@@ -211,7 +213,9 @@ export class PosVenteService extends ApiService {
   }
 
   /**
-   * Deuxième méthode de pagination avec filtres
+   * Récupère les POS paginés filtrés par territoire (utilisé par PosFilterListComponent).
+   * En ligne  → appel HTTP direct vers le backend selon le type de territoire.
+   * Hors ligne → lecture du cache IndexedDB avec structure pagination synthétique.
    */
   getPaginatedWithAdvancedFilters2(
     name: string,
@@ -220,14 +224,44 @@ export class PosVenteService extends ApiService {
     pageSize: number,
     filters: any = {}
   ): Observable<any> {
-    // Retourner les données locales en premier
+    if (this.networkService.isOnline()) {
+      const params = this.buildFilterParams(page, pageSize, filters);
+      let baseUrl: string;
+
+      if (name === 'country' || name === 'Manager' || name === 'Support') {
+        baseUrl = `${this.endpoint}/all/paginate/country/${territoire_uuid}`;
+      } else if (name === 'province' || name === 'ASM') {
+        baseUrl = `${this.endpoint}/all/paginate/province/${territoire_uuid}`;
+      } else if (name === 'area' || name === 'Supervisor') {
+        baseUrl = `${this.endpoint}/all/paginate/area/${territoire_uuid}`;
+      } else if (name === 'subarea' || name === 'DR') {
+        baseUrl = `${this.endpoint}/all/paginate/subarea/${territoire_uuid}`;
+      } else if (name === 'commune' || name === 'Cyclo') {
+        baseUrl = `${this.endpoint}/all/paginate/commune-filter/${territoire_uuid}`;
+      } else {
+        baseUrl = `${this.endpoint}/all/paginate`;
+      }
+
+      return this.http.get<any>(`${baseUrl}?${params.toString()}`).pipe(
+        tap(response => {
+          if (response?.data?.length) {
+            this.updateLocalPosCache(response.data);
+          }
+        })
+      );
+    }
+
+    // Hors ligne : lecture du cache local avec structure pagination synthétique
     return from(this.getFromLocalCacheByTerritory(name, territoire_uuid, filters)).pipe(
-      tap(localData => {
-        // Synchroniser en arrière-plan si online
-        if (this.networkService.isOnline()) {
-          this.syncPosByTerritoryInBackground(name, territoire_uuid, page, pageSize, filters);
+      map((localData: any) => ({
+        data: localData.data,
+        pagination: {
+          total_records: localData.data.length,
+          total_pages: 1,
+          current_page: page,
+          page_size: pageSize
         }
-      })
+      }))
     );
   }
 
@@ -264,47 +298,6 @@ export class PosVenteService extends ApiService {
       page_size: posList.length,
       offline: !this.networkService.isOnline()
     };
-  }
-
-  /**
-   * Synchronise en arrière-plan par territoire
-   */
-  private syncPosByTerritoryInBackground(
-    name: string,
-    territoire_uuid: string,
-    page: number,
-    pageSize: number,
-    filters: any = {}
-  ): void {
-    let params = this.buildFilterParams(page, pageSize, filters);
-    let url: string;
-
-    if (name === 'country' || name === 'Manager' || name === 'Support') {
-      url = `${this.endpoint}/all/paginate/country/${territoire_uuid}?${params.toString()}`;
-    } else if (name === 'province' || name === 'ASM') {
-      url = `${this.endpoint}/all/paginate/province/${territoire_uuid}?${params.toString()}`;
-    } else if (name === 'area' || name === 'Supervisor') {
-      url = `${this.endpoint}/all/paginate/area/${territoire_uuid}?${params.toString()}`;
-    } else if (name === 'subarea' || name === 'DR') {
-      url = `${this.endpoint}/all/paginate/subarea/${territoire_uuid}?${params.toString()}`;
-    } else if (name === 'commune' || name === 'Cyclo') {
-      url = `${this.endpoint}/all/paginate/commune-filter/${territoire_uuid}?${params.toString()}`;
-    } else {
-      url = `${this.endpoint}/all/paginate?${params.toString()}`;
-    }
-
-    this.http.get<any>(url).subscribe({
-      next: (response: any) => {
-        if (response?.data) {
-          this.updateLocalPosCache(response.data).then(() => {
-            console.log('🔄 POS synchronisés en arrière-plan (territoire)');
-          });
-        }
-      },
-      error: (error: any) => {
-        console.log('⚠️ Erreur sync arrière-plan (non bloquant):', error.message);
-      }
-    });
   }
 
   /**

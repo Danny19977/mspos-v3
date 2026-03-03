@@ -1,21 +1,21 @@
 import {
   Component,
-  OnInit,
+  OnChanges,
+  SimpleChanges,
+  Input,
   signal,
   inject,
   DestroyRef,
   computed,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { AuthService } from '../../../auth/auth.service';
-import { IUser } from '../../management/user/models/user.model';
+import { IUser } from '../../../management/user/models/user.model';
 import {
   NdIndividualService,
   NdSummary,
   NdByBrand,
   NdPosItem,
 } from './nd-individual.service';
-import { formatDate } from '@angular/common';
 import { ApexAxisChartSeries, ApexChart, ApexDataLabels, ApexPlotOptions, ApexXAxis, ApexYAxis, ApexTooltip, ApexLegend, ApexStroke, ApexFill, ApexNonAxisChartSeries, ApexResponsive } from 'ng-apexcharts';
 import { MatTableDataSource } from '@angular/material/table';
 
@@ -52,25 +52,22 @@ export type DonutChartOptions = {
   templateUrl: './nd-individual.component.html',
   styleUrl: './nd-individual.component.scss',
 })
-export class NdIndividualComponent implements OnInit {
+export class NdIndividualComponent implements OnChanges {
   // ── Injections ───────────────────────────────────────────────────────────────
-  private readonly authService = inject(AuthService);
   private readonly ndService = inject(NdIndividualService);
   private readonly destroyRef = inject(DestroyRef);
 
+  // ── Inputs from parent ───────────────────────────────────────────────────────
+  @Input() startDate = '';
+  @Input() endDate = '';
+  @Input() currentUser: IUser | null = null;
+
   // ── State ────────────────────────────────────────────────────────────────────
-  currentUser = signal<IUser | null>(null);
   isLoading = signal(false);
 
   summary = signal<NdSummary | null>(null);
   brandList = signal<NdByBrand[]>([]);
   posList = signal<NdPosItem[]>([]);
-
-  selectedPeriod = signal<string>('TODAY');
-  start_date = signal('');
-  end_date = signal('');
-  customStartDate = signal('');
-  customEndDate = signal('');
 
   // ── Filter / Search for POS table ────────────────────────────────────────────
   searchPos = signal('');
@@ -149,74 +146,23 @@ export class NdIndividualComponent implements OnInit {
   });
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────────
-  ngOnInit(): void {
-    this.authService
-      .user()
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (user) => {
-          this.currentUser.set(user);
-          this.applyPeriod(this.selectedPeriod());
-        },
-      });
-  }
-
-  // ── Period helpers ────────────────────────────────────────────────────────────
-  applyPeriod(period: string): void {
-    this.selectedPeriod.set(period);
-    const now = new Date();
-    let start = new Date();
-
-    switch (period) {
-      case 'TODAY':
-        start = new Date(now);
-        break;
-      case '1W':
-        start.setDate(now.getDate() - 7);
-        break;
-      case '1M':
-        start.setMonth(now.getMonth() - 1);
-        break;
-      case '3M':
-        start.setMonth(now.getMonth() - 3);
-        break;
-      case '6M':
-        start.setMonth(now.getMonth() - 6);
-        break;
-      case '1Y':
-        start.setFullYear(now.getFullYear() - 1);
-        break;
-      case 'CUSTOM':
-        // Ne pas charger automatiquement, attendre la saisie manuelle
-        return;
+  ngOnChanges(changes: SimpleChanges): void {
+    if ((changes['startDate'] || changes['endDate'] || changes['currentUser']) &&
+        this.startDate && this.endDate && this.currentUser?.uuid) {
+      this.loadAll();
     }
-
-    this.start_date.set(formatDate(start, 'yyyy-MM-dd', 'en-US'));
-    this.end_date.set(formatDate(now, 'yyyy-MM-dd', 'en-US'));
-    this.loadAll();
-  }
-
-  applyCustomPeriod(): void {
-    const s = this.customStartDate();
-    const e = this.customEndDate();
-    if (!s || !e) return;
-    if (s > e) return;
-    this.start_date.set(s);
-    this.end_date.set(e);
-    this.loadAll();
   }
 
   // ── Data loading ──────────────────────────────────────────────────────────────
   loadAll(): void {
-    const user = this.currentUser();
+    const user = this.currentUser;
     if (!user?.uuid) return;
     this.isLoading.set(true);
 
     const uid = user.uuid;
-    const s = this.start_date();
-    const e = this.end_date();
+    const s = this.startDate;
+    const e = this.endDate;
 
-    // Summary
     this.ndService
       .getSummary(uid, s, e)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -224,7 +170,6 @@ export class NdIndividualComponent implements OnInit {
         next: (res) => this.summary.set(res.data),
       });
 
-    // By brand
     this.ndService
       .getByBrand(uid, s, e)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -236,7 +181,6 @@ export class NdIndividualComponent implements OnInit {
         },
       });
 
-    // POS list
     this.ndService
       .getPosList(uid, s, e)
       .pipe(takeUntilDestroyed(this.destroyRef))
@@ -252,37 +196,17 @@ export class NdIndividualComponent implements OnInit {
 
   // ── Chart builders ────────────────────────────────────────────────────────────
   private buildBarChart(brands: NdByBrand[]): void {
-    const top = brands.slice(0, 15); // max 15 bars for readability
+    const top = brands.slice(0, 15);
     this.barChartOptions.set({
       series: [
-        {
-          name: 'ND%',
-          data: top.map((b) => +(b.nd_percent ?? 0)),
-        },
-        {
-          name: 'POS ND actif',
-          data: top.map((b) => b.nd_pos),
-        },
+        { name: 'ND%', data: top.map((b) => +(b.nd_percent ?? 0)) },
+        { name: 'POS ND actif', data: top.map((b) => b.nd_pos) },
       ],
-      chart: {
-        type: 'bar',
-        height: 340,
-        toolbar: { show: false },
-        fontFamily: 'inherit',
-      },
-      plotOptions: {
-        bar: {
-          horizontal: false,
-          columnWidth: '55%',
-          borderRadius: 4,
-        },
-      },
+      chart: { type: 'bar', height: 340, toolbar: { show: false }, fontFamily: 'inherit' },
+      plotOptions: { bar: { horizontal: false, columnWidth: '55%', borderRadius: 4 } },
       dataLabels: { enabled: false },
       stroke: { show: true, width: 2, colors: ['transparent'] },
-      xaxis: {
-        categories: top.map((b) => b.brand_name),
-        labels: { rotate: -35, style: { fontSize: '11px' } },
-      },
+      xaxis: { categories: top.map((b) => b.brand_name), labels: { rotate: -35, style: { fontSize: '11px' } } },
       yaxis: { title: { text: 'Valeur' } },
       fill: { opacity: 1 },
       tooltip: {
@@ -302,22 +226,13 @@ export class NdIndividualComponent implements OnInit {
     const top = brands.slice(0, 8);
     this.donutChartOptions.set({
       series: top.map((b) => b.nd_pos),
-      chart: {
-        type: 'donut',
-        height: 300,
-        fontFamily: 'inherit',
-      },
+      chart: { type: 'donut', height: 300, fontFamily: 'inherit' },
       labels: top.map((b) => b.brand_name),
       legend: { position: 'bottom', fontSize: '12px' },
       dataLabels: { enabled: true, formatter: (val: number) => val.toFixed(1) + '%' },
-      tooltip: {
-        y: { formatter: (val: number) => val + ' POS ND actif' },
-      },
+      tooltip: { y: { formatter: (val: number) => val + ' POS ND actif' } },
       responsive: [{ breakpoint: 480, options: { chart: { width: 200 } } }],
-      colors: [
-        '#3E7BFA', '#22C55E', '#F59E0B', '#EF4444', '#8B5CF6',
-        '#EC4899', '#14B8A6', '#F97316',
-      ],
+      colors: ['#3E7BFA', '#22C55E', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'],
       plotOptions: {
         pie: {
           donut: {

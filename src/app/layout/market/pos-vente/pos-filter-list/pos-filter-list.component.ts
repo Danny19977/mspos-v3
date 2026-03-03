@@ -411,68 +411,50 @@ export class PosFilterListComponent implements OnInit {
 
   // Méthode de fallback avec l'ancienne logique
   fetchProductsOldMethod(name: string, territoire_uuid: string) {
-    if (name == "country" || name == 'Manager' || name == 'Support') {
+    const applyResult = (res: any) => {
+      this.dataList.set(res.data);
+      this.originalDataList.set([...res.data]);
+      this.total_pages.set(res.pagination?.total_pages ?? 1);
+      this.total_records.set(res.pagination?.total_records ?? res.data?.length ?? 0);
+      this.dataSource.data = this.dataList();
+      this.updateUniqueValues();
+      this.isLoadingData.set(false);
+    };
+
+    if (name == 'country' || name == 'Manager' || name == 'Support') {
       this.isLoadingData.set(true);
-      this.countryService.get(this.territoire_uuid()).subscribe(res => {
+      this.countryService.get(territoire_uuid).subscribe(res => {
         this.territoire.set(res.data);
-        console.log("territoire", this.territoire());
-        this.posVenteService.getPaginatedByCountryUUId(territoire_uuid, this.current_page(), this.page_size(), this.search()).subscribe(res => {
-          this.dataList.set(res.data);
-          this.originalDataList.set([...res.data]);
-          console.log("dataList", this.dataList());
-          this.total_pages.set(res.pagination.total_pages);
-          this.total_records.set(res.pagination.total_records);
-          this.dataSource.data = this.dataList();
-          this.updateUniqueValues();
-          this.isLoadingData.set(false);
-        });
+        // Country → /all/paginate/country/:country_uuid
+        this.posVenteService.getPaginatedByCountryUUId(territoire_uuid, this.current_page(), this.page_size(), this.search()).subscribe(applyResult);
       });
     } else if (name == 'province' || name == 'ASM') {
       this.isLoadingData.set(true);
-      this.provinceService.get(this.territoire_uuid()).subscribe(res => {
+      this.provinceService.get(territoire_uuid).subscribe(res => {
         this.territoire.set(res.data);
-
-        // Récupérer les données paginées par province
-        this.posVenteService.getPaginatedByAreaId(territoire_uuid, this.current_page(), this.page_size(), this.search()).subscribe(res => {
-          this.dataList.set(res.data);
-          this.originalDataList.set([...res.data]);
-          this.total_pages.set(res.pagination.total_pages);
-          this.total_records.set(res.pagination.total_records);
-          this.dataSource.data = this.dataList();
-          this.updateUniqueValues();
-          this.isLoadingData.set(false);
-        });
+        // Province → /all/paginate/province/:province_uuid
+        this.posVenteService.getPaginatedByProvinceId(territoire_uuid, this.current_page(), this.page_size(), this.search()).subscribe(applyResult);
       });
     } else if (name == 'area' || name == 'Supervisor') {
       this.isLoadingData.set(true);
-      this.areaService.get(this.territoire_uuid()).subscribe(res => {
+      this.areaService.get(territoire_uuid).subscribe(res => {
         this.territoire.set(res.data);
-        // Récupérer les données paginées par area
-        this.posVenteService.getPaginatedBySubAreaId(territoire_uuid, this.current_page(), this.page_size(), this.search()).subscribe(res => {
-          this.dataList.set(res.data);
-          this.originalDataList.set([...res.data]);
-          this.total_pages.set(res.pagination.total_pages);
-          this.total_records.set(res.pagination.total_records);
-          this.dataSource.data = this.dataList();
-          this.updateUniqueValues();
-          this.isLoadingData.set(false);
-        });
+        // Area → /all/paginate/area/:area_uuid
+        this.posVenteService.getPaginatedByAreaId(territoire_uuid, this.current_page(), this.page_size(), this.search()).subscribe(applyResult);
       });
     } else if (name == 'subarea' || name == 'DR') {
-      this.subAreaService.get(this.territoire_uuid()).subscribe(res => {
+      this.isLoadingData.set(true);
+      this.subAreaService.get(territoire_uuid).subscribe(res => {
         this.territoire.set(res.data);
-        console.log("territoire", this.territoire());
-        this.isLoadingData.set(true);
-        // Récupérer les données paginées par subarea
-        this.posVenteService.getPaginatedByCommuneId(territoire_uuid, this.current_page(), this.page_size(), this.search()).subscribe(res => {
-          this.dataList.set(res.data);
-          this.originalDataList.set([...res.data]);
-          this.total_pages.set(res.pagination.total_pages);
-          this.total_records.set(res.pagination.total_records);
-          this.dataSource.data = this.dataList();
-          this.updateUniqueValues();
-          this.isLoadingData.set(false);
-        });
+        // SubArea → /all/paginate/subarea/:sub_area_uuid
+        this.posVenteService.getPaginatedBySubAreaId(territoire_uuid, this.current_page(), this.page_size(), this.search()).subscribe(applyResult);
+      });
+    } else if (name == 'commune' || name == 'Cyclo') {
+      this.isLoadingData.set(true);
+      this.communeService.get(territoire_uuid).subscribe(res => {
+        this.territoire.set(res.data);
+        // Commune → /all/paginate/commune-filter/:commune_uuid
+        this.posVenteService.getPaginatedByCommuneFilterId(territoire_uuid, this.current_page(), this.page_size(), this.search()).subscribe(applyResult);
       });
     }
   }

@@ -1,227 +1,259 @@
-﻿<div class="row">
-  <div class="col-md-12 d-flex">
-    <div class="card w-100">
+<div class="kpi-vs-wrapper">
 
-      <div class="card-header border-0 pb-0">
-        <div class="d-flex align-items-center justify-content-between flex-wrap row-gap-3">
-          <h4><i class="ti ti-table-alias me-1"></i>Résumé KPI par Utilisateur</h4>
+  <!-- ── Header ─────────────────────────────────────────────────────────── -->
+  <div class="kpi-vs-header">
+    <div class="d-flex align-items-center gap-3">
+      <div class="kpi-vs-badge"><i class="ti ti-users"></i></div>
+      <div>
+        <h6 class="mb-0 fw-700">Résumé Visites Agents</h6>
+        <small class="text-muted">Performance individuelle — objectifs quotidiens, mensuels, annuels et période</small>
+      </div>
+    </div>
+    <!-- Date + View toggle -->
+    <div class="d-flex align-items-center gap-2 flex-wrap">
+      <div class="btn-group" role="group">
+        <button type="button" class="btn btn-sm"
+          [class.btn-primary]="viewMode()==='table'" [class.btn-outline-secondary]="viewMode()!=='table'"
+          (click)="viewMode.set('table')"><i class="ti ti-table me-1"></i>Tableau</button>
+        <button type="button" class="btn btn-sm"
+          [class.btn-primary]="viewMode()==='cards'" [class.btn-outline-secondary]="viewMode()!=='cards'"
+          (click)="viewMode.set('cards')"><i class="ti ti-layout-cards me-1"></i>Cartes</button>
+      </div>
+      <form [formGroup]="dateRange">
+        <div class="kpi-vs-date-field">
+          <i class="ti ti-calendar"></i>
+          <input type="text" class="form-control form-control-sm kpi-vs-date-input"
+            bsDaterangepicker formControlName="rangeValue"
+            [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', rangeInputFormat: 'DD/MM/YYYY', showWeekNumbers: false }"
+            placeholder="Plage de dates" autocomplete="off">
+        </div>
+      </form>
+    </div>
+  </div>
 
-          <div class="d-flex align-items-center justify-content-center flex-wrap row-gap-2 gap-2">
+  <!-- ── Stats Ribbon ───────────────────────────────────────────────────── -->
+  @if(stats(); as s) {
+  <div class="kpi-vs-ribbon">
+    <div class="kpi-vs-ribbon-card kpi-vs-ribbon-total">
+      <i class="ti ti-users-group"></i>
+      <div class="kpi-vs-ribbon-val">{{ s.total }}</div>
+      <div class="kpi-vs-ribbon-lbl">Agents</div>
+    </div>
+    <div class="kpi-vs-ribbon-card kpi-vs-ribbon-ok">
+      <i class="ti ti-circle-check"></i>
+      <div class="kpi-vs-ribbon-val">{{ s.onTarget }}</div>
+      <div class="kpi-vs-ribbon-lbl">Objectif atteint</div>
+    </div>
+    <div class="kpi-vs-ribbon-card kpi-vs-ribbon-warn">
+      <i class="ti ti-alert-triangle"></i>
+      <div class="kpi-vs-ribbon-val">{{ s.atRisk }}</div>
+      <div class="kpi-vs-ribbon-lbl">À risque (70–99%)</div>
+    </div>
+    <div class="kpi-vs-ribbon-card kpi-vs-ribbon-crit">
+      <i class="ti ti-alert-circle"></i>
+      <div class="kpi-vs-ribbon-val">{{ s.critical }}</div>
+      <div class="kpi-vs-ribbon-lbl">Critique (&lt;70%)</div>
+    </div>
+    <div class="kpi-vs-ribbon-card kpi-vs-ribbon-avg">
+      <i class="ti ti-percentage"></i>
+      <div class="kpi-vs-ribbon-val">{{ s.avgMonthly }}%</div>
+      <div class="kpi-vs-ribbon-lbl">Moy. mensuelle</div>
+    </div>
+    <div class="kpi-vs-ribbon-card kpi-vs-ribbon-range">
+      <i class="ti ti-map-route"></i>
+      <div class="kpi-vs-ribbon-val">{{ s.totalVisitsRange | number }}</div>
+      <div class="kpi-vs-ribbon-lbl">Visites (période)</div>
+    </div>
+  </div>
+  }
 
-            <!-- Country selector -->
-            <mat-form-field appearance="fill" style="min-width:160px;">
-              <mat-label>Pays</mat-label>
-              <mat-select [value]="selectedCountry()" (selectionChange)="onCountryChange($event)">
-                @for (c of countryList(); track c.uuid) {
-                  <mat-option [value]="c">{{ c.name }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
+  <!-- ── Title filter pills ────────────────────────────────────────────── -->
+  <div class="kpi-vs-filters">
+    <span class="kpi-vs-filter-label">Titre :</span>
+    @for(t of TITLES; track t) {
+    <button class="btn kpi-vs-filter-btn" [class.active]="titleFilter()===t"
+      (click)="setTitle(t)">{{ t || 'Tous' }}</button>
+    }
+  </div>
 
-            <!-- Role filter -->
-            <mat-form-field appearance="fill" style="min-width:130px;">
-              <mat-label>Rôle</mat-label>
-              <mat-select [value]="selectedTitle()" (selectionChange)="selectedTitle.set($event.value); loadData()">
-                <mat-option value="">Tous</mat-option>
-                @for (t of titleOptions; track t) {
-                  <mat-option [value]="t">{{ t }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
+  <!-- ── Loading skeleton ───────────────────────────────────────────────── -->
+  @if(isLoading()) {
+  <div class="kpi-vs-shimmer">
+    @for(_ of [1,2,3,4,5,6]; track $index) {<div class="kpi-vs-shimmer-row"></div>}
+  </div>
+  } @else if(!rows().length) {
+  <div class="kpi-vs-empty">
+    <i class="ti ti-mood-empty"></i>
+    <p>Aucun agent trouvé pour cette sélection.</p>
+  </div>
+  } @else if(viewMode()==='table') {
 
-            <!-- Period dropdown -->
-            <select class="form-select form-select-sm" style="min-width:145px;"
-              [ngModel]="selectedPeriod()" (ngModelChange)="onPeriodChange($event)">
-              @for (p of periodOptions; track p.key) {
-                <option [value]="p.key">{{ p.label }}</option>
-              }
-            </select>
+  <!-- ── TABLE VIEW ─────────────────────────────────────────────────────── -->
+  <div class="kpi-vs-table-wrap">
+    <table class="table table-hover mb-0 kpi-vs-table">
+      <thead>
+        <tr>
+          <th>Agent</th>
+          <th>Titre</th>
+          <!-- Daily -->
+          <th class="text-center sortable" (click)="setSort('daily_pct')">
+            Auj.<i [class]="sortIcon('daily_pct')" class="ms-1 small"></i>
+          </th>
+          <!-- Monthly -->
+          <th class="text-center sortable" (click)="setSort('monthly_pct')">
+            Ce mois<i [class]="sortIcon('monthly_pct')" class="ms-1 small"></i>
+          </th>
+          <!-- Yearly -->
+          <th class="text-center sortable" (click)="setSort('yearly_pct')">
+            Année<i [class]="sortIcon('yearly_pct')" class="ms-1 small"></i>
+          </th>
+          <!-- Range -->
+          <th class="text-center sortable" (click)="setSort('range_pct')">
+            Période<i [class]="sortIcon('range_pct')" class="ms-1 small"></i>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        @for(r of rows(); track r.user_uuid) {
+        <tr>
+          <!-- Name -->
+          <td class="fw-600 text-truncate" style="max-width:180px">{{ r.name }}</td>
+          <!-- Title chip -->
+          <td>
+            <span class="kpi-title-chip kpi-title-{{ r.title | lowercase }}">{{ r.title || '—' }}</span>
+          </td>
+          <!-- Daily cell -->
+          <td>
+            <div class="kpi-vs-cell">
+              <div class="d-flex justify-content-between mb-1">
+                <small class="text-muted">{{ r.daily_visits }}/{{ r.daily_target }}</small>
+                <small class="fw-600" [style.color]="barColor(r.daily_pct)">{{ r.daily_pct | number:'1.0-0' }}%</small>
+              </div>
+              <div class="kpi-tv-bar-track">
+                <div class="kpi-tv-bar-fill"
+                  [style.width.%]="r.daily_pct > 100 ? 100 : r.daily_pct"
+                  [style.background]="barColor(r.daily_pct)"></div>
+              </div>
+            </div>
+          </td>
+          <!-- Monthly cell -->
+          <td>
+            <div class="kpi-vs-cell">
+              <div class="d-flex justify-content-between mb-1">
+                <small class="text-muted">{{ r.monthly_visits }}/{{ r.monthly_target }}</small>
+                <small class="fw-600" [style.color]="barColor(r.monthly_pct)">{{ r.monthly_pct | number:'1.0-0' }}%</small>
+              </div>
+              <div class="kpi-tv-bar-track">
+                <div class="kpi-tv-bar-fill"
+                  [style.width.%]="r.monthly_pct > 100 ? 100 : r.monthly_pct"
+                  [style.background]="barColor(r.monthly_pct)"></div>
+              </div>
+            </div>
+          </td>
+          <!-- Yearly cell -->
+          <td>
+            <div class="kpi-vs-cell">
+              <div class="d-flex justify-content-between mb-1">
+                <small class="text-muted">{{ r.yearly_visits }}/{{ r.yearly_target }}</small>
+                <small class="fw-600" [style.color]="barColor(r.yearly_pct)">{{ r.yearly_pct | number:'1.0-0' }}%</small>
+              </div>
+              <div class="kpi-tv-bar-track">
+                <div class="kpi-tv-bar-fill"
+                  [style.width.%]="r.yearly_pct > 100 ? 100 : r.yearly_pct"
+                  [style.background]="barColor(r.yearly_pct)"></div>
+              </div>
+            </div>
+          </td>
+          <!-- Range cell -->
+          <td>
+            <div class="kpi-vs-cell">
+              <div class="d-flex justify-content-between mb-1">
+                <small class="text-muted">{{ r.total_visits }}/{{ r.range_target }}</small>
+                <small class="fw-600" [style.color]="barColor(r.range_pct)">{{ r.range_pct | number:'1.0-0' }}%</small>
+              </div>
+              <div class="kpi-tv-bar-track">
+                <div class="kpi-tv-bar-fill"
+                  [style.width.%]="r.range_pct > 100 ? 100 : r.range_pct"
+                  [style.background]="barColor(r.range_pct)"></div>
+              </div>
+            </div>
+          </td>
+        </tr>
+        }
+      </tbody>
+    </table>
+  </div>
 
-            @if (selectedPeriod() === 'custom') {
-              <input type="date" class="form-control form-control-sm" style="min-width:145px;"
-                placeholder="Date debut"
-                [ngModel]="customStart()" (ngModelChange)="customStart.set($event); onCustomDateChange()">
-              <input type="date" class="form-control form-control-sm" style="min-width:145px;"
-                placeholder="Date fin"
-                [ngModel]="customEnd()" (ngModelChange)="customEnd.set($event); onCustomDateChange()">
-            }
+  } @else {
 
-            <button type="button" class="btn btn-outline-primary btn-sm"
-              (click)="loadData()" [disabled]="isLoading()" title="Actualiser">
-              <i class="ti ti-refresh" [class.spin-animation]="isLoading()"></i>
-              <span class="ms-1">Actualiser</span>
-            </button>
-
+  <!-- ── CARD VIEW ──────────────────────────────────────────────────────── -->
+  <div class="kpi-vs-cards-grid">
+    @for(r of rows(); track r.user_uuid) {
+    <div class="kpi-vs-agent-card" [class]="statusClass(r.monthly_pct)">
+      <!-- Card header -->
+      <div class="kpi-vs-card-head">
+        <div class="kpi-vs-avatar">{{ r.name.charAt(0) | uppercase }}</div>
+        <div class="kpi-vs-agent-info">
+          <span class="fw-700 text-truncate">{{ r.name }}</span>
+          <span class="kpi-title-chip kpi-title-{{ r.title | lowercase }}">{{ r.title || '—' }}</span>
+        </div>
+        <!-- Monthly gauge ring -->
+        <div class="kpi-vs-gauge">
+          <svg viewBox="0 0 36 36" width="56" height="56">
+            <circle cx="18" cy="18" r="15.9" fill="none" stroke="#e9ecef" stroke-width="3.2"/>
+            <circle cx="18" cy="18" r="15.9" fill="none"
+              [attr.stroke]="barColor(r.monthly_pct)"
+              stroke-width="3.2"
+              stroke-linecap="round"
+              [attr.stroke-dasharray]="(r.monthly_pct > 100 ? 100 : r.monthly_pct) + ', 100'"
+              transform="rotate(-90 18 18)"/>
+            <text x="18" y="21" text-anchor="middle" font-size="7" font-weight="700"
+              [attr.fill]="barColor(r.monthly_pct)">{{ r.monthly_pct | number:'1.0-0' }}%</text>
+          </svg>
+        </div>
+      </div>
+      <!-- Metrics grid -->
+      <div class="kpi-vs-metrics">
+        <div class="kpi-vs-metric-item">
+          <span class="kpi-vs-metric-label">Aujourd'hui</span>
+          <span class="kpi-vs-metric-val">{{ r.daily_visits }} <small>/ {{ r.daily_target }}</small></span>
+          <div class="kpi-tv-bar-track mt-1">
+            <div class="kpi-tv-bar-fill"
+              [style.width.%]="r.daily_pct > 100 ? 100 : r.daily_pct"
+              [style.background]="barColor(r.daily_pct)"></div>
+          </div>
+        </div>
+        <div class="kpi-vs-metric-item">
+          <span class="kpi-vs-metric-label">Ce mois</span>
+          <span class="kpi-vs-metric-val">{{ r.monthly_visits }} <small>/ {{ r.monthly_target }}</small></span>
+          <div class="kpi-tv-bar-track mt-1">
+            <div class="kpi-tv-bar-fill"
+              [style.width.%]="r.monthly_pct > 100 ? 100 : r.monthly_pct"
+              [style.background]="barColor(r.monthly_pct)"></div>
+          </div>
+        </div>
+        <div class="kpi-vs-metric-item">
+          <span class="kpi-vs-metric-label">Période</span>
+          <span class="kpi-vs-metric-val">{{ r.total_visits }} <small>/ {{ r.range_target }}</small></span>
+          <div class="kpi-tv-bar-track mt-1">
+            <div class="kpi-tv-bar-fill"
+              [style.width.%]="r.range_pct > 100 ? 100 : r.range_pct"
+              [style.background]="barColor(r.range_pct)"></div>
+          </div>
+        </div>
+        <div class="kpi-vs-metric-item">
+          <span class="kpi-vs-metric-label">Année</span>
+          <span class="kpi-vs-metric-val">{{ r.yearly_visits }} <small>/ {{ r.yearly_target }}</small></span>
+          <div class="kpi-tv-bar-track mt-1">
+            <div class="kpi-tv-bar-fill"
+              [style.width.%]="r.yearly_pct > 100 ? 100 : r.yearly_pct"
+              [style.background]="barColor(r.yearly_pct)"></div>
           </div>
         </div>
       </div>
-
-      <div class="card-body">
-
-        @if (isLoading()) {
-          <div class="text-center d-flex justify-content-center align-items-center py-5">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Chargement...</span>
-            </div>
-          </div>
-        } @else {
-
-          <!-- Stat cards -->
-          <div class="row mb-4">
-            <div class="col-lg-2 col-md-4 mb-3">
-              <div class="card bg-primary text-white h-100">
-                <div class="card-body d-flex flex-column justify-content-center">
-                  <div class="d-flex align-items-center justify-content-between">
-                    <div><h6 class="mb-1">Agents</h6><h3 class="mb-0 fw-bold">{{ totalAgents() }}</h3></div>
-                    <i class="ti ti-users" style="font-size:2rem;opacity:.7;"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-2 col-md-4 mb-3">
-              <div class="card bg-info text-white h-100">
-                <div class="card-body d-flex flex-column justify-content-center">
-                  <div class="d-flex align-items-center justify-content-between">
-                    <div><h6 class="mb-1">Visites Jour</h6><h3 class="mb-0 fw-bold">{{ totalDailyVisits() }}</h3></div>
-                    <i class="ti ti-calendar-day" style="font-size:2rem;opacity:.7;"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-2 col-md-4 mb-3">
-              <div class="card bg-secondary text-white h-100">
-                <div class="card-body d-flex flex-column justify-content-center">
-                  <div class="d-flex align-items-center justify-content-between">
-                    <div><h6 class="mb-1">Visites Mois</h6><h3 class="mb-0 fw-bold">{{ totalMonthlyVisits() }}</h3></div>
-                    <i class="ti ti-calendar-month" style="font-size:2rem;opacity:.7;"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-2 col-md-4 mb-3">
-              <div class="card bg-dark text-white h-100">
-                <div class="card-body d-flex flex-column justify-content-center">
-                  <div class="d-flex align-items-center justify-content-between">
-                    <div><h6 class="mb-1">Visites Année</h6><h3 class="mb-0 fw-bold">{{ totalYearlyVisits() }}</h3></div>
-                    <i class="ti ti-calendar-stats" style="font-size:2rem;opacity:.7;"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-2 col-md-4 mb-3">
-              <div class="card bg-success text-white h-100">
-                <div class="card-body d-flex flex-column justify-content-center">
-                  <div class="d-flex align-items-center justify-content-between">
-                    <div><h6 class="mb-1">Visites Période</h6><h3 class="mb-0 fw-bold">{{ totalRangeVisits() }}</h3></div>
-                    <i class="ti ti-chart-line" style="font-size:2rem;opacity:.7;"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div class="col-lg-2 col-md-4 mb-3">
-              <div class="card bg-warning text-dark h-100">
-                <div class="card-body d-flex flex-column justify-content-center">
-                  <div class="d-flex align-items-center justify-content-between">
-                    <div><h6 class="mb-1">% Moy. Période</h6><h3 class="mb-0 fw-bold">{{ avgRangePct() | number:'1.0-2' }} %</h3></div>
-                    <i class="ti ti-target" style="font-size:2rem;opacity:.7;"></i>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Search + export -->
-          <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div class="search-box" [class.has-value]="searchTerm()" style="min-width:260px;">
-              <input type="text" class="form-control"
-                placeholder="Rechercher par nom ou rôle..."
-                [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" autocomplete="off">
-              <i class="ti ti-search search-icon"></i>
-              @if (searchTerm()) {
-                <button class="btn btn-sm btn-link clear-search" (click)="searchTerm.set('')" title="Effacer">
-                  <i class="ti ti-x"></i>
-                </button>
-              }
-            </div>
-            <button class="btn btn-outline-success btn-sm" (click)="exportToCSV()">
-              <i class="ti ti-download me-1"></i>Exporter CSV
-            </button>
-          </div>
-
-          @if (searchTerm()) {
-            <div class="mb-2 small text-muted">
-              <span class="fw-bold">{{ filteredList().length }}</span> résultat(s) pour "{{ searchTerm() }}"
-            </div>
-          }
-
-          <!-- Table -->
-          <div class="table-responsive custom-table">
-            <table class="table table-bordered table-hover align-middle dataTable">
-              <thead class="thead-light">
-                <tr>
-                  <th rowspan="2" class="align-middle">Nom</th>
-                  <th rowspan="2" class="align-middle text-center">Rôle</th>
-                  <th colspan="3" class="text-center table-info">Journalier</th>
-                  <th colspan="3" class="text-center table-success">Mensuel</th>
-                  <th colspan="3" class="text-center table-warning">Annuel</th>
-                  <th colspan="3" class="text-center table-primary">Période sélectionnée</th>
-                </tr>
-                <tr>
-                  <th class="text-center table-info">Visites</th>
-                  <th class="text-center table-info">Cible</th>
-                  <th class="text-center table-info">%</th>
-                  <th class="text-center table-success">Visites</th>
-                  <th class="text-center table-success">Cible</th>
-                  <th class="text-center table-success">%</th>
-                  <th class="text-center table-warning">Visites</th>
-                  <th class="text-center table-warning">Cible</th>
-                  <th class="text-center table-warning">%</th>
-                  <th class="text-center table-primary">Visites</th>
-                  <th class="text-center table-primary">Cible</th>
-                  <th class="text-center table-primary">%</th>
-                </tr>
-              </thead>
-              <tbody>
-                @for (item of filteredList(); track item.user_uuid) {
-                  <tr>
-                    <td class="fw-semibold">{{ item.name }}</td>
-                    <td class="text-center">
-                      <span class="badge {{ getTitleBadgeClass(item.title) }}">{{ item.title }}</span>
-                    </td>
-                    <td class="text-center">{{ item.daily_visits }}</td>
-                    <td class="text-center text-muted">{{ item.daily_target }}</td>
-                    <td class="text-center">
-                      <span class="badge {{ getPctClass(item.daily_pct) }}">{{ item.daily_pct | number:'1.0-1' }}%</span>
-                    </td>
-                    <td class="text-center">{{ item.monthly_visits }}</td>
-                    <td class="text-center text-muted">{{ item.monthly_target }}</td>
-                    <td class="text-center">
-                      <span class="badge {{ getPctClass(item.monthly_pct) }}">{{ item.monthly_pct | number:'1.0-1' }}%</span>
-                    </td>
-                    <td class="text-center">{{ item.yearly_visits }}</td>
-                    <td class="text-center text-muted">{{ item.yearly_target }}</td>
-                    <td class="text-center">
-                      <span class="badge {{ getPctClass(item.yearly_pct) }}">{{ item.yearly_pct | number:'1.0-1' }}%</span>
-                    </td>
-                    <td class="text-center fw-bold">{{ item.total_visits }}</td>
-                    <td class="text-center text-muted">{{ item.range_target }}</td>
-                    <td class="text-center">
-                      <span class="badge {{ getPctClass(item.range_pct) }}">{{ item.range_pct | number:'1.0-1' }}%</span>
-                    </td>
-                  </tr>
-                } @empty {
-                  <tr>
-                    <td colspan="14" class="text-center text-muted py-4">
-                      <i class="ti ti-database-off me-2"></i>Aucune donnée disponible.
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-
-        }
-      </div>
     </div>
+    }
   </div>
+  }
+
 </div>

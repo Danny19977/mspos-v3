@@ -1,134 +1,69 @@
-﻿<!-- PAGE HEADER -->
-    <div class="page-header">
-      <div class="row align-items-center">
-        <div class="col-8">
-          <h4 class="page-title">
-            <i class="ti ti-building-community me-1"></i>KPI par Commune
-            @if (subarea()) {
-              <span class="count-title ms-2">Sous-Zone : {{ subarea()!.name }}</span>
-            }
-          </h4>
-        </div>
-        <div class="col-4 text-end">
-          <div class="head-icons">
-            <a href="javascript:void(0);" title="Actualiser" (click)="loadData()">
-              <i class="ti ti-refresh" [class.spin-animation]="isLoading()"></i>
-            </a>
-          </div>
-        </div>
+<div class="kpi-tv-wrapper">
+  <div class="kpi-tv-header">
+    <div class="d-flex align-items-center gap-2">
+      <span class="kpi-tv-badge"><i class="ti ti-building-community"></i></span>
+      <div>
+        <h5 class="mb-0 fw-semibold">Vue Commune — Visites & Objectifs</h5>
+        <p class="text-muted small mb-0">Réalisation par commune</p>
       </div>
     </div>
-
-    <!-- FILTER CARD -->
-    <div class="card kpi-filter-card mb-4">
-      <div class="card-body py-3">
-        <div class="row g-3 align-items-end">
-
-          <!-- Period button group -->
-          <div class="col-12">
-            <label class="form-label kpi-label"><i class="ti ti-calendar me-1"></i>Période</label>
-            <div class="obs-period-group" role="group">
-              @for (p of periodOptions; track p.key) {
-                <button type="button" class="obs-period-btn"
-                  [class.active]="selectedPeriod() === p.key"
-                  (click)="onPeriodChange(p.key)">{{ p.label }}</button>
-              }
-            </div>
-          </div>
-
-          <!-- Custom date range -->
-          @if (selectedPeriod() === 'custom') {
-            <div class="col-md-3">
-              <label class="form-label">Date début</label>
-              <input type="date" class="form-control form-control-sm"
-                [ngModel]="customStart()" (ngModelChange)="customStart.set($event); onCustomDateChange()">
-            </div>
-            <div class="col-md-3">
-              <label class="form-label">Date fin</label>
-              <input type="date" class="form-control form-control-sm"
-                [ngModel]="customEnd()" (ngModelChange)="customEnd.set($event); onCustomDateChange()">
-            </div>
-          }
-
-          <!-- Role filter -->
-          <div class="col-md-3">
-            <mat-form-field appearance="fill" class="w-100">
-              <mat-label>Rôle</mat-label>
-              <mat-select [value]="selectedTitle()" (selectionChange)="selectedTitle.set($event.value); loadData()">
-                <mat-option value="">Tous</mat-option>
-                @for (t of titleOptions; track t) {
-                  <mat-option [value]="t">{{ t }}</mat-option>
-                }
-              </mat-select>
-            </mat-form-field>
-          </div>
-
-        </div>
+    <form [formGroup]="dateRange" class="kpi-tv-date-form">
+      <div class="kpi-tv-date-field">
+        <i class="ti ti-calendar-event"></i>
+        <input type="text" class="form-control bookingrange kpi-tv-date-input"
+          bsDaterangepicker placeholder="Sélectionner la période"
+          [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
+          formControlName="rangeValue" />
       </div>
-    </div>
-
-    <!-- DATA CARD -->
-    <div class="card">
-      <div class="card-body">
-        @if (isLoading()) {
-          <div class="text-center py-5">
-            <div class="spinner-border text-primary" role="status">
-              <span class="visually-hidden">Chargement...</span>
-            </div>
-          </div>
-        } @else {
-
-          <div class="mb-3 d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div class="search-box" [class.has-value]="searchTerm()" style="min-width:260px;">
-              <input type="text" class="form-control" placeholder="Rechercher agent ou commune..."
-                [ngModel]="searchTerm()" (ngModelChange)="searchTerm.set($event)" autocomplete="off">
-              <i class="ti ti-search search-icon"></i>
-              @if (searchTerm()) {
-                <button class="btn btn-sm btn-link clear-search" (click)="searchTerm.set('')">
-                  <i class="ti ti-x"></i>
-                </button>
-              }
-            </div>
-            <button class="btn btn-outline-success btn-sm" (click)="exportToCSV()">
-              <i class="ti ti-download me-1"></i>CSV
-            </button>
-          </div>
-
-          <div class="table-responsive custom-table">
-            <table class="table table-hover align-middle dataTable">
-              <thead class="thead-light">
+    </form>
+  </div>
+  <div class="kpi-tv-filters">
+    <span class="kpi-tv-filter-label">Titre :</span>
+    @for (t of TITLES; track t) {
+      <button class="btn btn-sm kpi-tv-filter-btn" [class.active]="titleFilter() === t"
+        (click)="onTitleChange(t)">{{ t || 'Tous' }}</button>
+    }
+    <span class="ms-auto text-muted small">{{ data().length }} enregistrements</span>
+  </div>
+  @if (isLoading()) {
+    <div class="kpi-tv-shimmer">@for(i of [1,2,3,4,5]; track i){<div class="kpi-tv-shimmer-row"></div>}</div>
+  } @else if (grouped().length === 0) {
+    <div class="kpi-tv-empty"><i class="ti ti-inbox"></i><p>Aucune donnée disponible</p></div>
+  } @else {
+    <div class="kpi-tv-table-wrap">
+      @for (group of grouped(); track group.uuid) {
+        <div class="kpi-tv-group-header">
+          <i class="ti ti-building-community me-2 text-primary"></i>{{ group.name }}
+          <span class="badge bg-light text-dark ms-2">{{ group.rows.length }} agents</span>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover kpi-tv-table mb-0">
+            <thead><tr>
+              <th>Agent</th><th>Titre</th>
+              <th class="text-center">Visites</th><th class="text-center">Objectif</th>
+              <th>Réalisation</th>
+            </tr></thead>
+            <tbody>
+              @for (r of group.rows; track r.signature) {
                 <tr>
-                  <th>Commune</th>
-                  <th>Agent</th>
-                  <th>Role</th>
-                  <th class="text-center">Visites</th>
-                  <th class="text-center">Cible</th>
-                  <th class="text-center">% Objectif</th>
+                  <td class="fw-semibold">{{ r.signature }}</td>
+                  <td><span class="kpi-title-chip kpi-title-{{ r.title | lowercase }}">{{ r.title }}</span></td>
+                  <td class="text-center fw-semibold">{{ r.total_visits }}</td>
+                  <td class="text-center text-muted">{{ r.target }}</td>
+                  <td>
+                    <div class="kpi-tv-bar-row">
+                      <div class="kpi-tv-bar-track">
+                        <div class="kpi-tv-bar-fill" [class]="getBarColor(r.objectif)" [style.width]="barWidth(r.objectif)"></div>
+                      </div>
+                      <span class="kpi-tv-bar-pct" [class]="getPctClass(r.objectif)">{{ r.objectif }}%</span>
+                    </div>
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                @for (item of filteredList(); track item.signature + item.name) {
-                  <tr>
-                    <td class="fw-semibold">{{ item.name }}</td>
-                    <td>{{ item.signature }}</td>
-                    <td><span class="badge {{ getTitleBadgeClass(item.title) }}">{{ item.title }}</span></td>
-                    <td class="text-center fw-bold">{{ item.total_visits }}</td>
-                    <td class="text-center text-muted">{{ item.target }}</td>
-                    <td class="text-center">
-                      <span class="badge {{ getPctClass(item.objectif) }}">{{ item.objectif | number:'1.0-1' }}%</span>
-                    </td>
-                  </tr>
-                } @empty {
-                  <tr>
-                    <td colspan="6" class="text-center text-muted py-4">
-                      <i class="ti ti-database-off me-2"></i>Aucune donnee disponible.
-                    </td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-
-        }
-      </div>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
     </div>
+  }
+</div>
