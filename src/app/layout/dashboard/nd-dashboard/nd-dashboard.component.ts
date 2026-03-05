@@ -196,8 +196,9 @@ export class NdDashboardComponent implements OnInit {
               : res.data.find((c: ICountry) => c.uuid === user.country_uuid) ?? res.data[0];
           this.selectedCountry = defaultCountry;
 
-          this.provinceService.getAllByManager(defaultCountry.uuid).subscribe(pr => {
-            this.provinceList.set(pr.data);
+          this.provinceService.getAll().subscribe(pr => {
+            const allProvinces: IProvince[] = pr.data;
+            this.provinceList.set(allProvinces.filter(p => p.country_uuid === defaultCountry.uuid));
 
             // For restricted roles (Managers/Support) pre-select their assigned province;
             // for all other roles leave province unset so all data for the country shows.
@@ -540,8 +541,8 @@ export class NdDashboardComponent implements OnInit {
     this.areaList.set([]);
     this.subAreaList.set([]);
     this.communeList.set([]);
-    this.provinceService.getAllByManager(country.uuid).subscribe(res => {
-      this.provinceList.set(res.data);
+    this.provinceService.getAll().subscribe(res => {
+      this.provinceList.set((res.data as IProvince[]).filter(p => p.country_uuid === country.uuid));
     });
     this.loadAllSections();
   }
