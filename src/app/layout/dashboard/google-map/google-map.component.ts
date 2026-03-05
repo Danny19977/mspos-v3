@@ -151,9 +151,7 @@ export class GoogleMapComponent implements OnInit {
       takeUntilDestroyed(this.destroyRef),
     ).subscribe(() => this.loadMap());
 
-    this.filterForm.get('user_type')!.valueChanges.pipe(
-      takeUntilDestroyed(this.destroyRef),
-    ).subscribe(() => this.loadMap());
+    // user_type is handled via selectRole() to avoid Bootstrap dropdown race conditions
   }
 
   // ─── Data loading ─────────────────────────────────────────────────────────
@@ -214,6 +212,20 @@ export class GoogleMapComponent implements OnInit {
 
   refresh(): void {
     this.loadMap();
+  }
+
+  /** Selects a role and immediately triggers a map reload.
+   *  Direct method instead of valueChanges avoids Bootstrap dropdown race conditions. */
+  selectRole(key: string): void {
+    this.filterForm.get('user_type')!.setValue(key, { emitEvent: false });
+    this.loadMap();
+  }
+
+  /** Returns the name of the currently-selected province (empty = all). */
+  get selectedProvinceName(): string {
+    const uuid = this.filterForm?.get('province_uuid')?.value;
+    if (!uuid) return '';
+    return this.provinceList().find(p => p.uuid === uuid)?.name ?? '';
   }
 
   // ─── Utils ────────────────────────────────────────────────────────────────

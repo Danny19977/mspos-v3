@@ -133,7 +133,7 @@
                     type="button"
                     class="dropdown-item gm-role-item"
                     [class.active]="filterForm.get('user_type')!.value === ut.key"
-                    (click)="filterForm.get('user_type')!.setValue(ut.key)">
+                    (click)="selectRole(ut.key)">
                     <span
                       class="gm-role-dot"
                       [style.background]="roleColor(ut.key)"
@@ -160,6 +160,7 @@
     <app-map-card
       [isLoading]="isLoading()"
       [googleMapList]="googleMapList()"
+      [selectedProvinceName]="selectedProvinceName"
     ></app-map-card>
 
   </div>

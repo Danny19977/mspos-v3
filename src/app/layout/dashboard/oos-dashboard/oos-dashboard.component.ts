@@ -352,7 +352,7 @@ export class OosDashboardComponent implements OnInit {
     this.isLoadingHeatmap.set(true);
     this.oosService.OosHeatmap(this.geoParams, this.heatmapLevel()).subscribe({
       next: res => {
-        this.heatmapData.set(res.data);
+        this.heatmapData.set(res.data ?? { brands: [], territories: [], matrix: [] });
         this.buildHeatmapChart();
         this.isLoadingHeatmap.set(false);
       },
@@ -479,7 +479,7 @@ export class OosDashboardComponent implements OnInit {
 
   buildHeatmapChart(): void {
     const hm = this.heatmapData();
-    if (!hm.brands.length) { this.chartHeatmapOpts.set(null); return; }
+    if (!hm?.brands?.length) { this.chartHeatmapOpts.set(null); return; }
     const { brands, territories, matrix } = hm;
     const series = brands.map((b, bi) => ({
       name: b.name,

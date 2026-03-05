@@ -421,7 +421,12 @@ export class SishDashboardComponent implements OnInit {
     this.isLoadingHeatmap.set(true);
     this.sishService.SishHeatmap(this.geoParams, this.heatmapLevel()).subscribe({
       next: res => {
-        const hm = res.data ?? { brands: [], territories: [], matrix: [] };
+        const raw = res.data ?? {};
+        const hm = {
+          brands:      raw.brands      ?? [],
+          territories: raw.territories ?? [],
+          matrix:      raw.matrix      ?? [],
+        };
         this.heatmapData.set(hm);
         this.buildHeatmapChart();
         this.isLoadingHeatmap.set(false);
@@ -666,7 +671,7 @@ export class SishDashboardComponent implements OnInit {
 
   buildHeatmapChart(): void {
     const hm = this.heatmapData();
-    if (!hm.brands.length) { this.chartHeatmapOpts.set(null); return; }
+    if (!hm?.brands?.length) { this.chartHeatmapOpts.set(null); return; }
     const { brands, territories, matrix } = hm;
     const series = brands.map((b, bi) => ({
       name: b.name,

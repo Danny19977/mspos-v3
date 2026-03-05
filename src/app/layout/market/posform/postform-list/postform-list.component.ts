@@ -1189,7 +1189,8 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         next: (res) => {
           // Si un pos_uuid est fourni, mettre à jour le statut du routePlanItem à true
           if (this.posUUID() && this.posUUID().trim() !== '') {
-            this.routePlanItemService.update(this.routePlanItemUUID(), { status: true })
+            const currentRPItem = this.routePlanItemList().find(item => item.uuid === this.routePlanItemUUID());
+            this.routePlanItemService.update(this.routePlanItemUUID(), { ...currentRPItem, status: true })
               .subscribe({
                 next: () => {
                   console.log('Statut du RoutePlanItem mis à jour à true pour pos_uuid:', this.posUUID());
@@ -1274,7 +1275,8 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         next: (res) => {
           // Si un pos_uuid est fourni, mettre à jour le statut du routePlanItem à true
           if (this.posUUID() && this.posUUID().trim() !== '') {
-            this.routePlanItemService.update(this.routePlanItemUUID(), { status: true })
+            const currentRPItem = this.routePlanItemList().find(item => item.uuid === this.routePlanItemUUID());
+            this.routePlanItemService.update(this.routePlanItemUUID(), { ...currentRPItem, status: true })
               .subscribe({
                 next: () => {
                   this.getAllRoutePlans(); // Rafraîchir la liste des route plans
@@ -1402,7 +1404,8 @@ export class PostformListComponent implements OnInit, AfterViewInit {
           // Mettre à jour le statut du routePlanItem si disponible
           if (this.routePlanItemUUID()) {
             console.log('Mise à jour du RoutePlanItem avec UUID:', this.routePlanItemUUID());
-            this.routePlanItemService.update(this.routePlanItemUUID(), { status: true })
+            const currentRPItem = this.routePlanItemList().find(item => item.uuid === this.routePlanItemUUID());
+            this.routePlanItemService.update(this.routePlanItemUUID(), { ...currentRPItem, status: true })
               .subscribe({
                 next: () => {
                   this.getAllRoutePlans();

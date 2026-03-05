@@ -196,13 +196,25 @@ export class NdDashboardComponent implements OnInit {
               : res.data.find((c: ICountry) => c.uuid === user.country_uuid) ?? res.data[0];
           this.selectedCountry = defaultCountry;
 
-          this.provinceService.getAll().subscribe(pr => {
+          this.provinceService.getAllByManager(defaultCountry.uuid).subscribe(pr => {
             this.provinceList.set(pr.data);
-            const defaultProvince =
-              (user.role !== 'Managers' && user.role !== 'Support')
-                ? pr.data[0]
-                : pr.data.find((p: IProvince) => p.uuid === user.province_uuid) ?? pr.data[0];
-            this.selectedProvince = defaultProvince;
+
+            // For restricted roles (Managers/Support) pre-select their assigned province;
+            // for all other roles leave province unset so all data for the country shows.
+            if (user.role === 'Managers' || user.role === 'Support') {
+              this.selectedProvince =
+                (pr.data as IProvince[]).find(p => p.uuid === user.province_uuid)
+                ?? undefined;
+              // Pre-load areas for the preselected province
+              if (this.selectedProvince) {
+                this.areaService.getAllByASM(this.selectedProvince.uuid).subscribe(ar => {
+                  this.areaList.set(ar.data);
+                });
+              }
+            } else {
+              this.selectedProvince = undefined;
+            }
+
             this.loadAllSections();
           });
         });
@@ -528,8 +540,8 @@ export class NdDashboardComponent implements OnInit {
     this.areaList.set([]);
     this.subAreaList.set([]);
     this.communeList.set([]);
-    this.provinceService.getAll().subscribe(res => {
-      this.provinceList.set(res.data.filter((p: IProvince) => p.country_uuid === country.uuid));
+    this.provinceService.getAllByManager(country.uuid).subscribe(res => {
+      this.provinceList.set(res.data);
     });
     this.loadAllSections();
   }
@@ -543,8 +555,8 @@ export class NdDashboardComponent implements OnInit {
     this.subAreaList.set([]);
     this.communeList.set([]);
     if (province) {
-      this.areaService.getAll().subscribe(res => {
-        this.areaList.set(res.data.filter((a: IArea) => a.province_uuid === province.uuid));
+      this.areaService.getAllByASM(province.uuid).subscribe(res => {
+        this.areaList.set(res.data);
       });
     }
     this.loadAllSections();
@@ -557,8 +569,8 @@ export class NdDashboardComponent implements OnInit {
     this.subAreaList.set([]);
     this.communeList.set([]);
     if (area) {
-      this.subAreaService.getAll().subscribe(res => {
-        this.subAreaList.set(res.data.filter((s: ISubArea) => s.area_uuid === area.uuid));
+      this.subAreaService.getAllBySup(area.uuid).subscribe(res => {
+        this.subAreaList.set(res.data);
       });
     }
     this.loadAllSections();
@@ -569,8 +581,8 @@ export class NdDashboardComponent implements OnInit {
     this.selectedCommune = undefined;
     this.communeList.set([]);
     if (subArea) {
-      this.communeService.getAll().subscribe(res => {
-        this.communeList.set(res.data.filter((c: ICommune) => c.sub_area_uuid === subArea.uuid));
+      this.communeService.getAllByDR(subArea.uuid).subscribe(res => {
+        this.communeList.set(res.data);
       });
     }
     this.loadAllSections();

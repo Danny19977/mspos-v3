@@ -3,6 +3,57 @@ import { GoogleMapModel } from '../../models/dashboard.models';
 import { MapInfoWindow, MapMarker } from '@angular/google-maps';
 import { GoogleMapsLoaderService } from '../../../../services/google-maps-loader.service';
 
+// ─── DRC province centres ──────────────────────────────────────────────────────
+interface ProvinceMeta { center: google.maps.LatLngLiteral; zoom: number; }
+
+/** Centre géographique de la RDC + zoom pour voir tout le pays. */
+const DRC_CENTER: ProvinceMeta = { center: { lat: -4.0, lng: 24.0 }, zoom: 5 };
+
+const PROVINCE_CENTERS: Record<string, ProvinceMeta> = {
+  'Kinshasa':        { center: { lat: -4.3245,  lng: 15.3222  }, zoom: 12 },
+  'Kongo-Central':   { center: { lat: -5.0000,  lng: 13.8000  }, zoom:  8 },
+  'Kongo Central':   { center: { lat: -5.0000,  lng: 13.8000  }, zoom:  8 },
+  'Bas-Congo':       { center: { lat: -5.0000,  lng: 13.8000  }, zoom:  8 },
+  'Kwango':          { center: { lat: -5.5000,  lng: 16.5000  }, zoom:  8 },
+  'Kwilu':           { center: { lat: -5.0000,  lng: 18.5000  }, zoom:  8 },
+  'Mai-Ndombe':      { center: { lat: -2.5000,  lng: 18.5000  }, zoom:  8 },
+  'Équateur':        { center: { lat:  0.5000,  lng: 22.0000  }, zoom:  8 },
+  'Equateur':        { center: { lat:  0.5000,  lng: 22.0000  }, zoom:  8 },
+  'Mongala':         { center: { lat:  2.5000,  lng: 21.5000  }, zoom:  8 },
+  'Nord-Ubangi':     { center: { lat:  4.0000,  lng: 21.5000  }, zoom:  8 },
+  'Sud-Ubangi':      { center: { lat:  3.0000,  lng: 19.5000  }, zoom:  8 },
+  'Tshuapa':         { center: { lat: -0.5000,  lng: 23.5000  }, zoom:  8 },
+  'Tshopo':          { center: { lat:  0.0000,  lng: 25.0000  }, zoom:  8 },
+  'Bas-Uélé':        { center: { lat:  4.0000,  lng: 25.0000  }, zoom:  8 },
+  'Bas-Uele':        { center: { lat:  4.0000,  lng: 25.0000  }, zoom:  8 },
+  'Haut-Uélé':       { center: { lat:  3.5000,  lng: 28.0000  }, zoom:  8 },
+  'Haut-Uele':       { center: { lat:  3.5000,  lng: 28.0000  }, zoom:  8 },
+  'Ituri':           { center: { lat:  1.5000,  lng: 29.0000  }, zoom:  8 },
+  'Nord-Kivu':       { center: { lat: -0.5000,  lng: 29.0000  }, zoom:  9 },
+  'Sud-Kivu':        { center: { lat: -2.5000,  lng: 28.5000  }, zoom:  9 },
+  'Maniema':         { center: { lat: -3.5000,  lng: 26.5000  }, zoom:  8 },
+  'Lomami':          { center: { lat: -5.5000,  lng: 25.0000  }, zoom:  8 },
+  'Sankuru':         { center: { lat: -3.0000,  lng: 24.0000  }, zoom:  8 },
+  'Kasaï':           { center: { lat: -5.0000,  lng: 21.5000  }, zoom:  8 },
+  'Kasai':           { center: { lat: -5.0000,  lng: 21.5000  }, zoom:  8 },
+  'Kasaï-Central':   { center: { lat: -6.0000,  lng: 22.5000  }, zoom:  8 },
+  'Kasai-Central':   { center: { lat: -6.0000,  lng: 22.5000  }, zoom:  8 },
+  'Kasaï-Oriental':  { center: { lat: -5.5000,  lng: 23.5000  }, zoom:  8 },
+  'Kasai-Oriental':  { center: { lat: -5.5000,  lng: 23.5000  }, zoom:  8 },
+  'Lualaba':         { center: { lat: -10.0000, lng: 25.5000  }, zoom:  8 },
+  'Haut-Katanga':    { center: { lat: -11.0000, lng: 27.5000  }, zoom:  8 },
+  'Haut-Lomami':     { center: { lat: -8.0000,  lng: 28.0000  }, zoom:  8 },
+  'Tanganyika':      { center: { lat: -6.5000,  lng: 29.0000  }, zoom:  8 },
+};
+
+/** Case-insensitive partial lookup fallback. */
+function findProvinceByName(name: string): ProvinceMeta | null {
+  const lower = name.toLowerCase();
+  const key = Object.keys(PROVINCE_CENTERS).find(k => k.toLowerCase() === lower
+    || lower.includes(k.toLowerCase()) || k.toLowerCase().includes(lower));
+  return key ? PROVINCE_CENTERS[key] : null;
+}
+
 interface Marker {
   position: google.maps.LatLngLiteral;
   name: string;
@@ -38,6 +89,7 @@ const ROLE_COLORS: Record<string, string> = {
 export class MapCardComponent implements OnInit, OnChanges {
   @Input() isLoading!: boolean;
   @Input() googleMapList: GoogleMapModel[] = [];
+  @Input() selectedProvinceName: string = '';
   @ViewChild('infoWindow', { read: MapInfoWindow, static: false }) infoWindow!: MapInfoWindow;
 
   // ─── Services ─────────────────────────────────────────────────────────────
@@ -48,8 +100,8 @@ export class MapCardComponent implements OnInit, OnChanges {
   readonly mapErrorMessage = signal('');
   readonly mapHeight      = signal('800px');
   readonly mapWidth       = signal('1100px');
-  readonly center         = signal<google.maps.LatLngLiteral>({ lat: -4.350900786588518, lng: 15.32577513250754 });
-  readonly zoom           = signal(12);
+  readonly center         = signal<google.maps.LatLngLiteral>(DRC_CENTER.center);
+  readonly zoom           = signal(DRC_CENTER.zoom);
   readonly markers        = signal<Marker[]>([]);
   readonly selectedMarker = signal<Marker | null>(null);
 
@@ -122,32 +174,59 @@ export class MapCardComponent implements OnInit, OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (!changes['googleMapList']) return;
+    const listChanged     = !!changes['googleMapList'];
+    const provinceChanged = !!changes['selectedProvinceName'];
 
-    if (this.googleMapList?.length > 0) {
-      const built = this.googleMapList.map(el => ({
-        position:  { lat: el.latitude, lng: el.longitude },
-        name:      el.pos_name,
-        label:     el.pos_name,
-        icon:      this.buildMarkerIcon(el.role || 'unknown'),
-        category:  el.postype,
-        role:      el.role || 'unknown',
-        asm:       el.asm   || '',
-        sup:       el.sup   || '',
-        dr:        el.dr    || '',
-        cyclo:     el.cyclo || '',
-        date:      el.created_at,
-        signature: el.signature,
-        url:       el.pos_uuid,
-      }));
-      this.markers.set(built);
+    if (!listChanged && !provinceChanged) return;
 
-      const latSum = built.reduce((s, m) => s + m.position.lat, 0);
-      const lngSum = built.reduce((s, m) => s + m.position.lng, 0);
-      this.center.set({ lat: latSum / built.length, lng: lngSum / built.length });
-    } else {
-      this.markers.set([]);
+    // ─── Rebuild markers when the list changes ────────────────────────────
+    if (listChanged) {
+      if (this.googleMapList?.length > 0) {
+        const built = this.googleMapList.map(el => ({
+          position:  { lat: el.latitude, lng: el.longitude },
+          name:      el.pos_name,
+          label:     el.pos_name,
+          icon:      this.buildMarkerIcon(el.role || 'unknown'),
+          category:  el.postype,
+          role:      el.role || 'unknown',
+          asm:       el.asm   || '',
+          sup:       el.sup   || '',
+          dr:        el.dr    || '',
+          cyclo:     el.cyclo || '',
+          date:      el.created_at,
+          signature: el.signature,
+          url:       el.pos_uuid,
+        }));
+        this.markers.set(built);
+      } else {
+        this.markers.set([]);
+      }
     }
+
+    // ─── Update map centre based on province selection ────────────────────
+    this.updateMapCenter();
+  }
+
+  /**
+   * Centers the map on the selected province.
+   * When no province is selected, zooms out to show the full DRC.
+   */
+  private updateMapCenter(): void {
+    const name = this.selectedProvinceName?.trim();
+
+    if (name) {
+      // Exact match first, then partial/case-insensitive fallback
+      const meta = PROVINCE_CENTERS[name] ?? findProvinceByName(name);
+      if (meta) {
+        this.center.set(meta.center);
+        this.zoom.set(meta.zoom);
+        return;
+      }
+    }
+
+    // No province selected → zoom out to show the full DRC
+    this.center.set(DRC_CENTER.center);
+    this.zoom.set(DRC_CENTER.zoom);
   }
 
   /** Stable trackBy so Angular reuses existing <map-marker> DOM nodes. */

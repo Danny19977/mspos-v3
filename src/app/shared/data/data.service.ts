@@ -38,8 +38,24 @@ export class DataService {
               route: routes.oosDashboard,
             },
             {
+              menuValue: 'Share in shop handling',
+              route: routes.sishDashboard,
+            },
+            {
+              menuValue: 'Share of stock',
+              route: routes.sosDashboard,
+            },
+            {
               menuValue: 'Maps',
               route: routes.googleMapsDashboard,
+            },
+            {
+              menuValue: 'KPI',
+              route: routes.kpiDashboard,
+            },
+            {
+              menuValue: 'Observations',
+              route: routes.observationsDashboard,
             },
             {
               menuValue: 'Weighted distribution',
@@ -49,26 +65,10 @@ export class DataService {
               menuValue: 'Weighted sales',
               route: routes.wsDashboard,
             },
-            {
-              menuValue: 'Share in shop handling',
-              route: routes.sishDashboard,
-            },
-            {
-              menuValue: 'Share of stock',
-              route: routes.sosDashboard,
-            },
+
             {
               menuValue: 'Sales evolutions',
               route: routes.seDashboard,
-            },
-
-            {
-              menuValue: 'KPI',
-              route: routes.kpiDashboard,
-            },
-            {
-              menuValue: 'Observations',
-              route: routes.observationsDashboard,
             },
           ]
         },
@@ -260,25 +260,13 @@ export class DataService {
           icon: 'layout-2',
           base: 'dashboard',
           subMenus: [
-             {
+            {
               menuValue: 'Numeric distribution',
               route: routes.ndDashboard,
             },
             {
               menuValue: 'Out of stock',
               route: routes.oosDashboard,
-            },
-            {
-              menuValue: 'Maps',
-              route: routes.googleMapsDashboard,
-            },
-            {
-              menuValue: 'Weighted distribution',
-              route: routes.wdDashboard,
-            },
-            {
-              menuValue: 'Weighted sales',
-              route: routes.wsDashboard,
             },
             {
               menuValue: 'Share in shop handling',
@@ -289,10 +277,9 @@ export class DataService {
               route: routes.sosDashboard,
             },
             {
-              menuValue: 'Sales evolutions',
-              route: routes.seDashboard,
+              menuValue: 'Maps',
+              route: routes.googleMapsDashboard,
             },
-
             {
               menuValue: 'KPI',
               route: routes.kpiDashboard,
@@ -300,6 +287,19 @@ export class DataService {
             {
               menuValue: 'Observations',
               route: routes.observationsDashboard,
+            },
+            {
+              menuValue: 'Weighted distribution',
+              route: routes.wdDashboard,
+            },
+            {
+              menuValue: 'Weighted sales',
+              route: routes.wsDashboard,
+            },
+
+            {
+              menuValue: 'Sales evolutions',
+              route: routes.seDashboard,
             },
           ]
         },
@@ -460,8 +460,24 @@ export class DataService {
               route: routes.oosDashboard,
             },
             {
+              menuValue: 'Share in shop handling',
+              route: routes.sishDashboard,
+            },
+            {
+              menuValue: 'Share of stock',
+              route: routes.sosDashboard,
+            },
+            {
               menuValue: 'Maps',
               route: routes.googleMapsDashboard,
+            },
+            {
+              menuValue: 'KPI',
+              route: routes.kpiDashboard,
+            },
+            {
+              menuValue: 'Observations',
+              route: routes.observationsDashboard,
             },
             {
               menuValue: 'Weighted distribution',
@@ -471,26 +487,10 @@ export class DataService {
               menuValue: 'Weighted sales',
               route: routes.wsDashboard,
             },
-            {
-              menuValue: 'Share in shop handling',
-              route: routes.sishDashboard,
-            },
-            {
-              menuValue: 'Share of stock',
-              route: routes.sosDashboard,
-            },
+
             {
               menuValue: 'Sales evolutions',
               route: routes.seDashboard,
-            },
-
-            {
-              menuValue: 'KPI',
-              route: routes.kpiDashboard,
-            },
-            {
-              menuValue: 'Observations',
-              route: routes.observationsDashboard,
             },
           ]
         },
@@ -773,7 +773,7 @@ export class DataService {
       hasSubRoute: false,
       showSubRoute: true,
       menu: [
-        {
+         {
           menuValue: 'Dashboard',
           hasSubRoute: true,
           showSubRoute: true,
@@ -789,8 +789,24 @@ export class DataService {
               route: routes.oosDashboard,
             },
             {
+              menuValue: 'Share in shop handling',
+              route: routes.sishDashboard,
+            },
+            {
+              menuValue: 'Share of stock',
+              route: routes.sosDashboard,
+            },
+            {
               menuValue: 'Maps',
               route: routes.googleMapsDashboard,
+            },
+            {
+              menuValue: 'KPI',
+              route: routes.kpiDashboard,
+            },
+            {
+              menuValue: 'Observations',
+              route: routes.observationsDashboard,
             },
             {
               menuValue: 'Weighted distribution',
@@ -800,26 +816,10 @@ export class DataService {
               menuValue: 'Weighted sales',
               route: routes.wsDashboard,
             },
-            {
-              menuValue: 'Share in shop handling',
-              route: routes.sishDashboard,
-            },
-            {
-              menuValue: 'Share of stock',
-              route: routes.sosDashboard,
-            },
+
             {
               menuValue: 'Sales evolutions',
               route: routes.seDashboard,
-            },
-
-            {
-              menuValue: 'KPI',
-              route: routes.kpiDashboard,
-            },
-            {
-              menuValue: 'Observations',
-              route: routes.observationsDashboard,
             },
           ]
         },
