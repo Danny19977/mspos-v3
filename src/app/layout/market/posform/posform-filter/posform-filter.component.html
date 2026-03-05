@@ -404,8 +404,7 @@
                                         </button>
                                         }
                                         @if((element.sync_status === 'pending' && isCurrentUserCreator(element)) ||
-                                        (!(element.pos_uuid == '' && isLessThan24HoursOld(element.CreatedAt) &&
-                                        isCurrentUserCreator(element)) &&
+                                        (element.sync_status !== 'pending' &&
                                         (currentUser()?.permission === 'ALL' ||
                                         currentUser()?.permission === 'VED') &&
                                         isLessThan24HoursOld(element.CreatedAt))) {

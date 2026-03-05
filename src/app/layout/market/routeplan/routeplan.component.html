@@ -162,7 +162,12 @@
                                             </mat-icon>
                                         </button>
 
-                                        @if(isLessThan24HoursOld(element.CreatedAt)) {
+                                        @if((element.sync_status === 'pending' && element.user_uuid === currentUser()?.uuid) ||
+                                        (element.sync_status !== 'pending' &&
+                                        (currentUser()?.permission === 'ALL' ||
+                                        currentUser()?.permission === 'VAE' ||
+                                        currentUser()?.permission === 'VA') &&
+                                        isLessThan24HoursOld(element.CreatedAt))) {
                                         <button mat-icon-button (click)="findValue(element.uuid)" data-bs-toggle="modal"
                                             data-bs-target="#delete_data" title="Supprimer le plan">
                                             <mat-icon class="text-danger">
