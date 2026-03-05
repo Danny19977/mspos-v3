@@ -48,19 +48,16 @@
 
           <!-- Inline date-range picker (custom only) -->
           @if (selectedPeriod() === 'custom') {
-            <div class="gm-date-field">
-              <i class="ti ti-calendar-event"></i>
-              <input
-                type="text"
-                class="form-control gm-date-input"
-                placeholder="Début — Fin"
-                bsDaterangepicker
-                [(ngModel)]="customRange"
-                [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false, adaptivePosition: true }"
-                (bsValueChange)="onCustomRangeChange($event)"
-                autocomplete="off"
-              />
-            </div>
+            <form [formGroup]="dateRange" class="nd-date-form">
+              <div class="nd-date-field">
+                <i class="ti ti-calendar-event"></i>
+                <input type="text" class="form-control bookingrange nd-date-input"
+                  placeholder="Sélectionner une période"
+                  bsDaterangepicker
+                  [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
+                  formControlName="rangeValue" />
+              </div>
+            </form>
           }
 
           <div class="head-icons mb-0">
@@ -102,9 +99,9 @@
             </label>
             <select class="form-select form-select-sm" formControlName="province_uuid">
               <option value="">Toutes les provinces</option>
-              <option *ngFor="let prov of provinceList()" [value]="prov.uuid">
-                {{ prov.name }}
-              </option>
+              @for (prov of provinceList(); track prov.uuid) {
+                <option [value]="prov.uuid">{{ prov.name }}</option>
+              }
             </select>
           </div>
 
@@ -119,29 +116,31 @@
                 class="gm-role-toggle dropdown-toggle"
                 data-bs-toggle="dropdown"
                 aria-expanded="false">
-                <ng-container *ngIf="filterForm.get('user_type')!.value as key">
+                @if (filterForm.get('user_type')!.value; as key) {
                   <span
                     class="gm-role-dot"
                     [style.background]="roleColor(key)"
                   ></span>
-                </ng-container>
+                }
                 {{ getRoleLabel(filterForm.get('user_type')!.value) }}
               </button>
               <ul class="dropdown-menu gm-role-menu shadow-sm">
-                <li *ngFor="let ut of userTypes">
-                  <button
-                    type="button"
-                    class="dropdown-item gm-role-item"
-                    [class.active]="filterForm.get('user_type')!.value === ut.key"
-                    (click)="selectRole(ut.key)">
-                    <span
-                      class="gm-role-dot"
-                      [style.background]="roleColor(ut.key)"
-                      [style.visibility]="ut.key ? 'visible' : 'hidden'"
-                    ></span>
-                    {{ ut.label }}
-                  </button>
-                </li>
+                @for (ut of userTypes; track ut.key) {
+                  <li>
+                    <button
+                      type="button"
+                      class="dropdown-item gm-role-item"
+                      [class.active]="filterForm.get('user_type')!.value === ut.key"
+                      (click)="selectRole(ut.key)">
+                      <span
+                        class="gm-role-dot"
+                        [style.background]="roleColor(ut.key)"
+                        [style.visibility]="ut.key ? 'visible' : 'hidden'"
+                      ></span>
+                      {{ ut.label }}
+                    </button>
+                  </li>
+                }
               </ul>
             </div>
           </div>
@@ -151,10 +150,12 @@
     </div>
 
     <!-- Map error state -->
-    <div *ngIf="hasMapError()" class="alert alert-danger d-flex align-items-center" role="alert">
-      <i class="ti ti-alert-triangle me-2 fs-5"></i>
-      <div>{{ mapErrorMsg() }}</div>
-    </div>
+    @if (hasMapError()) {
+      <div class="alert alert-danger d-flex align-items-center" role="alert">
+        <i class="ti ti-alert-triangle me-2 fs-5"></i>
+        <div>{{ mapErrorMsg() }}</div>
+      </div>
+    }
 
     <!-- Map card -->
     <app-map-card

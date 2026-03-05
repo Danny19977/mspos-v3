@@ -38,8 +38,8 @@ export class GoogleMapComponent implements OnInit {
 
   // ─── Filter form ──────────────────────────────────────────────────────────
   filterForm!:  FormGroup;
+  dateRange!:   FormGroup;
   rangeDate:    Date[] = [];
-  customRange:  Date[] = [];
 
   private readonly triggerLoad$ = new Subject<void>();
 
@@ -104,6 +104,17 @@ export class GoogleMapComponent implements OnInit {
 
   private initForm(): void {
     this.applyPeriod('1month');
+
+    this.dateRange = this.fb.group({ rangeValue: new FormControl<Date[]>([]) });
+
+    this.dateRange.get('rangeValue')!.valueChanges.pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe((val: Date[] | null) => {
+      if (val?.[0] && val?.[1]) {
+        this.rangeDate = [new Date(val[0]), new Date(val[1])];
+        this.loadMap();
+      }
+    });
 
     this.filterForm = this.fb.group({
       search: new FormControl(''),
@@ -174,19 +185,12 @@ export class GoogleMapComponent implements OnInit {
   setPeriod(key: string): void {
     this.selectedPeriod.set(key);
     if (key === 'custom') {
-      this.customRange = [];
+      this.dateRange.get('rangeValue')!.setValue([], { emitEvent: false });
       return;
     }
-    this.customRange = [];
+    this.dateRange.get('rangeValue')!.setValue([], { emitEvent: false });
     this.applyPeriod(key);
     this.loadMap();
-  }
-
-  onCustomRangeChange(dates: (Date | undefined)[] | undefined): void {
-    if (dates?.length === 2 && dates[0] && dates[1]) {
-      this.rangeDate = [new Date(dates[0]), new Date(dates[1])];
-      this.loadMap();
-    }
   }
 
   getPeriodLabel(): string {
