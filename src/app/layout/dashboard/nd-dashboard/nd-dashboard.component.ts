@@ -1,4 +1,5 @@
 import {
+  AfterViewChecked,
   ChangeDetectorRef,
   Component,
   computed,
@@ -11,6 +12,7 @@ import {
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { formatDate } from '@angular/common';
 import { ChartComponent } from 'ng-apexcharts';
+import { BsDaterangepickerDirective } from 'ngx-bootstrap/datepicker';
 
 import { routes } from '../../../shared/routes/routes';
 import { CommonService } from '../../../shared/common/common.service';
@@ -50,7 +52,9 @@ export type GeoLevel = 'province' | 'area' | 'subarea' | 'commune';
   templateUrl: './nd-dashboard.component.html',
   styleUrl: './nd-dashboard.component.scss',
 })
-export class NdDashboardComponent implements OnInit {
+export class NdDashboardComponent implements OnInit, AfterViewChecked {
+
+  private _openPickerOnNextCheck = false;
 
   // ── DI via inject() ────────────────────────────────────────────────────────
   private common          = inject(CommonService);
@@ -156,6 +160,9 @@ export class NdDashboardComponent implements OnInit {
       rows,
     }));
   });
+
+  // ── DateRangePicker ViewChild ──────────────────────────────────────────────
+  @ViewChild('dateRangeInput') dateRangePicker?: BsDaterangepickerDirective;
 
   // ── Chart ViewChilds ───────────────────────────────────────────────────────
   @ViewChild('chartTrend')     chartTrendRef!:     ChartComponent;
@@ -364,7 +371,7 @@ export class NdDashboardComponent implements OnInit {
     this.isLoadingHeatmap.set(true);
     this.ndService.NdHeatmap(this.geoParams, this.heatmapLevel()).subscribe({
       next: res => {
-        this.heatmapData.set(res.data);
+        this.heatmapData.set(res.data ?? { brands: [], territories: [], matrix: [] });
         this.buildHeatmapChart();
         this.isLoadingHeatmap.set(false);
       },
@@ -490,7 +497,7 @@ export class NdDashboardComponent implements OnInit {
 
   buildHeatmapChart(): void {
     const hm = this.heatmapData();
-    if (!hm.brands.length) { this.chartHeatmapOpts.set(null); return; }
+    if (!hm || !hm.brands?.length) { this.chartHeatmapOpts.set(null); return; }
     const { brands, territories, matrix } = hm;
     const series = brands.map((b, bi) => ({
       name: b.name,
@@ -609,9 +616,19 @@ export class NdDashboardComponent implements OnInit {
     this.activeSection.set(section);
   }
 
+  ngAfterViewChecked(): void {
+    if (this._openPickerOnNextCheck && this.dateRangePicker) {
+      this._openPickerOnNextCheck = false;
+      this.dateRangePicker.show();
+    }
+  }
+
   setPeriod(key: string): void {
     this.selectedPeriod.set(key);
-    if (key === 'custom') return;
+    if (key === 'custom') {
+      this._openPickerOnNextCheck = true;
+      return;
+    }
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     let start: Date;

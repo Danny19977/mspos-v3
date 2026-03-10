@@ -16,17 +16,51 @@
               </p>
             </div>
             <div class="col-md-6 d-flex justify-content-end align-items-center gap-2">
-              <!-- Date Range Picker -->
-              <form [formGroup]="dateRange" class="se-date-form">
-                <div class="se-date-field">
-                  <i class="ti ti-calendar-event"></i>
-                  <input type="text" class="form-control bookingrange se-date-input"
-                    placeholder="Sélectionner une période"
-                    bsDaterangepicker
-                    [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
-                    formControlName="rangeValue" />
-                </div>
-              </form>
+              <!-- Period dropdown -->
+              <div class="dropdown">
+                <button class="btn nd-period-toggle dropdown-toggle" type="button"
+                  data-bs-toggle="dropdown" aria-expanded="false">
+                  <i class="ti ti-calendar-stats me-1"></i>
+                  {{ getPeriodLabel() }}
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end nd-period-menu shadow-sm">
+                  @for (p of PERIODS; track p.key) {
+                    @if (p.key !== 'custom') {
+                      <li>
+                        <button class="dropdown-item nd-period-item"
+                          [class.active]="selectedPeriod() === p.key"
+                          (click)="setPeriod(p.key)">
+                          <i class="ti {{ selectedPeriod() === p.key ? 'ti-check' : 'ti-point' }} me-2"></i>
+                          {{ p.label }}
+                        </button>
+                      </li>
+                    }
+                  }
+                  <li><hr class="dropdown-divider my-1"></li>
+                  <li>
+                    <button class="dropdown-item nd-period-item"
+                      [class.active]="selectedPeriod() === 'custom'"
+                      (click)="setPeriod('custom')">
+                      <i class="ti {{ selectedPeriod() === 'custom' ? 'ti-check' : 'ti-calendar-event' }} me-2"></i>
+                      Personnalisé
+                    </button>
+                  </li>
+                </ul>
+              </div>
+              @if (selectedPeriod() === 'custom') {
+                <form [formGroup]="dateRange" class="se-date-form">
+                  <div class="se-date-field">
+                    <i class="ti ti-calendar-event"></i>
+                    <input type="text" class="form-control bookingrange se-date-input"
+                      placeholder="Sélectionner une période"
+                      #dateRangeInput="bsDaterangepicker"
+                      bsDaterangepicker
+                      placement="bottom"
+                      [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false, adaptivePosition: true }"
+                      formControlName="rangeValue" />
+                  </div>
+                </form>
+              }
               <div class="head-icons mb-0 d-flex gap-1">
                 <app-reload></app-reload>
                 <app-collapse-header></app-collapse-header>

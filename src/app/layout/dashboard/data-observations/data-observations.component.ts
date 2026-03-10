@@ -1,8 +1,9 @@
-import { Component, OnInit, inject, signal, computed, DestroyRef } from '@angular/core';
+import { AfterViewChecked, Component, OnInit, inject, signal, computed, DestroyRef, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { ToastrService } from 'ngx-toastr';
+import { BsDaterangepickerDirective } from 'ngx-bootstrap/datepicker';
 
 import { AuthService } from '../../../auth/auth.service';
 import { ObservationService } from '../services/observation.service';
@@ -35,7 +36,7 @@ export interface PeriodOption {
   templateUrl: './data-observations.component.html',
   styleUrl: './data-observations.component.scss',
 })
-export class DataObservationsComponent implements OnInit {
+export class DataObservationsComponent implements OnInit, AfterViewChecked {
 
   // ─── Injected services ────────────────────────────────────────────────────
   private readonly fb                  = inject(FormBuilder);
@@ -62,7 +63,10 @@ export class DataObservationsComponent implements OnInit {
 
   // ─── Filters form ─────────────────────────────────────────────────────────
   filterForm!: FormGroup;
+  dateRange!: FormGroup;
   rangeDate: Date[] = [];
+  private _openPickerOnNextCheck = false;
+  @ViewChild('dateRangeInput') dateRangePicker?: BsDaterangepickerDirective;
 
   // ─── Quick period selector ────────────────────────────────────────────────
   readonly periods: PeriodOption[] = [
@@ -72,6 +76,7 @@ export class DataObservationsComponent implements OnInit {
     { key: '3months', label: '3 mois'      },
     { key: '6months', label: '6 mois'      },
     { key: 'year',    label: '1 an'        },
+    { key: 'custom',  label: 'Personnalisé' },
   ];
 
   constructor() {
@@ -80,6 +85,13 @@ export class DataObservationsComponent implements OnInit {
   }
 
   // ─── Lifecycle ────────────────────────────────────────────────────────────
+
+  ngAfterViewChecked(): void {
+    if (this._openPickerOnNextCheck && this.dateRangePicker) {
+      this._openPickerOnNextCheck = false;
+      this.dateRangePicker.show();
+    }
+  }
 
   ngOnInit(): void {
     this.authService.user().subscribe({
@@ -99,6 +111,18 @@ export class DataObservationsComponent implements OnInit {
     this.filterForm = this.fb.group({
       search: new FormControl(''),
       limit:  new FormControl(15),
+    });
+
+    this.dateRange = this.fb.group({ rangeValue: new FormControl<Date[] | null>(null) });
+    this.dateRange.valueChanges.pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(val => {
+      if (this.selectedPeriod() !== 'custom') return;
+      const range = val?.rangeValue;
+      if (Array.isArray(range) && range[0] && range[1]) {
+        this.rangeDate = [range[0], range[1]];
+        this.loadObservations(1);
+      }
     });
 
     // Reactive search — auto-unsubscribed when component is destroyed
@@ -143,8 +167,16 @@ export class DataObservationsComponent implements OnInit {
     });
   }
 
+  getPeriodLabel(): string {
+    return this.periods.find(p => p.key === this.selectedPeriod())?.label ?? 'Période';
+  }
+
   setPeriod(key: string): void {
     this.selectedPeriod.set(key);
+    if (key === 'custom') {
+      this._openPickerOnNextCheck = true;
+      return;
+    }
     this.applyPeriod(key);
     this.loadObservations(1);
   }

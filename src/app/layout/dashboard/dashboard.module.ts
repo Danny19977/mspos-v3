@@ -4,7 +4,6 @@ import { RouterModule } from '@angular/router';
 
 import { DashboardRoutingModule } from './dashboard-routing.module';
 import { DashboardComponent } from './dashboard.component';
-import { DealsDashboardComponent } from './deals-dashboard/deals-dashboard.component';
 import { SharedModule } from '../../shared/shared.index';
 import { NdDashboardComponent } from './nd-dashboard/nd-dashboard.component';
 import { WdDashboardComponent } from './wd-dashboard/wd-dashboard.component';
@@ -44,7 +43,6 @@ import { KpiUserVisitSummaryComponent } from './kpi-dashboard/kpi-user-visit-sum
 @NgModule({
   declarations: [
     DashboardComponent,
-    DealsDashboardComponent,
     NdDashboardComponent,
     WdDashboardComponent,
     SishDashboardComponent,

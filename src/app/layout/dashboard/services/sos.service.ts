@@ -22,14 +22,15 @@ export class SosService extends ApiService {
 
   // ── Internal param builder ─────────────────────────────────────────────────
   private geoParams(p: SosGeoParams): HttpParams {
-    return new HttpParams()
-      .set('country_uuid',  p.country_uuid)
-      .set('province_uuid', p.province_uuid  ?? '')
-      .set('area_uuid',     p.area_uuid      ?? '')
-      .set('sub_area_uuid', p.sub_area_uuid  ?? '')
-      .set('commune_uuid',  p.commune_uuid   ?? '')
-      .set('start_date',    p.start_date)
-      .set('end_date',      p.end_date);
+    let params = new HttpParams()
+      .set('country_uuid', p.country_uuid)
+      .set('start_date',   p.start_date)
+      .set('end_date',     p.end_date);
+    if (p.province_uuid)  params = params.set('province_uuid', p.province_uuid);
+    if (p.area_uuid)      params = params.set('area_uuid',     p.area_uuid);
+    if (p.sub_area_uuid)  params = params.set('sub_area_uuid', p.sub_area_uuid);
+    if (p.commune_uuid)   params = params.set('commune_uuid',  p.commune_uuid);
+    return params;
   }
 
 // ── Section 1 — Table Views ────────────────────────────────────────────────

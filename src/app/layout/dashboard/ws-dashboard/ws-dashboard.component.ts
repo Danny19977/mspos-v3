@@ -1,4 +1,5 @@
 import {
+  AfterViewChecked,
   ChangeDetectorRef,
   Component,
   computed,
@@ -11,6 +12,7 @@ import {
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { formatDate } from '@angular/common';
 import { ChartComponent } from 'ng-apexcharts';
+import { BsDaterangepickerDirective } from 'ngx-bootstrap/datepicker';
 
 import { routes } from '../../../shared/routes/routes';
 import { CommonService } from '../../../shared/common/common.service';
@@ -58,7 +60,7 @@ export type GeoLevel = 'province' | 'area' | 'subarea' | 'commune';
   templateUrl: './ws-dashboard.component.html',
   styleUrl: './ws-dashboard.component.scss',
 })
-export class WsDashboardComponent implements OnInit {
+export class WsDashboardComponent implements OnInit, AfterViewChecked {
 
   // ── DI ────────────────────────────────────────────────────────────────────
   private common          = inject(CommonService);
@@ -175,13 +177,11 @@ export class WsDashboardComponent implements OnInit {
   });
 
   // ── Chart ViewChilds ───────────────────────────────────────────────────────
+  private _openPickerOnNextCheck = false;
+  @ViewChild('dateRangeInput') dateRangePicker?: BsDaterangepickerDirective;
   @ViewChild('chartTrend')       chartTrendRef!:       ChartComponent;
   @ViewChild('chartBar')         chartBarRef!:         ChartComponent;
   @ViewChild('chartGap')         chartGapRef!:         ChartComponent;
-  @ViewChild('chartEvolution')   chartEvolutionRef!:   ChartComponent;
-  @ViewChild('chartHeatmap')     chartHeatmapRef!:     ChartComponent;
-  @ViewChild('chartRanking')     chartRankingRef!:     ChartComponent;
-  @ViewChild('chartCorrelation') chartCorrelationRef!: ChartComponent;
 
   readonly BRAND_COLORS = [
     '#0ea5e9','#2dd4bf','#a855f7','#f97316','#10b981',
@@ -190,6 +190,13 @@ export class WsDashboardComponent implements OnInit {
   ];
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
+  ngAfterViewChecked(): void {
+    if (this._openPickerOnNextCheck && this.dateRangePicker) {
+      this._openPickerOnNextCheck = false;
+      this.dateRangePicker.show();
+    }
+  }
+
   ngOnInit(): void {
     this.common.base.subscribe(b => this.base = b);
     this.common.page.subscribe(p => this.page = p);
@@ -748,7 +755,10 @@ export class WsDashboardComponent implements OnInit {
 
   setPeriod(key: string): void {
     this.selectedPeriod.set(key);
-    if (key === 'custom') return;
+    if (key === 'custom') {
+      this._openPickerOnNextCheck = true;
+      return;
+    }
     const now   = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     let start: Date;
@@ -768,17 +778,6 @@ export class WsDashboardComponent implements OnInit {
     this.start_date = formatDate(start, 'yyyy-MM-dd', 'en-US');
     this.end_date   = formatDate(end,   'yyyy-MM-dd', 'en-US');
     this.loadAllSections();
-  }
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  getPeriodLabel(): string {
-    return this.PERIODS.find(p => p.key === this.selectedPeriod())?.label ?? 'Période';
-  }
-
-  getTrendClass(value: number): string {
-    if (value > 0) return 'text-success';
-    if (value < 0) return 'text-danger';
-    return 'text-muted';
   }
 
   getWsBadge(ws: number): string {
@@ -853,5 +852,15 @@ export class WsDashboardComponent implements OnInit {
     if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
     if (v >= 1_000)     return `${(v / 1_000).toFixed(1)}K`;
     return v.toFixed(0);
+  }
+
+  getPeriodLabel(): string {
+    return this.PERIODS.find(p => p.key === this.selectedPeriod())?.label ?? 'Période';
+  }
+
+  getTrendClass(value: number): string {
+    if (value > 0) return 'text-success';
+    if (value < 0) return 'text-danger';
+    return 'text-muted';
   }
 }

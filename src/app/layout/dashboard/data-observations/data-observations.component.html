@@ -6,7 +6,7 @@
     ══════════════════════════════════════════════════════════════════════ -->
     <div class="page-header">
       <div class="row align-items-center">
-        <div class="col-8">
+        <div class="col-md-6">
           <h4 class="page-title">
             Observations Terrain
             @if (pagination()) {
@@ -14,28 +14,56 @@
             }
           </h4>
         </div>
-        <div class="col-4 text-end">
-          <div class="head-icons">
-            <!-- View toggle: cards -->
-            <a
-              href="javascript:void(0);"
-              [class.active]="viewMode() === 'cards'"
-              title="Vue cartes"
-              (click)="setView('cards')"
-            ><i class="ti ti-layout-grid"></i></a>
-            <!-- View toggle: table -->
-            <a
-              href="javascript:void(0);"
-              [class.active]="viewMode() === 'table'"
-              title="Vue liste"
-              (click)="setView('table')"
-            ><i class="ti ti-list"></i></a>
-            <!-- Refresh -->
-            <a
-              href="javascript:void(0);"
-              title="Actualiser"
-              (click)="refresh()"
-            ><i class="ti ti-refresh" [class.obs-spin]="isLoading()"></i></a>
+        <div class="col-md-6 d-flex justify-content-end align-items-center gap-2 flex-wrap">
+          <!-- Period dropdown -->
+          <div class="dropdown">
+            <button class="btn nd-period-toggle dropdown-toggle" type="button"
+              data-bs-toggle="dropdown" aria-expanded="false">
+              <i class="ti ti-calendar-stats me-1"></i>{{ getPeriodLabel() }}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end nd-period-menu shadow-sm">
+              @for (p of periods; track p.key) {
+                @if (p.key !== 'custom') {
+                  <li>
+                    <button class="dropdown-item nd-period-item"
+                      [class.active]="selectedPeriod() === p.key"
+                      (click)="setPeriod(p.key)">
+                      <i class="ti {{ selectedPeriod() === p.key ? 'ti-check' : 'ti-point' }} me-2"></i>
+                      {{ p.label }}
+                    </button>
+                  </li>
+                }
+              }
+              <li><hr class="dropdown-divider my-1"></li>
+              <li>
+                <button class="dropdown-item nd-period-item"
+                  [class.active]="selectedPeriod() === 'custom'"
+                  (click)="setPeriod('custom')">
+                  <i class="ti {{ selectedPeriod() === 'custom' ? 'ti-check' : 'ti-calendar-event' }} me-2"></i>
+                  Personnalisé
+                </button>
+              </li>
+            </ul>
+          </div>
+          @if (selectedPeriod() === 'custom') {
+            <form [formGroup]="dateRange" class="nd-date-form">
+              <div class="nd-date-field">
+                <i class="ti ti-calendar-event"></i>
+                <input type="text" class="form-control bookingrange nd-date-input"
+                  placeholder="Sélectionner une période"
+                  #dateRangeInput="bsDaterangepicker"
+                  bsDaterangepicker
+                  placement="bottom"
+                  [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false, adaptivePosition: true, isAnimated: true }"
+                  formControlName="rangeValue" />
+              </div>
+            </form>
+          }
+          <!-- View toggles + refresh -->
+          <div class="head-icons mb-0 d-flex gap-1">
+            <a href="javascript:void(0);" [class.active]="viewMode() === 'cards'" title="Vue cartes" (click)="setView('cards')"><i class="ti ti-layout-grid"></i></a>
+            <a href="javascript:void(0);" [class.active]="viewMode() === 'table'" title="Vue liste" (click)="setView('table')"><i class="ti ti-list"></i></a>
+            <a href="javascript:void(0);" title="Actualiser" (click)="refresh()"><i class="ti ti-refresh" [class.obs-spin]="isLoading()"></i></a>
           </div>
         </div>
       </div>
@@ -47,25 +75,6 @@
     <div class="card obs-filter-card mb-4">
       <div class="card-body py-3">
         <form [formGroup]="filterForm" class="row g-3 align-items-end">
-
-          <!-- Quick period selector -->
-          <div class="col-12">
-            <label class="form-label obs-label">
-              <i class="ti ti-calendar me-1"></i>Période
-            </label>
-            <div class="obs-period-group" role="group">
-              @for (p of periods; track p.key) {
-              <button
-                type="button"
-                class="obs-period-btn"
-                [class.active]="selectedPeriod() === p.key"
-                (click)="setPeriod(p.key)"
-              >
-                {{ p.label }}
-              </button>
-              }
-            </div>
-          </div>
 
           <!-- Search -->
           <div class="col-md-4 col-lg-5">

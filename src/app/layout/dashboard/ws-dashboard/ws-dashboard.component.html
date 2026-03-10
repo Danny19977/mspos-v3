@@ -51,8 +51,10 @@
                     <i class="ti ti-calendar-event"></i>
                     <input type="text" class="form-control bookingrange ws-date-input"
                       placeholder="Sélectionner une période"
+                      #dateRangeInput="bsDaterangepicker"
                       bsDaterangepicker
-                      [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-blue', showWeekNumbers: false }"
+                      placement="bottom"
+                      [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-blue', showWeekNumbers: false, adaptivePosition: true }"
                       formControlName="rangeValue" />
                   </div>
                 </form>
@@ -236,10 +238,16 @@
         <div class="col-xl-8">
           <div class="card border-0 shadow-sm">
             <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
-              <h5 class="fw-semibold mb-0">
-                <i class="ti ti-trophy me-2" style="color:var(--ws-primary)"></i>
-                Top marques par WS%
-              </h5>
+              <div>
+                <h5 class="fw-semibold mb-0">
+                  <i class="ti ti-trophy me-2" style="color:var(--ws-primary)"></i>
+                  Top marques par WS%
+                </h5>
+                <p class="text-muted small mb-0 mt-1">
+                  <i class="ti ti-info-circle me-1"></i>
+                  <strong>pp</strong> = points de pourcentage — écart absolu entre deux valeurs en % (ex : 40% → 43% = <strong>+3 pp</strong>).
+                </p>
+              </div>
               @if (isLoadingRanking()) { <div class="spinner-border spinner-border-sm ws-spinner"></div> }
             </div>
             <div class="card-body p-0">

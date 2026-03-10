@@ -1,4 +1,5 @@
 import {
+  AfterViewChecked,
   ChangeDetectorRef,
   Component,
   computed,
@@ -11,6 +12,7 @@ import {
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { formatDate } from '@angular/common';
 import { ChartComponent } from 'ng-apexcharts';
+import { BsDaterangepickerDirective } from 'ngx-bootstrap/datepicker';
 
 import { routes } from '../../../shared/routes/routes';
 import { CommonService } from '../../../shared/common/common.service';
@@ -58,7 +60,7 @@ export type GeoLevel = 'province' | 'area' | 'subarea' | 'commune';
   templateUrl: './sish-dashboard.component.html',
   styleUrl: './sish-dashboard.component.scss',
 })
-export class SishDashboardComponent implements OnInit {
+export class SishDashboardComponent implements OnInit, AfterViewChecked {
 
   // ── DI ────────────────────────────────────────────────────────────────────
   private common          = inject(CommonService);
@@ -191,6 +193,8 @@ export class SishDashboardComponent implements OnInit {
   });
 
   // ── Chart ViewChilds ───────────────────────────────────────────────────────
+  private _openPickerOnNextCheck = false;
+  @ViewChild('dateRangeInput') dateRangePicker?: BsDaterangepickerDirective;
   @ViewChild('chartTrend')       chartTrendRef!:       ChartComponent;
   @ViewChild('chartBar')         chartBarRef!:         ChartComponent;
   @ViewChild('chartGap')         chartGapRef!:         ChartComponent;
@@ -207,6 +211,13 @@ export class SishDashboardComponent implements OnInit {
   ];
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
+  ngAfterViewChecked(): void {
+    if (this._openPickerOnNextCheck && this.dateRangePicker) {
+      this._openPickerOnNextCheck = false;
+      this.dateRangePicker.show();
+    }
+  }
+
   ngOnInit(): void {
     this.common.base.subscribe(b => this.base = b);
     this.common.page.subscribe(p => this.page = p);
@@ -854,7 +865,10 @@ export class SishDashboardComponent implements OnInit {
 
   setPeriod(key: string): void {
     this.selectedPeriod.set(key);
-    if (key === 'custom') return;
+    if (key === 'custom') {
+      this._openPickerOnNextCheck = true;
+      return;
+    }
     const now   = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     let start: Date;

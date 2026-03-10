@@ -1,7 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { DashboardComponent } from './dashboard.component';
-import { DealsDashboardComponent } from './deals-dashboard/deals-dashboard.component';
  
 import { NdDashboardComponent } from './nd-dashboard/nd-dashboard.component';
 import { WdDashboardComponent } from './wd-dashboard/wd-dashboard.component';
@@ -30,10 +29,6 @@ const routes: Routes = [
         redirectTo: 'mspos-dashboard',
         pathMatch: 'full'
       },
-      {
-        path: 'deals-dashboard',
-        component: DealsDashboardComponent,
-      }, 
       {
         path: 'numeric-distribution',
         component: NdDashboardComponent,

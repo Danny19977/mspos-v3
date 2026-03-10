@@ -54,13 +54,15 @@
                 <div class="sos-date-field">
                   <i class="ti ti-calendar-event"></i>
                   <input type="text" class="form-control bookingrange sos-date-input"
-                    placeholder="Sélectionner une période" bsDaterangepicker
-                    [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
+                    placeholder="Sélectionner une période"
+                    #dateRangeInput="bsDaterangepicker"
+                    bsDaterangepicker
+                    placement="bottom"
+                    [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false, adaptivePosition: true }"
                     formControlName="rangeValue" />
                 </div>
               </form>
               }
-
               <div class="head-icons mb-0 d-flex gap-1">
                 <app-reload></app-reload>
                 <app-collapse-header></app-collapse-header>
@@ -234,13 +236,101 @@
       <button class="sos-nav-btn" [class.active]="activeSection() === 'gap'" (click)="setSection('gap')">
         <i class="ti ti-arrows-left-right me-1"></i>Gap
       </button>
-      <button class="sos-nav-btn" [class.active]="activeSection() === 'drilldown'" (click)="setSection('drilldown')">
-        <i class="ti ti-zoom-in me-1"></i>Drill-Down POS
-      </button>
       <button class="sos-nav-btn" [class.active]="activeSection() === 'vsnd'" (click)="setSection('vsnd')">
         <i class="ti ti-dots-diagonal me-1"></i>SOS vs ND
       </button>
     </div>
+
+    <!-- ═════════════════════════════════════════════════════════════════════
+         SECTION: KPI — Vue synthétique
+    ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection() === 'kpi') {
+    <div class="row g-3">
+
+      <!-- Graphe classement horizontal -->
+      <div class="col-lg-5">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+            <h6 class="fw-semibold mb-0">
+              <i class="ti ti-chart-bar me-2 text-primary"></i>
+              Part de marché SOS% par marque
+            </h6>
+            @if (isLoadingRanking()) { <div class="spinner-border spinner-border-sm text-primary"></div> }
+          </div>
+          <div class="card-body px-2 pt-2">
+            @if (!isLoadingRanking() && chartRankingOpts()) {
+            <apx-chart [series]="chartRankingOpts()!.series" [chart]="chartRankingOpts()!.chart"
+              [colors]="chartRankingOpts()!.colors" [plotOptions]="chartRankingOpts()!.plotOptions"
+              [dataLabels]="chartRankingOpts()!.dataLabels" [xaxis]="chartRankingOpts()!.xaxis"
+              [legend]="chartRankingOpts()!.legend" [tooltip]="chartRankingOpts()!.tooltip">
+            </apx-chart>
+            } @else if (!isLoadingRanking()) {
+            <div class="sos-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée</p></div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <!-- Tableau top marques -->
+      <div class="col-lg-7">
+        <div class="card border-0 shadow-sm h-100">
+          <div class="card-header border-0 pb-0 pt-3 px-3">
+            <h6 class="fw-semibold mb-0">
+              <i class="ti ti-trophy me-2 text-primary"></i>
+              Classement des marques
+            </h6>
+          </div>
+          <div class="card-body p-0">
+            @if (isLoadingRanking()) {
+            <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary"></div></div>
+            } @else if (rankingData().length === 0) {
+            <div class="sos-empty-state"><i class="ti ti-trophy-off"></i><p>Aucune donnée</p></div>
+            } @else {
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 sos-table">
+                <thead class="sos-thead">
+                  <tr>
+                    <th class="text-center">#</th>
+                    <th>Marque</th>
+                    <th class="text-end">Fardes</th>
+                    <th class="text-end">Total</th>
+                    <th class="text-end">SOS %</th>
+                    <th class="text-center">Position</th>
+                    <th style="width:80px">Part</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of rankingData(); track row.brand_uuid) {
+                  <tr [class.sos-rank-top]="row.rank <= 3">
+                    <td class="text-center fw-bold">{{ getRankMedal(row.rank) }}</td>
+                    <td class="fw-semibold text-primary">{{ row.brand_name }}</td>
+                    <td class="text-end">{{ row.brand_fardes | number }}</td>
+                    <td class="text-end text-muted">{{ row.total_fardes | number }}</td>
+                    <td class="text-end">
+                      <span [class]="getSosBadge(row.sos_percent)">{{ row.sos_percent | number:'1.1-1' }}%</span>
+                    </td>
+                    <td class="text-center">
+                      <span [class]="getDominanceBadge(row.dominance)">{{ row.dominance | titlecase }}</span>
+                    </td>
+                    <td>
+                      <div class="progress sos-progress">
+                        <div class="progress-bar {{ row.sos_percent >= 50 ? 'bg-success' : row.sos_percent >= 30 ? 'bg-info' : row.sos_percent >= 15 ? 'bg-warning' : 'bg-secondary' }}"
+                          [style.width]="row.sos_percent + '%'">
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            }
+          </div>
+        </div>
+      </div>
+
+    </div>
+    }
 
     <!-- ═════════════════════════════════════════════════════════════════════
          SECTION: TREND — SOS% par marque par mois
@@ -1127,9 +1217,9 @@
     }
 
     <!-- ═════════════════════════════════════════════════════════════════════
-         SECTION: DRILL-DOWN POS — Détail par point de vente
+         SECTION: SOS VS ND — supprimé : drilldown
     ═══════════════════════════════════════════════════════════════════════ -->
-    @if (activeSection() === 'drilldown') {
+    @if (false) {
     <div class="row g-3">
 
       <!-- Brand selector + current brand banner -->
@@ -1326,6 +1416,10 @@
               <i class="ti ti-list me-2 text-primary"></i>
               Tableau quadrant SOS × ND
             </h6>
+            <p class="text-muted small mb-0 mt-1">
+              <i class="ti ti-info-circle me-1"></i>
+              <strong>pp</strong> = points de pourcentage — écart absolu entre deux valeurs en % (ex : 40% → 43% = <strong>+3 pp</strong>).
+            </p>
           </div>
           <div class="card-body p-0" style="overflow-y:auto;max-height:460px">
             @if (isLoadingVsND()) {

@@ -1,4 +1,5 @@
 import {
+  AfterViewChecked,
   ChangeDetectorRef,
   Component,
   computed,
@@ -11,6 +12,7 @@ import {
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { formatDate } from '@angular/common';
 import { ChartComponent } from 'ng-apexcharts';
+import { BsDaterangepickerDirective } from 'ngx-bootstrap/datepicker';
 
 import { routes } from '../../../shared/routes/routes';
 import { CommonService } from '../../../shared/common/common.service';
@@ -56,7 +58,7 @@ export type GeoLevel = 'province' | 'area' | 'subarea' | 'commune';
   templateUrl: './wd-dashboard.component.html',
   styleUrl: './wd-dashboard.component.scss',
 })
-export class WdDashboardComponent implements OnInit {
+export class WdDashboardComponent implements OnInit, AfterViewChecked {
 
   // ── DI via inject() ────────────────────────────────────────────────────────
   private common          = inject(CommonService);
@@ -168,13 +170,11 @@ export class WdDashboardComponent implements OnInit {
   });
 
   // ── Chart ViewChilds ───────────────────────────────────────────────────────
+  private _openPickerOnNextCheck = false;
+  @ViewChild('dateRangeInput') dateRangePicker?: BsDaterangepickerDirective;
   @ViewChild('chartTrend')       chartTrendRef!:       ChartComponent;
   @ViewChild('chartBar')         chartBarRef!:         ChartComponent;
   @ViewChild('chartGap')         chartGapRef!:         ChartComponent;
-  @ViewChild('chartEvolution')   chartEvolutionRef!:   ChartComponent;
-  @ViewChild('chartHeatmap')     chartHeatmapRef!:     ChartComponent;
-  @ViewChild('chartRanking')     chartRankingRef!:     ChartComponent;
-  @ViewChild('chartCorrelation') chartCorrelationRef!: ChartComponent;
 
   readonly BRAND_COLORS = [
     '#f77f00','#d62828','#fcbf49','#06d6a0','#4361ee',
@@ -183,6 +183,13 @@ export class WdDashboardComponent implements OnInit {
   ];
 
   // ── Lifecycle ──────────────────────────────────────────────────────────────
+  ngAfterViewChecked(): void {
+    if (this._openPickerOnNextCheck && this.dateRangePicker) {
+      this._openPickerOnNextCheck = false;
+      this.dateRangePicker.show();
+    }
+  }
+
   ngOnInit(): void {
     this.common.base.subscribe(b => this.base = b);
     this.common.page.subscribe(p => this.page = p);
@@ -393,7 +400,7 @@ export class WdDashboardComponent implements OnInit {
     this.isLoadingHeatmap.set(true);
     this.wdService.WdHeatmap(this.geoParams, this.heatmapLevel()).subscribe({
       next: res => {
-        this.heatmapData.set(res.data);
+        this.heatmapData.set(res.data ?? { brands: [], territories: [], matrix: [] });
         this.buildHeatmapChart();
         this.isLoadingHeatmap.set(false);
       },
@@ -734,7 +741,10 @@ export class WdDashboardComponent implements OnInit {
 
   setPeriod(key: string): void {
     this.selectedPeriod.set(key);
-    if (key === 'custom') return;
+    if (key === 'custom') {
+      this._openPickerOnNextCheck = true;
+      return;
+    }
     const now   = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     let start: Date;

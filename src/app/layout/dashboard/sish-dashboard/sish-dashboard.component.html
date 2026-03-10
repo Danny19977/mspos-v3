@@ -46,8 +46,10 @@
           <form [formGroup]="dateRange" class="sish-date-form d-flex gap-2">
             <div class="sish-date-field">
               <input type="text" class="sish-date-input form-control"
+                #dateRangeInput="bsDaterangepicker"
                 bsDaterangepicker formControlName="rangeValue"
-                [bsConfig]="{ containerClass: 'theme-default', showWeekNumbers: false, dateInputFormat: 'DD/MM/YYYY', isAnimated: true }"
+                placement="bottom"
+                [bsConfig]="{ containerClass: 'theme-default', showWeekNumbers: false, dateInputFormat: 'DD/MM/YYYY', isAnimated: true, adaptivePosition: true }"
                 placeholder="Du — Au" readonly>
             </div>
           </form>

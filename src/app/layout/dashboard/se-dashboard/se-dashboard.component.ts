@@ -1,4 +1,5 @@
 import {
+  AfterViewChecked,
   ChangeDetectionStrategy, ChangeDetectorRef,
   Component, computed, OnInit, Renderer2, signal, ViewChild,
 } from '@angular/core';
@@ -9,6 +10,7 @@ import {
   ApexPlotOptions, ApexYAxis, ApexTooltip, ApexLegend, ApexFill,
   ApexStroke, ChartComponent,
 } from 'ng-apexcharts';
+import { BsDaterangepickerDirective } from 'ngx-bootstrap/datepicker';
 
 import { routes } from '../../../shared/routes/routes';
 import { CommonService } from '../../../shared/common/common.service';
@@ -42,7 +44,7 @@ export type DashSection = 'overview' | 'tableview' | 'growth' | 'competition' | 
   styleUrl: './se-dashboard.component.scss',
   changeDetection: ChangeDetectionStrategy.Default,
 })
-export class SeDashboardComponent implements OnInit {
+export class SeDashboardComponent implements OnInit, AfterViewChecked {
   public routes = routes;
   base = ''; page = ''; last = '';
 
@@ -55,7 +57,19 @@ export class SeDashboardComponent implements OnInit {
   start_date!: string;
   end_date!: string;
   rangeDate: any[] = [];
+  selectedPeriod = signal<string>('1m');
+  readonly PERIODS = [
+    { key: 'today', label: "Aujourd'hui" },
+    { key: '1w',   label: '1 semaine'   },
+    { key: '1m',   label: '1 mois'      },
+    { key: '3m',   label: '3 mois'      },
+    { key: '6m',   label: '6 mois'      },
+    { key: '1y',   label: '1 an'        },
+    { key: 'custom', label: 'Personnalisé' },
+  ];
 
+  private _openPickerOnNextCheck = false;
+  @ViewChild('dateRangeInput') dateRangePicker?: BsDaterangepickerDirective;
   // ── Geography ───────────────────────────────────────────────────────────────
   countryList  = signal<ICountry[]>([]);
   provinceList = signal<IProvince[]>([]);
@@ -138,6 +152,13 @@ export class SeDashboardComponent implements OnInit {
     this.common.last.subscribe(l => this.last = l);
   }
 
+  ngAfterViewChecked(): void {
+    if (this._openPickerOnNextCheck && this.dateRangePicker) {
+      this._openPickerOnNextCheck = false;
+      this.dateRangePicker.show();
+    }
+  }
+
   ngOnInit(): void {
     const now = new Date();
     const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -171,6 +192,7 @@ export class SeDashboardComponent implements OnInit {
     });
 
     this.dateRange.valueChanges.subscribe(val => {
+      if (this.selectedPeriod() !== 'custom') return;
       if (val.rangeValue?.[0] && val.rangeValue?.[1]) {
         this.start_date = formatDate(val.rangeValue[0], 'yyyy-MM-dd', 'en-US');
         const end = new Date(val.rangeValue[1]);
@@ -187,6 +209,38 @@ export class SeDashboardComponent implements OnInit {
   get area_uuid()     { return this.selectedArea?.uuid     ?? ''; }
   get sub_area_uuid() { return this.selectedSubArea?.uuid  ?? ''; }
   get commune_uuid()  { return this.selectedCommune?.uuid  ?? ''; }
+
+  // ── Period selector ────────────────────────────────────────────────────────
+  setPeriod(key: string): void {
+    this.selectedPeriod.set(key);
+    if (key === 'custom') {
+      this._openPickerOnNextCheck = true;
+      return;
+    }
+    const now   = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    let start: Date;
+    let end: Date = new Date(today);
+    switch (key) {
+      case 'today': start = new Date(today); break;
+      case '1w':    start = new Date(today); start.setDate(today.getDate() - 7); break;
+      case '1m':
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        end   = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        break;
+      case '3m': start = new Date(today); start.setMonth(today.getMonth() - 3); break;
+      case '6m': start = new Date(today); start.setMonth(today.getMonth() - 6); break;
+      case '1y': start = new Date(today); start.setFullYear(today.getFullYear() - 1); break;
+      default: return;
+    }
+    this.start_date = formatDate(start, 'yyyy-MM-dd', 'en-US');
+    this.end_date   = formatDate(end,   'yyyy-MM-dd', 'en-US');
+    this.loadAll();
+  }
+
+  getPeriodLabel(): string {
+    return this.PERIODS.find(p => p.key === this.selectedPeriod())?.label ?? 'Période';
+  }
 
   // ── Loaders ────────────────────────────────────────────────────────────────
   loadAll(): void {
@@ -422,9 +476,13 @@ export class SeDashboardComponent implements OnInit {
     this.selectedArea     = null!;
     this.selectedSubArea  = null!;
     this.selectedCommune  = null!;
-    this.provinceService.getAll().subscribe(res => {
-      this.provinceList.set(res.data.filter((p: IProvince) => p.country_uuid === country.uuid));
-    });
+    if (country) {
+      this.provinceService.getAll().subscribe(res => {
+        this.provinceList.set(res.data.filter((p: IProvince) => p.country_uuid === country.uuid));
+      });
+    } else {
+      this.provinceList.set([]);
+    }
     this.loadAll();
   }
 
@@ -433,9 +491,13 @@ export class SeDashboardComponent implements OnInit {
     this.selectedArea     = null!;
     this.selectedSubArea  = null!;
     this.selectedCommune  = null!;
-    this.areaService.getAll().subscribe(res => {
-      this.areaList.set(res.data.filter((a: IArea) => a.province_uuid === province.uuid));
-    });
+    if (province) {
+      this.areaService.getAll().subscribe(res => {
+        this.areaList.set(res.data.filter((a: IArea) => a.province_uuid === province.uuid));
+      });
+    } else {
+      this.areaList.set([]);
+    }
     this.loadAll();
   }
 
@@ -443,18 +505,26 @@ export class SeDashboardComponent implements OnInit {
     this.selectedArea    = area;
     this.selectedSubArea = null!;
     this.selectedCommune = null!;
-    this.subAreaService.getAll().subscribe(res => {
-      this.subAreaList.set(res.data.filter((s: ISubArea) => s.area_uuid === area.uuid));
-    });
+    if (area) {
+      this.subAreaService.getAll().subscribe(res => {
+        this.subAreaList.set(res.data.filter((s: ISubArea) => s.area_uuid === area.uuid));
+      });
+    } else {
+      this.subAreaList.set([]);
+    }
     this.loadAll();
   }
 
   onSubAreaChange(subArea: ISubArea): void {
     this.selectedSubArea = subArea;
     this.selectedCommune = null!;
-    this.communeService.getAll().subscribe(res => {
-      this.communeList.set(res.data.filter((c: ICommune) => c.sub_area_uuid === subArea.uuid));
-    });
+    if (subArea) {
+      this.communeService.getAll().subscribe(res => {
+        this.communeList.set(res.data.filter((c: ICommune) => c.sub_area_uuid === subArea.uuid));
+      });
+    } else {
+      this.communeList.set([]);
+    }
     this.loadAll();
   }
 

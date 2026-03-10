@@ -1,8 +1,9 @@
-import { Component, OnInit, DestroyRef, inject, signal } from '@angular/core';
+import { AfterViewChecked, Component, OnInit, DestroyRef, inject, signal, ViewChild } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { Subject } from 'rxjs';
+import { BsDaterangepickerDirective } from 'ngx-bootstrap/datepicker';
 
 import { GoogleMapService } from '../services/google-map.service';
 import { GoogleMapModel } from '../models/dashboard.models';
@@ -19,7 +20,7 @@ export interface UserTypeOption { key: string; label: string; }
   templateUrl: './google-map.component.html',
   styleUrl: './google-map.component.scss',
 })
-export class GoogleMapComponent implements OnInit {
+export class GoogleMapComponent implements OnInit, AfterViewChecked {
 
   // ─── Injected services ────────────────────────────────────────────────────
   private readonly fb = inject(FormBuilder);
@@ -40,6 +41,8 @@ export class GoogleMapComponent implements OnInit {
   filterForm!:  FormGroup;
   dateRange!:   FormGroup;
   rangeDate:    Date[] = [];
+  private _openPickerOnNextCheck = false;
+  @ViewChild('dateRangeInput') dateRangePicker?: BsDaterangepickerDirective;
 
   private readonly triggerLoad$ = new Subject<void>();
 
@@ -84,6 +87,13 @@ export class GoogleMapComponent implements OnInit {
   }
 
   // ─── Lifecycle ────────────────────────────────────────────────────────────
+
+  ngAfterViewChecked(): void {
+    if (this._openPickerOnNextCheck && this.dateRangePicker) {
+      this._openPickerOnNextCheck = false;
+      this.dateRangePicker.show();
+    }
+  }
 
   ngOnInit(): void {
     this.isLoading.set(true);
@@ -185,6 +195,7 @@ export class GoogleMapComponent implements OnInit {
   setPeriod(key: string): void {
     this.selectedPeriod.set(key);
     if (key === 'custom') {
+      this._openPickerOnNextCheck = true;
       this.dateRange.get('rangeValue')!.setValue([], { emitEvent: false });
       return;
     }

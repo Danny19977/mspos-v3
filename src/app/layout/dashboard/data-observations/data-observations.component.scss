@@ -207,6 +207,88 @@ $obs-accent:     #4361ee;
   margin-bottom: 0.3rem;
 }
 
+// ── Period dropdown (mirrors nd-dashboard) ──────────────────────────────────
+.nd-period-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid #dce1ff;
+  background: #f4f6ff;
+  color: #4361ee;
+  font-size: 0.82rem;
+  font-weight: 600;
+  gap: 4px;
+  transition: all 0.15s;
+
+  &:hover, &:focus {
+    background: #eef0ff;
+    border-color: #4361ee;
+    box-shadow: none;
+  }
+
+  &::after { margin-left: 4px; }
+}
+
+.nd-period-menu {
+  min-width: 160px;
+  border: 1px solid #dce1ff;
+  border-radius: 10px;
+  padding: 4px;
+  font-size: 0.82rem;
+}
+
+.nd-period-item {
+  border-radius: 7px;
+  color: #3a3a5c;
+  font-size: 0.82rem;
+  padding: 7px 12px;
+  display: flex;
+  align-items: center;
+
+  &:hover { background: #eef0ff; color: #4361ee; }
+
+  &.active {
+    background: #4361ee;
+    color: #fff;
+    font-weight: 600;
+  }
+}
+
+// ── Date range picker ────────────────────────────────────────────────────────
+.nd-date-form {
+  .nd-date-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    i {
+      position: absolute;
+      left: 10px;
+      color: #6c757d;
+      font-size: 1rem;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .nd-date-input {
+      padding-left: 34px;
+      border-radius: 8px;
+      border: 1px solid #dce1ff;
+      font-size: 0.82rem;
+      background-color: #f8f9ff;
+      min-width: 220px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+
+      &:focus {
+        border-color: #4361ee;
+        box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.12);
+        background-color: #fff;
+      }
+    }
+  }
+}
+
 .obs-filter-card {
   border: 1px solid rgba(0, 0, 0, 0.06);
   border-radius: 0.75rem;

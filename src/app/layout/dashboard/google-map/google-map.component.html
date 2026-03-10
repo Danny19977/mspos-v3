@@ -53,8 +53,10 @@
                 <i class="ti ti-calendar-event"></i>
                 <input type="text" class="form-control bookingrange nd-date-input"
                   placeholder="Sélectionner une période"
+                  #dateRangeInput="bsDaterangepicker"
                   bsDaterangepicker
-                  [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
+                  placement="bottom"
+                  [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false, adaptivePosition: true }"
                   formControlName="rangeValue" />
               </div>
             </form>
