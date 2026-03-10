@@ -215,8 +215,8 @@ export class NdDashboardComponent implements OnInit, AfterViewChecked {
                 ?? undefined;
               // Pre-load areas for the preselected province
               if (this.selectedProvince) {
-                this.areaService.getAllByASM(this.selectedProvince.uuid).subscribe(ar => {
-                  this.areaList.set(ar.data);
+                this.areaService.getAll().subscribe(ar => {
+                  this.areaList.set((ar.data as IArea[]).filter(a => a.province_uuid === this.selectedProvince!.uuid));
                 });
               }
             } else {
@@ -563,8 +563,8 @@ export class NdDashboardComponent implements OnInit, AfterViewChecked {
     this.subAreaList.set([]);
     this.communeList.set([]);
     if (province) {
-      this.areaService.getAllByASM(province.uuid).subscribe(res => {
-        this.areaList.set(res.data);
+      this.areaService.getAll().subscribe(res => {
+        this.areaList.set((res.data as IArea[]).filter(a => a.province_uuid === province.uuid));
       });
     }
     this.loadAllSections();
@@ -577,8 +577,8 @@ export class NdDashboardComponent implements OnInit, AfterViewChecked {
     this.subAreaList.set([]);
     this.communeList.set([]);
     if (area) {
-      this.subAreaService.getAllBySup(area.uuid).subscribe(res => {
-        this.subAreaList.set(res.data);
+      this.subAreaService.getAll().subscribe(res => {
+        this.subAreaList.set((res.data as ISubArea[]).filter(s => s.area_uuid === area.uuid));
       });
     }
     this.loadAllSections();
@@ -589,8 +589,8 @@ export class NdDashboardComponent implements OnInit, AfterViewChecked {
     this.selectedCommune = undefined;
     this.communeList.set([]);
     if (subArea) {
-      this.communeService.getAllByDR(subArea.uuid).subscribe(res => {
-        this.communeList.set(res.data);
+      this.communeService.getAll().subscribe(res => {
+        this.communeList.set((res.data as ICommune[]).filter(c => c.sub_area_uuid === subArea.uuid));
       });
     }
     this.loadAllSections();
