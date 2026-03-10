@@ -189,6 +189,9 @@ export class KpiDashboardComponent implements OnInit, AfterViewChecked {
   // ── Absence drill-down ─────────────────────────────────────────────────────
   daysInactive = signal<number>(7);
 
+  // ── Excel export ───────────────────────────────────────────────────────────
+  isExporting = signal(false);
+
   // ─────────────────────────────────────────────────────────────────────────────
   ngAfterViewChecked(): void {
     if (this._openPickerOnNextCheck && this.dateRangePicker) {
@@ -663,5 +666,32 @@ export class KpiDashboardComponent implements OnInit, AfterViewChecked {
 
   compareById(a: any, b: any): boolean {
     return a && b ? a.uuid === b.uuid : a === b;
+  }
+
+  // ── Excel export ───────────────────────────────────────────────────────────
+  exportExcel(): void {
+    if (this.isExporting()) return;
+    this.isExporting.set(true);
+    this.kpiService.ExportExcel({
+      country_uuid:  this.country_uuid  || undefined,
+      province_uuid: this.province_uuid || undefined,
+      area_uuid:     this.area_uuid     || undefined,
+      sub_area_uuid: this.sub_area_uuid || undefined,
+      commune_uuid:  this.commune_uuid  || undefined,
+      start_date:    this.start_date,
+      end_date:      this.end_date,
+      title:         this.titleFilter() || undefined,
+    }).subscribe({
+      next: (blob) => {
+        const url  = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href     = url;
+        link.download = `rapport_kpi_${this.start_date}_${this.end_date}.xlsx`;
+        link.click();
+        URL.revokeObjectURL(url);
+        this.isExporting.set(false);
+      },
+      error: () => this.isExporting.set(false),
+    });
   }
 }

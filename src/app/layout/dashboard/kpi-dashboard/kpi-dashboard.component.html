@@ -59,6 +59,18 @@
                   </div>
                 </form>
               }
+              <!-- Export Excel -->
+              <button class="btn kpi-export-btn"
+                (click)="exportExcel()"
+                [disabled]="isExporting()"
+                title="Exporter le rapport KPI complet en Excel">
+                @if (isExporting()) {
+                  <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                  Export…
+                } @else {
+                  <i class="ti ti-file-spreadsheet me-1"></i>Export Excel
+                }
+              </button>
             </div>
           </div>
         </div>
@@ -169,11 +181,6 @@
         <i class="ti ti-trending-up"></i>
         <span>Tendances</span>
       </button>
-      <button class="kpi-nav-btn" [class.active]="activeSection() === 'nd'"
-        (click)="setSection('nd')">
-        <i class="ti ti-chart-grid-dots"></i>
-        <span>Distribution ND</span>
-      </button>
       @if (commune_uuid) {
         <button class="kpi-nav-btn" [class.active]="activeSection() === 'pos'"
           (click)="setSection('pos')">
@@ -283,7 +290,7 @@
                   <span class="kpi-tc-metric-val">{{ t.pos_visited }}</span>
                 </div>
                 <div class="kpi-tc-metric">
-                  <span class="kpi-tc-metric-label">Sync %</span>
+                  <span class="kpi-tc-metric-label">Synchronisation</span>
                   <span class="kpi-tc-metric-val" [class]="getPctClass(t.sync_rate)">
                     {{ t.sync_rate }}%
                   </span>
@@ -296,22 +303,24 @@
               <!-- progress bars -->
               <div class="kpi-tc-bars">
                 <div class="kpi-tc-bar-row">
-                  <span class="kpi-tc-bar-label">POS Couverture</span>
+                  <span class="kpi-tc-bar-label">POS Visités</span>
                   <div class="kpi-tc-bar-track">
                     <div class="kpi-tc-bar-fill"
-                      [class]="getPctBarColor(t.visited_percentage)"
-                      [style.width]="getPctBarWidth(t.visited_percentage)"></div>
+                      [class]="getPctBarColor(t.total_visits > 0 ? t.pos_visited / t.total_visits * 100 : 0)"
+                      [style.width]="getPctBarWidth(t.total_visits > 0 ? t.pos_visited / t.total_visits * 100 : 0)"></div>
                   </div>
-                  <span class="kpi-tc-bar-pct">{{ t.visited_percentage }}%</span>
+                  <span class="kpi-tc-bar-pct">{{ t.total_visits > 0 ? (t.pos_visited / t.total_visits * 100 | number:'1.0-0') : 0 }}%</span>
                 </div>
                 <div class="kpi-tc-bar-row">
-                  <span class="kpi-tc-bar-label">POS-MM</span>
+                  <div class="kpi-tc-bar-label-col">
+                    <span class="kpi-tc-bar-label">Moy. Visit/POS</span> 
+                  </div>
                   <div class="kpi-tc-bar-track">
                     <div class="kpi-tc-bar-fill"
-                      [class]="getPctBarColor(t.posmm_percentage)"
-                      [style.width]="getPctBarWidth(t.posmm_percentage)"></div>
+                      [class]="getPctBarColor(t.pos_visited > 0 ? t.total_visits / t.pos_visited * 10 : 0)"
+                      [style.width]="getPctBarWidth(t.pos_visited > 0 ? t.total_visits / t.pos_visited * 10 : 0)"></div>
                   </div>
-                  <span class="kpi-tc-bar-pct">{{ t.posmm_percentage }}%</span>
+                  <span class="kpi-tc-bar-pct">{{ t.pos_visited > 0 ? (t.total_visits / t.pos_visited | number:'1.1-1') : '0' }}</span>
                 </div>
               </div>
             </div>
@@ -683,106 +692,6 @@
     }
 
     <!-- ══════════════════════════════════════════════════════════════════════ -->
-    <!-- SECTION: ND ANALYSIS ─ Numeric Distribution by Territory              -->
-    <!-- ══════════════════════════════════════════════════════════════════════ -->
-    @if (activeSection() === 'nd') {
-      <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
-        <span class="kpi-section-label">Niveau :</span>
-        @for (lvl of [['province','Province'],['area','Area'],['commune','Commune']]; track lvl[0]) {
-          <button class="btn btn-sm kpi-level-btn"
-            [class.active]="ndLevel() === lvl[0]"
-            (click)="onNdLevelChange($any(lvl[0]))">
-            {{ lvl[1] }}
-          </button>
-        }
-      </div>
-
-      <div class="row g-3">
-        <!-- Radar Chart -->
-        <div class="col-md-6">
-          <div class="card shadow-sm border-0 h-100">
-            <div class="card-header kpi-card-header">
-              <i class="ti ti-radar me-2 text-primary"></i>
-              Radar de distribution ND · OOS · POS-MM
-            </div>
-            <div class="card-body">
-              @if (isLoadingND()) {
-                <div class="kpi-chart-skeleton"></div>
-              } @else if (!chartNDOpts()) {
-                <div class="kpi-empty"><i class="ti ti-chart-radar"></i><p>Aucune donnée</p></div>
-              } @else {
-                <apx-chart
-                  [series]="chartNDOpts().series"
-                  [chart]="chartNDOpts().chart"
-                  [colors]="chartNDOpts().colors"
-                  [stroke]="chartNDOpts().stroke"
-                  [fill]="chartNDOpts().fill"
-                  [markers]="chartNDOpts().markers"
-                  [xaxis]="chartNDOpts().xaxis"
-                  [yaxis]="chartNDOpts().yaxis"
-                  [dataLabels]="chartNDOpts().dataLabels"
-                  [legend]="chartNDOpts().legend"
-                  [tooltip]="chartNDOpts().tooltip">
-                </apx-chart>
-              }
-            </div>
-          </div>
-        </div>
-        <!-- ND Table -->
-        <div class="col-md-6">
-          <div class="card shadow-sm border-0 h-100">
-            <div class="card-header kpi-card-header">
-              <i class="ti ti-table-column me-2 text-primary"></i>Score de densité par territoire
-            </div>
-            <div class="card-body p-0">
-              @if (isLoadingND()) {
-                <div class="kpi-shimmer-table px-3 pt-3">
-                  @for (i of [1,2,3,4,5]; track i) { <div class="kpi-shimmer-row"></div> }
-                </div>
-              } @else {
-                <div class="table-responsive" style="max-height:380px; overflow-y:auto;">
-                  <table class="table table-sm kpi-nd-table mb-0">
-                    <thead>
-                      <tr>
-                        <th>Territoire</th>
-                        <th class="text-center">POS Vistés</th>
-                        <th class="text-center">ND %</th>
-                        <th class="text-center">OOS %</th>
-                        <th class="text-center">POS-MM %</th>
-                        <th class="text-center">Score</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @for (n of ndData(); track n.territory) {
-                        <tr>
-                          <td class="fw-semibold">{{ n.territory }}</td>
-                          <td class="text-center">{{ n.total_pos_visited }}</td>
-                          <td class="text-center">
-                            <span [class]="getPctClass(n.nd_percentage)">{{ n.nd_percentage }}%</span>
-                          </td>
-                          <td class="text-center">
-                            <span class="text-danger">{{ n.oos_percentage }}%</span>
-                          </td>
-                          <td class="text-center">
-                            <span [class]="getPctClass(n.posmm_integration)">{{ n.posmm_integration }}%</span>
-                          </td>
-                          <td class="text-center">
-                            <span class="kpi-density-badge" [class]="getNDDensityClass(n.density_score)">
-                              {{ n.density_score | number:'1.1-1' }}
-                            </span>
-                          </td>
-                        </tr>
-                      }
-                    </tbody>
-                  </table>
-                </div>
-              }
-            </div>
-          </div>
-        </div>
-      </div>
-    }
-
     <!-- ══════════════════════════════════════════════════════════════════════ -->
     <!-- SECTION: POS ─ POS Coverage Insights (commune required)               -->
     <!-- ══════════════════════════════════════════════════════════════════════ -->

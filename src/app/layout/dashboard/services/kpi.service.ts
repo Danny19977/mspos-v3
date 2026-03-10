@@ -159,6 +159,32 @@ export class KpiService extends ApiService {
   UserVisitSummary(params: KpiTableViewParams): Observable<any> {
     return this.http.get<any>(`${this.endpoint}/user-visit-summary`, { params: this.buildTvParams(params) });
   }
+
+  /** Export full KPI report as Excel workbook (multi-sheet) */
+  ExportExcel(params: {
+    country_uuid?:  string;
+    province_uuid?: string;
+    area_uuid?:     string;
+    sub_area_uuid?: string;
+    commune_uuid?:  string;
+    start_date:     string;
+    end_date:       string;
+    title?:         string;
+  }): Observable<Blob> {
+    let p = new HttpParams()
+      .set('start_date', params.start_date)
+      .set('end_date',   params.end_date);
+    if (params.country_uuid)  p = p.set('country_uuid',  params.country_uuid);
+    if (params.province_uuid) p = p.set('province_uuid', params.province_uuid);
+    if (params.area_uuid)     p = p.set('area_uuid',     params.area_uuid);
+    if (params.sub_area_uuid) p = p.set('sub_area_uuid', params.sub_area_uuid);
+    if (params.commune_uuid)  p = p.set('commune_uuid',  params.commune_uuid);
+    if (params.title)         p = p.set('title',         params.title);
+    return this.http.get(`${this.endpoint}/export-excel`, {
+      params: p,
+      responseType: 'blob',
+    });
+  }
 }
 
 /** Shared params for all table-view + user-summary endpoints */

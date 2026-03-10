@@ -42,6 +42,22 @@ $kpi-radius:     10px;
   &:hover { background: #eef0ff; border-color: $kpi-primary; }
   &::after { margin-left: 4px; }
 }
+
+// ── Export Excel button ───────────────────────────────────────────────────────
+.kpi-export-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid darken(#217346, 5%);
+  background: #217346;
+  color: #fff;
+  font-size: 0.82rem;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all .15s;
+  &:hover:not(:disabled) { background: darken(#217346, 8%); border-color: darken(#217346, 12%); }
+  &:disabled { opacity: .7; cursor: not-allowed; }
+  i { font-size: 0.9rem; }
+}
 .kpi-period-menu {
   min-width: 160px;
   border: 1px solid $kpi-border;
@@ -333,7 +349,7 @@ $kpi-radius:     10px;
     margin-top: 2px;
   }
 }
-.kpi-tc-bars { display: flex; flex-direction: column; gap: 5px; }
+.kpi-tc-bars { display: flex; flex-direction: column; gap: 5px; padding-bottom: 10px; }
 .kpi-tc-bar-row {
   display: flex;
   align-items: center;
@@ -354,6 +370,14 @@ $kpi-radius:     10px;
   transition: width .4s ease;
 }
 .kpi-tc-bar-pct { width: 34px; text-align: right; font-weight: 600; color: $kpi-text; }
+.kpi-tc-bar-label-col {
+  width: 74px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.kpi-tc-bar-hint { font-size: 0.60rem; color: $kpi-muted; line-height: 1.2; }
 
 // ── Mini progress (table cells) ────────────────────────────────────────────────
 .kpi-mini-progress {
