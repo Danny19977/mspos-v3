@@ -405,7 +405,7 @@ export interface NDBrandRankModel {
     total_pos:   number;
     nd_percent:  number;
     total_farde: number;
-    avg_counter: number;
+    avg_farde:   number;
 }
 
 /** Gap analysis (3-zone funnel) per brand */

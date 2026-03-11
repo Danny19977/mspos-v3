@@ -581,7 +581,7 @@
                         <th class="text-end">Total POS</th>
                         <th class="text-end">ND %</th>
                         <th class="text-end">Total Farde</th>
-                        <th class="text-end">Moy. Counter</th>
+                        <th class="text-end">Moy. Farde</th>
                         <th style="width:80px">Niveau</th>
                       </tr>
                     </thead>
@@ -596,7 +596,7 @@
                             <span [class]="getNdBadge(row.nd_percent)">{{ row.nd_percent | number:'1.1-1' }}%</span>
                           </td>
                           <td class="text-end">{{ row.total_farde | number:'1.0-0' }}</td>
-                          <td class="text-end text-muted">{{ row.avg_counter | number:'1.1-1' }}</td>
+                          <td class="text-end text-muted">{{ row.avg_farde | number:'1.1-1' }}</td>
                           <td>
                             <div class="progress nd-progress">
                               <div class="progress-bar {{ row.nd_percent >= 75 ? 'bg-success' : row.nd_percent >= 40 ? 'bg-warning' : 'bg-danger' }}"
