@@ -4,7 +4,7 @@ import { AuthService } from '../../../auth/auth.service';
 import { routes } from '../../../shared/routes/routes';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { ToastrService } from 'ngx-toastr';
-import { Validators } from 'ngx-editor';
+import { Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { LogsService } from '../user-logs/logs.service';
 import { UserLogsModel } from '../user-logs/models/user-logs.model';
 import { MatSort, Sort } from '@angular/material/sort';
@@ -73,8 +73,25 @@ export class ProfileComponent implements OnInit {
     private toastr: ToastrService
   ) { }
 
+  passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+    const pw = control.get('password');
+    const confirm = control.get('password_confirm');
+    if (pw && confirm && pw.value !== confirm.value) {
+      return { passwordMismatch: true };
+    }
+    return null;
+  }
+
   public togglePassword(index: number) {
-    this.password[index] = !this.password[index]
+    this.password[index] = !this.password[index];
+  }
+
+  private closeOffcanvas(id: string): void {
+    const el = document.getElementById(id);
+    if (el) {
+      const instance = (window as any).bootstrap?.Offcanvas?.getInstance(el);
+      instance?.hide();
+    }
   }
 
   ngOnInit(): void {
@@ -87,9 +104,9 @@ export class ProfileComponent implements OnInit {
 
     this.formGroupChangePassword = this._formBuilder.group({
       old_password: ['', Validators.required],
-      password: ['', Validators.required],
+      password: ['', [Validators.required, Validators.minLength(6)]],
       password_confirm: ['', Validators.required],
-    });
+    }, { validators: this.passwordMatchValidator });
 
     this.isLoading = true;
     this.authService.user().subscribe({
@@ -250,6 +267,13 @@ export class ProfileComponent implements OnInit {
   }
 
   onSubmitChangePassword() {
+    if (this.formGroupChangePassword.invalid) {
+      this.formGroupChangePassword.markAllAsTouched();
+      if (this.formGroupChangePassword.errors?.['passwordMismatch']) {
+        this.toastr.error('Les mots de passe ne correspondent pas', 'Erreur');
+      }
+      return;
+    }
     try {
       this.isLoadingChangePassword = true;
       var body = {
@@ -259,31 +283,24 @@ export class ProfileComponent implements OnInit {
       };
       this.authService.updatePassword(body).subscribe({
         next: () => {
-          this.authService.logout().subscribe(res => {
-            this.logsService.activity(
-              'User profil',
-              this.currentUser.uuid,
-              'updated',
-              `Change password user profil ${this.currentUser.uuid}`,
-              this.currentUser.fullname
-            ).subscribe({
-              next: () => {
-                this.formGroupChangePassword.reset();
-                this.toastr.success('Mot de passe modifié!', 'Success!');
-                this.isLoadingChangePassword = false;
-                this.router.navigate(['/auth/login']);
-              },
-              error: (err) => {
-                this.isLoadingChangePassword = false;
-                this.toastr.error(`${err.error.message}`, 'Oupss!');
-                console.log(err);
-              }
-            });
-          });
+          this.logsService.activity(
+            'User profil',
+            this.currentUser.uuid,
+            'updated',
+            `Change password user profil ${this.currentUser.uuid}`,
+            this.currentUser.fullname
+          ).subscribe();
+          this.formGroupChangePassword.reset();
+          this.toastr.success('Mot de passe modifié! Reconnectez-vous.', 'Succès');
+          this.isLoadingChangePassword = false;
+          this.closeOffcanvas('offcanvas_change_password');
+          this.authService.logout().subscribe();
+          this.router.navigate(['/auth/login']);
         },
         error: err => {
           console.log(err);
-          this.toastr.error(`${err.error.message}`, 'Oupss!');
+          const msg = err.error?.message || 'Une erreur s\'est produite';
+          this.toastr.error(msg, 'Erreur');
           this.isLoadingChangePassword = false;
         }
       });

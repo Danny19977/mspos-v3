@@ -32,10 +32,11 @@ import { ICommune } from '../../territories/commune/models/commune.model';
 import {
   SEKpiSummary, SEMonthlyEvolutionModel, SEGrowthRateModel,
   SEBrandCompetitionModel, SETopPOSModel, SESalesRepModel, SEDayHeatmapModel,
+  SEPricePieChartModel, SETypePosTableModel, SEPriceTableModel,
 } from '../models/dashboard.models';
 
 export type GeoLevel = 'province' | 'area' | 'subarea' | 'commune';
-export type DashSection = 'overview' | 'tableview' | 'growth' | 'competition' | 'toppos' | 'scorecard' | 'heatmap';
+export type DashSection = 'overview' | 'tableview' | 'growth' | 'competition' | 'toppos' | 'scorecard' | 'heatmap' | 'pricepie';
 
 @Component({
   selector: 'app-se-dashboard',
@@ -100,16 +101,25 @@ export class SeDashboardComponent implements OnInit, AfterViewChecked {
   isLoadingCompetition = false;
   isLoadingTopPos      = false;
   isLoadingScorecard   = false;
-  isLoadingHeatmap     = false;
+  isLoadingHeatmap       = false;
+  isLoadingPricePie      = false;
+  isLoadingTypePosTable  = false;
+  isLoadingPriceTable    = false;
 
   // ── Data ─────────────────────────────────────────────────────────────────
   kpiData!: SEKpiSummary;
-  evolutionData:   SEMonthlyEvolutionModel[]   = [];
-  growthData:      SEGrowthRateModel[]         = [];
-  competitionData: SEBrandCompetitionModel[]   = [];
-  topPosData:      SETopPOSModel[]             = [];
-  scorecardData:   SESalesRepModel[]           = [];
-  heatmapData:     SEDayHeatmapModel[]         = [];
+  evolutionData:    SEMonthlyEvolutionModel[]   = [];
+  growthData:       SEGrowthRateModel[]         = [];
+  competitionData:  SEBrandCompetitionModel[]   = [];
+  topPosData:       SETopPOSModel[]             = [];
+  scorecardData:    SESalesRepModel[]           = [];
+  heatmapData:      SEDayHeatmapModel[]         = [];
+  pricePieData:     SEPricePieChartModel[]      = [];
+  typePosTableData: SETypePosTableModel[]       = [];
+  priceTableData:   SEPriceTableModel[]         = [];
+
+  // Toggle between the two table-view sub-tabs
+  tableViewTab: 'typepos' | 'price' = 'typepos';
 
   // Title filter for scorecard
   titleFilter = '';
@@ -121,12 +131,14 @@ export class SeDashboardComponent implements OnInit, AfterViewChecked {
   @ViewChild('chartCompetition') chartCompetition!: ChartComponent;
   @ViewChild('chartHeatmap')     chartHeatmap!:     ChartComponent;
   @ViewChild('chartTopPos')      chartTopPos!:      ChartComponent;
+  @ViewChild('chartPricePie')    chartPricePie!:    ChartComponent;
 
   chartEvolutionOpts:   any;
   chartGrowthOpts:      any;
   chartCompetitionOpts: any;
   chartHeatmapOpts:     any;
   chartTopPosOpts:      any;
+  chartPricePieOpts:    any;
 
   readonly BRAND_COLORS = [
     '#4361ee','#3a0ca3','#7209b7','#f72585','#4cc9f0',
@@ -251,6 +263,9 @@ export class SeDashboardComponent implements OnInit, AfterViewChecked {
     this.loadTopPos();
     this.loadScorecard();
     this.loadHeatmap();
+    this.loadPricePieChart();
+    this.loadTypePosTable();
+    this.loadPriceTable();
   }
 
   loadKpi(): void {
@@ -366,6 +381,76 @@ export class SeDashboardComponent implements OnInit, AfterViewChecked {
     });
   }
 
+  loadPricePieChart(): void {
+    if (!this.country_uuid) return;
+    this.isLoadingPricePie = true;
+    this.seService.PricePieChart(
+      this.country_uuid, this.start_date, this.end_date,
+      this.province_uuid, this.area_uuid, this.sub_area_uuid, this.commune_uuid,
+    ).subscribe({
+      next: res => {
+        this.pricePieData = res.data ?? [];
+        this.buildPricePieChart();
+        this.isLoadingPricePie = false;
+      },
+      error: () => { this.isLoadingPricePie = false; },
+    });
+  }
+
+  loadTypePosTable(): void {
+    if (!this.country_uuid || !this.province_uuid) return;
+    this.isLoadingTypePosTable = true;
+    let obs$;
+    switch (this.geoLevel) {
+      case 'area':
+        obs$ = this.seService.TableViewArea(
+          this.country_uuid, this.province_uuid, this.area_uuid, this.start_date, this.end_date);
+        break;
+      case 'subarea':
+        obs$ = this.seService.TableViewSubArea(
+          this.country_uuid, this.province_uuid, this.area_uuid, this.sub_area_uuid, this.start_date, this.end_date);
+        break;
+      case 'commune':
+        obs$ = this.seService.TableViewCommune(
+          this.country_uuid, this.province_uuid, this.area_uuid, this.sub_area_uuid, this.commune_uuid, this.start_date, this.end_date);
+        break;
+      default:
+        obs$ = this.seService.TableViewProvince(
+          this.country_uuid, this.province_uuid, this.start_date, this.end_date);
+    }
+    obs$.subscribe({
+      next: res => { this.typePosTableData = res.data ?? []; this.isLoadingTypePosTable = false; },
+      error: ()  => { this.isLoadingTypePosTable = false; },
+    });
+  }
+
+  loadPriceTable(): void {
+    if (!this.country_uuid || !this.province_uuid) return;
+    this.isLoadingPriceTable = true;
+    let obs$;
+    switch (this.geoLevel) {
+      case 'area':
+        obs$ = this.seService.TableViewAreaPrice(
+          this.country_uuid, this.province_uuid, this.area_uuid, this.start_date, this.end_date);
+        break;
+      case 'subarea':
+        obs$ = this.seService.TableViewSubAreaPrice(
+          this.country_uuid, this.province_uuid, this.area_uuid, this.sub_area_uuid, this.start_date, this.end_date);
+        break;
+      case 'commune':
+        obs$ = this.seService.TableViewCommunePrice(
+          this.country_uuid, this.province_uuid, this.area_uuid, this.sub_area_uuid, this.commune_uuid, this.start_date, this.end_date);
+        break;
+      default:
+        obs$ = this.seService.TableViewProvincePrice(
+          this.country_uuid, this.province_uuid, this.start_date, this.end_date);
+    }
+    obs$.subscribe({
+      next: res => { this.priceTableData = res.data ?? []; this.isLoadingPriceTable = false; },
+      error: ()  => { this.isLoadingPriceTable = false; },
+    });
+  }
+
   // ── Chart builders ─────────────────────────────────────────────────────────
 
   buildEvolutionChart(): void {
@@ -467,7 +552,27 @@ export class SeDashboardComponent implements OnInit, AfterViewChecked {
       tooltip: { y: { formatter: (v: number) => `${v} fardes` } },
     };
   }
-
+  buildPricePieChart(): void {
+    const data = this.pricePieData;
+    this.chartPricePieOpts = {
+      series: data.map(d => d.count),
+      chart: { type: 'donut', height: 320, toolbar: { show: false } },
+      labels: data.map(d => `${d.price} FC`),
+      colors: this.BRAND_COLORS.slice(0, data.length),
+      dataLabels: { enabled: true, formatter: (_val: number, opts: any) => {
+        const d = data[opts.seriesIndex];
+        return `${d.share_pct}%`;
+      }},
+      legend: { position: 'bottom' },
+      tooltip: { y: { formatter: (v: number, opts: any) => {
+        const d = data[opts.seriesIndex];
+        return `${v} visites — ${d.share_pct}% du total`;
+      }}},
+      plotOptions: { pie: { donut: { size: '60%', labels: { show: true,
+        total: { show: true, label: 'Total visites', formatter: () => data.reduce((s, d) => s + d.count, 0).toString() }
+      }}}},
+    };
+  }
   // ── Geo event handlers ─────────────────────────────────────────────────────
 
   onCountryChange(country: ICountry): void {
@@ -491,6 +596,7 @@ export class SeDashboardComponent implements OnInit, AfterViewChecked {
     this.selectedArea     = null!;
     this.selectedSubArea  = null!;
     this.selectedCommune  = null!;
+    this.geoLevel = 'province';
     if (province) {
       this.areaService.getAll().subscribe(res => {
         this.areaList.set(res.data.filter((a: IArea) => a.province_uuid === province.uuid));
@@ -505,6 +611,7 @@ export class SeDashboardComponent implements OnInit, AfterViewChecked {
     this.selectedArea    = area;
     this.selectedSubArea = null!;
     this.selectedCommune = null!;
+    this.geoLevel = area ? 'area' : 'province';
     if (area) {
       this.subAreaService.getAll().subscribe(res => {
         this.subAreaList.set(res.data.filter((s: ISubArea) => s.area_uuid === area.uuid));
@@ -518,6 +625,7 @@ export class SeDashboardComponent implements OnInit, AfterViewChecked {
   onSubAreaChange(subArea: ISubArea): void {
     this.selectedSubArea = subArea;
     this.selectedCommune = null!;
+    this.geoLevel = subArea ? 'subarea' : 'area';
     if (subArea) {
       this.communeService.getAll().subscribe(res => {
         this.communeList.set(res.data.filter((c: ICommune) => c.sub_area_uuid === subArea.uuid));
@@ -530,7 +638,12 @@ export class SeDashboardComponent implements OnInit, AfterViewChecked {
 
   onCommuneChange(commune: ICommune): void {
     this.selectedCommune = commune;
+    this.geoLevel = commune ? 'commune' : 'subarea';
     this.loadAll();
+  }
+
+  setTableViewTab(tab: 'typepos' | 'price'): void {
+    this.tableViewTab = tab;
   }
 
   onTitleFilterChange(title: string): void {

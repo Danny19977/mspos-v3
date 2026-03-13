@@ -34,6 +34,8 @@ import { NdIndividualService } from './individual/nd-individual/nd-individual.se
 import { SosIndividualComponent } from './individual/sos-individual/sos-individual.component';
 import { SosIndividualService } from './individual/sos-individual/sos-individual.service';
 import { IndividualComponent } from './individual/individual.component';
+import { SeiIndividualComponent } from './individual/sei-individual/sei-individual.component';
+import { SeiIndividualService } from './individual/sei-individual/sei-individual.service';
 
 @NgModule({
   declarations: [ 
@@ -46,6 +48,7 @@ import { IndividualComponent } from './individual/individual.component';
     NdIndividualComponent,
     SosIndividualComponent,
     IndividualComponent,
+    SeiIndividualComponent,
   ],
   imports: [
     CommonModule,
@@ -73,6 +76,7 @@ import { IndividualComponent } from './individual/individual.component';
     GoogleMapsLoaderService,
     NdIndividualService,
     SosIndividualService,
+    SeiIndividualService,
   ]
 })
 export class MarketModule { }

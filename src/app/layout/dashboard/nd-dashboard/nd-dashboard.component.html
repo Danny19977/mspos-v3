@@ -12,7 +12,7 @@
                 NUMERIC DISTRIBUTION
               </h3>
               <p class="text-muted small mb-0 mt-1">
-                ND% = POS avec stock marque ÷ total POS visités × 100
+                ND% = items marque (pos_form_items) ÷ total pos_forms × 100
               </p>
             </div>
             <div class="col-md-6 d-flex justify-content-end align-items-center gap-2 flex-wrap">
@@ -49,14 +49,21 @@
               @if (selectedPeriod() === 'custom') {
                 <form [formGroup]="dateRange" class="nd-date-form">
                   <div class="nd-date-field">
-                    <i class="ti ti-calendar-event"></i>
+                    <i class="ti ti-calendar-event nd-date-icon-left"></i>
                     <input type="text" class="form-control bookingrange nd-date-input"
                       placeholder="Sélectionner une période"
+                      #nativeDateInput
                       #dateRangeInput="bsDaterangepicker"
                       bsDaterangepicker
                       placement="bottom"
                       [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false, adaptivePosition: true, isAnimated: true }"
                       formControlName="rangeValue" />
+                    <button type="button" class="nd-date-picker-btn"
+                      (mousedown)="$event.preventDefault()"
+                      (click)="$event.stopPropagation(); showDatePicker()"
+                      title="Ouvrir le calendrier">
+                      <i class="ti ti-calendar-search"></i>
+                    </button>
                   </div>
                 </form>
               }
@@ -165,7 +172,7 @@
           <div class="nd-kpi-card accent-green">
             <div class="nd-kpi-icon"><i class="ti ti-chart-grid-dots"></i></div>
             <div class="nd-kpi-body">
-              <span class="nd-kpi-label">POS en ND</span>
+              <span class="nd-kpi-label">ND Marque</span>
               <span class="nd-kpi-value">{{ kpiData()!.total_nd_pos | number }}</span>
             </div>
           </div>
@@ -290,7 +297,7 @@
                       <tr>
                         <th>Marque</th>
                         <th>Mois</th>
-                        <th class="text-end">POS en ND</th>
+                        <th class="text-end">ND Marque</th>
                         <th class="text-end">Total POS</th>
                         <th class="text-end">ND %</th>
                         <th class="text-center">Niveau</th>
@@ -395,9 +402,10 @@
                     <thead class="nd-thead">
                       <tr>
                         <th>Marque</th>
-                        <th class="text-end">POS en ND</th>
-                        <th class="text-end">Total visités</th>
                         <th class="text-end">Univers POS</th>
+                        <th class="text-end">Total POS visités</th>
+                        <th class="text-end">Total visite</th>
+                        <th class="text-end">ND Marque</th>
                         <th class="text-end">ND %</th>
                         <th class="text-end">Reach %</th>
                         <th class="text-center" style="width:100px">Progression</th>
@@ -407,9 +415,10 @@
                       @for (row of group.rows; track row.brand_uuid) {
                         <tr>
                           <td class="fw-semibold text-primary">{{ row.brand_name }}</td>
-                          <td class="text-end fw-semibold">{{ row.nd_pos | number }}</td>
-                          <td class="text-end">{{ row.total_pos | number }}</td>
                           <td class="text-end text-muted">{{ row.universe_pos | number }}</td>
+                          <td class="text-end">{{ row.total_pos_visit | number }}</td>
+                          <td class="text-end text-muted">{{ row.total_posforms | number }}</td>
+                          <td class="text-end fw-semibold">{{ row.nd_brand | number }}</td>
                           <td class="text-end">
                             <span [class]="getNdBadge(row.nd_percent)">{{ row.nd_percent | number:'1.1-1' }}%</span>
                           </td>
@@ -577,7 +586,7 @@
                       <tr>
                         <th class="text-center">Rang</th>
                         <th>Marque</th>
-                        <th class="text-end">POS en ND</th>
+                        <th class="text-end">ND Marque</th>
                         <th class="text-end">Total POS</th>
                         <th class="text-end">ND %</th>
                         <th class="text-end">Total Farde</th>
@@ -634,7 +643,7 @@
                   <div class="nd-zone-dot" style="background:#06d6a0"></div>
                   <div>
                     <div class="fw-semibold small">Zone A — ND</div>
-                    <div class="text-muted" style="font-size:.72rem">POS avec stock marque (counter > 0)</div>
+                    <div class="text-muted" style="font-size:.72rem">POS où la marque est présente</div>
                   </div>
                 </div>
               </div>

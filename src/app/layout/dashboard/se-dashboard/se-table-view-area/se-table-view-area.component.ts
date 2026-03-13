@@ -110,11 +110,12 @@ export class SeTableViewAreaComponent {
     const categories = data.map(d => d.brand_name);
     this.chartPriceOptions = {
       series: [
-        { name: 'Revenu total', data: data.map(d => d.total_revenue) },
-        { name: 'Prix moyen', data: data.map(d => d.avg_price) },
+        { name: 'Prix moyen (FC)', data: data.map(d => d.avg_price) },
+        { name: 'Prix min',        data: data.map(d => d.min_price) },
+        { name: 'Prix max',        data: data.map(d => d.max_price) },
       ],
       chart: { type: 'bar', height: 260, toolbar: { show: false } },
-      colors: ['#06d6a0', '#ffd166'],
+      colors: ['#06d6a0', '#4cc9f0', '#f72585'],
       plotOptions: { bar: { horizontal: true, barHeight: '60%', borderRadius: 4 } },
       dataLabels: { enabled: false },
       xaxis: { categories },

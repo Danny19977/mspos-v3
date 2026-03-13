@@ -1,5 +1,4 @@
 import {
-  AfterViewChecked,
   ChangeDetectorRef,
   Component,
   computed,
@@ -52,9 +51,7 @@ export type GeoLevel = 'province' | 'area' | 'subarea' | 'commune';
   templateUrl: './nd-dashboard.component.html',
   styleUrl: './nd-dashboard.component.scss',
 })
-export class NdDashboardComponent implements OnInit, AfterViewChecked {
-
-  private _openPickerOnNextCheck = false;
+export class NdDashboardComponent implements OnInit {
 
   // ── DI via inject() ────────────────────────────────────────────────────────
   private common          = inject(CommonService);
@@ -616,17 +613,20 @@ export class NdDashboardComponent implements OnInit, AfterViewChecked {
     this.activeSection.set(section);
   }
 
-  ngAfterViewChecked(): void {
-    if (this._openPickerOnNextCheck && this.dateRangePicker) {
-      this._openPickerOnNextCheck = false;
-      this.dateRangePicker.show();
-    }
+  showDatePicker(): void {
+    this.cdr.detectChanges();
+    this.dateRangePicker?.show();
   }
 
   setPeriod(key: string): void {
+    const wasCustom = this.selectedPeriod() === 'custom';
     this.selectedPeriod.set(key);
     if (key === 'custom') {
-      this._openPickerOnNextCheck = true;
+      if (!wasCustom) {
+        // @if vient d'être rendu : forcer la détection synchrone avant show()
+        this.cdr.detectChanges();
+      }
+      this.dateRangePicker?.show();
       return;
     }
     const now = new Date();

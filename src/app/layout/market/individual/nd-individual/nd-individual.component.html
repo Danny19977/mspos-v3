@@ -1,5 +1,13 @@
 @if (currentUser) {
 
+<!-- ── Loading overlay ──────────────────────────────────────────────────────── -->
+@if (isLoading()) {
+<div class="text-center py-5">
+  <span class="spinner-border text-primary" role="status"></span>
+  <p class="mt-2 text-muted">Chargement des données...</p>
+</div>
+} @else {
+
 <!-- ── KPI Cards ──────────────────────────────────────────────────────────── -->
 <div class="row g-3 mb-4">
 
@@ -71,7 +79,7 @@
                 <i class="ti ti-map-pin text-primary"></i>
               </div>
               <div>
-                <div class="kpi-value">{{ summary()?.total_pos_visited ?? 0 }}</div>
+                <div class="kpi-value">{{ summary()?.total_pos_visit ?? 0 }}</div>
                 <div class="kpi-mini-label text-muted">POS visités</div>
               </div>
             </div>
@@ -91,7 +99,7 @@
                 <i class="ti ti-check text-success"></i>
               </div>
               <div>
-                <div class="kpi-value text-success">{{ summary()?.nd_pos ?? 0 }}</div>
+                <div class="kpi-value text-success">{{ summary()?.nd_brand ?? 0 }}</div>
                 <div class="kpi-mini-label text-muted">POS ND actif</div>
               </div>
             </div>
@@ -149,7 +157,7 @@
     Meilleure marque :
     <strong>{{ topBrand()!.brand_name }}</strong>
     avec un ND de <strong>{{ topBrand()!.nd_percent | number:'1.1-1' }}%</strong>
-    ({{ topBrand()!.nd_pos }} POS actifs sur {{ topBrand()!.total_pos }})
+    ({{ topBrand()!.nd_brand }} présences sur {{ topBrand()!.total_posforms }} formulaires)
   </span>
 </div>
 }
@@ -240,7 +248,7 @@
         </div>
       </div>
 
-      <div class="col-12">
+      <div class="col-12" style="margin-top: 4rem; border-top: 1px solid #e9ecef; padding-top: 1.25rem;">
         <h6 class="chart-title">
           <i class="ti ti-list-check me-1 text-warning"></i>
           Récapitulatif ND% par Marque
@@ -271,7 +279,7 @@
                   </div>
                 </div>
                 <div class="brand-sub text-muted">
-                  {{ brand.nd_pos }} / {{ brand.total_pos }} POS
+                  {{ brand.nd_brand }} / {{ brand.total_posforms }} formulaires
                 </div>
               </div>
             </div>
@@ -309,7 +317,7 @@
               <th>#</th>
               <th>Marque</th>
               <th class="text-end">POS ND actif</th>
-              <th class="text-end">Total POS visités</th>
+              <th class="text-end">Total formulaires</th>
               <th>ND%</th>
               <th>Statut</th>
             </tr>
@@ -319,8 +327,8 @@
             <tr>
               <td class="text-muted">{{ i + 1 }}</td>
               <td><span class="fw-medium">{{ brand.brand_name }}</span></td>
-              <td class="text-end fw-semibold text-success">{{ brand.nd_pos }}</td>
-              <td class="text-end text-muted">{{ brand.total_pos }}</td>
+              <td class="text-end fw-semibold text-success">{{ brand.nd_brand }}</td>
+              <td class="text-end text-muted">{{ brand.total_posforms }}</td>
               <td style="min-width:160px">
                 <div class="d-flex align-items-center gap-2">
                   <div class="progress flex-grow-1" style="height:6px">
@@ -409,7 +417,7 @@
               <th>Shop</th>
               <th>Commune</th>
               <th>Marque</th>
-              <th class="text-center">Counter</th>
+              <th class="text-center">Fardes</th>
               <th class="text-center">ND</th>
             </tr>
           </thead>
@@ -422,9 +430,9 @@
               <td class="text-muted">{{ row.commune }}</td>
               <td><span class="badge bg-light text-dark border">{{ row.brand_name }}</span></td>
               <td class="text-center fw-semibold">
-                <span [class.text-success]="row.counter > 0"
-                      [class.text-muted]="row.counter === 0">
-                  {{ row.counter }}
+                <span [class.text-success]="row.number_farde > 0"
+                      [class.text-muted]="row.number_farde === 0">
+                  {{ row.number_farde }}
                 </span>
               </td>
               <td class="text-center">
@@ -457,9 +465,11 @@
   </div>
 </div>
 
+} <!-- end @else isLoading -->
+
 } @else {
-<div class="text-center py-5">
-  <span class="spinner-border text-primary" role="status"></span>
-  <p class="mt-2 text-muted">Chargement des données...</p>
+<div class="text-center py-5 text-muted">
+  <i class="ti ti-user-off fs-1 text-secondary d-block mb-2"></i>
+  <p>Aucun agent sélectionné</p>
 </div>
 }

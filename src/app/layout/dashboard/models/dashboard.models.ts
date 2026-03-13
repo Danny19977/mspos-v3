@@ -166,7 +166,6 @@ export interface SETypePosTableModel {
     total_pos: number;
     total_farde: number;
     total_sold: number;
-    total_revenue: number;
     avg_farde_per_visit: number;
     avg_sold_per_visit: number;
     market_share_farde: number;
@@ -185,7 +184,6 @@ export interface SEPriceTableModel {
     brand_name: string;
     total_visits: number;
     total_pos: number;
-    total_revenue: number;
     avg_price: number;
     min_price: number;
     max_price: number;
@@ -201,7 +199,6 @@ export interface SEMonthlyEvolutionModel {
     total_pos: number;
     total_farde: number;
     total_sold: number;
-    total_revenue: number;
     growth_farde_pct: number;
     growth_sold_pct: number;
 }
@@ -247,7 +244,6 @@ export interface SETopPOSModel {
     total_visits: number;
     total_farde: number;
     total_sold: number;
-    total_revenue: number;
     avg_price: number;
     farde_share: number;
 }
@@ -260,9 +256,7 @@ export interface SESalesRepModel {
     unique_pos: number;
     total_farde: number;
     total_sold: number;
-    total_revenue: number;
     avg_farde_per_pos: number;
-    avg_revenue_per_visit: number;
     brands_covered: number;
     visit_target: number;
     achievement_pct: number;
@@ -283,7 +277,6 @@ export interface SEKpiSummary {
     current: {
         total_farde: number;
         total_sold: number;
-        total_revenue: number;
         total_visits: number;
         active_pos: number;
         active_brands: number;
@@ -336,16 +329,25 @@ export interface KpiUserVisitSummaryModel {
 
 /** Table view row — one brand × one territory */
 export interface NDTableRowModel {
-    territory_name:  string;
-    territory_uuid:  string;
-    territory_level: string;
-    brand_name:      string;
-    brand_uuid:      string;
-    nd_pos:          number;
-    total_pos:       number;
-    universe_pos:    number;
-    nd_percent:      number;
-    reach_rate:      number;
+    territory_name:   string;
+    territory_uuid:   string;
+    territory_level:  string;
+    brand_name:       string;
+    brand_uuid:       string;
+    nd_brand:         number;
+    total_posforms:   number;
+    total_pos_visit:  number;
+    universe_pos:     number;
+    nd_percent:       number;
+    reach_rate:       number;
+}
+
+// ─── Price Pie Chart Model (Section 10) ─────────────────────────────────────
+
+export interface SEPricePieChartModel {
+    price: number;
+    count: number;
+    share_pct: number;
 }
 
 /** Brand item inside a bar-chart group */
@@ -424,16 +426,16 @@ export interface NDGapRowModel {
 
 /** Period-over-period evolution per brand */
 export interface NDEvolutionRowModel {
-    brand_name:          string;
-    brand_uuid:          string;
-    current_nd_pos:      number;
-    previous_nd_pos:     number;
-    current_total_pos:   number;
-    previous_total_pos:  number;
-    current_nd_percent:  number;
-    previous_nd_percent: number;
-    delta:               number;
-    trend:               'up' | 'down' | 'stable';
+    brand_name:           string;
+    brand_uuid:           string;
+    current_nd_pos:       number;
+    previous_nd_pos:      number;
+    current_total_pos:    number;
+    previous_total_pos:   number;
+    current_nd_percent:   number;
+    previous_nd_percent:  number;
+    delta:                number;
+    trend:                'up' | 'down' | 'stable';
 }
 
 /** Heatmap response */
@@ -452,9 +454,10 @@ export interface OOSTableRowModel {
     territory_level: string;
     brand_name:      string;
     brand_uuid:      string;
+    total_pos_visit: number;
     oos_pos:         number;
     coverage_pos:    number;
-    total_pos:       number;
+    total_posforms:  number;
     oos_percent:     number;
     coverage_pct:    number;
 }
@@ -509,13 +512,13 @@ export interface OOSSummaryKPIModel {
 
 /** Brand ranking row with severity */
 export interface OOSBrandRankModel {
-    rank:        number;
-    brand_name:  string;
-    brand_uuid:  string;
-    oos_pos:     number;
-    total_pos:   number;
-    oos_percent: number;
-    severity:    'critical' | 'high' | 'medium' | 'low';
+    rank:           number;
+    brand_name:     string;
+    brand_uuid:     string;
+    oos_pos:        number;
+    total_pos_visit: number;
+    oos_percent:    number;
+    severity:       'critical' | 'high' | 'medium' | 'low';
 }
 
 /** Critical-alert hotspot (top-20, OOS% > 15) */

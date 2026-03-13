@@ -9,6 +9,7 @@ import {
   computed,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { forkJoin } from 'rxjs';
 import { IUser } from '../../../management/user/models/user.model';
 import {
   NdIndividualService,
@@ -77,6 +78,13 @@ export class NdIndividualComponent implements OnChanges {
   // ── Active tab ───────────────────────────────────────────────────────────────
   activeTab = signal<'overview' | 'brands' | 'pos'>('overview');
 
+  // ── Brand colour palette (shared with nd-dashboard) ──────────────────────────
+  readonly BRAND_COLORS = [
+    '#4361ee','#f72585','#06d6a0','#ffd166','#ef476f',
+    '#118ab2','#7209b7','#3a0ca3','#4cc9f0','#ff9f1c',
+    '#e63946','#2a9d8f','#e9c46a','#f4a261','#264653',
+  ];
+
   // ── Material table ───────────────────────────────────────────────────────────
   displayedColumns: string[] = [
     'visit_date',
@@ -84,7 +92,7 @@ export class NdIndividualComponent implements OnChanges {
     'shop',
     'commune',
     'brand_name',
-    'counter',
+    'number_farde',
     'nd_active',
   ];
   dataSource = new MatTableDataSource<NdPosItem>([]);
@@ -163,31 +171,25 @@ export class NdIndividualComponent implements OnChanges {
     const s = this.startDate;
     const e = this.endDate;
 
-    this.ndService
-      .getSummary(uid, s, e)
+    forkJoin({
+      summary: this.ndService.getSummary(uid, s, e),
+      brands:  this.ndService.getByBrand(uid, s, e),
+      pos:     this.ndService.getPosList(uid, s, e),
+    })
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
-        next: (res) => this.summary.set(res.data),
-      });
+        next: ({ summary, brands, pos }) => {
+          this.summary.set(summary.data);
 
-    this.ndService
-      .getByBrand(uid, s, e)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (res) => {
-          this.brandList.set(res.data ?? []);
-          this.buildBarChart(res.data ?? []);
-          this.buildDonutChart(res.data ?? []);
-        },
-      });
+          const brandData = brands.data ?? [];
+          this.brandList.set(brandData);
+          this.buildBarChart(brandData);
+          this.buildDonutChart(brandData);
 
-    this.ndService
-      .getPosList(uid, s, e)
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: (res) => {
-          this.posList.set(res.data ?? []);
-          this.dataSource.data = res.data ?? [];
+          const posData = pos.data ?? [];
+          this.posList.set(posData);
+          this.dataSource.data = posData;
+
           this.isLoading.set(false);
         },
         error: () => this.isLoading.set(false),
@@ -197,13 +199,15 @@ export class NdIndividualComponent implements OnChanges {
   // ── Chart builders ────────────────────────────────────────────────────────────
   private buildBarChart(brands: NdByBrand[]): void {
     const top = brands.slice(0, 15);
+    if (!top.length) { this.barChartOptions.set({}); return; }
     this.barChartOptions.set({
       series: [
-        { name: 'ND%', data: top.map((b) => +(b.nd_percent ?? 0)) },
-        { name: 'POS ND actif', data: top.map((b) => b.nd_pos) },
+        { name: 'ND %',       data: top.map((b) => +(b.nd_percent ?? 0)) },
+        { name: 'POS ND actif', data: top.map((b) => b.nd_brand) },
       ],
-      chart: { type: 'bar', height: 340, toolbar: { show: false }, fontFamily: 'inherit' },
-      plotOptions: { bar: { horizontal: false, columnWidth: '55%', borderRadius: 4 } },
+      chart: { type: 'bar', height: 340, toolbar: { show: false } },
+      colors: [this.BRAND_COLORS[0], this.BRAND_COLORS[2]],
+      plotOptions: { bar: { horizontal: false, columnWidth: '55%', borderRadius: 3 } },
       dataLabels: { enabled: false },
       stroke: { show: true, width: 2, colors: ['transparent'] },
       xaxis: { categories: top.map((b) => b.brand_name), labels: { rotate: -35, style: { fontSize: '11px' } } },
@@ -211,28 +215,26 @@ export class NdIndividualComponent implements OnChanges {
       fill: { opacity: 1 },
       tooltip: {
         y: {
-          formatter: (val: number, opts: any) => {
-            if (opts?.seriesIndex === 0) return val + ' %';
-            return val + ' POS';
-          },
+          formatter: (val: number, opts: any) =>
+            opts?.seriesIndex === 0 ? `${val.toFixed(1)} %` : `${val} POS`,
         },
       },
       legend: { position: 'top' },
-      colors: ['#3E7BFA', '#22C55E'],
     });
   }
 
   private buildDonutChart(brands: NdByBrand[]): void {
     const top = brands.slice(0, 8);
+    if (!top.length) { this.donutChartOptions.set({}); return; }
     this.donutChartOptions.set({
-      series: top.map((b) => b.nd_pos),
-      chart: { type: 'donut', height: 300, fontFamily: 'inherit' },
+      series: top.map((b) => b.nd_brand),
+      chart: { type: 'donut', height: 300 },
       labels: top.map((b) => b.brand_name),
+      colors: this.BRAND_COLORS.slice(0, top.length),
       legend: { position: 'bottom', fontSize: '12px' },
-      dataLabels: { enabled: true, formatter: (val: number) => val.toFixed(1) + '%' },
-      tooltip: { y: { formatter: (val: number) => val + ' POS ND actif' } },
+      dataLabels: { enabled: true, formatter: (val: number) => `${val.toFixed(1)}%` },
+      tooltip: { y: { formatter: (val: number) => `${val} POS ND actif` } },
       responsive: [{ breakpoint: 480, options: { chart: { width: 200 } } }],
-      colors: ['#3E7BFA', '#22C55E', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#14B8A6', '#F97316'],
       plotOptions: {
         pie: {
           donut: {
@@ -242,7 +244,7 @@ export class NdIndividualComponent implements OnChanges {
               total: {
                 show: true,
                 label: 'POS ND',
-                formatter: () => String(top.reduce((s, b) => s + b.nd_pos, 0)),
+                formatter: () => String(top.reduce((s, b) => s + b.nd_brand, 0)),
               },
             },
           },
@@ -265,5 +267,31 @@ export class NdIndividualComponent implements OnChanges {
   getGaugeStrokeDashArray(percent: number, circumference = 220): string {
     const offset = circumference - (percent / 100) * circumference;
     return `${circumference - offset} ${offset}`;
+  }
+
+  // ── Helpers (alignés avec nd-dashboard) ──────────────────────────────────────
+  getNdBadge(nd: number): string {
+    if (nd >= 75) return 'badge bg-success';
+    if (nd >= 40) return 'badge bg-warning text-dark';
+    return 'badge bg-danger';
+  }
+
+  getTrendClass(value: number): string {
+    if (value > 0) return 'text-success';
+    if (value < 0) return 'text-danger';
+    return 'text-muted';
+  }
+
+  getTrendIcon(trend: string): string {
+    if (trend === 'up')   return 'ti ti-trending-up text-success';
+    if (trend === 'down') return 'ti ti-trending-down text-danger';
+    return 'ti ti-minus text-warning';
+  }
+
+  getRankMedal(rank: number): string {
+    if (rank === 1) return '🥇';
+    if (rank === 2) return '🥈';
+    if (rank === 3) return '🥉';
+    return `#${rank}`;
   }
 }

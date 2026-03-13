@@ -4,6 +4,8 @@ import { LoginComponent } from './login/login.component';
 import { AuthComponent } from './auth.component';
 import { RegisterComponent } from './register/register.component';
 import { LockScreenComponent } from './lock-screen/lock-screen.component';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
+import { ResetPasswordComponent } from './reset-password/reset-password.component';
 import { onlineGuard } from './guard/online.guard';
 
 const routes: Routes = [ 
@@ -27,6 +29,14 @@ const routes: Routes = [
       {
         path: 'lock-screen',
         component: LockScreenComponent,
+      },
+      {
+        path: 'forgot-password',
+        component: ForgotPasswordComponent,
+      },
+      {
+        path: 'reset/:token',
+        component: ResetPasswordComponent,
       }
     ]
   }

@@ -21,6 +21,10 @@ export class routes {
     return this.auth + '/forgot-password';
   }
 
+  public static get resetPassword(): string {
+    return this.auth + '/reset';
+  }
+
   public static get register(): string {
     return this.auth + '/register';
   }

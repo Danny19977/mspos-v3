@@ -52,7 +52,6 @@
                     <th class="text-end">POS</th>
                     <th class="text-end">Farde</th>
                     <th class="text-end">Sold</th>
-                    <th class="text-end">Revenu</th>
                     <th class="text-end">Part Farde</th>
                     <th class="text-end">Part Sold</th>
                   </tr>
@@ -65,7 +64,6 @@
                       <td class="text-end">{{ row.total_pos | number }}</td>
                       <td class="text-end fw-semibold">{{ row.total_farde | number:'1.0-0' }}</td>
                       <td class="text-end">{{ row.total_sold | number:'1.0-0' }}</td>
-                      <td class="text-end">{{ row.total_revenue | number:'1.0-2' }}</td>
                       <td class="text-end">
                         <div class="d-flex align-items-center justify-content-end gap-1">
                           <div class="progress se-progress" style="width:60px"><div class="progress-bar bg-primary" [style.width]="row.market_share_farde + '%'"></div></div>
@@ -81,7 +79,7 @@
                     </tr>
                   }
                   @empty {
-                    <tr><td colspan="8" class="text-center text-muted py-4">Aucune donnée disponible</td></tr>
+                    <tr><td colspan="7" class="text-center text-muted py-4">Aucune donnée disponible</td></tr>
                   }
                 </tbody>
               </table>
@@ -98,7 +96,7 @@
     <div class="col-lg-5">
       <div class="card h-100 border-0 shadow-sm">
         <div class="card-header border-0 pb-0 pt-3 px-3">
-          <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-chart-bar me-1 text-success"></i>Revenu & Prix moyen par Marque</h6>
+          <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-chart-bar me-1 text-success"></i>Prix moyen, Min &amp; Max par Marque</h6>
         </div>
         <div class="card-body pt-2 px-2">
           @if (isLoadingPrice()) {
@@ -133,11 +131,11 @@
                     <th>Marque</th>
                     <th class="text-end">Visites</th>
                     <th class="text-end">POS</th>
-                    <th class="text-end">Revenu</th>
+                    <th class="text-end">Montant</th>
                     <th class="text-end">Moy. Prix</th>
                     <th class="text-end">Min</th>
                     <th class="text-end">Max</th>
-                    <th class="text-end">Part Rev.</th>
+                    <th class="text-end">Part Montant</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -146,10 +144,11 @@
                       <td><span class="fw-semibold text-primary">{{ row.brand_name }}</span></td>
                       <td class="text-end">{{ row.total_visits | number }}</td>
                       <td class="text-end">{{ row.total_pos | number }}</td>
-                      <td class="text-end fw-semibold">{{ row.total_revenue | number:'1.0-0' }}</td>
-                      <td class="text-end">{{ row.avg_price | number:'1.2-2' }}</td>
+                      <td class="text-end fw-semibold text-success">{{ row.avg_price | number:'1.0-0' }} FC</td>
                       <td class="text-end text-success small">{{ row.min_price | number:'1.2-2' }}</td>
                       <td class="text-end text-danger small">{{ row.max_price | number:'1.2-2' }}</td>
+                      <td class="text-end">{{ row.total_farde | number:'1.0-0' }}</td>
+                      <td class="text-end">{{ row.total_sold | number:'1.0-0' }}</td>
                       <td class="text-end">
                         <div class="d-flex align-items-center justify-content-end gap-1">
                           <div class="progress se-progress" style="width:60px"><div class="progress-bar bg-success" [style.width]="row.revenue_share + '%'"></div></div>
@@ -157,7 +156,7 @@
                         </div>
                       </td>
                     </tr>
-                  }
+                  } 
                   @empty {
                     <tr><td colspan="8" class="text-center text-muted py-4">Aucune donnée disponible</td></tr>
                   }

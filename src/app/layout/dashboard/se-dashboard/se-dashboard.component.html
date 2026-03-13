@@ -168,8 +168,8 @@
           <div class="se-kpi-card accent-green">
             <div class="se-kpi-icon"><i class="ti ti-coin"></i></div>
             <div class="se-kpi-body">
-              <span class="se-kpi-label">Revenu Total</span>
-              <span class="se-kpi-value">{{ kpiData.current.total_revenue | number:'1.0-0' }}</span>
+              <span class="se-kpi-label">Prix Moyen Pos</span>
+              <span class="se-kpi-value">{{ kpiData.current.avg_price | number:'1.0-0' }} FC</span>
             </div>
           </div>
         </div>
@@ -244,6 +244,9 @@
       <button class="se-nav-btn" [class.active]="activeSection === 'heatmap'"    (click)="setSection('heatmap')">
         <i class="ti ti-calendar-stats me-1"></i>Heatmap
       </button>
+      <button class="se-nav-btn" [class.active]="activeSection === 'pricepie'"  (click)="setSection('pricepie')">
+        <i class="ti ti-chart-donut me-1"></i>Distribution Prix
+      </button>
     </div>
 
     <!-- ═══════════════════════════════════════════════════════════════════════ -->
@@ -292,7 +295,6 @@
                         <th class="text-end">Visites</th>
                         <th class="text-end">Farde</th>
                         <th class="text-end">Sold</th>
-                        <th class="text-end">Revenu</th>
                         <th class="text-end">Δ Farde MoM</th>
                         <th class="text-end">Δ Sold MoM</th>
                       </tr>
@@ -305,7 +307,6 @@
                           <td class="text-end">{{ row.total_visits | number }}</td>
                           <td class="text-end fw-semibold">{{ row.total_farde | number:'1.0-0' }}</td>
                           <td class="text-end">{{ row.total_sold | number:'1.0-0' }}</td>
-                          <td class="text-end">{{ row.total_revenue | number:'1.0-0' }}</td>
                           <td class="text-end {{ getTrendClass(row.growth_farde_pct) }}">
                             @if (row.growth_farde_pct !== null) {
                               <i class="ti {{ row.growth_farde_pct > 0 ? 'ti-arrow-up' : row.growth_farde_pct < 0 ? 'ti-arrow-down' : 'ti-minus' }} me-1"></i>
@@ -389,35 +390,137 @@
           </div>
         </div>
 
-        <!-- Card body: sub-component content -->
-        <div class="card-body p-3">
-          @if (!selectedArea && !selectedSubArea && !selectedCommune) {
-            <app-se-table-view-province
-              [country_uuid]="country_uuid" [province_uuid]="province_uuid"
-              [start_date]="start_date" [end_date]="end_date">
-            </app-se-table-view-province>
-          }
-          @if (selectedArea && !selectedSubArea && !selectedCommune) {
-            <app-se-table-view-area
-              [country_uuid]="country_uuid" [province_uuid]="province_uuid"
-              [area_uuid]="area_uuid" [start_date]="start_date" [end_date]="end_date">
-            </app-se-table-view-area>
-          }
-          @if (selectedSubArea && !selectedCommune) {
-            <app-se-table-view-subarea
-              [country_uuid]="country_uuid" [province_uuid]="province_uuid"
-              [area_uuid]="area_uuid" [sub_area_uuid]="sub_area_uuid"
-              [start_date]="start_date" [end_date]="end_date">
-            </app-se-table-view-subarea>
-          }
-          @if (selectedCommune) {
-            <app-se-table-view-commune
-              [country_uuid]="country_uuid" [province_uuid]="province_uuid"
-              [area_uuid]="area_uuid" [sub_area_uuid]="sub_area_uuid"
-              [commune_uuid]="commune_uuid" [start_date]="start_date" [end_date]="end_date">
-            </app-se-table-view-commune>
+        <!-- Sub-tabs: Type POS / Prix -->
+        <div class="px-3 pt-2 pb-0 border-bottom d-flex gap-2">
+          <button class="se-nav-btn sm" [class.active]="tableViewTab === 'typepos'" (click)="setTableViewTab('typepos')">
+            <i class="ti ti-building-store me-1"></i>Type POS
+          </button>
+          <button class="se-nav-btn sm" [class.active]="tableViewTab === 'price'" (click)="setTableViewTab('price')">
+            <i class="ti ti-coin me-1"></i>Analyse Prix
+          </button>
+          @if (isLoadingTypePosTable || isLoadingPriceTable) {
+            <div class="spinner-border spinner-border-sm text-primary ms-auto align-self-center"></div>
           }
         </div>
+
+        <!-- Card body: TYPE POS table -->
+        @if (tableViewTab === 'typepos') {
+          <div class="card-body p-0">
+            @if (typePosTableData.length > 0) {
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 se-table">
+                  <thead class="se-thead">
+                    <tr>
+                      <th>Territoire</th>
+                      <th>Type POS</th>
+                      <th class="text-end">Visites</th>
+                      <th class="text-end">POS</th>
+                      <th class="text-end">Farde</th>
+                      <th class="text-end">Sold</th>
+                      <th class="text-end">Moy. Farde/visite</th>
+                      <th class="text-end">Moy. Sold/visite</th>
+                      <th class="text-end">Part Farde</th>
+                      <th class="text-end">Part Sold</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of typePosTableData; track row.pos_type) {
+                      <tr>
+                        <td class="fw-semibold small">
+                          {{ row.province_name || row.area_name || row.sub_area_name || row.commune_name || '—' }}
+                        </td>
+                        <td><span class="badge se-badge-type">{{ row.pos_type }}</span></td>
+                        <td class="text-end">{{ row.total_visits | number }}</td>
+                        <td class="text-end">{{ row.total_pos | number }}</td>
+                        <td class="text-end fw-semibold">{{ row.total_farde | number:'1.0-0' }}</td>
+                        <td class="text-end">{{ row.total_sold | number:'1.0-0' }}</td>
+                        <td class="text-end">{{ row.avg_farde_per_visit | number:'1.1-1' }}</td>
+                        <td class="text-end">{{ row.avg_sold_per_visit | number:'1.1-1' }}</td>
+                        <td class="text-end">
+                          <div class="d-flex align-items-center justify-content-end gap-1">
+                            <div class="progress se-progress" style="width:50px">
+                              <div class="progress-bar bg-primary" [style.width]="row.market_share_farde + '%'"></div>
+                            </div>
+                            <span class="small">{{ row.market_share_farde }}%</span>
+                          </div>
+                        </td>
+                        <td class="text-end">
+                          <div class="d-flex align-items-center justify-content-end gap-1">
+                            <div class="progress se-progress" style="width:50px">
+                              <div class="progress-bar bg-pink" [style.width]="row.market_share_sold + '%'"></div>
+                            </div>
+                            <span class="small">{{ row.market_share_sold }}%</span>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                    @empty {
+                      <tr><td colspan="10" class="text-center text-muted py-4">Aucune donnée disponible</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else if (!isLoadingTypePosTable) {
+              <div class="se-empty-state"><i class="ti ti-table-off"></i><p>Aucune donnée disponible</p></div>
+            }
+          </div>
+        }
+
+        <!-- Card body: PRICE table -->
+        @if (tableViewTab === 'price') {
+          <div class="card-body p-0">
+            @if (priceTableData.length > 0) {
+              <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0 se-table">
+                  <thead class="se-thead">
+                    <tr>
+                      <th>Territoire</th>
+                      <th>Marque</th>
+                      <th class="text-end">Visites</th>
+                      <th class="text-end">POS</th>
+                      <th class="text-end">Prix Moy.</th>
+                      <th class="text-end">Prix Min</th>
+                      <th class="text-end">Prix Max</th>
+                      <th class="text-end">Farde</th>
+                      <th class="text-end">Sold</th>
+                      <th class="text-end">Part Rev.</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of priceTableData; track row.brand_name) {
+                      <tr>
+                        <td class="fw-semibold small">
+                          {{ row.province_name || row.area_name || row.sub_area_name || row.commune_name || '—' }}
+                        </td>
+                        <td class="text-primary fw-semibold">{{ row.brand_name }}</td>
+                        <td class="text-end">{{ row.total_visits | number }}</td>
+                        <td class="text-end">{{ row.total_pos | number }}</td>
+                        <td class="text-end fw-semibold text-success">{{ row.avg_price | number:'1.0-0' }} FC</td>
+                        <td class="text-end text-muted">{{ row.min_price | number:'1.0-0' }}</td>
+                        <td class="text-end text-muted">{{ row.max_price | number:'1.0-0' }}</td>
+                        <td class="text-end">{{ row.total_farde | number:'1.0-0' }}</td>
+                        <td class="text-end">{{ row.total_sold | number:'1.0-0' }}</td>
+                        <td class="text-end">
+                          <div class="d-flex align-items-center justify-content-end gap-1">
+                            <div class="progress se-progress" style="width:50px">
+                              <div class="progress-bar bg-success" [style.width]="row.revenue_share + '%'"></div>
+                            </div>
+                            <span class="small">{{ row.revenue_share }}%</span>
+                          </div>
+                        </td>
+                      </tr>
+                    }
+                    @empty {
+                      <tr><td colspan="10" class="text-center text-muted py-4">Aucune donnée disponible</td></tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            } @else if (!isLoadingPriceTable) {
+              <div class="se-empty-state"><i class="ti ti-table-off"></i><p>Aucune donnée disponible</p></div>
+            }
+          </div>
+        }
 
       </div>
     }
@@ -629,7 +732,7 @@
                         <th>Type</th>
                         <th>Commune</th>
                         <th class="text-end">Farde</th>
-                        <th class="text-end">Revenu</th>
+                        <th class="text-end">Prix Moy.</th>
                         <th class="text-end">Part</th>
                       </tr>
                     </thead>
@@ -644,7 +747,7 @@
                           <td><span class="badge se-badge-type">{{ row.postype }}</span></td>
                           <td class="small text-muted">{{ row.commune_name }}</td>
                           <td class="text-end fw-semibold">{{ row.total_farde | number:'1.0-0' }}</td>
-                          <td class="text-end">{{ row.total_revenue | number:'1.0-0' }}</td>
+                          <td class="text-end">{{ row.avg_price | number:'1.0-0' }} FC</td>
                           <td class="text-end">
                             <div class="d-flex align-items-center justify-content-end gap-1">
                               <div class="progress se-progress" style="width:50px">
@@ -745,7 +848,6 @@
                         <th class="text-end">POS uniques</th>
                         <th class="text-end">Farde</th>
                         <th class="text-end">Sold</th>
-                        <th class="text-end">Revenu</th>
                         <th class="text-end">Marques</th>
                         <th class="text-end">Score</th>
                       </tr>
@@ -764,7 +866,6 @@
                           <td class="text-end">{{ rep.unique_pos | number }}</td>
                           <td class="text-end fw-semibold">{{ rep.total_farde | number:'1.0-0' }}</td>
                           <td class="text-end">{{ rep.total_sold | number:'1.0-0' }}</td>
-                          <td class="text-end">{{ rep.total_revenue | number:'1.0-0' }}</td>
                           <td class="text-end">{{ rep.brands_covered }}</td>
                           <td class="text-end">
                             <span [class]="getPerfBadge(rep.perf_score)">{{ rep.perf_score | number:'1.0-0' }}</span>
@@ -772,7 +873,7 @@
                         </tr>
                       }
                       @empty {
-                        <tr><td colspan="12" class="text-center text-muted py-4">Aucun agent trouvé</td></tr>
+                        <tr><td colspan="11" class="text-center text-muted py-4">Aucun agent trouvé</td></tr>
                       }
                     </tbody>
                   </table>
@@ -839,6 +940,86 @@
                       }
                       @empty {
                         <tr><td colspan="4" class="text-center text-muted py-4">Aucune donnée</td></tr>
+                      }
+                    </tbody>
+                  </table>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    <!-- SECTION: PRICE PIE CHART — Distribution des prix des posforms          -->
+    <!-- ═══════════════════════════════════════════════════════════════════════ -->
+    @if (activeSection === 'pricepie') {
+      <div class="row g-3">
+        <!-- Donut chart -->
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3 d-flex align-items-center justify-content-between">
+              <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-chart-donut me-2 text-primary"></i>Répartition des prix déclarés (camembert)</h6>
+              @if (isLoadingPricePie) { <div class="spinner-border spinner-border-sm text-primary"></div> }
+            </div>
+            <div class="card-body px-2 pt-2">
+              @if (!isLoadingPricePie && chartPricePieOpts) {
+                <apx-chart #chartPricePie
+                  [series]="chartPricePieOpts.series"
+                  [chart]="chartPricePieOpts.chart"
+                  [labels]="chartPricePieOpts.labels"
+                  [colors]="chartPricePieOpts.colors"
+                  [dataLabels]="chartPricePieOpts.dataLabels"
+                  [legend]="chartPricePieOpts.legend"
+                  [tooltip]="chartPricePieOpts.tooltip"
+                  [plotOptions]="chartPricePieOpts.plotOptions">
+                </apx-chart>
+              } @else if (!isLoadingPricePie) {
+                <div class="se-empty-state">
+                  <i class="ti ti-chart-off"></i><p>Aucune donnée de prix disponible</p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+        <!-- Detail table -->
+        <div class="col-lg-6">
+          <div class="card border-0 shadow-sm h-100">
+            <div class="card-header border-0 pb-0 pt-3 px-3">
+              <h6 class="fw-semibold mb-0 text-secondary"><i class="ti ti-table me-2 text-primary"></i>Détail par tranches de prix</h6>
+            </div>
+            <div class="card-body p-0">
+              @if (isLoadingPricePie) {
+                <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary"></div></div>
+              } @else {
+                <div class="table-responsive">
+                  <table class="table table-hover align-middle mb-0 se-table">
+                    <thead class="se-thead">
+                      <tr>
+                        <th>Prix (FC)</th>
+                        <th class="text-end">Visites</th>
+                        <th class="text-end">Part (%)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      @for (row of pricePieData; track row.price) {
+                        <tr>
+                          <td class="fw-semibold text-primary">{{ row.price | number }} FC</td>
+                          <td class="text-end">{{ row.count | number }}</td>
+                          <td class="text-end">
+                            <div class="d-flex align-items-center justify-content-end gap-1">
+                              <div class="progress se-progress" style="width:60px">
+                                <div class="progress-bar bg-primary" [style.width]="row.share_pct + '%'"></div>
+                              </div>
+                              <span class="small fw-semibold">{{ row.share_pct }}%</span>
+                            </div>
+                          </td>
+                        </tr>
+                      }
+                      @empty {
+                        <tr><td colspan="3" class="text-center text-muted py-4">Aucune donnée</td></tr>
                       }
                     </tbody>
                   </table>

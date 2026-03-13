@@ -222,4 +222,21 @@ export class SaleEvolutionService extends ApiService {
     if (commune_uuid)   params = params.set('commune_uuid', commune_uuid);
     return this.http.get<any>(`${this.endpoint}/summary-kpi`, { params });
   }
+
+  // ─── SECTION 10 — Price Pie Chart ───────────────────────────────────────────
+
+  PricePieChart(
+    country_uuid: string, start_date: string, end_date: string,
+    province_uuid = '', area_uuid = '', sub_area_uuid = '', commune_uuid = ''
+  ): Observable<any> {
+    let params = new HttpParams()
+      .set('country_uuid', country_uuid)
+      .set('start_date', start_date)
+      .set('end_date', end_date);
+    if (province_uuid)  params = params.set('province_uuid', province_uuid);
+    if (area_uuid)      params = params.set('area_uuid', area_uuid);
+    if (sub_area_uuid)  params = params.set('sub_area_uuid', sub_area_uuid);
+    if (commune_uuid)   params = params.set('commune_uuid', commune_uuid);
+    return this.http.get<any>(`${this.endpoint}/price-pie-chart`, { params });
+  }
 }

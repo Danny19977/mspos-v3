@@ -6,18 +6,20 @@ import { environment } from '../../../../../environments/environment';
 export interface NdSummary {
   user_uuid: string;
   fullname: string;
-  total_pos_visited: number;
-  nd_pos: number;
-  nd_percent: number;
   universe_pos: number;
+  total_pos_visit: number;
+  nd_brand: number;
+  total_posforms: number;
+  nd_percent: number;
   reach_rate: number;
 }
 
 export interface NdByBrand {
   brand_uuid: string;
   brand_name: string;
-  nd_pos: number;
-  total_pos: number;
+  nd_brand: number;
+  total_pos_visit: number;
+  total_posforms: number;
   nd_percent: number;
 }
 
@@ -28,7 +30,7 @@ export interface NdPosItem {
   commune: string;
   brand_uuid: string;
   brand_name: string;
-  counter: number;
+  number_farde: number;
   nd_active: boolean;
   visit_date: string;
 }

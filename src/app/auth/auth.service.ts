@@ -327,6 +327,14 @@ export class AuthService {
     }
   }
 
+  forgotPassword(email: string): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/auth/forgot-password`, { email });
+  }
+
+  resetPassword(token: string, data: { password: string; password_confirm: string }): Observable<any> {
+    return this.http.post(`${environment.apiUrl}/auth/reset/${token}`, data);
+  }
+
   updateInfo(data: any): Observable<IUser> {
     return this.http.put<IUser>(`${environment.apiUrl}/auth/profil/info`, data);
   }

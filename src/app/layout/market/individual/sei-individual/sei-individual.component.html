@@ -1,0 +1,629 @@
+@if (currentUser) {
+
+<!-- ── Loading ────────────────────────────────────────────────────────────── -->
+@if (isLoading()) {
+<div class="text-center py-5">
+  <span class="spinner-border text-primary" role="status"></span>
+  <p class="mt-2 text-muted small">Chargement de l'évolution des ventes…</p>
+</div>
+} @else {
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- KPI SUMMARY STRIP                                                        -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<div class="row g-3 mb-4">
+
+  <!-- Total Fardes -->
+  <div class="col-6 col-sm-4 col-xl-2">
+    <div class="card kpi-strip h-100">
+      <div class="card-body">
+        <div class="kpi-icon bg-primary-light mb-2">
+          <i class="ti ti-package text-primary"></i>
+        </div>
+        <div class="kpi-value">{{ summary()?.total_farde ?? 0 | number:'1.0-2' }}</div>
+        <div class="kpi-label text-muted">Total Fardes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Total Vendus -->
+  <div class="col-6 col-sm-4 col-xl-2">
+    <div class="card kpi-strip h-100">
+      <div class="card-body">
+        <div class="kpi-icon bg-success-light mb-2">
+          <i class="ti ti-shopping-cart text-success"></i>
+        </div>
+        <div class="kpi-value">{{ summary()?.total_sold ?? 0 | number:'1.0-2' }}</div>
+        <div class="kpi-label text-muted">Total Vendus</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Visites -->
+  <div class="col-6 col-sm-4 col-xl-2">
+    <div class="card kpi-strip h-100">
+      <div class="card-body">
+        <div class="kpi-icon bg-info-light mb-2">
+          <i class="ti ti-clipboard-check text-info"></i>
+        </div>
+        <div class="kpi-value">{{ summary()?.total_visits ?? 0 | number }}</div>
+        <div class="kpi-label text-muted">Visites</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POS actifs -->
+  <div class="col-6 col-sm-4 col-xl-2">
+    <div class="card kpi-strip h-100">
+      <div class="card-body">
+        <div class="kpi-icon bg-warning-light mb-2">
+          <i class="ti ti-map-pin text-warning"></i>
+        </div>
+        <div class="kpi-value">{{ summary()?.active_pos ?? 0 | number }}</div>
+        <div class="kpi-label text-muted">POS actifs</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Marques -->
+  <div class="col-6 col-sm-4 col-xl-2">
+    <div class="card kpi-strip h-100">
+      <div class="card-body">
+        <div class="kpi-icon bg-danger-light mb-2">
+          <i class="ti ti-tag text-danger"></i>
+        </div>
+        <div class="kpi-value">{{ summary()?.brands_covered ?? 0 | number }}</div>
+        <div class="kpi-label text-muted">Marques</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Jours actifs -->
+  <div class="col-6 col-sm-4 col-xl-2">
+    <div class="card kpi-strip h-100">
+      <div class="card-body">
+        <div class="kpi-icon bg-secondary-light mb-2">
+          <i class="ti ti-calendar-stats text-secondary"></i>
+        </div>
+        <div class="kpi-value">{{ summary()?.active_days ?? 0 }}</div>
+        <div class="kpi-label text-muted">Jours actifs</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Prix moyen -->
+  <div class="col-6 col-sm-4 col-xl-2">
+    <div class="card kpi-strip h-100">
+      <div class="card-body">
+        <div class="kpi-icon bg-info-light mb-2">
+          <i class="ti ti-coin text-info"></i>
+        </div>
+        <div class="kpi-value">{{ summary()?.avg_price ?? 0 | number:'1.0-0' }}</div>
+        <div class="kpi-label text-muted">Prix moyen (FC)</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<!-- /KPI strip -->
+
+
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<!-- INNER TABS                                                                -->
+<!-- ════════════════════════════════════════════════════════════════════════ -->
+<ul class="nav sei-tabs mb-4">
+  <li class="nav-item">
+    <button class="nav-link" [class.active]="activeTab() === 'overview'" (click)="activeTab.set('overview')">
+      <i class="ti ti-chart-pie me-1"></i> Vue d'ensemble
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" [class.active]="activeTab() === 'brands'" (click)="activeTab.set('brands')">
+      <i class="ti ti-tag me-1"></i> Marques
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" [class.active]="activeTab() === 'evolution'" (click)="activeTab.set('evolution')">
+      <i class="ti ti-trending-up me-1"></i> Évolution
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" [class.active]="activeTab() === 'activity'" (click)="activeTab.set('activity')">
+      <i class="ti ti-map-2 me-1"></i> Activité & POS
+    </button>
+  </li>
+</ul>
+
+
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<!-- TAB: VUE D'ENSEMBLE                                                       -->
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+@if (activeTab() === 'overview') {
+<div class="row g-4">
+
+  <!-- Price distribution donut -->
+  <div class="col-lg-5">
+    <div class="chart-container h-100">
+      <div class="chart-title">
+        <i class="ti ti-chart-donut me-1 text-primary"></i>
+        Répartition des Prix Déclarés
+      </div>
+      @if (priceSlices().length > 0) {
+        <apx-chart
+          [series]="donutPriceOptions().series!"
+          [chart]="donutPriceOptions().chart!"
+          [labels]="donutPriceOptions().labels!"
+          [legend]="donutPriceOptions().legend!"
+          [dataLabels]="donutPriceOptions().dataLabels!"
+          [tooltip]="$any(donutPriceOptions().tooltip)"
+          [responsive]="donutPriceOptions().responsive!"
+          [colors]="donutPriceOptions().colors!"
+          [plotOptions]="donutPriceOptions().plotOptions!">
+        </apx-chart>
+        <!-- Price table below donut -->
+        <table class="table table-sm table-hover mt-3 mb-0">
+          <thead class="table-light">
+            <tr>
+              <th>Prix (FC)</th>
+              <th class="text-end">Visites</th>
+              <th class="text-end">Part %</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (slice of priceSlices(); track slice.price) {
+            <tr>
+              <td class="fw-semibold">{{ slice.price | number }}</td>
+              <td class="text-end">{{ slice.count | number }}</td>
+              <td class="text-end">
+                <span class="badge bg-primary-subtle text-primary">{{ slice.share_pct }}%</span>
+              </td>
+            </tr>
+            }
+          </tbody>
+        </table>
+      } @else {
+        <div class="empty-chart">Aucune donnée de prix disponible</div>
+      }
+    </div>
+  </div>
+
+  <!-- Brand competition market share -->
+  <div class="col-lg-7">
+    <div class="chart-container h-100">
+      <div class="chart-title d-flex justify-content-between align-items-center">
+        <span><i class="ti ti-award me-1 text-warning"></i>Part de Marché par Marque</span>
+        @if (topBrand()) {
+        <span class="badge bg-warning-subtle text-warning">
+          <i class="ti ti-trophy me-1"></i>N°1 {{ topBrand()!.brand_name }}
+        </span>
+        }
+      </div>
+
+      @if (brandComp().length > 0) {
+        <div class="brand-competition-list mt-2">
+          @for (brand of brandComp(); track brand.brand_uuid) {
+          <div class="brand-row mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <div class="d-flex align-items-center gap-2">
+                <span class="brand-rank-badge">{{ brand.brand_rank }}</span>
+                <span class="fw-semibold small">{{ brand.brand_name }}</span>
+              </div>
+              <div class="d-flex align-items-center gap-3 text-muted small">
+                <span><i class="ti ti-package me-1"></i>{{ brand.total_farde | number:'1.0-1' }}</span>
+                <span class="fw-bold text-dark">{{ brand.market_share }}%</span>
+              </div>
+            </div>
+            <div class="progress" style="height: 6px; border-radius: 3px;">
+              <div class="progress-bar"
+                   [style.width.%]="brand.market_share"
+                   [style.background-color]="BRAND_COLORS[$index % BRAND_COLORS.length]">
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-chart">Aucune donnée de marque disponible</div>
+      }
+    </div>
+  </div>
+
+</div>
+}
+<!-- /TAB overview -->
+
+
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<!-- TAB: MARQUES                                                              -->
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+@if (activeTab() === 'brands') {
+<div class="row g-4">
+
+  <!-- Bar chart: fardes + vendus par marque -->
+  <div class="col-12">
+    <div class="chart-container">
+      <div class="chart-title">
+        <i class="ti ti-chart-bar me-1 text-primary"></i>
+        Volume Fardes &amp; Vendus par Marque (Top 12)
+      </div>
+      @if (priceBrands().length > 0) {
+        <apx-chart
+          [series]="barBrandOptions().series!"
+          [chart]="barBrandOptions().chart!"
+          [plotOptions]="barBrandOptions().plotOptions!"
+          [xaxis]="barBrandOptions().xaxis!"
+          [yaxis]="barBrandOptions().yaxis!"
+          [colors]="barBrandOptions().colors!"
+          [dataLabels]="barBrandOptions().dataLabels!"
+          [legend]="barBrandOptions().legend!"
+          [stroke]="barBrandOptions().stroke!"
+          [fill]="barBrandOptions().fill!"
+          [tooltip]="$any(barBrandOptions().tooltip)">
+        </apx-chart>
+      } @else {
+        <div class="empty-chart">Aucune donnée de marque disponible</div>
+      }
+    </div>
+  </div>
+
+  <!-- Detailed brand table -->
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+        <span class="fw-semibold small">
+          <i class="ti ti-table me-1 text-primary"></i>
+          Analyse détaillée par Marque
+        </span>
+        <span class="badge bg-primary-subtle text-primary">{{ priceBrands().length }} marques</span>
+      </div>
+      <div class="table-responsive">
+        <table mat-table [dataSource]="brandDataSource" class="sei-table w-100">
+
+          <ng-container matColumnDef="brand_name">
+            <th mat-header-cell *matHeaderCellDef>Marque</th>
+            <td mat-cell *matCellDef="let r" class="fw-semibold">{{ r.brand_name }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="total_visits">
+            <th mat-header-cell *matHeaderCellDef class="text-end">Visites</th>
+            <td mat-cell *matCellDef="let r" class="text-end">{{ r.total_visits | number }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="avg_price">
+            <th mat-header-cell *matHeaderCellDef class="text-end">Prix moy.</th>
+            <td mat-cell *matCellDef="let r" class="text-end">{{ r.avg_price | number:'1.0-0' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="min_price">
+            <th mat-header-cell *matHeaderCellDef class="text-end">Prix min</th>
+            <td mat-cell *matCellDef="let r" class="text-end text-success">{{ r.min_price | number:'1.0-0' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="max_price">
+            <th mat-header-cell *matHeaderCellDef class="text-end">Prix max</th>
+            <td mat-cell *matCellDef="let r" class="text-end text-danger">{{ r.max_price | number:'1.0-0' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="total_farde">
+            <th mat-header-cell *matHeaderCellDef class="text-end">Fardes</th>
+            <td mat-cell *matCellDef="let r" class="text-end fw-semibold">{{ r.total_farde | number:'1.0-2' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="total_sold">
+            <th mat-header-cell *matHeaderCellDef class="text-end">Vendus</th>
+            <td mat-cell *matCellDef="let r" class="text-end">{{ r.total_sold | number:'1.0-2' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="revenue_share">
+            <th mat-header-cell *matHeaderCellDef class="text-end">Part Rev.</th>
+            <td mat-cell *matCellDef="let r" class="text-end">
+              <span class="badge bg-primary-subtle text-primary">{{ r.revenue_share }}%</span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedBrand; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedBrand;"></tr>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</div>
+}
+<!-- /TAB brands -->
+
+
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<!-- TAB: ÉVOLUTION                                                            -->
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+@if (activeTab() === 'evolution') {
+<div class="row g-4">
+
+  <!-- Line chart: monthly evolution -->
+  <div class="col-12">
+    <div class="chart-container">
+      <div class="chart-title">
+        <i class="ti ti-trending-up me-1 text-primary"></i>
+        Évolution Mensuelle des Fardes par Marque
+      </div>
+      @if (monthly().length > 0) {
+        <apx-chart
+          [series]="lineChartOptions().series!"
+          [chart]="lineChartOptions().chart!"
+          [xaxis]="lineChartOptions().xaxis!"
+          [yaxis]="lineChartOptions().yaxis!"
+          [stroke]="lineChartOptions().stroke!"
+          [colors]="lineChartOptions().colors!"
+          [tooltip]="$any(lineChartOptions().tooltip)"
+          [legend]="lineChartOptions().legend!"
+          [dataLabels]="lineChartOptions().dataLabels!"
+          [grid]="lineChartOptions().grid!">
+        </apx-chart>
+      } @else {
+        <div class="empty-chart">
+          <i class="ti ti-chart-line me-2"></i>Données d'évolution non disponibles pour la période sélectionnée
+        </div>
+      }
+    </div>
+  </div>
+
+  <!-- Growth rate table: curr vs prev -->
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+        <span class="fw-semibold small">
+          <i class="ti ti-arrows-diff me-1 text-primary"></i>
+          Comparaison Période Courante vs Précédente
+        </span>
+        <span class="badge bg-secondary-subtle text-secondary">Période précédente = durée identique</span>
+      </div>
+      <div class="table-responsive">
+        <table mat-table [dataSource]="growthDataSource" class="sei-table w-100">
+
+          <ng-container matColumnDef="brand_name">
+            <th mat-header-cell *matHeaderCellDef>Marque</th>
+            <td mat-cell *matCellDef="let r" class="fw-semibold">{{ r.brand_name }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="curr_farde">
+            <th mat-header-cell *matHeaderCellDef class="text-end">Fardes (Cur.)</th>
+            <td mat-cell *matCellDef="let r" class="text-end fw-semibold">{{ r.curr_farde | number:'1.0-2' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="prev_farde">
+            <th mat-header-cell *matHeaderCellDef class="text-end">Fardes (Préc.)</th>
+            <td mat-cell *matCellDef="let r" class="text-end text-muted">{{ r.prev_farde | number:'1.0-2' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="delta_farde">
+            <th mat-header-cell *matHeaderCellDef class="text-end">Delta</th>
+            <td mat-cell *matCellDef="let r" class="text-end"
+                [style.color]="growthColor(r.delta_farde)">
+              {{ r.delta_farde > 0 ? '+' : '' }}{{ r.delta_farde | number:'1.0-2' }}
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="growth_farde_pct">
+            <th mat-header-cell *matHeaderCellDef class="text-end">Croissance %</th>
+            <td mat-cell *matCellDef="let r" class="text-end">
+              <span [class]="r.growth_farde_pct === null ? 'badge bg-secondary-subtle text-secondary' :
+                             r.growth_farde_pct > 0 ? 'badge bg-success-subtle text-success' :
+                             r.growth_farde_pct < 0 ? 'badge bg-danger-subtle text-danger' :
+                             'badge bg-secondary-subtle text-secondary'">
+                {{ r.growth_farde_pct !== null ? (r.growth_farde_pct > 0 ? '+' : '') + r.growth_farde_pct + '%' : 'N/A' }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="curr_visits">
+            <th mat-header-cell *matHeaderCellDef class="text-end">Visites</th>
+            <td mat-cell *matCellDef="let r" class="text-end">{{ r.curr_visits | number }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="trend">
+            <th mat-header-cell *matHeaderCellDef class="text-center">Tendance</th>
+            <td mat-cell *matCellDef="let r" class="text-center">
+              <i [class]="trendIcon(r.trend)" style="font-size: 1.1rem;"></i>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedGrowth; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedGrowth;"></tr>
+        </table>
+
+        @if (growth().length === 0) {
+        <div class="text-center py-4 text-muted small">
+          <i class="ti ti-info-circle me-1"></i>Aucune donnée de comparaison disponible
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+
+</div>
+}
+<!-- /TAB evolution -->
+
+
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+<!-- TAB: ACTIVITÉ & POS                                                       -->
+<!-- ──────────────────────────────────────────────────────────────────────── -->
+@if (activeTab() === 'activity') {
+<div class="row g-4">
+
+  <!-- POS type bar chart -->
+  <div class="col-lg-6">
+    <div class="chart-container h-100">
+      <div class="chart-title">
+        <i class="ti ti-building-store me-1 text-primary"></i>
+        Ventes par Type de POS
+      </div>
+      @if (posTypes().length > 0) {
+        <apx-chart
+          [series]="barPosTypeOptions().series!"
+          [chart]="barPosTypeOptions().chart!"
+          [plotOptions]="barPosTypeOptions().plotOptions!"
+          [xaxis]="barPosTypeOptions().xaxis!"
+          [yaxis]="barPosTypeOptions().yaxis!"
+          [colors]="barPosTypeOptions().colors!"
+          [dataLabels]="barPosTypeOptions().dataLabels!"
+          [legend]="barPosTypeOptions().legend!"
+          [stroke]="barPosTypeOptions().stroke!"
+          [fill]="barPosTypeOptions().fill!"
+          [tooltip]="$any(barPosTypeOptions().tooltip)">
+        </apx-chart>
+
+        <!-- POS type detail cards -->
+        <div class="row g-2 mt-2">
+          @for (pt of posTypes(); track pt.pos_type) {
+          <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center p-2 rounded pos-type-row">
+              <span class="fw-semibold small">{{ pt.pos_type }}</span>
+              <div class="d-flex gap-3 text-muted small">
+                <span><i class="ti ti-package me-1"></i>{{ pt.total_farde | number:'1.0-1' }}</span>
+                <span><i class="ti ti-map-pin me-1"></i>{{ pt.total_pos | number }}</span>
+                <span class="badge bg-primary-subtle text-primary">{{ pt.market_share_farde }}%</span>
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-chart">Aucune donnée par type de POS</div>
+      }
+    </div>
+  </div>
+
+  <!-- Heatmap by day of week -->
+  <div class="col-lg-6">
+    <div class="chart-container h-100">
+      <div class="chart-title d-flex justify-content-between align-items-center">
+        <span><i class="ti ti-calendar-week me-1 text-primary"></i>Productivité par Jour de Semaine</span>
+        @if (bestDay().total_farde > 0) {
+        <span class="badge bg-success-subtle text-success">
+          <i class="ti ti-star me-1"></i>{{ bestDay().day_name }}
+        </span>
+        }
+      </div>
+      @if (heatmapByDay().length > 0) {
+        <div class="heatmap-list mt-3">
+          @for (day of heatmapByDay(); track day.day_name) {
+          <div class="heatmap-row mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+              <span class="fw-semibold small" style="min-width: 90px;">{{ day.day_name }}</span>
+              <div class="d-flex gap-3 text-muted small">
+                <span><i class="ti ti-package me-1"></i>{{ day.total_farde | number:'1.0-1' }}</span>
+                <span><i class="ti ti-clipboard-list me-1"></i>{{ day.total_visits | number }}</span>
+              </div>
+            </div>
+            <div class="progress" style="height: 8px; border-radius: 4px;">
+              <div class="progress-bar heatmap-bar"
+                   [style.width.%]="(day.total_farde / maxHeatmapFarde()) * 100"
+                   [class.heatmap-bar-best]="day.day_name === bestDay().day_name">
+              </div>
+            </div>
+          </div>
+          }
+        </div>
+      } @else {
+        <div class="empty-chart">Aucune donnée de heatmap disponible</div>
+      }
+    </div>
+  </div>
+
+  <!-- Top POS ranking table -->
+  <div class="col-12">
+    <div class="card border-0 shadow-sm">
+      <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center">
+        <span class="fw-semibold small">
+          <i class="ti ti-trophy me-1 text-warning"></i>
+          Top Points de Vente — Classement par Volume de Fardes
+        </span>
+        <span class="badge bg-warning-subtle text-warning">{{ topPos().length }} POS</span>
+      </div>
+      <div class="table-responsive">
+        <table mat-table [dataSource]="topPosDataSource" class="sei-table w-100">
+
+          <ng-container matColumnDef="rank">
+            <th mat-header-cell *matHeaderCellDef>#</th>
+            <td mat-cell *matCellDef="let r">
+              <span class="rank-badge"
+                    [class.rank-gold]="r.rank === 1"
+                    [class.rank-silver]="r.rank === 2"
+                    [class.rank-bronze]="r.rank === 3">
+                {{ r.rank }}
+              </span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="pos_name">
+            <th mat-header-cell *matHeaderCellDef>POS</th>
+            <td mat-cell *matCellDef="let r" class="fw-semibold">{{ r.pos_name }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="shop">
+            <th mat-header-cell *matHeaderCellDef>Enseigne</th>
+            <td mat-cell *matCellDef="let r" class="text-muted small">{{ r.shop }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="postype">
+            <th mat-header-cell *matHeaderCellDef>Type</th>
+            <td mat-cell *matCellDef="let r">
+              <span class="badge bg-info-subtle text-info small">{{ r.postype }}</span>
+            </td>
+          </ng-container>
+
+          <ng-container matColumnDef="commune_name">
+            <th mat-header-cell *matHeaderCellDef>Commune</th>
+            <td mat-cell *matCellDef="let r" class="text-muted small">{{ r.commune_name }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="total_visits">
+            <th mat-header-cell *matHeaderCellDef class="text-end">Visites</th>
+            <td mat-cell *matCellDef="let r" class="text-end">{{ r.total_visits | number }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="total_farde">
+            <th mat-header-cell *matHeaderCellDef class="text-end">Fardes</th>
+            <td mat-cell *matCellDef="let r" class="text-end fw-semibold">{{ r.total_farde | number:'1.0-2' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="total_sold">
+            <th mat-header-cell *matHeaderCellDef class="text-end">Vendus</th>
+            <td mat-cell *matCellDef="let r" class="text-end">{{ r.total_sold | number:'1.0-2' }}</td>
+          </ng-container>
+
+          <ng-container matColumnDef="avg_price">
+            <th mat-header-cell *matHeaderCellDef class="text-end">Prix moy.</th>
+            <td mat-cell *matCellDef="let r" class="text-end text-muted small">{{ r.avg_price | number:'1.0-0' }} FC</td>
+          </ng-container>
+
+          <ng-container matColumnDef="farde_share">
+            <th mat-header-cell *matHeaderCellDef class="text-end">Part %</th>
+            <td mat-cell *matCellDef="let r" class="text-end">
+              <span class="badge bg-primary-subtle text-primary">{{ r.farde_share }}%</span>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedTopPos; sticky: true"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedTopPos;"></tr>
+        </table>
+
+        @if (topPos().length === 0) {
+        <div class="text-center py-4 text-muted small">
+          <i class="ti ti-info-circle me-1"></i>Aucun POS classé pour la période sélectionnée
+        </div>
+        }
+      </div>
+    </div>
+  </div>
+
+</div>
+}
+<!-- /TAB activity -->
+
+}
+<!-- /not loading -->
+
+}
+<!-- /currentUser guard -->

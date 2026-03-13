@@ -4,7 +4,7 @@ import { formatDate } from '@angular/common';
 import { AuthService } from '../../../auth/auth.service';
 import { IUser } from '../../management/user/models/user.model';
 
-export type IndividualTab = 'nd' | 'sos';
+export type IndividualTab = 'nd' | 'sos' | 'sei';
 
 @Component({
   selector: 'app-individual',
@@ -20,7 +20,7 @@ export class IndividualComponent implements OnInit {
   currentUser = signal<IUser | null>(null);
   isLoading = signal(false);
 
-  selectedPeriod = signal<string>('1M');
+  selectedPeriod = signal<string>('1W');
   start_date = signal('');
   end_date = signal('');
   customStartDate = signal('');

@@ -382,9 +382,10 @@
                     <thead class="oos-thead">
                       <tr>
                         <th>Marque</th>
+                        <th class="text-end">Total POS Visités</th>
                         <th class="text-end">POS OOS</th>
                         <th class="text-end">POS Couverts</th>
-                        <th class="text-end">Total POS</th>
+                        <th class="text-end">Total Visite</th>
                         <th class="text-end">OOS %</th>
                         <th class="text-end">Coverage %</th>
                         <th class="text-center" style="width:100px">Risque</th>
@@ -394,9 +395,10 @@
                       @for (row of group.rows; track row.brand_uuid) {
                         <tr>
                           <td class="fw-semibold text-danger">{{ row.brand_name }}</td>
+                          <td class="text-end text-muted">{{ row.total_pos_visit | number }}</td>
                           <td class="text-end fw-semibold text-danger">{{ row.oos_pos | number }}</td>
                           <td class="text-end">{{ row.coverage_pos | number }}</td>
-                          <td class="text-end text-muted">{{ row.total_pos | number }}</td>
+                          <td class="text-end text-muted">{{ row.total_posforms | number }}</td>
                           <td class="text-end">
                             <span [class]="getOosBadge(row.oos_percent)">{{ row.oos_percent | number:'1.1-1' }}%</span>
                           </td>
@@ -562,7 +564,7 @@
                         <th class="text-center">Rang</th>
                         <th>Marque</th>
                         <th class="text-end">POS OOS</th>
-                        <th class="text-end">Total POS</th>
+                        <th class="text-end">Total POS Visités</th>
                         <th class="text-end">OOS %</th>
                         <th class="text-center">Sévérité</th>
                         <th style="width:80px">Risque</th>
@@ -574,7 +576,7 @@
                           <td class="text-center fw-bold">{{ getRankMedal(row.rank) }}</td>
                           <td class="fw-semibold text-danger">{{ row.brand_name }}</td>
                           <td class="text-end fw-semibold text-danger">{{ row.oos_pos | number }}</td>
-                          <td class="text-end text-muted">{{ row.total_pos | number }}</td>
+                          <td class="text-end text-muted">{{ row.total_pos_visit | number }}</td>
                           <td class="text-end">
                             <span [class]="getOosBadge(row.oos_percent)">{{ row.oos_percent | number:'1.1-1' }}%</span>
                           </td>

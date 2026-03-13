@@ -282,8 +282,7 @@
                 </button>
                 }
                 @if (!isLoadingEdit) {
-                <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-dismiss="offcanvas"
-                    data-bs-target="#create_success">Enregistrer les modifications</button>
+                <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
                 }
             </div>
         </form>
@@ -334,6 +333,9 @@
                             <mat-error *ngIf="formGroupChangePassword.controls['password'].hasError('required')">
                                 Ce champs est obligatoire
                             </mat-error>
+                            <mat-error *ngIf="formGroupChangePassword.controls['password'].hasError('minlength')">
+                                Minimum 6 caractères requis
+                            </mat-error>
                         </div>
                     </div>
                 </div>
@@ -350,6 +352,9 @@
                                 *ngIf="formGroupChangePassword.controls['password_confirm'].hasError('required')">
                                 Ce champs est obligatoire
                             </mat-error>
+                            <mat-error *ngIf="formGroupChangePassword.errors?.['passwordMismatch'] && formGroupChangePassword.controls['password_confirm'].touched">
+                                Les mots de passe ne correspondent pas
+                            </mat-error>
                         </div>
                     </div>
                 </div>
@@ -364,8 +369,7 @@
                 </button>
                 }
                 @if (!isLoadingChangePassword) {
-                <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-dismiss="offcanvas"
-                    data-bs-target="#create_success">Enregistrer les modifications</button>
+                <button type="submit" class="btn btn-primary">Enregistrer les modifications</button>
                 }
             </div>
         </form>

@@ -87,6 +87,17 @@
             </span>
           </button>
         </li>
+        <li class="nav-item">
+          <button class="nav-link d-flex align-items-center gap-2"
+                  [class.active]="activeTab() === 'sei'"
+                  (click)="activeTab.set('sei')">
+            <i class="ti ti-chart-line fs-5"></i>
+            <span>
+              Évolution Ventes
+              <small class="d-block lh-1 opacity-75" style="font-size:0.7rem">Sales Evolution</small>
+            </span>
+          </button>
+        </li>
       </ul>
 
       <!-- ── Tab Content ───────────────────────────────────────────────────────── -->
@@ -106,6 +117,14 @@
             [endDate]="end_date()"
             [currentUser]="currentUser()">
           </app-sos-individual>
+        }
+
+        @if (activeTab() === 'sei') {
+          <app-sei-individual
+            [startDate]="start_date()"
+            [endDate]="end_date()"
+            [currentUser]="currentUser()">
+          </app-sei-individual>
         }
 
       </div>
