@@ -44,7 +44,7 @@ export class routes {
     return this.core + '/web/dashboard';
   }
   public static get msposDashboard(): string {
-    return this.dashboard + '/mspos-dashboard';
+    return this.kpiDashboard;
   }
   public static get summaryDashboard(): string {
     return this.dashboard + '/summary';

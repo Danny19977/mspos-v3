@@ -26,7 +26,7 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        redirectTo: 'mspos-dashboard',
+        redirectTo: 'key-performance-indicators',
         pathMatch: 'full'
       },
       {
