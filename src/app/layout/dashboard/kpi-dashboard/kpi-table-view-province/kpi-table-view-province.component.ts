@@ -63,11 +63,11 @@ export class KpiTableViewProvinceComponent implements OnInit {
   }
 
   load(): void {
-    if (!this.country_uuid || !this.province_uuid) return;
+    if (!this.country_uuid) return;
     this.isLoading.set(true);
     const params: KpiTableViewParams = {
       country_uuid:  this.country_uuid,
-      province_uuid: this.province_uuid,
+      province_uuid: this.province_uuid || undefined,
       start_date:    this.start_date,
       end_date:      this.end_date,
       title:         this.titleFilter() || undefined,

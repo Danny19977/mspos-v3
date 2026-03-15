@@ -271,10 +271,11 @@ export class KpiDashboardComponent implements OnInit, AfterViewChecked {
     if (!this.country_uuid) return;
     this.isLoadingOverview.set(true);
     this.kpiService.TerritoryOverview({
-      level:      this.geoLevel(),
-      start_date: this.start_date,
-      end_date:   this.end_date,
-      limit:      50,
+      country_uuid: this.country_uuid,
+      level:        this.geoLevel(),
+      start_date:   this.start_date,
+      end_date:     this.end_date,
+      limit:        50,
     }).subscribe({
       next: res => { this.overviewData.set(res.data ?? []); this.isLoadingOverview.set(false); },
       error: ()  => this.isLoadingOverview.set(false),
@@ -315,9 +316,10 @@ export class KpiDashboardComponent implements OnInit, AfterViewChecked {
   loadTargets(): void {
     this.isLoadingTargets.set(true);
     this.kpiService.TargetVsActual({
-      level:      this.targetLevel(),
-      start_date: this.start_date,
-      end_date:   this.end_date,
+      country_uuid: this.country_uuid,
+      level:        this.targetLevel(),
+      start_date:   this.start_date,
+      end_date:     this.end_date,
     }).subscribe({
       next: res => {
         this.targetsData.set(res.data ?? []);
@@ -339,8 +341,9 @@ export class KpiDashboardComponent implements OnInit, AfterViewChecked {
   loadTrends(): void {
     this.isLoadingTrends.set(true);
     this.kpiService.PeriodComparison({
-      period:  this.trendPeriod(),
-      periods: this.trendPeriods(),
+      country_uuid: this.country_uuid,
+      period:       this.trendPeriod(),
+      periods:      this.trendPeriods(),
     }).subscribe({
       next: res => {
         this.trendsData.set(res.data ?? []);
@@ -354,9 +357,10 @@ export class KpiDashboardComponent implements OnInit, AfterViewChecked {
   loadND(): void {
     this.isLoadingND.set(true);
     this.kpiService.NDAnalysis({
-      level:      this.ndLevel(),
-      start_date: this.start_date,
-      end_date:   this.end_date,
+      country_uuid: this.country_uuid,
+      level:        this.ndLevel(),
+      start_date:   this.start_date,
+      end_date:     this.end_date,
     }).subscribe({
       next: res => {
         this.ndData.set(res.data ?? []);

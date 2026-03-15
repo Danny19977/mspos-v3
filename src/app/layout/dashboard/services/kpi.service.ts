@@ -15,6 +15,7 @@ export class KpiService extends ApiService {
 
   /** Territory-level performance overview (multi-level: province|area|subarea|commune) */
   TerritoryOverview(params: {
+    country_uuid?: string;
     level?: string;
     territory_uuid?: string;
     start_date: string;
@@ -25,6 +26,7 @@ export class KpiService extends ApiService {
     let p = new HttpParams()
       .set('start_date', params.start_date)
       .set('end_date',   params.end_date);
+    if (params.country_uuid)   p = p.set('country_uuid',   params.country_uuid);
     if (params.level)          p = p.set('level',          params.level);
     if (params.territory_uuid) p = p.set('territory_uuid', params.territory_uuid);
     if (params.sort_by)        p = p.set('sort_by',        params.sort_by);
@@ -64,6 +66,7 @@ export class KpiService extends ApiService {
 
   /** Actual visits vs computed targets per territory */
   TargetVsActual(params: {
+    country_uuid?: string;
     level?: string;
     start_date: string;
     end_date: string;
@@ -71,7 +74,8 @@ export class KpiService extends ApiService {
     let p = new HttpParams()
       .set('start_date', params.start_date)
       .set('end_date',   params.end_date);
-    if (params.level) p = p.set('level', params.level);
+    if (params.country_uuid) p = p.set('country_uuid', params.country_uuid);
+    if (params.level)        p = p.set('level',        params.level);
     return this.http.get<any>(`${this.endpoint}/target-vs-actual`, { params: p });
   }
 
@@ -84,17 +88,20 @@ export class KpiService extends ApiService {
 
   /** Weekly / monthly visit trend for N past periods */
   PeriodComparison(params: {
+    country_uuid?: string;
     period?: 'weekly' | 'monthly';
     periods?: number;
   } = {}): Observable<any> {
     let p = new HttpParams();
-    if (params.period)  p = p.set('period',  params.period);
-    if (params.periods) p = p.set('periods', String(params.periods));
+    if (params.country_uuid) p = p.set('country_uuid', params.country_uuid);
+    if (params.period)       p = p.set('period',       params.period);
+    if (params.periods)      p = p.set('periods',      String(params.periods));
     return this.http.get<any>(`${this.endpoint}/period-comparison`, { params: p });
   }
 
   /** Numeric-distribution density analysis by territory level */
   NDAnalysis(params: {
+    country_uuid?: string;
     level?: string;
     start_date: string;
     end_date: string;
@@ -102,7 +109,8 @@ export class KpiService extends ApiService {
     let p = new HttpParams()
       .set('start_date', params.start_date)
       .set('end_date',   params.end_date);
-    if (params.level) p = p.set('level', params.level);
+    if (params.country_uuid) p = p.set('country_uuid', params.country_uuid);
+    if (params.level)        p = p.set('level',        params.level);
     return this.http.get<any>(`${this.endpoint}/nd-analysis`, { params: p });
   }
 
