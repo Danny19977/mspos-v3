@@ -403,23 +403,31 @@ export class WsDashboardComponent implements OnInit, AfterViewChecked {
     this.isLoadingHeatmap.set(true);
     this.wsService.WsHeatmap(this.geoParams, this.heatmapLevel()).subscribe({
       next: res => {
-        // Assemble matrix from flat rows
-        const flat: WSHeatmapRawRowModel[] = res.data ?? [];
-        const brandMap  = new Map<string, string>();
-        const terrMap   = new Map<string, string>();
-        for (const r of flat) {
-          brandMap.set(r.brand_uuid, r.brand_name);
-          terrMap.set(r.territory_uuid, r.territory_name);
+        const payload = res.data ?? {};
+        // Backend returns a pre-assembled { brands, territories, matrix } object
+        if (payload.brands && payload.territories && payload.matrix) {
+          const brands      = (payload.brands as any[]).map((b: any) => ({ uuid: b.uuid, name: b.name }));
+          const territories = (payload.territories as any[]).map((t: any) => ({ uuid: t.uuid, name: t.name }));
+          this.heatmapData.set({ brands, territories, matrix: payload.matrix });
+        } else {
+          // Fallback: try flat row assembly
+          const flat: WSHeatmapRawRowModel[] = Array.isArray(res.data) ? res.data : [];
+          const brandMap  = new Map<string, string>();
+          const terrMap   = new Map<string, string>();
+          for (const r of flat) {
+            brandMap.set(r.brand_uuid, r.brand_name);
+            terrMap.set(r.territory_uuid, r.territory_name);
+          }
+          const brands      = [...brandMap.entries()].map(([uuid, name]) => ({ uuid, name }));
+          const territories = [...terrMap.entries()].map(([uuid, name]) => ({ uuid, name }));
+          const matrix: number[][] = brands.map(b =>
+            territories.map(t => {
+              const r = flat.find(f => f.brand_uuid === b.uuid && f.territory_uuid === t.uuid);
+              return r?.ws_percent ?? 0;
+            })
+          );
+          this.heatmapData.set({ brands, territories, matrix });
         }
-        const brands      = [...brandMap.entries()].map(([uuid, name]) => ({ uuid, name }));
-        const territories = [...terrMap.entries()].map(([uuid, name]) => ({ uuid, name }));
-        const matrix: number[][] = brands.map(b =>
-          territories.map(t => {
-            const r = flat.find(f => f.brand_uuid === b.uuid && f.territory_uuid === t.uuid);
-            return r?.ws_percent ?? 0;
-          })
-        );
-        this.heatmapData.set({ brands, territories, matrix });
         this.buildHeatmapChart();
         this.isLoadingHeatmap.set(false);
       },

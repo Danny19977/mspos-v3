@@ -230,6 +230,14 @@ export class KpiDashboardComponent implements OnInit, AfterViewChecked {
                 ? pr.data[0]
                 : (pr.data.find((p: IProvince) => p.uuid === user.province_uuid) ?? pr.data[0]);
             this.selectedProvince = defaultProvince;
+
+            // Pre-load areas for the default selected province
+            if (defaultProvince) {
+              this.areaService.getAll().subscribe(ar => {
+                this.areaList.set(ar.data.filter((a: IArea) => a.province_uuid === defaultProvince.uuid));
+              });
+            }
+
             this.loadAllSections();
           });
         });
@@ -462,6 +470,7 @@ export class KpiDashboardComponent implements OnInit, AfterViewChecked {
       this.provinceList.set(res.data.filter((p: IProvince) => p.country_uuid === c.uuid))
     );
     this.loadAllSections();
+    if (this.activeSection() === 'tableview') this.navigateTableView();
   }
 
   onProvinceChange(p: IProvince): void {
@@ -474,6 +483,7 @@ export class KpiDashboardComponent implements OnInit, AfterViewChecked {
       this.areaList.set(res.data.filter((a: IArea) => a.province_uuid === p.uuid))
     );
     this.loadAllSections();
+    if (this.activeSection() === 'tableview') this.navigateTableView();
   }
 
   onAreaChange(a: IArea): void {
@@ -485,6 +495,7 @@ export class KpiDashboardComponent implements OnInit, AfterViewChecked {
       this.subAreaList.set(res.data.filter((s: ISubArea) => s.area_uuid === a.uuid))
     );
     this.loadAllSections();
+    if (this.activeSection() === 'tableview') this.navigateTableView();
   }
 
   onSubAreaChange(s: ISubArea): void {
@@ -495,24 +506,39 @@ export class KpiDashboardComponent implements OnInit, AfterViewChecked {
       this.communeList.set(res.data.filter((c: ICommune) => c.sub_area_uuid === s.uuid))
     );
     this.loadAllSections();
+    if (this.activeSection() === 'tableview') this.navigateTableView();
   }
 
   onCommuneChange(c: ICommune): void {
     this.selectedCommune = c;
     this.loadAllSections();
+    if (this.activeSection() === 'tableview') this.navigateTableView();
   }
 
   // ── UI helpers ─────────────────────────────────────────────────────────────
   setSection(s: KpiSection): void {
     this.activeSection.set(s);
     if (s === 'tableview') {
-      this.router.navigate([
-        this.routes.dashboard,
-        'key-performance-indicators',
-        'province',
-        this.country_uuid || 'all',
-      ]);
+      this.navigateTableView();
     }
+  }
+
+  private navigateTableView(): void {
+    this.router.navigate(
+      [this.routes.dashboard, 'key-performance-indicators', 'province', this.country_uuid || 'all'],
+      {
+        queryParams: {
+          province_uuid:  this.province_uuid  || null,
+          area_uuid:      this.area_uuid      || null,
+          sub_area_uuid:  this.sub_area_uuid  || null,
+          commune_uuid:   this.commune_uuid   || null,
+          start_date:     this.start_date     || null,
+          end_date:       this.end_date       || null,
+          title:          this.titleFilter()  || null,
+        },
+        queryParamsHandling: 'replace',
+      }
+    );
   }
 
   setPeriod(key: string): void {
