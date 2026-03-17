@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, forwardRef, Inject } from '@angular/core';
 import { Observable, from } from 'rxjs';
 import { switchMap, catchError } from 'rxjs/operators';
 import { ApiService } from '../../../shared/services/api.service';
@@ -9,6 +9,7 @@ import { db } from '../../../shared/services/db';
 import { IRoutePlanItem } from './models/routeplanItem.model';
 import { v4 as uuidv4 } from 'uuid';
 import { IPos } from '../pos-vente/models/pos.model';
+import { RouteplanService } from './routeplan.service';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +19,7 @@ export class RouteplanItemService extends ApiService {
 
   private networkService = this.injector.get(NetworkService);
   private syncQueue = this.injector.get(SyncQueueService);
+  private get routeplanService() { return this.injector.get(RouteplanService); }
 
   /**
    * Récupère tous les items d'un RoutePlan par UUID
@@ -165,56 +167,9 @@ export class RouteplanItemService extends ApiService {
     // Étape 1 : sauvegarder localement (toujours, quelle que soit la connectivité)
     return from(this.createItemLocally(itemData)).pipe(
       switchMap(async () => {
-        // ✅ Ne synchroniser que si le routeplan a plus de 10 items enregistrés
-        const itemCount = await db.routePlanItems
-          .where('routplan_uuid').equals(data.routeplan_uuid || '')
-          .count();
-
-        if (itemCount > 10) {
-          // Étape 2a : enregistrer cet item dans la file de synchronisation
-          await this.syncQueue.enqueue({
-            operationId: uuidv4(),
-            entityType: 'routeplanItem',
-            operation: 'create',
-            endpoint: `${this.endpoint}/create`,
-            data: { ...itemData, routeplan_uuid: data.routeplan_uuid },
-            tempId: tempUuid,
-            timestamp: new Date(),
-            retryCount: 0,
-            status: 'pending',
-          });
-
-          // Étape 2b : si c'est exactement le 11e item, enqueue aussi le routeplan parent
-          // (le routeplan lui-même n'a pas été enqueueé à la création car count était 0)
-          if (itemCount === 11) {
-            const parentPlan = await db.routePlans.where('uuid').equals(data.routeplan_uuid || '').first();
-            if (parentPlan) {
-              const routeplanEndpoint = `${environment.apiUrl}/routeplans`;
-              await this.syncQueue.enqueue({
-                operationId: uuidv4(),
-                entityType: 'routeplan',
-                operation: 'create',
-                endpoint: `${routeplanEndpoint}/create`,
-                data: parentPlan,
-                tempId: parentPlan.uuid,
-                timestamp: new Date(),
-                retryCount: 0,
-                status: 'pending',
-                userId: (parentPlan as any).user_uuid
-              });
-              console.log('✅ RoutePlan parent enfilé pour sync (seuil de 10 items atteint)');
-            }
-          }
-
-          // Étape 3 : déclencher la synchronisation en arrière-plan si online
-          if (this.networkService.isOnline()) {
-            this.syncQueue.processQueue().catch(err =>
-              console.warn('⚠️ Sync arrière-plan routeplanItem (non bloquant):', err?.message)
-            );
-          }
-        } else {
-          console.log(`⏸️ RoutePlanItem enregistré localement — sync différée (${itemCount}/10 items minimum requis)`);
-        }
+        // Sync unique : délègue à RouteplanService (point d’entrée unique pour éviter la duplication)
+        this.routeplanService.triggerSyncOldPendingData();
+        console.log('⏸️ RoutePlanItem enregistré localement — sera synchronisé après 24h d\'activité');
 
         return { data: itemData, offline: !this.networkService.isOnline() };
       })

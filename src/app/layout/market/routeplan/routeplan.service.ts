@@ -108,29 +108,10 @@ export class RouteplanService extends ApiService {
         // Créer en local
         await this.createRoutePlanLocally(routePlanData);
 
-        // ✅ Ne synchroniser que si le routeplan a plus de 10 items enregistrés
-        const itemCount = await db.routePlanItems
-          .where('routplan_uuid').equals(tempUuid)
-          .count();
+        // Déclencher la sync des données en attente (>24h) en arrière-plan
+        this.triggerSyncOldPendingData(data.user_uuid);
+        console.log('⏸️ RoutePlan créé localement — sera synchronisé après 24h d\'activité');
 
-        if (itemCount > 10) {
-          await this.syncQueue.enqueue({
-            operationId: uuidv4(),
-            entityType: 'routeplan',
-            operation: 'create',
-            endpoint: `${this.endpoint}/create`,
-            data: routePlanData,
-            tempId: tempUuid,
-            timestamp: new Date(),
-            retryCount: 0,
-            status: 'pending',
-            userId: data.user_uuid
-          });
-          console.log('✅ RoutePlan créé localement et mis en file de synchronisation');
-        } else {
-          console.log(`⏸️ RoutePlan créé localement — sync différée (${itemCount}/10 items minimum requis)`);
-        }
-        
         return {
           data: routePlanData,
           offline: !this.networkService.isOnline(),
@@ -155,28 +136,10 @@ export class RouteplanService extends ApiService {
 
     return from(this.updateRoutePlanLocally(uuid, routePlanData)).pipe(
       switchMap(async (updatedPlan) => {
-        // ✅ Ne synchroniser que si le routeplan a plus de 10 items enregistrés
-        const itemCount = await db.routePlanItems
-          .where('routplan_uuid').equals(uuid)
-          .count();
+        // Déclencher la sync des données en attente (>24h) en arrière-plan
+        this.triggerSyncOldPendingData(data.user_uuid);
+        console.log('⏸️ RoutePlan modifié localement — sera synchronisé après 24h d\'activité');
 
-        if (itemCount > 10) {
-          await this.syncQueue.enqueue({
-            operationId: uuidv4(),
-            entityType: 'routeplan',
-            operation: 'update',
-            endpoint: `${this.endpoint}/update/${uuid}`,
-            data: routePlanData,
-            timestamp: new Date(),
-            retryCount: 0,
-            status: 'pending',
-            userId: data.user_uuid
-          });
-          console.log('✅ RoutePlan modifié localement et mis en file de synchronisation');
-        } else {
-          console.log(`⏸️ RoutePlan modifié localement — sync différée (${itemCount}/10 items minimum requis)`);
-        }
-        
         return {
           data: updatedPlan,
           offline: !this.networkService.isOnline(),
@@ -307,23 +270,6 @@ export class RouteplanService extends ApiService {
   }
 
   /**
-   * Met à jour le cache local des RoutePlans
-   */
-  private async updateLocalRoutePlanCache(routePlans: any[]): Promise<void> {
-    try {
-      const routePlansToStore = routePlans.map((plan: any) => ({
-        ...plan,
-        sync_status: 'synced',
-        id: plan.ID || plan.uuid
-      }));
-      await db.routePlans.bulkPut(routePlansToStore as any);
-      console.log(`💾 ${routePlansToStore.length} RoutePlans mis à jour dans le cache local`);
-    } catch (error) {
-      console.error('Erreur lors de la mise à jour du cache RoutePlans:', error);
-    }
-  }
-
-  /**
    * Récupère les RoutePlans locaux en attente de synchronisation (sync_status === 'pending')
    * Utilisé pour afficher les données créées offline dans la liste principale
    */
@@ -348,32 +294,108 @@ export class RouteplanService extends ApiService {
   }
 
   /**
-   * Obtient les statistiques du Routeplan du jour
+   * Synchronise en arrière-plan toutes les données en attente de plus de 24h :
+   *  - Phase 1 : RoutePlans pending > 24h de l’utilisateur (si userId fourni) + leurs items pending
+   *  - Phase 2 : Items orphelins pending > 24h dont le RoutePlan parent est déjà synchronisé
+   * Point d’entrée unique appelé par RouteplanService ET RouteplanItemService.
    */
-  async getTodayStats(userId: string): Promise<{
-    hasPlan: boolean;
-    planUuid?: string;
-    totalPosInPlan?: number;
-    createdAt?: Date;
-  }> {
-    const todayPlan = await this.getTodayRoutePlanFromLocal(userId);
-    
-    if (!todayPlan) {
-      return { hasPlan: false };
-    }
+  triggerSyncOldPendingData(userId?: string): void {
+    if (!this.networkService.isOnline()) return;
 
-    // Compter les items du plan
-    const items = await db.routePlanItems
-      .where('routplan_uuid')
-      .equals(todayPlan.uuid!)
-      .count();
+    // Seuil = début du jour courant (00:00:00.000)
+    // Tout ce qui a été créé AVANT aujourd'hui (j-1, j-2, …) est synchronisé.
+    // Les données d'aujourd'hui (00:00 → 23:59) restent en local.
+    const today = new Date();
+    const threshold = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 0, 0, 0, 0);
+    const routeplanItemEndpoint = `${environment.apiUrl}/routeplan-items`;
 
-    return {
-      hasPlan: true,
-      planUuid: todayPlan.uuid,
-      totalPosInPlan: items,
-      createdAt: todayPlan.CreatedAt
-    };
+    (async () => {
+      try {
+        // --- Phase 1 : RoutePlans pending > 24h (filteré par userId si précisé) ---
+        const syncedPlanUuids = new Set<string>();
+
+        if (userId) {
+          const oldPlans = await db.routePlans
+            .where('user_uuid').equals(userId)
+            .filter(plan => plan.sync_status === 'pending' && new Date(plan.CreatedAt!) <= threshold)
+            .toArray();
+
+          for (const plan of oldPlans) {
+            await this.syncQueue.enqueue({
+              operationId: uuidv4(),
+              entityType: 'routeplan',
+              operation: 'create',
+              endpoint: `${this.endpoint}/create`,
+              data: plan,
+              tempId: plan.uuid,
+              timestamp: new Date(),
+              retryCount: 0,
+              status: 'pending',
+              userId: plan.user_uuid
+            });
+
+            // Enqueue les items pending de ce plan
+            const planItems = await db.routePlanItems
+              .filter(item =>
+                ((item as any).routplan_uuid === plan.uuid || (item as any).routeplan_uuid === plan.uuid)
+                && (item as any).sync_status === 'pending'
+              )
+              .toArray();
+
+            for (const item of planItems) {
+              await this.syncQueue.enqueue({
+                operationId: uuidv4(),
+                entityType: 'routeplanItem',
+                operation: 'create',
+                endpoint: `${routeplanItemEndpoint}/create`,
+                data: { ...item, routeplan_uuid: (item as any).routeplan_uuid || (item as any).routplan_uuid || plan.uuid },
+                tempId: (item as any).uuid,
+                timestamp: new Date(),
+                retryCount: 0,
+                status: 'pending',
+              });
+              syncedPlanUuids.add(plan.uuid!); // marqué : déjà traité en phase 1
+            }
+
+            if (planItems.length === 0) syncedPlanUuids.add(plan.uuid!);
+          }
+        }
+
+        // --- Phase 2 : Items orphelins pending > 24h dont le parent est déjà synced ---
+        const allOldItems = await db.routePlanItems
+          .filter(item =>
+            (item as any).sync_status === 'pending' &&
+            new Date((item as any).CreatedAt) <= threshold
+          )
+          .toArray();
+
+        for (const item of allOldItems) {
+          const parentUuid = (item as any).routplan_uuid || (item as any).routeplan_uuid;
+          if (!parentUuid || syncedPlanUuids.has(parentUuid)) continue; // déjà géré en phase 1
+
+          const parent = await db.routePlans.where('uuid').equals(parentUuid).first();
+          if (!parent || parent.sync_status === 'pending') continue; // parent pas encore syncé
+
+          await this.syncQueue.enqueue({
+            operationId: uuidv4(),
+            entityType: 'routeplanItem',
+            operation: 'create',
+            endpoint: `${routeplanItemEndpoint}/create`,
+            data: { ...item, routeplan_uuid: (item as any).routeplan_uuid || (item as any).routplan_uuid },
+            tempId: (item as any).uuid,
+            timestamp: new Date(),
+            retryCount: 0,
+            status: 'pending',
+          });
+        }
+
+        await this.syncQueue.processQueue();
+        console.log('✅ Sync données > 24h terminée');
+      } catch (err) {
+        console.warn('⚠️ Erreur sync données anciennes (non bloquant):', err);
+      }
+    })();
   }
+
 }
 

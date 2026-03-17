@@ -324,11 +324,15 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       next: (plan) => {
         this.routePlan.set(plan);
         console.log('Route Plan:', this.routePlan());
-        const routePlanValue = plan;
+        const routePlanValue = plan; 
         if (routePlanValue && routePlanValue.uuid) {
+           console.log('Route Plan Value:', routePlanValue.uuid!);
+
           this.routePlanItemService.getAllById(routePlanValue.uuid!).subscribe({
             next: (r) => {
               this.routePlanItemList.set(r.data);
+
+              console.log('Route Plan Items:', this.routePlanItemList());
 
               // Extraire les pos_uuid déjà utilisés dans les posforms existants
               // Mais exclure le pos_uuid actuel si on modifie un rapport existant
@@ -1188,12 +1192,10 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       this.posformService.update(this.uuidItem(), formData).subscribe({
         next: (res) => {
           // Si un pos_uuid est fourni, mettre à jour le statut du routePlanItem à true
-          if (this.posUUID() && this.posUUID().trim() !== '') {
-            const currentRPItem = this.routePlanItemList().find(item => item.uuid === this.routePlanItemUUID());
-            this.routePlanItemService.update(this.routePlanItemUUID(), { ...currentRPItem, status: true })
+          if (this.posUUID() && this.posUUID().trim() !== '' && this.routePlanItemUUID()) {
+            this.routePlanItemService.update(this.routePlanItemUUID(), { status: true })
               .subscribe({
                 next: () => {
-                  console.log('Statut du RoutePlanItem mis à jour à true pour pos_uuid:', this.posUUID());
                   this.getAllRoutePlans(); // Rafraîchir la liste des route plans
                 },
                 error: (err) => {
@@ -1274,9 +1276,8 @@ export class PostformListComponent implements OnInit, AfterViewInit {
       this.posformService.update(this.uuidItem(), formData).subscribe({
         next: (res) => {
           // Si un pos_uuid est fourni, mettre à jour le statut du routePlanItem à true
-          if (this.posUUID() && this.posUUID().trim() !== '') {
-            const currentRPItem = this.routePlanItemList().find(item => item.uuid === this.routePlanItemUUID());
-            this.routePlanItemService.update(this.routePlanItemUUID(), { ...currentRPItem, status: true })
+          if (this.posUUID() && this.posUUID().trim() !== '' && this.routePlanItemUUID()) {
+            this.routePlanItemService.update(this.routePlanItemUUID(), { status: true })
               .subscribe({
                 next: () => {
                   this.getAllRoutePlans(); // Rafraîchir la liste des route plans
@@ -1403,9 +1404,7 @@ export class PostformListComponent implements OnInit, AfterViewInit {
         next: (res) => {
           // Mettre à jour le statut du routePlanItem si disponible
           if (this.routePlanItemUUID()) {
-            console.log('Mise à jour du RoutePlanItem avec UUID:', this.routePlanItemUUID());
-            const currentRPItem = this.routePlanItemList().find(item => item.uuid === this.routePlanItemUUID());
-            this.routePlanItemService.update(this.routePlanItemUUID(), { ...currentRPItem, status: true })
+            this.routePlanItemService.update(this.routePlanItemUUID(), { status: true })
               .subscribe({
                 next: () => {
                   this.getAllRoutePlans();

@@ -409,6 +409,10 @@ export class SyncQueueService {
    * ⚠️ On force toujours `uuid` à la valeur connue pour éviter qu'un champ
    * nul/absent dans la réponse serveur (serverData.uuid = null | undefined)
    * n'écrase l'UUID local et fasse « disparaître » l'entité des requêtes Dexie.
+   *
+   * ⚠️ Les clés étrangères locales (pos_uuid, routeplan_uuid, posform_uuid…)
+   * sont préservées en priorité : le serveur peut les omettre ou les retourner
+   * null, ce qui effacerait les liens parent-enfant en local.
    */
   private async updateLocalEntity(
     entityType: string,
@@ -418,9 +422,26 @@ export class SyncQueueService {
     const table = this.getTableForEntity(entityType);
     if (!table) return;
 
+    // Lire l'enregistrement local AVANT d'appliquer serverData
+    // pour préserver les FK que le serveur pourrait omettre ou nullifier
+    const localRecord = await table.where('uuid').equals(uuid).first();
+
+    const localFkOverride: any = {};
+    if (localRecord) {
+      if (entityType === 'routeplanItem') {
+        if (localRecord.routplan_uuid)  localFkOverride.routplan_uuid  = localRecord.routplan_uuid;
+        if (localRecord.routeplan_uuid) localFkOverride.routeplan_uuid = localRecord.routeplan_uuid;
+        if (localRecord.pos_uuid)       localFkOverride.pos_uuid       = localRecord.pos_uuid;
+      }
+      if (entityType === 'posformItem') {
+        if (localRecord.posform_uuid)   localFkOverride.posform_uuid   = localRecord.posform_uuid;
+      }
+    }
+
     await table.where('uuid').equals(uuid).modify({
       ...serverData,
-      uuid,              // ← toujours préserver l'UUID connu, prioritaire sur serverData
+      ...localFkOverride, // ← FK locales prioritaires sur serverData
+      uuid,               // ← UUID toujours préservé
       sync_status: 'synced'
     });
   }

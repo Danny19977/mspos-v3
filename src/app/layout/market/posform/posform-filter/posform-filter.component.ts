@@ -1212,11 +1212,10 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
         next: (res) => {
           // Si un pos_uuid est fourni, mettre à jour le statut du routePlanItem à true
           const posUUIDValue = this.posUUID();
-          if (posUUIDValue && posUUIDValue.trim() !== '') {
+          if (posUUIDValue && posUUIDValue.trim() !== '' && this.routePlanItemUUID()) {
             this.routePlanItemService.update(this.routePlanItemUUID(), { status: true })
               .subscribe({
                 next: () => {
-                  console.log('Statut du RoutePlanItem mis à jour à true pour pos_uuid:', posUUIDValue);
                   this.getAllRoutePlans(); // Rafraîchir la liste des route plans
                 },
                 error: (err) => {
@@ -1411,7 +1410,6 @@ export class PosformFilterComponent implements OnInit, AfterViewInit {
           // ✅ Utiliser l'UUID du routePlanItem si disponible
           const routePlanItemUUIDValue = this.routePlanItemUUID();
           if (routePlanItemUUIDValue) {
-            console.log('Mise à jour du RoutePlanItem avec UUID:', routePlanItemUUIDValue);
             this.routePlanItemService.update(routePlanItemUUIDValue, { status: true })
               .subscribe({
                 next: () => {
