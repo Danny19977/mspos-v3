@@ -82,6 +82,10 @@ export class RouteplanComponent implements OnInit {
   readonly posList = signal<IPos[]>([]);
   readonly posListFilter = signal<IPos[]>([]);
   readonly filteredOptions = signal<IPos[]>([]);
+  readonly posAllFiltered = signal<IPos[]>([]);
+  readonly posPageSize = 10;
+  readonly posCurrentPage = signal(1);
+  readonly hasMorePos = signal(false);
   @ViewChild('pos_uuid') pos_uuid!: ElementRef<HTMLInputElement>;
   readonly isload = signal(false);
   readonly posuuId = signal('');
@@ -167,7 +171,11 @@ export class RouteplanComponent implements OnInit {
       const posUuidsInCurrentDataList = this.dataListItem().map(item => item.pos_uuid);
       const filtered = this.posList().filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
       this.posListFilter.set(filtered);
-      this.filteredOptions.set(filtered);
+      // Pagination : réinitialiser à la page 1 et afficher les 10 premiers
+      this.posAllFiltered.set(filtered);
+      this.posCurrentPage.set(1);
+      this.filteredOptions.set(filtered.slice(0, this.posPageSize));
+      this.hasMorePos.set(filtered.length > this.posPageSize);
       this.isload.set(false);
     };
 
@@ -209,6 +217,14 @@ export class RouteplanComponent implements OnInit {
 
   onPosSearchChange() {
     this.getAllPos(this.currentUser()!);
+  }
+
+  loadMorePos(): void {
+    const nextPage = this.posCurrentPage() + 1;
+    const end = nextPage * this.posPageSize;
+    this.filteredOptions.set(this.posAllFiltered().slice(0, end));
+    this.posCurrentPage.set(nextPage);
+    this.hasMorePos.set(end < this.posAllFiltered().length);
   }
 
 

@@ -265,6 +265,14 @@
                                         </small>
                                     </mat-option>
                                     }
+                                    @if (hasMorePos()) {
+                                    <mat-option [disabled]="true" class="pos-load-more-option">
+                                        <button type="button" class="btn btn-sm btn-outline-primary w-100"
+                                            (mousedown)="$event.preventDefault(); loadMorePos()">
+                                            Voir plus ({{ posAllFiltered().length - filteredOptions().length }} restants)
+                                        </button>
+                                    </mat-option>
+                                    }
                                 </mat-autocomplete>
                             </div>
                         </div>
