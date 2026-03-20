@@ -86,6 +86,7 @@ export class RouteplanComponent implements OnInit {
   readonly posPageSize = 10;
   readonly posCurrentPage = signal(1);
   readonly hasMorePos = signal(false);
+  readonly posRawCache = signal<IPos[]>([]);
   @ViewChild('pos_uuid') pos_uuid!: ElementRef<HTMLInputElement>;
   readonly isload = signal(false);
   readonly posuuId = signal('');
@@ -156,11 +157,47 @@ export class RouteplanComponent implements OnInit {
     return '';
   }
 
-  getAllPos(currentUser: IUser): void {
-    const filterValue = this.pos_uuid?.nativeElement?.value || '';
+  /** Filtre en mémoire depuis posRawCache — aucun accès IndexedDB */
+  private applyPosFilter(): void {
+    const filterValue = this.pos_uuid?.nativeElement?.value?.toLowerCase().trim() || '';
+    const posUuidsInPlan = new Set(this.dataListItem().map(item => item.pos_uuid));
+    let filtered = this.posRawCache().filter(pos => pos.uuid && !posUuidsInPlan.has(pos.uuid));
+    if (filterValue) {
+      filtered = filtered.filter(p =>
+        p.name?.toLowerCase().includes(filterValue) ||
+        p.shop?.toLowerCase().includes(filterValue) ||
+        p.gerant?.toLowerCase().includes(filterValue)
+      );
+    }
+    this.posListFilter.set(filtered);
+    this.posAllFiltered.set(filtered);
+    this.posCurrentPage.set(1);
+    this.filteredOptions.set(filtered.slice(0, this.posPageSize));
+    this.hasMorePos.set(filtered.length > this.posPageSize);
+  }
 
-    const processPosList = (posList: IPos[]) => {
-      // Dédoublonnage par uuid pour éviter les entrées dupliquées dans IndexedDB
+  /** Appelé depuis le template sur (input) — filtrage instantané en mémoire */
+  onPosInput(): void {
+    this.applyPosFilter();
+  }
+
+  /**
+   * Charge les POS depuis IndexedDB UNE SEULE FOIS (si cache vide).
+   * Les appels suivants filtrent uniquement en mémoire.
+   * Passer forceReload=true pour forcer un rechargement depuis la DB.
+   */
+  getAllPos(currentUser: IUser, forceReload = false): void {
+    // Cache déjà chargé → juste filtrer en mémoire, aucun accès DB
+    if (this.posRawCache().length > 0 && !forceReload) {
+      this.applyPosFilter();
+      return;
+    }
+
+    this.isload.set(true);
+    const territoryUuid = this.getTerritoryUuid(currentUser);
+    this.routeplanService.getLocalPosForRoutePlan(currentUser.uuid, currentUser.role, territoryUuid).subscribe(res => {
+      const posList: IPos[] = res.data || [];
+      // Dédoublonnage par uuid
       const seen = new Set<string>();
       const unique = posList.filter(pos => {
         if (!pos.uuid || seen.has(pos.uuid)) return false;
@@ -168,34 +205,9 @@ export class RouteplanComponent implements OnInit {
         return true;
       });
       this.posList.set(unique);
-      const posUuidsInCurrentDataList = this.dataListItem().map(item => item.pos_uuid);
-      const filtered = this.posList().filter(pos => pos.uuid && !posUuidsInCurrentDataList.includes(pos.uuid));
-      this.posListFilter.set(filtered);
-      // Pagination : réinitialiser à la page 1 et afficher les 10 premiers
-      this.posAllFiltered.set(filtered);
-      this.posCurrentPage.set(1);
-      this.filteredOptions.set(filtered.slice(0, this.posPageSize));
-      this.hasMorePos.set(filtered.length > this.posPageSize);
+      this.posRawCache.set(unique);
+      this.applyPosFilter();
       this.isload.set(false);
-    };
-
-    this.isload.set(true);
-
-    // LOCAL FIRST : toujours charger les POS depuis le cache IndexedDB local.
-    // Seuls les POS déjà synchronisés localement sont affichés dans le dropdown.
-    // Si online, la synchronisation des POS se fait en arrière-plan via le DataSyncService.
-    const territoryUuid = this.getTerritoryUuid(currentUser);
-    this.routeplanService.getLocalPosForRoutePlan(currentUser.uuid, currentUser.role, territoryUuid).subscribe(res => {
-      let posList: IPos[] = res.data || [];
-      if (filterValue) {
-        const f = filterValue.toLowerCase();
-        posList = posList.filter(p =>
-          p.name?.toLowerCase().includes(f) ||
-          p.shop?.toLowerCase().includes(f) ||
-          p.gerant?.toLowerCase().includes(f)
-        );
-      }
-      processPosList(posList);
     });
   }
 
@@ -216,7 +228,7 @@ export class RouteplanComponent implements OnInit {
   }
 
   onPosSearchChange() {
-    this.getAllPos(this.currentUser()!);
+    this.applyPosFilter();
   }
 
   loadMorePos(): void {
@@ -486,7 +498,7 @@ export class RouteplanComponent implements OnInit {
     if (localPlan) {
       this.dataItem.set(localPlan);
       this.getAllRoutePlanItemsLocal(localPlan.uuid || value);
-      setTimeout(() => this.getAllPos(this.currentUser()!), 100);
+      setTimeout(() => this.applyPosFilter(), 100);
       return;
     }
 
@@ -496,9 +508,7 @@ export class RouteplanComponent implements OnInit {
       // Toujours passer par getAllRoutePlanItems qui fusionne
       // les items serveur + items locaux pending non encore soumis
       this.getAllRoutePlanItems(this.dataItem()!.uuid!);
-      setTimeout(() => {
-        this.getAllPos(this.currentUser()!);
-      }, 100);
+      setTimeout(() => this.applyPosFilter(), 100);
       this.formGroup().patchValue({
         user_uuid: this.dataItem()!.user_uuid,
         country_uuid: this.dataItem()!.country_uuid,
@@ -601,7 +611,8 @@ export class RouteplanComponent implements OnInit {
             this.pos_uuid.nativeElement.value = '';
             // Toujours recharger depuis le cache local (local-first)
             this.getAllRoutePlanItemsLocal(this.dataItem()!.uuid!);
-            this.getAllPos(this.currentUser()!);
+            // Re-filtrer après que dataListItem soit mis à jour (async)
+            setTimeout(() => this.applyPosFilter(), 100);
             this.toastr.success('POS Ajouté avec succès!', 'Success!');
             this.isLoadingItem.set(false);
           },
@@ -710,8 +721,8 @@ export class RouteplanComponent implements OnInit {
           // 2. Rafraîchir le tableau principal (compteurs total_pos, etc.)
           this.fetchProducts(this.currentUser()!);
 
-          // 3. Mettre à jour le dropdown POS
-          this.getAllPos(this.currentUser()!);
+          // 3. Mettre à jour le dropdown POS (en mémoire, après maj dataListItem)
+          setTimeout(() => this.applyPosFilter(), 100);
 
           // 4. Synchroniser en arrière-plan si online
           if (this.isOnline()) {
