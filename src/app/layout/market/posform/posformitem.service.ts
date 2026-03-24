@@ -70,36 +70,64 @@ export class PosformItemService extends ApiService {
 
   /**
    * Met à jour un PosformItem - OFFLINE FIRST
+   *
+   * ⚠️ Cas critique : si l'item n'a jamais été envoyé au serveur (sync_status = 'pending'
+   * ou 'error'), un PUT /update/:uuid échouerait (record introuvable côté serveur).
+   * On envoie donc un CREATE dans ce cas, après avoir annulé toute opération en attente
+   * pour éviter les doublons — identique à la logique de posform.service.ts.
    */
   override update(uuid: string, data: IPosFormItem): Observable<any> {
-    const itemData: IPosFormItem = {
-      ...data,
-      uuid,
-      sync_status: 'pending',
-      UpdatedAt: new Date()
-    };
+    // Lire le sync_status AVANT la modification locale pour décider create vs update
+    return from(db.posformItems.where('uuid').equals(uuid).first()).pipe(
+      switchMap(async (existing) => {
+        const neverSynced = !existing || existing.sync_status === 'pending' || existing.sync_status === 'error';
 
-    return from(this.updateItemLocally(uuid, itemData)).pipe(
-      switchMap(async (updatedItem) => {
-        // Mettre en file d'attente pour synchronisation
-        await this.syncQueue.enqueue({
-          operationId: uuidv4(),
-          entityType: 'posformItem',
-          operation: 'update',
-          endpoint: `${this.endpoint}/update/${uuid}`,
-          data: itemData,
-          timestamp: new Date(),
-          retryCount: 0,
-          status: 'pending'
-        });
+        const itemData: IPosFormItem = {
+          ...data,
+          uuid,
+          sync_status: 'pending',
+          UpdatedAt: new Date()
+        };
 
-        console.log('✅ PosformItem modifié localement et mis en file de synchronisation');
-        
+        await this.updateItemLocally(uuid, itemData);
+
+        if (neverSynced) {
+          // Annuler toute opération en attente liée à cet uuid pour éviter les doublons
+          await this.syncQueue.cancelPendingOperationsForEntity('posformItem', uuid);
+
+          // L'item n'existe pas encore côté serveur : envoyer un CREATE
+          await this.syncQueue.enqueue({
+            operationId: uuidv4(),
+            entityType: 'posformItem',
+            operation: 'create',
+            endpoint: `${this.endpoint}/create`,
+            data: itemData,
+            tempId: uuid,
+            timestamp: new Date(),
+            retryCount: 0,
+            status: 'pending'
+          });
+          console.log(`✅ PosformItem jamais syncé → CREATE enqueué (uuid: ${uuid})`);
+        } else {
+          // L'item existe déjà sur le serveur : envoyer un UPDATE normal
+          await this.syncQueue.enqueue({
+            operationId: uuidv4(),
+            entityType: 'posformItem',
+            operation: 'update',
+            endpoint: `${this.endpoint}/update/${uuid}`,
+            data: itemData,
+            timestamp: new Date(),
+            retryCount: 0,
+            status: 'pending'
+          });
+          console.log('✅ PosformItem modifié localement et mis en file de synchronisation (UPDATE)');
+        }
+
         return {
-          data: updatedItem,
+          data: itemData,
           offline: !this.networkService.isOnline(),
-          message: this.networkService.isOnline() 
-            ? 'Item modifié, synchronisation en cours...' 
+          message: this.networkService.isOnline()
+            ? 'Item modifié, synchronisation en cours...'
             : 'Item modifié localement, sera synchronisé à la reconnexion'
         };
       })
@@ -108,32 +136,57 @@ export class PosformItemService extends ApiService {
 
   /**
    * Supprime un PosformItem - OFFLINE FIRST
+   *
+   * ⚠️ Cas critique : si l'item n'a jamais été synchronisé (sync_status = 'pending'),
+   * il n'existe pas encore sur le serveur. On annule les opérations en file d'attente
+   * et on supprime uniquement localement — pas de DELETE envoyé au serveur.
+   * Si déjà synchronisé, on envoie le DELETE normalement.
    */
   override delete(uuid: string): Observable<any> {
-    return from(this.deleteItemLocally(uuid)).pipe(
-      switchMap(async () => {
-        // Mettre en file d'attente pour synchronisation
-        await this.syncQueue.enqueue({
-          operationId: uuidv4(),
-          entityType: 'posformItem',
-          operation: 'delete',
-          endpoint: `${this.endpoint}/delete/${uuid}`,
-          data: { uuid },
-          timestamp: new Date(),
-          retryCount: 0,
-          status: 'pending'
-        });
+    return from(this.deleteItemSmart(uuid));
+  }
 
-        console.log('✅ PosformItem supprimé localement et mis en file de synchronisation');
-        
-        return {
-          offline: !this.networkService.isOnline(),
-          message: this.networkService.isOnline()
-            ? 'Item supprimé, synchronisation en cours...'
-            : 'Item supprimé localement, sera synchronisé à la reconnexion'
-        };
-      })
-    );
+  private async deleteItemSmart(uuid: string): Promise<any> {
+    if (!uuid || uuid.trim() === '') {
+      throw new Error('UUID manquant pour la suppression du posformItem');
+    }
+
+    const item = await db.posformItems.where('uuid').equals(uuid).first();
+
+    if (item?.sync_status === 'pending' || item?.sync_status === 'error') {
+      // Jamais envoyé au serveur : annuler les opérations en file d'attente
+      // et supprimer uniquement localement
+      await this.syncQueue.cancelPendingOperationsForEntity('posformItem', uuid);
+      await this.deleteItemLocally(uuid);
+      console.log(`🗑️ PosformItem local ${uuid} supprimé directement (jamais synchronisé)`);
+      return {
+        offline: true,
+        local: true,
+        message: 'Item local supprimé.'
+      };
+    }
+
+    // Déjà synchronisé : supprimer localement + enqueue vers le serveur
+    await this.deleteItemLocally(uuid);
+    await this.syncQueue.enqueue({
+      operationId: uuidv4(),
+      entityType: 'posformItem',
+      operation: 'delete',
+      endpoint: `${this.endpoint}/delete/${uuid}`,
+      data: { uuid },
+      timestamp: new Date(),
+      retryCount: 0,
+      status: 'pending'
+    });
+
+    console.log('✅ PosformItem supprimé localement et mis en file de synchronisation');
+
+    return {
+      offline: !this.networkService.isOnline(),
+      message: this.networkService.isOnline()
+        ? 'Item supprimé, synchronisation en cours...'
+        : 'Item supprimé localement, sera synchronisé à la reconnexion'
+    };
   }
 
   /**
