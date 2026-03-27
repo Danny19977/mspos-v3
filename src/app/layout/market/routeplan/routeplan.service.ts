@@ -155,27 +155,41 @@ export class RouteplanService extends ApiService {
    * Supprime un RoutePlan - OFFLINE FIRST
    */
   override delete(uuid: string): Observable<any> {
-    return from(this.deleteRoutePlanLocally(uuid)).pipe(
-      switchMap(async () => {
-        // Mettre en file d'attente pour synchronisation
-        await this.syncQueue.enqueue({
-          operationId: uuidv4(),
-          entityType: 'routeplan',
-          operation: 'delete',
-          endpoint: `${this.endpoint}/delete/${uuid}`,
-          data: { uuid },
-          timestamp: new Date(),
-          retryCount: 0,
-          status: 'pending'
-        });
+    return from(
+      // Lire le plan AVANT suppression locale pour connaître son sync_status
+      db.routePlans.where('uuid').equals(uuid).first()
+    ).pipe(
+      switchMap(async (existingPlan) => {
+        const wasSynced = existingPlan?.sync_status === 'synced';
 
-        console.log('✅ RoutePlan supprimé localement et mis en file de synchronisation');
-        
+        // Supprimer localement
+        await this.deleteRoutePlanLocally(uuid);
+
+        if (wasSynced) {
+          // Le routeplan existe sur le serveur : enqueue le DELETE
+          await this.syncQueue.enqueue({
+            operationId: uuidv4(),
+            entityType: 'routeplan',
+            operation: 'delete',
+            endpoint: `${this.endpoint}/delete/${uuid}`,
+            data: { uuid },
+            timestamp: new Date(),
+            retryCount: 0,
+            status: 'pending'
+          });
+          console.log('✅ RoutePlan supprimé localement et mis en file de synchronisation');
+        } else {
+          // Le routeplan n'a jamais été envoyé au serveur :
+          // annuler toute opération create en attente pour cet UUID
+          await this.syncQueue.cancelPendingCreates('routeplan', uuid);
+          console.log('✅ RoutePlan local (jamais synchronisé) supprimé — aucune requête serveur nécessaire');
+        }
+
         return {
           success: true,
           offline: !this.networkService.isOnline(),
-          message: this.networkService.isOnline() 
-            ? 'Plan de route supprimé, synchronisation en cours...' 
+          message: this.networkService.isOnline()
+            ? 'Plan de route supprimé, synchronisation en cours...'
             : 'Plan de route supprimé localement, sera synchronisé à la reconnexion'
         };
       })

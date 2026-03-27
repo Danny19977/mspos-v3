@@ -45,6 +45,25 @@ export class SyncQueueService {
   }
 
   /**
+   * Cancel all pending 'create' operations in the queue for a given entity type and UUID.
+   * Used when a locally-created (never-synced) entity is deleted before it reaches the server.
+   */
+  async cancelPendingCreates(entityType: string, uuid: string): Promise<void> {
+    const ops = await db.syncQueue
+      .where('status').equals('pending')
+      .filter(op => op.entityType === entityType && op.operation === 'create' &&
+        (op.data?.uuid === uuid || op.tempId === uuid))
+      .toArray();
+    for (const op of ops) {
+      await this.markCompleted(op.id!);
+    }
+    if (ops.length > 0) {
+      await this.updatePendingCount();
+      console.log(`🗑️ Annulé ${ops.length} opération(s) create en attente pour ${entityType} ${uuid}`);
+    }
+  }
+
+  /**
    * Get all pending operations
    */
   async getPendingOperations(): Promise<QueuedOperation[]> {
@@ -110,10 +129,16 @@ export class SyncQueueService {
           // Conflit détecté (409 / 422) : l'entité existe déjà sur le serveur.
           // On marque l'opération comme complétée pour éviter les doublons.
           const isConflict = error?.status === 409 || error?.status === 422;
-          if (isConflict) {
+          // 404 sur un DELETE : l'entité n'existe plus sur le serveur, rien à faire.
+          const isDeleteNotFound = error?.status === 404 && operation.operation === 'delete';
+          if (isConflict || isDeleteNotFound) {
             await this.markCompleted(operation.id!);
             successCount++;
-            console.warn(`⚠️ Conflit (${error.status}) ignoré — déjà présent: ${operation.operation} ${operation.entityType}`);
+            if (isDeleteNotFound) {
+              console.warn(`⚠️ 404 sur DELETE ignoré — entité déjà absente du serveur: ${operation.entityType} ${operation.data?.uuid}`);
+            } else {
+              console.warn(`⚠️ Conflit (${error.status}) ignoré — déjà présent: ${operation.operation} ${operation.entityType}`);
+            }
           } else {
             await this.markFailed(operation.id!, error.message || 'Unknown error');
             failedCount++;
@@ -135,7 +160,8 @@ export class SyncQueueService {
           console.log(`✅ [2nd pass] Synced: ${opToSync.operation} ${opToSync.entityType}`);
         } catch (error: any) {
           const isConflict = error?.status === 409 || error?.status === 422;
-          if (isConflict) {
+          const isDeleteNotFound = error?.status === 404 && op.operation === 'delete';
+          if (isConflict || isDeleteNotFound) {
             await this.markCompleted(op.id!);
             successCount++;
           } else {
