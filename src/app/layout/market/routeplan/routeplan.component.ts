@@ -1,4 +1,5 @@
 import { Component, ElementRef, OnInit, ViewChild, ChangeDetectorRef, computed, signal, inject, DestroyRef } from '@angular/core';
+import { v4 as uuidv4 } from 'uuid';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
 import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { MatSort, Sort } from '@angular/material/sort';
@@ -601,6 +602,7 @@ export class RouteplanComponent implements OnInit {
 
         this.isLoadingItem.set(true);
         var body: IRoutePlanItem = {
+          uuid: uuidv4(), // Génération côté frontend car le backend ne le fait pas
           routeplan_uuid: this.dataItem()!.uuid!,
           pos_uuid: this.posuuId(),
           status: false,

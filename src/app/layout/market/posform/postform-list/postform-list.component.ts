@@ -16,7 +16,7 @@ import { MatPaginator, PageEvent } from '@angular/material/paginator';
 import { LogsService } from '../../../management/user-logs/logs.service';
 import { MatAutocompleteSelectedEvent } from '@angular/material/autocomplete';
 import { formatDate } from '@angular/common';
-// import { v4 as uuidv4 } from 'uuid'; 
+import { v4 as uuidv4 } from 'uuid';
 import { IPosFormItem } from '../models/posform_item.model';
 import { PosformItemService } from '../posformitem.service';
 import { IRoutePlan } from '../../routeplan/models/routeplan.model';
@@ -1440,12 +1440,14 @@ export class PostformListComponent implements OnInit, AfterViewInit {
     if (this.formGroupPosFormItem.valid && this.brandUUID) {
       this.isLoadingPosFormItem.set(true);
 
+      // Utiliser uuidv4 de la librairie 'uuid' pour générer l'UUID
       const itemData = {
-        ...this.formGroupPosFormItem.value,
-        posform_uuid: this.uuidItem(),
+        uuid: uuidv4(), // Identifiant unique généré côté frontend
+        ...this.formGroupPosFormItem.value, // Valeurs du formulaire
+        posform_uuid: this.uuidItem(), // Identifiants liés au PosForm
         brand_uuid: this.brandUUID(),
         brand_name: this.brandName(),
-        counter: 0  // champ requis par le backend
+        // counter: 0 // Champ requis par le backend
       };
 
       this.posformItemService.create(itemData).subscribe({
