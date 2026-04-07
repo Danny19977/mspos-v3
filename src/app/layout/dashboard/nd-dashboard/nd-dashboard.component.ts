@@ -8,6 +8,7 @@ import {
   signal,
   ViewChild,
 } from '@angular/core';
+import { timeout, retry } from 'rxjs';
 import { FormBuilder, FormControl, FormGroup } from '@angular/forms';
 import { formatDate } from '@angular/common';
 import { ChartComponent } from 'ng-apexcharts';
@@ -125,6 +126,16 @@ export class NdDashboardComponent implements OnInit {
   isLoadingGap       = signal(false);
   isLoadingEvolution = signal(false);
   isLoadingHeatmap   = signal(false);
+
+  // ── Error flags — signals ─────────────────────────────────────────────────
+  hasErrorKpi       = signal(false);
+  hasErrorTrend     = signal(false);
+  hasErrorTable     = signal(false);
+  hasErrorBar       = signal(false);
+  hasErrorRanking   = signal(false);
+  hasErrorGap       = signal(false);
+  hasErrorEvolution = signal(false);
+  hasErrorHeatmap   = signal(false);
 
   // ── Data — signals ─────────────────────────────────────────────────────────
   kpiData       = signal<NDSummaryKPIModel | null>(null);
@@ -273,106 +284,138 @@ export class NdDashboardComponent implements OnInit {
   loadKpi(): void {
     if (!this.country_uuid) return;
     this.isLoadingKpi.set(true);
-    this.ndService.NdSummaryKPI(this.geoParams).subscribe({
+    this.hasErrorKpi.set(false);
+    this.ndService.NdSummaryKPI(this.geoParams).pipe(
+      timeout(30_000),
+      retry({ count: 1, delay: 3000 }),
+    ).subscribe({
       next: res => { this.kpiData.set(res.data); this.isLoadingKpi.set(false); },
-      error: ()  => this.isLoadingKpi.set(false),
+      error: ()  => { this.isLoadingKpi.set(false); this.hasErrorKpi.set(true); },
     });
   }
 
   loadTrend(): void {
     if (!this.country_uuid) return;
     this.isLoadingTrend.set(true);
-    this.ndService.NdLineChartByMonth(this.geoParams).subscribe({
+    this.hasErrorTrend.set(false);
+    this.ndService.NdLineChartByMonth(this.geoParams).pipe(
+      timeout(30_000),
+      retry({ count: 1, delay: 3000 }),
+    ).subscribe({
       next: res => {
         this.trendData.set(res.data ?? []);
         this.buildTrendChart();
         this.isLoadingTrend.set(false);
       },
-      error: () => this.isLoadingTrend.set(false),
+      error: () => { this.isLoadingTrend.set(false); this.hasErrorTrend.set(true); },
     });
   }
 
   loadTable(): void {
     if (!this.country_uuid) return;
     this.isLoadingTable.set(true);
+    this.hasErrorTable.set(false);
     const call =
       this.geoLevel() === 'province' ? this.ndService.NdTableViewProvince(this.geoParams)
     : this.geoLevel() === 'area'      ? this.ndService.NdTableViewArea(this.geoParams)
     : this.geoLevel() === 'subarea'   ? this.ndService.NdTableViewSubArea(this.geoParams)
     :                                   this.ndService.NdTableViewCommune(this.geoParams);
-    call.subscribe({
+    call.pipe(
+      timeout(30_000),
+      retry({ count: 1, delay: 3000 }),
+    ).subscribe({
       next: res => { this.tableData.set(res.data ?? []); this.isLoadingTable.set(false); },
-      error: ()  => this.isLoadingTable.set(false),
+      error: ()  => { this.isLoadingTable.set(false); this.hasErrorTable.set(true); },
     });
   }
 
   loadBar(): void {
     if (!this.country_uuid) return;
     this.isLoadingBar.set(true);
+    this.hasErrorBar.set(false);
     const call =
       this.geoLevel() === 'province' ? this.ndService.NdBarChartProvince(this.geoParams)
     : this.geoLevel() === 'area'      ? this.ndService.NdBarChartArea(this.geoParams)
     : this.geoLevel() === 'subarea'   ? this.ndService.NdBarChartSubArea(this.geoParams)
     :                                   this.ndService.NdBarChartCommune(this.geoParams);
-    call.subscribe({
+    call.pipe(
+      timeout(30_000),
+      retry({ count: 1, delay: 3000 }),
+    ).subscribe({
       next: res => {
         this.barData.set(res.data ?? []);
         this.buildBarChart();
         this.isLoadingBar.set(false);
       },
-      error: () => this.isLoadingBar.set(false),
+      error: () => { this.isLoadingBar.set(false); this.hasErrorBar.set(true); },
     });
   }
 
   loadRanking(): void {
     if (!this.country_uuid) return;
     this.isLoadingRanking.set(true);
-    this.ndService.NdBrandRanking(this.geoParams).subscribe({
+    this.hasErrorRanking.set(false);
+    this.ndService.NdBrandRanking(this.geoParams).pipe(
+      timeout(30_000),
+      retry({ count: 1, delay: 3000 }),
+    ).subscribe({
       next: res => {
         this.rankingData.set(res.data ?? []);
         this.buildRankingChart();
         this.isLoadingRanking.set(false);
       },
-      error: () => this.isLoadingRanking.set(false),
+      error: () => { this.isLoadingRanking.set(false); this.hasErrorRanking.set(true); },
     });
   }
 
   loadGap(): void {
     if (!this.country_uuid) return;
     this.isLoadingGap.set(true);
-    this.ndService.NdGapAnalysis(this.geoParams).subscribe({
+    this.hasErrorGap.set(false);
+    this.ndService.NdGapAnalysis(this.geoParams).pipe(
+      timeout(30_000),
+      retry({ count: 1, delay: 3000 }),
+    ).subscribe({
       next: res => {
         this.gapData.set(res.data ?? []);
         this.buildGapChart();
         this.isLoadingGap.set(false);
       },
-      error: () => this.isLoadingGap.set(false),
+      error: () => { this.isLoadingGap.set(false); this.hasErrorGap.set(true); },
     });
   }
 
   loadEvolution(): void {
     if (!this.country_uuid) return;
     this.isLoadingEvolution.set(true);
-    this.ndService.NdEvolution(this.geoParams).subscribe({
+    this.hasErrorEvolution.set(false);
+    this.ndService.NdEvolution(this.geoParams).pipe(
+      timeout(30_000),
+      retry({ count: 1, delay: 3000 }),
+    ).subscribe({
       next: res => {
         this.evolutionData.set(res.data ?? []);
         this.buildEvolutionChart();
         this.isLoadingEvolution.set(false);
       },
-      error: () => this.isLoadingEvolution.set(false),
+      error: () => { this.isLoadingEvolution.set(false); this.hasErrorEvolution.set(true); },
     });
   }
 
   loadHeatmap(): void {
     if (!this.country_uuid) return;
     this.isLoadingHeatmap.set(true);
-    this.ndService.NdHeatmap(this.geoParams, this.heatmapLevel()).subscribe({
+    this.hasErrorHeatmap.set(false);
+    this.ndService.NdHeatmap(this.geoParams, this.heatmapLevel()).pipe(
+      timeout(30_000),
+      retry({ count: 1, delay: 3000 }),
+    ).subscribe({
       next: res => {
         this.heatmapData.set(res.data ?? { brands: [], territories: [], matrix: [] });
         this.buildHeatmapChart();
         this.isLoadingHeatmap.set(false);
       },
-      error: () => this.isLoadingHeatmap.set(false),
+      error: () => { this.isLoadingHeatmap.set(false); this.hasErrorHeatmap.set(true); },
     });
   }
 

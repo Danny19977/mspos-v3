@@ -148,7 +148,16 @@
         }
       </div>
     }
-    @if (!isLoadingKpi() && kpiData()) {
+    @if (!isLoadingKpi() && hasErrorKpi()) {
+      <div class="alert alert-warning d-flex align-items-center gap-3 mb-3 py-2">
+        <i class="ti ti-wifi-off fs-5"></i>
+        <span class="flex-grow-1">Impossible de charger les KPIs — serveur injoignable ou délai dépassé.</span>
+        <button class="btn btn-sm btn-outline-warning" (click)="loadKpi()">
+          <i class="ti ti-refresh me-1"></i>Réessayer
+        </button>
+      </div>
+    }
+    @if (!isLoadingKpi() && !hasErrorKpi() && kpiData()) {
       <div class="row g-3 mb-3">
         <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
           <div class="nd-kpi-card accent-blue">
@@ -270,6 +279,14 @@
                   [tooltip]="chartTrendOpts()!.tooltip"
                   [grid]="chartTrendOpts()!.grid">
                 </apx-chart>
+              } @else if (!isLoadingTrend() && hasErrorTrend()) {
+                <div class="nd-empty-state">
+                  <i class="ti ti-wifi-off text-warning"></i>
+                  <p>Erreur de chargement</p>
+                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadTrend()">
+                    <i class="ti ti-refresh me-1"></i>Réessayer
+                  </button>
+                </div>
               } @else if (!isLoadingTrend()) {
                 <div class="nd-empty-state">
                   <i class="ti ti-chart-off"></i>
@@ -387,6 +404,14 @@
             <div class="d-flex justify-content-center p-5">
               <div class="spinner-border text-primary"></div>
             </div>
+          } @else if (hasErrorTable()) {
+            <div class="nd-empty-state">
+              <i class="ti ti-wifi-off text-warning"></i>
+              <p>Erreur de chargement</p>
+              <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadTable()">
+                <i class="ti ti-refresh me-1"></i>Réessayer
+              </button>
+            </div>
           } @else if (tableGrouped().length === 0) {
             <div class="nd-empty-state"><i class="ti ti-table-off"></i><p>Aucune donnée</p></div>
           } @else {
@@ -482,6 +507,14 @@
                   [legend]="chartBarOpts()!.legend"
                   [tooltip]="chartBarOpts()!.tooltip">
                 </apx-chart>
+              } @else if (!isLoadingBar() && hasErrorBar()) {
+                <div class="nd-empty-state">
+                  <i class="ti ti-wifi-off text-warning"></i>
+                  <p>Erreur de chargement</p>
+                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadBar()">
+                    <i class="ti ti-refresh me-1"></i>Réessayer
+                  </button>
+                </div>
               } @else if (!isLoadingBar()) {
                 <div class="nd-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée</p></div>
               }
@@ -560,6 +593,14 @@
                   [legend]="chartRankingOpts()!.legend"
                   [tooltip]="chartRankingOpts()!.tooltip">
                 </apx-chart>
+              } @else if (!isLoadingRanking() && hasErrorRanking()) {
+                <div class="nd-empty-state">
+                  <i class="ti ti-wifi-off text-warning"></i>
+                  <p>Erreur de chargement</p>
+                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadRanking()">
+                    <i class="ti ti-refresh me-1"></i>Réessayer
+                  </button>
+                </div>
               } @else if (!isLoadingRanking()) {
                 <div class="nd-empty-state"><i class="ti ti-trophy-off"></i><p>Aucune donnée</p></div>
               }
@@ -579,6 +620,14 @@
             <div class="card-body p-0">
               @if (isLoadingRanking()) {
                 <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary"></div></div>
+              } @else if (hasErrorRanking()) {
+                <div class="nd-empty-state">
+                  <i class="ti ti-wifi-off text-warning"></i>
+                  <p>Erreur de chargement</p>
+                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadRanking()">
+                    <i class="ti ti-refresh me-1"></i>Réessayer
+                  </button>
+                </div>
               } @else {
                 <div class="table-responsive">
                   <table class="table table-hover align-middle mb-0 nd-table">
@@ -696,6 +745,14 @@
                   [legend]="chartGapOpts()!.legend"
                   [tooltip]="chartGapOpts()!.tooltip">
                 </apx-chart>
+              } @else if (!isLoadingGap() && hasErrorGap()) {
+                <div class="nd-empty-state">
+                  <i class="ti ti-wifi-off text-warning"></i>
+                  <p>Erreur de chargement</p>
+                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadGap()">
+                    <i class="ti ti-refresh me-1"></i>Réessayer
+                  </button>
+                </div>
               } @else if (!isLoadingGap()) {
                 <div class="nd-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée</p></div>
               }
@@ -715,6 +772,14 @@
             <div class="card-body p-0" style="overflow-y:auto;max-height:420px">
               @if (isLoadingGap()) {
                 <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary"></div></div>
+              } @else if (hasErrorGap()) {
+                <div class="nd-empty-state">
+                  <i class="ti ti-wifi-off text-warning"></i>
+                  <p>Erreur de chargement</p>
+                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadGap()">
+                    <i class="ti ti-refresh me-1"></i>Réessayer
+                  </button>
+                </div>
               } @else {
                 <div class="table-responsive">
                   <table class="table table-hover align-middle mb-0 nd-table nd-table-sm">
@@ -812,6 +877,14 @@
                   [legend]="chartEvolutionOpts()!.legend"
                   [tooltip]="chartEvolutionOpts()!.tooltip">
                 </apx-chart>
+              } @else if (!isLoadingEvolution() && hasErrorEvolution()) {
+                <div class="nd-empty-state">
+                  <i class="ti ti-wifi-off text-warning"></i>
+                  <p>Erreur de chargement</p>
+                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadEvolution()">
+                    <i class="ti ti-refresh me-1"></i>Réessayer
+                  </button>
+                </div>
               } @else if (!isLoadingEvolution()) {
                 <div class="nd-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée d'évolution</p></div>
               }
@@ -831,6 +904,14 @@
             <div class="card-body p-0" style="overflow-y:auto;max-height:420px">
               @if (isLoadingEvolution()) {
                 <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary"></div></div>
+              } @else if (hasErrorEvolution()) {
+                <div class="nd-empty-state">
+                  <i class="ti ti-wifi-off text-warning"></i>
+                  <p>Erreur de chargement</p>
+                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadEvolution()">
+                    <i class="ti ti-refresh me-1"></i>Réessayer
+                  </button>
+                </div>
               } @else {
                 <div class="table-responsive">
                   <table class="table table-hover align-middle mb-0 nd-table">
@@ -944,6 +1025,14 @@
                   [legend]="chartHeatmapOpts()!.legend"
                   [tooltip]="chartHeatmapOpts()!.tooltip">
                 </apx-chart>
+              } @else if (!isLoadingHeatmap() && hasErrorHeatmap()) {
+                <div class="nd-empty-state">
+                  <i class="ti ti-wifi-off text-warning"></i>
+                  <p>Erreur de chargement</p>
+                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadHeatmap()">
+                    <i class="ti ti-refresh me-1"></i>Réessayer
+                  </button>
+                </div>
               } @else if (!isLoadingHeatmap()) {
                 <div class="nd-empty-state">
                   <i class="ti ti-layout-grid-remove"></i>
