@@ -136,7 +136,7 @@
     <!-- ── KPI CARDS ───────────────────────────────────────────────────────── -->
     @if (isLoadingKpi()) {
       <div class="row g-3 mb-3">
-        @for (i of [1,2,3,4,5,6,7]; track i) {
+        @for (i of [1,2,3,4,5,6,7,8]; track i) {
           <div class="col-6 col-md-3 col-xl-auto flex-grow-1">
             <div class="card border-0 shadow-sm nd-kpi-skeleton">
               <div class="card-body">
@@ -148,16 +148,7 @@
         }
       </div>
     }
-    @if (!isLoadingKpi() && hasErrorKpi()) {
-      <div class="alert alert-warning d-flex align-items-center gap-3 mb-3 py-2">
-        <i class="ti ti-wifi-off fs-5"></i>
-        <span class="flex-grow-1">Impossible de charger les KPIs — serveur injoignable ou délai dépassé.</span>
-        <button class="btn btn-sm btn-outline-warning" (click)="loadKpi()">
-          <i class="ti ti-refresh me-1"></i>Réessayer
-        </button>
-      </div>
-    }
-    @if (!isLoadingKpi() && !hasErrorKpi() && kpiData()) {
+    @if (!isLoadingKpi() && kpiData()) {
       <div class="row g-3 mb-3">
         <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
           <div class="nd-kpi-card accent-blue">
@@ -179,19 +170,28 @@
         </div>
         <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
           <div class="nd-kpi-card accent-green">
-            <div class="nd-kpi-icon"><i class="ti ti-chart-grid-dots"></i></div>
+            <div class="nd-kpi-icon"><i class="ti ti-users"></i></div>
             <div class="nd-kpi-body">
-              <span class="nd-kpi-label">ND Marque</span>
-              <span class="nd-kpi-value">{{ kpiData()!.total_nd_pos | number }}</span>
+              <span class="nd-kpi-label">Total Team</span>
+              <span class="nd-kpi-value">{{ kpiData()!.total_team | number }}</span>
             </div>
           </div>
         </div>
         <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
           <div class="nd-kpi-card accent-indigo">
+            <div class="nd-kpi-icon"><i class="ti ti-user-check"></i></div>
+            <div class="nd-kpi-body">
+              <span class="nd-kpi-label">Active Team</span>
+              <span class="nd-kpi-value">{{ kpiData()!.active_team | number }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-6 col-sm-4 col-xl-auto flex-grow-1">
+          <div class="nd-kpi-card accent-cyan">
             <div class="nd-kpi-icon"><i class="ti ti-percentage"></i></div>
             <div class="nd-kpi-body">
-              <span class="nd-kpi-label">ND% Moyen</span>
-              <span class="nd-kpi-value">{{ kpiData()!.avg_nd_percent | number:'1.1-1' }}%</span>
+              <span class="nd-kpi-label">Team Active</span>
+              <span class="nd-kpi-value">{{ kpiData()!.team_active_pct | number:'1.1-1' }}%</span>
             </div>
           </div>
         </div>
@@ -279,14 +279,6 @@
                   [tooltip]="chartTrendOpts()!.tooltip"
                   [grid]="chartTrendOpts()!.grid">
                 </apx-chart>
-              } @else if (!isLoadingTrend() && hasErrorTrend()) {
-                <div class="nd-empty-state">
-                  <i class="ti ti-wifi-off text-warning"></i>
-                  <p>Erreur de chargement</p>
-                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadTrend()">
-                    <i class="ti ti-refresh me-1"></i>Réessayer
-                  </button>
-                </div>
               } @else if (!isLoadingTrend()) {
                 <div class="nd-empty-state">
                   <i class="ti ti-chart-off"></i>
@@ -404,14 +396,6 @@
             <div class="d-flex justify-content-center p-5">
               <div class="spinner-border text-primary"></div>
             </div>
-          } @else if (hasErrorTable()) {
-            <div class="nd-empty-state">
-              <i class="ti ti-wifi-off text-warning"></i>
-              <p>Erreur de chargement</p>
-              <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadTable()">
-                <i class="ti ti-refresh me-1"></i>Réessayer
-              </button>
-            </div>
           } @else if (tableGrouped().length === 0) {
             <div class="nd-empty-state"><i class="ti ti-table-off"></i><p>Aucune donnée</p></div>
           } @else {
@@ -441,9 +425,9 @@
                         <tr>
                           <td class="fw-semibold text-primary">{{ row.brand_name }}</td>
                           <td class="text-end text-muted">{{ row.universe_pos | number }}</td>
-                          <td class="text-end">{{ row.total_pos_visit | number }}</td>
+                          <td class="text-end">{{ row.total_pos | number }}</td>
                           <td class="text-end text-muted">{{ row.total_posforms | number }}</td>
-                          <td class="text-end fw-semibold">{{ row.nd_brand | number }}</td>
+                          <td class="text-end fw-semibold">{{ row.nd_pos | number }}</td>
                           <td class="text-end">
                             <span [class]="getNdBadge(row.nd_percent)">{{ row.nd_percent | number:'1.1-1' }}%</span>
                           </td>
@@ -507,14 +491,6 @@
                   [legend]="chartBarOpts()!.legend"
                   [tooltip]="chartBarOpts()!.tooltip">
                 </apx-chart>
-              } @else if (!isLoadingBar() && hasErrorBar()) {
-                <div class="nd-empty-state">
-                  <i class="ti ti-wifi-off text-warning"></i>
-                  <p>Erreur de chargement</p>
-                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadBar()">
-                    <i class="ti ti-refresh me-1"></i>Réessayer
-                  </button>
-                </div>
               } @else if (!isLoadingBar()) {
                 <div class="nd-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée</p></div>
               }
@@ -593,14 +569,6 @@
                   [legend]="chartRankingOpts()!.legend"
                   [tooltip]="chartRankingOpts()!.tooltip">
                 </apx-chart>
-              } @else if (!isLoadingRanking() && hasErrorRanking()) {
-                <div class="nd-empty-state">
-                  <i class="ti ti-wifi-off text-warning"></i>
-                  <p>Erreur de chargement</p>
-                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadRanking()">
-                    <i class="ti ti-refresh me-1"></i>Réessayer
-                  </button>
-                </div>
               } @else if (!isLoadingRanking()) {
                 <div class="nd-empty-state"><i class="ti ti-trophy-off"></i><p>Aucune donnée</p></div>
               }
@@ -620,14 +588,6 @@
             <div class="card-body p-0">
               @if (isLoadingRanking()) {
                 <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary"></div></div>
-              } @else if (hasErrorRanking()) {
-                <div class="nd-empty-state">
-                  <i class="ti ti-wifi-off text-warning"></i>
-                  <p>Erreur de chargement</p>
-                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadRanking()">
-                    <i class="ti ti-refresh me-1"></i>Réessayer
-                  </button>
-                </div>
               } @else {
                 <div class="table-responsive">
                   <table class="table table-hover align-middle mb-0 nd-table">
@@ -745,14 +705,6 @@
                   [legend]="chartGapOpts()!.legend"
                   [tooltip]="chartGapOpts()!.tooltip">
                 </apx-chart>
-              } @else if (!isLoadingGap() && hasErrorGap()) {
-                <div class="nd-empty-state">
-                  <i class="ti ti-wifi-off text-warning"></i>
-                  <p>Erreur de chargement</p>
-                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadGap()">
-                    <i class="ti ti-refresh me-1"></i>Réessayer
-                  </button>
-                </div>
               } @else if (!isLoadingGap()) {
                 <div class="nd-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée</p></div>
               }
@@ -772,14 +724,6 @@
             <div class="card-body p-0" style="overflow-y:auto;max-height:420px">
               @if (isLoadingGap()) {
                 <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary"></div></div>
-              } @else if (hasErrorGap()) {
-                <div class="nd-empty-state">
-                  <i class="ti ti-wifi-off text-warning"></i>
-                  <p>Erreur de chargement</p>
-                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadGap()">
-                    <i class="ti ti-refresh me-1"></i>Réessayer
-                  </button>
-                </div>
               } @else {
                 <div class="table-responsive">
                   <table class="table table-hover align-middle mb-0 nd-table nd-table-sm">
@@ -877,14 +821,6 @@
                   [legend]="chartEvolutionOpts()!.legend"
                   [tooltip]="chartEvolutionOpts()!.tooltip">
                 </apx-chart>
-              } @else if (!isLoadingEvolution() && hasErrorEvolution()) {
-                <div class="nd-empty-state">
-                  <i class="ti ti-wifi-off text-warning"></i>
-                  <p>Erreur de chargement</p>
-                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadEvolution()">
-                    <i class="ti ti-refresh me-1"></i>Réessayer
-                  </button>
-                </div>
               } @else if (!isLoadingEvolution()) {
                 <div class="nd-empty-state"><i class="ti ti-chart-off"></i><p>Aucune donnée d'évolution</p></div>
               }
@@ -904,14 +840,6 @@
             <div class="card-body p-0" style="overflow-y:auto;max-height:420px">
               @if (isLoadingEvolution()) {
                 <div class="d-flex justify-content-center p-4"><div class="spinner-border text-primary"></div></div>
-              } @else if (hasErrorEvolution()) {
-                <div class="nd-empty-state">
-                  <i class="ti ti-wifi-off text-warning"></i>
-                  <p>Erreur de chargement</p>
-                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadEvolution()">
-                    <i class="ti ti-refresh me-1"></i>Réessayer
-                  </button>
-                </div>
               } @else {
                 <div class="table-responsive">
                   <table class="table table-hover align-middle mb-0 nd-table">
@@ -1025,14 +953,6 @@
                   [legend]="chartHeatmapOpts()!.legend"
                   [tooltip]="chartHeatmapOpts()!.tooltip">
                 </apx-chart>
-              } @else if (!isLoadingHeatmap() && hasErrorHeatmap()) {
-                <div class="nd-empty-state">
-                  <i class="ti ti-wifi-off text-warning"></i>
-                  <p>Erreur de chargement</p>
-                  <button class="btn btn-sm btn-outline-primary mt-1" (click)="loadHeatmap()">
-                    <i class="ti ti-refresh me-1"></i>Réessayer
-                  </button>
-                </div>
               } @else if (!isLoadingHeatmap()) {
                 <div class="nd-empty-state">
                   <i class="ti ti-layout-grid-remove"></i>

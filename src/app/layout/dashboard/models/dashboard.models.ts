@@ -334,9 +334,9 @@ export interface NDTableRowModel {
     territory_level:  string;
     brand_name:       string;
     brand_uuid:       string;
-    nd_brand:         number;
+    nd_pos:           number;
     total_posforms:   number;
-    total_pos_visit:  number;
+    total_pos:        number;
     universe_pos:     number;
     nd_percent:       number;
     reach_rate:       number;
@@ -396,6 +396,9 @@ export interface NDSummaryKPIModel {
     total_brands:       number;
     reach_rate:         number;
     coverage_index:     number;
+    total_team:         number;
+    active_team:        number;
+    team_active_pct:    number;
 }
 
 /** Brand ranking row */

@@ -1,5 +1,5 @@
 import { isPlatformBrowser } from '@angular/common';
-import { Component, Inject, NgZone, PLATFORM_ID, OnInit, OnDestroy } from '@angular/core';
+import { Component, inject, NgZone, PLATFORM_ID, OnInit, OnDestroy } from '@angular/core';
 import { Router, NavigationEnd, NavigationStart, Event as RouterEvent } from '@angular/router';
 import { filter, first, takeUntil } from 'rxjs/operators';
 import { SwUpdate } from '@angular/service-worker';
@@ -21,9 +21,9 @@ export class AppComponent implements OnInit, OnDestroy {
   title = 'mspos-v3';
   public page = '';
   private destroy$ = new Subject<void>();
+  private platformId = inject(PLATFORM_ID);
 
   constructor(
-    @Inject(PLATFORM_ID) private platformId: any,
     private zone: NgZone,
     private router: Router,
     private swUpdate: SwUpdate,

@@ -1,4 +1,4 @@
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { PlatformInfo, PwaInstallService } from '../../core/services/pwa-install.service';
 
@@ -9,6 +9,7 @@ import { PlatformInfo, PwaInstallService } from '../../core/services/pwa-install
   styleUrls: ['./pwa-install-dialog.component.scss']
 })
 export class PwaInstallDialogComponent implements OnInit {
+  public data = inject<{ platformInfo: PlatformInfo }>(MAT_DIALOG_DATA);
   platformInfo!: PlatformInfo;
 
   // Icônes spécifiques par plateforme
@@ -22,10 +23,9 @@ export class PwaInstallDialogComponent implements OnInit {
 
   constructor(
     public dialogRef: MatDialogRef<PwaInstallDialogComponent>,
-    @Inject(MAT_DIALOG_DATA) public data: { platformInfo: PlatformInfo },
     private pwaService: PwaInstallService
   ) {
-    this.platformInfo = data.platformInfo;
+    this.platformInfo = this.data.platformInfo;
   }
 
   ngOnInit(): void {
