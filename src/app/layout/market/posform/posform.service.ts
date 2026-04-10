@@ -220,6 +220,16 @@ export class PosformService extends ApiService {
     return this.http.get<any>(`${this.endpoint}/all/paginate/commune/${user_uuid}`, { params });
   }
 
+  /** Fetch posforms for a specific user by uuid, filtered by date range */
+  getPosFormsByUserUUID(userUuid: string, page: number, pageSize: number, startDate: string, endDate: string): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', pageSize.toString())
+      .set('start_date', startDate)
+      .set('end_date', endDate);
+    return this.http.get<any>(`${this.endpoint}/all/paginate/user/${userUuid}`, { params });
+  }
+
   /**
    * Exporte les données PosForm en Excel via l'API backend
    * Utilise l'endpoint GET /posforms/export/excel

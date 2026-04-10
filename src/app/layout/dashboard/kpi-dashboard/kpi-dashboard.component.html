@@ -485,17 +485,18 @@
                 Réalisé vs Objectif — {{ targetLevel() === 'province' ? 'Province' : 'Area' }}
               </div>
               <div class="card-body">
-                @if (chartTargetOpts()) {
+                @if (chartTargetOpts(); as opts) {
                   <apx-chart
-                    [series]="chartTargetOpts().series"
-                    [chart]="chartTargetOpts().chart"
-                    [colors]="chartTargetOpts().colors"
-                    [plotOptions]="chartTargetOpts().plotOptions"
-                    [dataLabels]="chartTargetOpts().dataLabels"
-                    [xaxis]="chartTargetOpts().xaxis"
-                    [legend]="chartTargetOpts().legend"
-                    [tooltip]="chartTargetOpts().tooltip"
-                    [grid]="chartTargetOpts().grid">
+                    [series]="opts.series"
+                    [chart]="opts.chart"
+                    [colors]="opts.colors"
+                    [plotOptions]="opts.plotOptions"
+                    [dataLabels]="opts.dataLabels"
+                    [xaxis]="opts.xaxis"
+                    [yaxis]="opts.yaxis"
+                    [legend]="opts.legend"
+                    [tooltip]="opts.tooltip"
+                    [grid]="opts.grid">
                   </apx-chart>
                 }
               </div>
@@ -587,7 +588,8 @@
       } @else {
         <div class="kpi-alerts-grid">
           @for (a of absencesData(); track a.agent_uuid) {
-            <div class="kpi-alert-card" [class]="getAlertClass(a.alert_level)">
+            <div class="kpi-alert-card" [class]="getAlertClass(a.alert_level)"
+              style="cursor:pointer" (click)="navigateToUser(a.agent_uuid)">
               <div class="kpi-alert-avatar">
                 <i [class]="getTitleIcon(a.agent_title)"></i>
               </div>
@@ -598,6 +600,14 @@
                     {{ a.agent_title }}
                   </span>
                 </div>
+                @if (a.province || a.area) {
+                  <div class="kpi-alert-location">
+                    <i class="ti ti-map-pin me-1"></i>
+                    @if (a.province) { <span>{{ a.province }}</span> }
+                    @if (a.province && a.area) { <span class="mx-1">·</span> }
+                    @if (a.area) { <span>{{ a.area }}</span> }
+                  </div>
+                }
                 <div class="kpi-alert-days">
                   <i class="ti ti-clock me-1"></i>
                   Inactif depuis <strong>{{ a.days_inactive }} jours</strong>
@@ -625,17 +635,26 @@
           (click)="onTrendPeriodChange('monthly')">Mensuelle</button>
         <button class="btn btn-sm kpi-level-btn" [class.active]="trendPeriod() === 'weekly'"
           (click)="onTrendPeriodChange('weekly')">Hebdomadaire</button>
+        <button class="btn btn-sm kpi-level-btn" [class.active]="trendPeriod() === 'daily'"
+          (click)="onTrendPeriodChange('daily')">Quotidienne</button>
         <span class="kpi-section-label ms-3">Périodes :</span>
-        @for (n of [3,6,12]; track n) {
-          <button class="btn btn-sm kpi-level-btn" [class.active]="trendPeriods() === n"
-            (click)="trendPeriods.set(n); loadTrends()">{{ n }}</button>
+        @if (trendPeriod() === 'daily') {
+          @for (n of [7, 14, 30]; track n) {
+            <button class="btn btn-sm kpi-level-btn" [class.active]="trendPeriods() === n"
+              (click)="trendPeriods.set(n); loadTrends()">{{ n }}j</button>
+          }
+        } @else {
+          @for (n of [3,6,12]; track n) {
+            <button class="btn btn-sm kpi-level-btn" [class.active]="trendPeriods() === n"
+              (click)="trendPeriods.set(n); loadTrends()">{{ n }}</button>
+          }
         }
       </div>
 
       <div class="card shadow-sm border-0">
         <div class="card-header kpi-card-header">
           <i class="ti ti-chart-area me-2 text-primary"></i>
-          Évolution {{ trendPeriod() === 'monthly' ? 'mensuelle' : 'hebdomadaire' }} des visites · Sync · POS-MM
+          Évolution {{ trendPeriod() === 'monthly' ? 'mensuelle' : trendPeriod() === 'weekly' ? 'hebdomadaire' : 'quotidienne' }} des visites · Sync · POS-MM
         </div>
         <div class="card-body">
           @if (isLoadingTrends()) {

@@ -80,16 +80,24 @@ export class KpiService extends ApiService {
   }
 
   /** Inactive agents alert list */
-  AbsenceAnalysis(params: { days_inactive?: number } = {}): Observable<any> {
+  AbsenceAnalysis(params: {
+    days_inactive?: number;
+    country_uuid?:  string;
+    province_uuid?: string;
+    area_uuid?:     string;
+  } = {}): Observable<any> {
     let p = new HttpParams();
     if (params.days_inactive != null) p = p.set('days_inactive', String(params.days_inactive));
+    if (params.country_uuid)  p = p.set('country_uuid',  params.country_uuid);
+    if (params.province_uuid) p = p.set('province_uuid', params.province_uuid);
+    if (params.area_uuid)     p = p.set('area_uuid',     params.area_uuid);
     return this.http.get<any>(`${this.endpoint}/absence-analysis`, { params: p });
   }
 
   /** Weekly / monthly visit trend for N past periods */
   PeriodComparison(params: {
     country_uuid?: string;
-    period?: 'weekly' | 'monthly';
+    period?: 'daily' | 'weekly' | 'monthly';
     periods?: number;
   } = {}): Observable<any> {
     let p = new HttpParams();

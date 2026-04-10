@@ -6,6 +6,7 @@ import { AuthService } from '../../../../auth/auth.service';
 import { KpiService } from '../../services/kpi.service';
 import { KPITableViewPriceModel } from '../../models/dashboard.models';
 import { KpiTableViewParams } from '../../services/kpi.service';
+import { PosformService } from '../../../market/posform/posform.service';
 
 @Component({
   selector: 'app-kpi-table-view-commune',
@@ -15,10 +16,11 @@ import { KpiTableViewParams } from '../../services/kpi.service';
 })
 export class KpiTableViewCommuneComponent implements OnInit {
 
-  private route       = inject(ActivatedRoute);
-  private authService = inject(AuthService);
-  private kpiService  = inject(KpiService);
-  private fb          = inject(FormBuilder);
+  private route          = inject(ActivatedRoute);
+  private authService    = inject(AuthService);
+  private kpiService     = inject(KpiService);
+  private fb             = inject(FormBuilder);
+  private posformService = inject(PosformService);
 
   country_uuid  = '';
   province_uuid = '';
@@ -31,9 +33,17 @@ export class KpiTableViewCommuneComponent implements OnInit {
   isLoading   = signal(false);
   data        = signal<KPITableViewPriceModel[]>([]);
   titleFilter = signal('');
+  sortDir      = signal<'asc' | 'desc'>('desc');
+  sortTitreDir = signal<'asc' | 'desc'>('asc');
 
   readonly TITLES = ['', 'ASM', 'Supervisor', 'DR', 'Cyclo'];
   grouped = signal<{ name: string; uuid: string; rows: KPITableViewPriceModel[] }[]>([]);
+
+  // Visits offcanvas
+  selectedUser    = signal<KPITableViewPriceModel | null>(null);
+  userVisits      = signal<any[]>([]);
+  isLoadingVisits = signal(false);
+  expandedVisit   = signal<string | null>(null);
 
   ngOnInit(): void {
     const now      = new Date();
@@ -86,9 +96,29 @@ export class KpiTableViewCommuneComponent implements OnInit {
   }
 
   // Backend returns uuid = communes.uuid — group by it
+  toggleSort(): void {
+    this.sortDir.set(this.sortDir() === 'desc' ? 'asc' : 'desc');
+    this.buildGrouped(this.data());
+  }
+
+  toggleTitreSort(): void {
+    this.sortTitreDir.set(this.sortTitreDir() === 'asc' ? 'desc' : 'asc');
+    this.buildGrouped(this.data());
+  }
+
   buildGrouped(rows: KPITableViewPriceModel[]): void {
+    const isTous = !this.titleFilter();
+    const dir = this.sortDir() === 'desc' ? -1 : 1;
+    const titreDir = this.sortTitreDir() === 'asc' ? 1 : -1;
+    const sorted = [...rows].sort((a, b) => {
+      if (isTous) {
+        const titleCmp = (a.title ?? '').localeCompare(b.title ?? '') * titreDir;
+        if (titleCmp !== 0) return titleCmp;
+      }
+      return (b.objectif - a.objectif) * dir;
+    });
     const map = new Map<string, KPITableViewPriceModel[]>();
-    for (const r of rows) {
+    for (const r of sorted) {
       const key = r.uuid ?? r.name ?? 'all';
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(r);
@@ -108,4 +138,26 @@ export class KpiTableViewCommuneComponent implements OnInit {
     if (p >= 50) return 'bg-warning'; return 'bg-danger';
   }
   barWidth(p: number): string { return `${Math.min(p, 100)}%`; }
+
+  toggleBrands(uuid: string | undefined): void {
+    this.expandedVisit.set(this.expandedVisit() === uuid ? null : (uuid ?? null));
+  }
+
+  openUserVisits(r: KPITableViewPriceModel): void {
+    this.selectedUser.set(r);
+    this.userVisits.set([]);
+    this.expandedVisit.set(null);
+    const el = document.getElementById('kpi-visits-offcanvas-commune');
+    if (el) {
+      (window as any).bootstrap.Offcanvas.getOrCreateInstance(el).show();
+    }
+    this.isLoadingVisits.set(true);
+    this.posformService.getPosFormsByUserUUID(r.user_uuid, 1, 100, this.start_date, this.end_date).subscribe({
+      next: (res: any) => {
+        this.userVisits.set(res.data ?? []);
+        this.isLoadingVisits.set(false);
+      },
+      error: () => this.isLoadingVisits.set(false),
+    });
+  }
 }

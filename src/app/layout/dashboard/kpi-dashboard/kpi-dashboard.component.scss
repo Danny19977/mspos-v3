@@ -473,6 +473,7 @@ $kpi-radius:     10px;
 .kpi-alert-name { font-weight: 600; font-size: 0.88rem; color: $kpi-text; }
 .kpi-alert-title { margin: 4px 0; }
 .kpi-alert-days { font-size: 0.75rem; color: $kpi-muted; margin-top: 4px; }
+.kpi-alert-location { font-size: 0.72rem; color: $kpi-muted; margin-top: 2px; }
 .kpi-alert-level { display: flex; align-items: flex-start; padding-top: 2px; }
 .kpi-alert-dot {
   width: 32px; height: 32px; border-radius: 50%;

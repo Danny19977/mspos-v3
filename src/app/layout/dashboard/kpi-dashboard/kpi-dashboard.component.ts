@@ -52,7 +52,7 @@ export type KpiSection =
   | 'tableview';
 
 export type KpiGeoLevel = 'province' | 'area' | 'subarea' | 'commune';
-export type TrendPeriod = 'weekly' | 'monthly';
+export type TrendPeriod = 'daily' | 'weekly' | 'monthly';
 export type TargetLevel = 'province' | 'area';
 
 @Component({
@@ -178,7 +178,29 @@ export class KpiDashboardComponent implements OnInit, AfterViewChecked {
   // ── Charts ─────────────────────────────────────────────────────────────────
   chartTrendsOpts = signal<any>(null);
   chartNDOpts     = signal<any>(null);
-  chartTargetOpts = signal<any>(null);
+  chartTargetOpts = computed<any>(() => {
+    const data = this.targetsData().slice(0, 15);
+    if (!data.length) return null;
+    return {
+      series: [
+        { name: 'Réalisé',  data: data.map((d: any) => d.actual_visits) },
+        { name: 'Objectif', data: data.map((d: any) => d.target_visits) },
+      ],
+      chart:       { type: 'bar' as const, height: Math.min(500, Math.max(320, data.length * 36)), width: '100%', toolbar: { show: false } },
+      colors:      ['#4361ee', '#dee2e6'],
+      plotOptions: {
+        bar: { horizontal: true, barHeight: '55%', borderRadius: 3, dataLabels: { position: 'top' } },
+      },
+      dataLabels:  { enabled: true, offsetX: 6,
+        formatter: (v: number) => v.toLocaleString(),
+        style: { fontSize: '10px', colors: ['#333'] } },
+      xaxis:       { categories: data.map((d: any) => d.territory) },
+      yaxis:       { labels: { maxWidth: 140 } },
+      legend:      { position: 'top' },
+      tooltip:     { shared: true, y: { formatter: (v: number) => v.toLocaleString() } },
+      grid:        { strokeDashArray: 3, xaxis: { lines: { show: true } } },
+    };
+  });
 
   private _openPickerOnNextCheck = false;
   @ViewChild('dateRangeInput') dateRangePicker?: BsDaterangepickerDirective;
@@ -331,7 +353,6 @@ export class KpiDashboardComponent implements OnInit, AfterViewChecked {
     }).subscribe({
       next: res => {
         this.targetsData.set(res.data ?? []);
-        this.buildTargetChart();
         this.isLoadingTargets.set(false);
       },
       error: () => this.isLoadingTargets.set(false),
@@ -340,7 +361,12 @@ export class KpiDashboardComponent implements OnInit, AfterViewChecked {
 
   loadAbsences(): void {
     this.isLoadingAbsences.set(true);
-    this.kpiService.AbsenceAnalysis({ days_inactive: this.daysInactive() }).subscribe({
+    this.kpiService.AbsenceAnalysis({
+      days_inactive: this.daysInactive(),
+      country_uuid:  this.country_uuid  || undefined,
+      province_uuid: this.province_uuid || undefined,
+      area_uuid:     this.area_uuid     || undefined,
+    }).subscribe({
       next: res => { this.absencesData.set(res.data ?? []); this.isLoadingAbsences.set(false); },
       error: ()  => this.isLoadingAbsences.set(false),
     });
@@ -409,31 +435,7 @@ export class KpiDashboardComponent implements OnInit, AfterViewChecked {
     });
   }
 
-  buildTargetChart(): void {
-    const data = this.targetsData().slice(0, 15);
-    if (!data.length) { this.chartTargetOpts.set(null); return; }
-    this.chartTargetOpts.set({
-      series: [
-        { name: 'Réalisé',  data: data.map(d => d.actual_visits) },
-        { name: 'Objectif', data: data.map(d => d.target_visits) },
-      ],
-      chart:       { type: 'bar', height: Math.max(320, data.length * 48), toolbar: { show: false } },
-      colors:      ['#4361ee', '#e2e8f0'],
-      plotOptions: {
-        bar: {
-          horizontal: true, barHeight: '60%', borderRadius: 4,
-          dataLabels: { position: 'top' },
-        },
-      },
-      dataLabels: { enabled: true, offsetX: 4,
-        formatter: (v: number) => v.toLocaleString(),
-        style: { fontSize: '10px', colors: ['#333'] } },
-      xaxis:   { categories: data.map(d => d.territory) },
-      legend:  { position: 'top' },
-      tooltip: { shared: true, y: { formatter: (v: number) => v.toLocaleString() } },
-      grid:    { strokeDashArray: 3, xaxis: { lines: { show: true } } },
-    });
-  }
+
 
   buildNDChart(): void {
     const data = this.ndData().slice(0, 20);
@@ -580,6 +582,10 @@ export class KpiDashboardComponent implements OnInit, AfterViewChecked {
 
   onTrendPeriodChange(p: TrendPeriod): void {
     this.trendPeriod.set(p);
+    // Set sensible default period counts per granularity
+    if (p === 'daily')        this.trendPeriods.set(14);
+    else if (p === 'weekly')  this.trendPeriods.set(6);
+    else                      this.trendPeriods.set(6);
     this.loadTrends();
   }
 
@@ -681,6 +687,10 @@ export class KpiDashboardComponent implements OnInit, AfterViewChecked {
       case 'Cyclo':      return 'ti ti-bike';
       default:           return 'ti ti-user';
     }
+  }
+
+  navigateToUser(uuid: string): void {
+    this.router.navigate([routes.user + '/user-view', uuid]);
   }
 
   getNDDensityClass(score: number): string {

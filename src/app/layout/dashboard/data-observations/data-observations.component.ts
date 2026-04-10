@@ -9,6 +9,12 @@ import { AuthService } from '../../../auth/auth.service';
 import { ObservationService } from '../services/observation.service';
 import { IObservationResponse, IObservationPagination } from '../models/observation.model';
 import { IUser } from '../../management/user/models/user.model';
+import { ProvinceService } from '../../territories/province/province.service';
+import { AreaService } from '../../territories/areas/area.service';
+import { SubareaService } from '../../territories/subarea/subarea.service';
+import { IProvince } from '../../territories/province/models/province.model';
+import { IArea } from '../../territories/areas/models/area.model';
+import { ISubArea } from '../../territories/subarea/models/subarea.model';
 
 /** Couleur de badge selon le rôle de l'agent */
 const ROLE_BADGE: Record<string, { bg: string; icon: string }> = {
@@ -44,6 +50,9 @@ export class DataObservationsComponent implements OnInit, AfterViewChecked {
   private readonly observationService  = inject(ObservationService);
   private readonly toastr              = inject(ToastrService);
   private readonly destroyRef          = inject(DestroyRef);
+  private readonly provinceService     = inject(ProvinceService);
+  private readonly areaService         = inject(AreaService);
+  private readonly subAreaService      = inject(SubareaService);
 
   // ─── Signals ──────────────────────────────────────────────────────────────
   readonly isLoading     = signal(false);
@@ -52,6 +61,11 @@ export class DataObservationsComponent implements OnInit, AfterViewChecked {
   readonly pagination    = signal<IObservationPagination | null>(null);
   readonly viewMode      = signal<ViewMode>('cards');
   readonly selectedPeriod = signal('1month');
+
+  // Geography lists
+  readonly provinceList  = signal<IProvince[]>([]);
+  readonly areaList      = signal<IArea[]>([]);
+  readonly subAreaList   = signal<ISubArea[]>([]);
 
   // Derived
   readonly hasData = computed(() => this.observations().length > 0);
@@ -97,6 +111,9 @@ export class DataObservationsComponent implements OnInit, AfterViewChecked {
     this.authService.user().subscribe({
       next: (user) => {
         this.currentUser.set(user);
+        this.provinceService.getAll().subscribe((res: any) => {
+          this.provinceList.set(res.data ?? []);
+        });
         this.loadObservations();
       },
       error: () => this.toastr.error("Impossible de charger l'utilisateur.", 'Erreur'),
@@ -109,8 +126,11 @@ export class DataObservationsComponent implements OnInit, AfterViewChecked {
     this.applyPeriod('1month');
 
     this.filterForm = this.fb.group({
-      search: new FormControl(''),
-      limit:  new FormControl(15),
+      search:       new FormControl(''),
+      limit:        new FormControl(15),
+      province_uuid: new FormControl(''),
+      area_uuid:     new FormControl(''),
+      sub_area_uuid: new FormControl(''),
     });
 
     this.dateRange = this.fb.group({ rangeValue: new FormControl<Date[] | null>(null) });
@@ -136,6 +156,40 @@ export class DataObservationsComponent implements OnInit, AfterViewChecked {
     this.filterForm.get('limit')!.valueChanges.pipe(
       takeUntilDestroyed(this.destroyRef),
     ).subscribe(() => this.loadObservations(1));
+
+    // Province cascade
+    this.filterForm.get('province_uuid')!.valueChanges.pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe((uuid: string) => {
+      this.filterForm.patchValue({ area_uuid: '', sub_area_uuid: '' }, { emitEvent: false });
+      this.areaList.set([]);
+      this.subAreaList.set([]);
+      if (uuid) {
+        this.areaService.getAll().subscribe((res: any) => {
+          this.areaList.set((res.data as IArea[]).filter(a => a.province_uuid === uuid));
+        });
+      }
+      this.loadObservations(1);
+    });
+
+    // Area cascade
+    this.filterForm.get('area_uuid')!.valueChanges.pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe((uuid: string) => {
+      this.filterForm.patchValue({ sub_area_uuid: '' }, { emitEvent: false });
+      this.subAreaList.set([]);
+      if (uuid) {
+        this.subAreaService.getAll().subscribe((res: any) => {
+          this.subAreaList.set((res.data as ISubArea[]).filter(s => s.area_uuid === uuid));
+        });
+      }
+      this.loadObservations(1);
+    });
+
+    // Subarea change
+    this.filterForm.get('sub_area_uuid')!.valueChanges.pipe(
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe(() => this.loadObservations(1));
   }
 
   // ─── Data loading ─────────────────────────────────────────────────────────
@@ -143,7 +197,7 @@ export class DataObservationsComponent implements OnInit, AfterViewChecked {
   loadObservations(page = 1): void {
     this.isLoading.set(true);
 
-    const { search, limit } = this.filterForm.value;
+    const { search, limit, province_uuid, area_uuid, sub_area_uuid } = this.filterForm.value;
     const filters = {
       page,
       limit:      limit ?? 15,
@@ -152,7 +206,18 @@ export class DataObservationsComponent implements OnInit, AfterViewChecked {
       search:     search ?? undefined,
     };
 
-    this.observationService.getByRole(filters).pipe(
+    let request$;
+    if (sub_area_uuid) {
+      request$ = this.observationService.getBySubArea(sub_area_uuid, filters);
+    } else if (area_uuid) {
+      request$ = this.observationService.getByArea(area_uuid, filters);
+    } else if (province_uuid) {
+      request$ = this.observationService.getByProvince(province_uuid, filters);
+    } else {
+      request$ = this.observationService.getByRole(filters);
+    }
+
+    request$.pipe(
       takeUntilDestroyed(this.destroyRef),
     ).subscribe({
       next: (res) => {
@@ -204,6 +269,13 @@ export class DataObservationsComponent implements OnInit, AfterViewChecked {
 
   refresh(): void {
     this.loadObservations(this.pagination()?.current_page ?? 1);
+  }
+
+  resetFilters(): void {
+    this.areaList.set([]);
+    this.subAreaList.set([]);
+    this.filterForm.reset({ limit: 15, search: '', province_uuid: '', area_uuid: '', sub_area_uuid: '' }, { emitEvent: false });
+    this.setPeriod('1month');
   }
 
   // ─── View helpers ─────────────────────────────────────────────────────────

@@ -291,6 +291,7 @@ export interface SEKpiSummary {
 
 export interface KPITableViewPriceModel {
     uuid: string;
+    user_uuid: string;
     name: string;
     province_uuid: string;
     area_uuid: string;
@@ -1260,6 +1261,8 @@ export interface KpiAbsenceAlertModel {
     agent_title:  string;
     days_inactive: number;
     alert_level:  string;
+    province:     string;
+    area:         string;
 }
 
 /** Period comparison data point (GetPeriodComparison) */

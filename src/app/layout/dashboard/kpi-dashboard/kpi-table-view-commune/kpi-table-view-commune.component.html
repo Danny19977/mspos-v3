@@ -7,15 +7,27 @@
         <p class="text-muted small mb-0">Réalisation par commune</p>
       </div>
     </div>
-    <form [formGroup]="dateRange" class="kpi-tv-date-form">
-      <div class="kpi-tv-date-field">
-        <i class="ti ti-calendar-event"></i>
-        <input type="text" class="form-control bookingrange kpi-tv-date-input"
-          bsDaterangepicker placeholder="Sélectionner la période"
-          [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
-          formControlName="rangeValue" />
-      </div>
-    </form>
+    <div class="d-flex align-items-center gap-2">
+      @if (titleFilter() === '') {
+        <button class="btn btn-sm btn-light border d-flex align-items-center gap-1 px-3" (click)="toggleTitreSort()" title="Trier par Titre">
+          <i class="ti" [class.ti-sort-ascending]="sortTitreDir() === 'asc'" [class.ti-sort-descending]="sortTitreDir() === 'desc'" style="font-size:1rem"></i>
+          <span>Titre</span>
+        </button>
+      }
+      <button class="btn btn-sm btn-light border d-flex align-items-center gap-1 px-3" (click)="toggleSort()" title="Trier par Réalisation">
+        <i class="ti" [class.ti-sort-descending]="sortDir() === 'desc'" [class.ti-sort-ascending]="sortDir() === 'asc'" style="font-size:1rem"></i>
+        <span>Trier</span>
+      </button>
+      <form [formGroup]="dateRange" class="kpi-tv-date-form">
+        <div class="kpi-tv-date-field">
+          <i class="ti ti-calendar-event"></i>
+          <input type="text" class="form-control bookingrange kpi-tv-date-input"
+            bsDaterangepicker placeholder="Sélectionner la période"
+            [bsConfig]="{ dateInputFormat: 'DD/MM/YYYY', containerClass: 'theme-dark-blue', showWeekNumbers: false }"
+            formControlName="rangeValue" />
+        </div>
+      </form>
+    </div>
   </div>
   <div class="kpi-tv-filters">
     <span class="kpi-tv-filter-label">Titre :</span>
@@ -41,7 +53,11 @@
             <thead><tr>
               <th>Agent</th><th>Titre</th>
               <th class="text-center">Visites</th><th class="text-center">Objectif</th>
-              <th>Réalisation</th>
+              <th style="cursor:pointer;user-select:none" (click)="toggleSort()">
+                Réalisation
+                <i class="ti ms-1" [class.ti-sort-descending]="sortDir() === 'desc'" [class.ti-sort-ascending]="sortDir() === 'asc'"></i>
+              </th>
+              <th class="text-center">Action</th>
             </tr></thead>
             <tbody>
               @for (r of group.rows; track r.signature) {
@@ -58,6 +74,12 @@
                       <span class="kpi-tv-bar-pct" [class]="getPctClass(r.objectif)">{{ r.objectif }}%</span>
                     </div>
                   </td>
+                  <td class="text-center">
+                    <button class="btn btn-sm btn-outline-primary py-0 px-2" title="Voir les visites"
+                      (click)="openUserVisits(r)">
+                      <i class="ti ti-eye"></i>
+                    </button>
+                  </td>
                 </tr>
               }
             </tbody>
@@ -66,4 +88,95 @@
       }
     </div>
   }
+</div>
+
+<!-- Offcanvas: user visits -->
+<div class="offcanvas offcanvas-end" tabindex="-1" id="kpi-visits-offcanvas-commune" style="width:580px">
+  <div class="offcanvas-header border-bottom">
+    <div>
+      <h5 class="offcanvas-title mb-0 fw-semibold">
+        <i class="ti ti-clipboard-list me-2 text-primary"></i>
+        Visites de {{ selectedUser()?.signature }}
+      </h5>
+      <p class="text-muted small mb-0">{{ start_date | date:'dd/MM/yyyy' }} — {{ end_date | date:'dd/MM/yyyy' }}</p>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body p-0">
+    @if (isLoadingVisits()) {
+      <div class="d-flex justify-content-center align-items-center py-5">
+        <div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div>
+      </div>
+    } @else if (userVisits().length === 0) {
+      <div class="d-flex flex-column align-items-center justify-content-center py-5 text-muted">
+        <i class="ti ti-inbox fs-1 mb-2"></i>
+        <p class="small">Aucune visite trouvée pour cette période</p>
+      </div>
+    } @else {
+      <div class="px-3 pt-3 pb-1">
+        <span class="badge bg-primary-subtle text-primary fw-semibold">{{ userVisits().length }} visite(s)</span>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover table-sm mb-0" style="font-size:.8rem">
+          <thead class="table-light">
+            <tr>
+              <th>Date</th>
+              <th>Point de Vente</th>
+              <th class="text-end">Prix Total</th>
+              <th class="text-center">Marques</th>
+              <th class="text-center">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (v of userVisits(); track v.uuid) {
+              <tr>
+                <td class="text-nowrap">{{ v.CreatedAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>
+                  <div class="fw-semibold">{{ v.Pos?.name || 'N/R' }}</div>
+                  <div class="text-muted" style="font-size:.72rem">{{ v.Pos?.shop || '' }}</div>
+                </td>
+                <td class="text-end fw-semibold text-success">{{ v.price | currency:'USD':'symbol':'1.0-0' }}</td>
+                <td class="text-center">
+                  <button class="btn btn-sm py-0 px-2 fw-semibold"
+                    [class.btn-info]="(v.PosFormItems?.length || 0) > 0"
+                    [class.btn-danger]="(v.PosFormItems?.length || 0) === 0"
+                    (click)="toggleBrands(v.uuid)">
+                    {{ v.PosFormItems?.length || 0 }} Marque{{ (v.PosFormItems?.length || 0) > 1 ? 's' : '' }}
+                  </button>
+                </td>
+                <td class="text-center">
+                  <a [routerLink]="['/core/web/posforms', v.uuid, 'view']"
+                     class="btn btn-xs btn-outline-secondary py-0 px-1" title="Voir le détail"
+                     target="_blank">
+                    <i class="ti ti-external-link"></i>
+                  </a>
+                </td>
+              </tr>
+              @if (expandedVisit() === v.uuid && (v.PosFormItems?.length || 0) > 0) {
+                <tr>
+                  <td colspan="5" class="p-2 bg-light">
+                    <div class="d-flex flex-wrap gap-2">
+                      @for (item of v.PosFormItems; track item.uuid) {
+                        <div class="card border-0 shadow-sm" style="min-width:150px;font-size:.75rem">
+                          <div class="card-body py-2 px-3">
+                            <div class="fw-semibold text-primary mb-1">🏷️ {{ item.Brand?.name || item.brand_name }}</div>
+                            <div class="text-muted">📦 {{ item.number_farde }} farde(s)</div>
+                            @if ((item.sold || 0) > 0) {
+                              <div class="text-success small">💰 Vendu: {{ item.sold }}</div>
+                            } @else {
+                              <div class="text-danger small">Aucune vente</div>
+                            }
+                          </div>
+                        </div>
+                      }
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </div>
 </div>
