@@ -1,4 +1,4 @@
-import { Injectable, Injector } from '@angular/core';
+import { Injectable, Injector, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, from, throwError } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
@@ -8,6 +8,7 @@ import { NetworkService } from '../../../services/network.service';
 import { SyncQueueService } from '../../../shared/services/sync-queue.service';
 import { db } from '../../../shared/services/db';
 import { IRoutePlan } from './models/routeplan.model';
+import { IPos } from '../pos-vente/models/pos.model';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -24,6 +25,11 @@ import { v4 as uuidv4 } from 'uuid';
 })
 export class RouteplanService extends ApiService {
   endpoint: string = `${environment.apiUrl}/routeplans`;
+
+  /** Persisted territory filter — survives component navigation */
+  readonly persistedAreaUuid = signal<string>('');
+  readonly persistedSubAreaUuid = signal<string>('');
+  readonly persistedCommuneUuid = signal<string>('');
 
   constructor(
     protected override http: HttpClient,
@@ -199,29 +205,106 @@ export class RouteplanService extends ApiService {
   /**
    * Récupère les POS locaux pour créer un Routeplan
    * Utilise la liste des POS stockés en local
+   * Accepte un filtre optionnel par area_uuid, sub_area_uuid ou commune_uuid
    */
-  getLocalPosForRoutePlan(userId: string, userRole?: string, territoryUuid?: string): Observable<any> {
-    return from(this.getLocalPosList(userId, userRole, territoryUuid));
+  getLocalPosForRoutePlan(
+    userId: string,
+    userRole?: string,
+    territoryUuid?: string,
+    filterAreaUuid?: string,
+    filterSubAreaUuid?: string,
+    filterCommuneUuid?: string
+  ): Observable<any> {
+    return from(this.getLocalPosList(userId, userRole, territoryUuid, filterAreaUuid, filterSubAreaUuid, filterCommuneUuid));
+  }
+
+  /**
+   * Retourne les Areas distinctes disponibles dans IndexedDB pour une province donnée.
+   */
+  getDistinctAreas(provinceUuid: string): Observable<{ uuid: string; name: string }[]> {
+    return from(
+      (async () => {
+        const seen = new Map<string, string>();
+        await db.pos.where('province_uuid').equals(provinceUuid).each(pos => {
+          if (pos.area_uuid && pos.area_name && !seen.has(pos.area_uuid)) {
+            seen.set(pos.area_uuid, pos.area_name);
+          }
+        });
+        return Array.from(seen.entries()).map(([uuid, name]) => ({ uuid, name }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+      })()
+    );
+  }
+
+  /**
+   * Retourne les SubAreas distinctes disponibles dans IndexedDB pour une area donnée.
+   */
+  getDistinctSubAreas(areaUuid: string): Observable<{ uuid: string; name: string }[]> {
+    return from(
+      (async () => {
+        const seen = new Map<string, string>();
+        await db.pos.where('area_uuid').equals(areaUuid).each(pos => {
+          if (pos.sub_area_uuid && pos.subarea_name && !seen.has(pos.sub_area_uuid)) {
+            seen.set(pos.sub_area_uuid, pos.subarea_name);
+          }
+        });
+        return Array.from(seen.entries()).map(([uuid, name]) => ({ uuid, name }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+      })()
+    );
+  }
+
+  /**
+   * Retourne les Communes distinctes disponibles dans IndexedDB pour une subarea donnée.
+   */
+  getDistinctCommunes(subAreaUuid: string): Observable<{ uuid: string; name: string }[]> {
+    return from(
+      (async () => {
+        const seen = new Map<string, string>();
+        await db.pos.where('sub_area_uuid').equals(subAreaUuid).each(pos => {
+          if (pos.commune_uuid && pos.commune_name && !seen.has(pos.commune_uuid)) {
+            seen.set(pos.commune_uuid, pos.commune_name);
+          }
+        });
+        return Array.from(seen.entries()).map(([uuid, name]) => ({ uuid, name }))
+          .sort((a, b) => a.name.localeCompare(b.name));
+      })()
+    );
   }
 
   /**
    * Récupère la liste des POS locaux selon le rôle de l'utilisateur
+   * Avec filtres optionnels pour réduire la quantité de données chargées
    */
-  private async getLocalPosList(userId: string, userRole?: string, territoryUuid?: string): Promise<any> {
-    let collection = db.pos.toCollection();
+  private async getLocalPosList(
+    userId: string,
+    userRole?: string,
+    territoryUuid?: string,
+    filterAreaUuid?: string,
+    filterSubAreaUuid?: string,
+    filterCommuneUuid?: string
+  ): Promise<any> {
+    let posList: IPos[];
 
-    // Filtrer selon le rôle (même logique que dans PosVenteService)
-    if (userRole === 'ASM' && territoryUuid) {
-      collection = db.pos.where('province_uuid').equals(territoryUuid);
+    // Priorité aux filtres fins (commune > subarea > area > rôle)
+    if (filterCommuneUuid) {
+      posList = await db.pos.where('commune_uuid').equals(filterCommuneUuid).toArray();
+    } else if (filterSubAreaUuid) {
+      posList = await db.pos.where('sub_area_uuid').equals(filterSubAreaUuid).toArray();
+    } else if (filterAreaUuid) {
+      posList = await db.pos.where('area_uuid').equals(filterAreaUuid).toArray();
+    } else if (userRole === 'ASM' && territoryUuid) {
+      // ASM sans filtre fin : ne pas tout charger, retourner vide
+      posList = [];
     } else if (userRole === 'Supervisor' && territoryUuid) {
-      collection = db.pos.where('area_uuid').equals(territoryUuid);
+      posList = await db.pos.where('area_uuid').equals(territoryUuid).toArray();
     } else if (userRole === 'DR' && territoryUuid) {
-      collection = db.pos.where('sub_area_uuid').equals(territoryUuid);
+      posList = await db.pos.where('sub_area_uuid').equals(territoryUuid).toArray();
     } else if (userRole === 'Cyclo' && territoryUuid) {
-      collection = db.pos.where('commune_uuid').equals(territoryUuid);
+      posList = await db.pos.where('commune_uuid').equals(territoryUuid).toArray();
+    } else {
+      posList = await db.pos.toCollection().toArray();
     }
-
-    const posList = await collection.toArray();
 
     return {
       data: posList,

@@ -92,6 +92,15 @@ export class RouteplanComponent implements OnInit {
   readonly isload = signal(false);
   readonly posuuId = signal('');
 
+  // Territory filter for POS selection (per area/subarea/commune)
+  readonly availableAreas = signal<{ uuid: string; name: string }[]>([]);
+  readonly availableSubAreas = signal<{ uuid: string; name: string }[]>([]);
+  readonly availableCommunes = signal<{ uuid: string; name: string }[]>([]);
+  readonly selectedAreaUuid = signal<string>('');
+  readonly selectedSubAreaUuid = signal<string>('');
+  readonly selectedCommuneUuid = signal<string>('');
+  readonly posFilterLevel = signal<'area' | 'subarea' | 'commune' | 'none'>('none');
+
   readonly isRoutePlanCreatedRecently = signal<boolean>(false);
 
   ngOnInit() {
@@ -136,8 +145,6 @@ export class RouteplanComponent implements OnInit {
           this.cdr.detectChanges();
         });
         this.fetchProducts(this.currentUser()!);
-
-        this.getAllPos(this.currentUser()!);
       },
       error: (error) => {
         this.isLoadingData.set(false);
@@ -188,6 +195,11 @@ export class RouteplanComponent implements OnInit {
    * Passer forceReload=true pour forcer un rechargement depuis la DB.
    */
   getAllPos(currentUser: IUser, forceReload = false): void {
+    // Pour ASM : ne charger QUE si un filtre territoire est sélectionné
+    if (currentUser.role === 'ASM' && !this.selectedAreaUuid() && !this.selectedSubAreaUuid() && !this.selectedCommuneUuid()) {
+      return; // Attendre que l'utilisateur sélectionne une area (areas chargées via findValue)
+    }
+
     // Cache déjà chargé → juste filtrer en mémoire, aucun accès DB
     if (this.posRawCache().length > 0 && !forceReload) {
       this.applyPosFilter();
@@ -196,7 +208,14 @@ export class RouteplanComponent implements OnInit {
 
     this.isload.set(true);
     const territoryUuid = this.getTerritoryUuid(currentUser);
-    this.routeplanService.getLocalPosForRoutePlan(currentUser.uuid, currentUser.role, territoryUuid).subscribe(res => {
+    this.routeplanService.getLocalPosForRoutePlan(
+      currentUser.uuid,
+      currentUser.role,
+      territoryUuid,
+      this.selectedAreaUuid() || undefined,
+      this.selectedSubAreaUuid() || undefined,
+      this.selectedCommuneUuid() || undefined
+    ).subscribe(res => {
       const posList: IPos[] = res.data || [];
       // Dédoublonnage par uuid
       const seen = new Set<string>();
@@ -238,6 +257,78 @@ export class RouteplanComponent implements OnInit {
     this.filteredOptions.set(this.posAllFiltered().slice(0, end));
     this.posCurrentPage.set(nextPage);
     this.hasMorePos.set(end < this.posAllFiltered().length);
+  }
+
+  /** Called when ASM selects an Area from the filter dropdown */
+  onAreaFilterChange(areaUuid: string): void {
+    this.selectedAreaUuid.set(areaUuid);
+    this.selectedSubAreaUuid.set('');
+    this.selectedCommuneUuid.set('');
+    this.availableSubAreas.set([]);
+    this.availableCommunes.set([]);
+    this.posRawCache.set([]);
+    // Persist to service
+    this.routeplanService.persistedAreaUuid.set(areaUuid);
+    this.routeplanService.persistedSubAreaUuid.set('');
+    this.routeplanService.persistedCommuneUuid.set('');
+
+    if (areaUuid) {
+      this.routeplanService.getDistinctSubAreas(areaUuid)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(subareas => this.availableSubAreas.set(subareas));
+      this.getAllPos(this.currentUser()!, true);
+    } else {
+      this.filteredOptions.set([]);
+      this.hasMorePos.set(false);
+    }
+  }
+
+  /** Called when ASM selects a SubArea from the filter dropdown */
+  onSubAreaFilterChange(subAreaUuid: string): void {
+    this.selectedSubAreaUuid.set(subAreaUuid);
+    this.selectedCommuneUuid.set('');
+    this.availableCommunes.set([]);
+    this.posRawCache.set([]);
+    // Persist to service
+    this.routeplanService.persistedSubAreaUuid.set(subAreaUuid);
+    this.routeplanService.persistedCommuneUuid.set('');
+
+    if (subAreaUuid) {
+      this.routeplanService.getDistinctCommunes(subAreaUuid)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(communes => this.availableCommunes.set(communes));
+      this.getAllPos(this.currentUser()!, true);
+    } else if (this.selectedAreaUuid()) {
+      this.getAllPos(this.currentUser()!, true);
+    }
+  }
+
+  /** Called when ASM selects a Commune from the filter dropdown */
+  onCommuneFilterChange(communeUuid: string): void {
+    this.selectedCommuneUuid.set(communeUuid);
+    this.posRawCache.set([]);
+    // Persist to service
+    this.routeplanService.persistedCommuneUuid.set(communeUuid);
+    this.getAllPos(this.currentUser()!, true);
+  }
+
+  /** Reset territoire filter (ASM) */
+  resetPosFilter(): void {
+    this.selectedAreaUuid.set('');
+    this.selectedSubAreaUuid.set('');
+    this.selectedCommuneUuid.set('');
+    this.availableSubAreas.set([]);
+    this.availableCommunes.set([]);
+    this.posRawCache.set([]);
+    this.filteredOptions.set([]);
+    this.hasMorePos.set(false);
+    // Clear persisted state
+    this.routeplanService.persistedAreaUuid.set('');
+    this.routeplanService.persistedSubAreaUuid.set('');
+    this.routeplanService.persistedCommuneUuid.set('');
+    if (this.pos_uuid?.nativeElement) {
+      this.pos_uuid.nativeElement.value = '';
+    }
   }
 
 
@@ -491,6 +582,54 @@ export class RouteplanComponent implements OnInit {
   // Get value RoutePlan (gère local + serveur)
   findValue(value: any) {
     this.uuidItem.set(value);
+
+    // Restore persisted territory filter for ASM, then reload dependent dropdowns/POS
+    if (this.currentUser()?.role === 'ASM') {
+      const savedArea = this.routeplanService.persistedAreaUuid();
+      const savedSubArea = this.routeplanService.persistedSubAreaUuid();
+      const savedCommune = this.routeplanService.persistedCommuneUuid();
+
+      if (savedArea) {
+        this.selectedAreaUuid.set(savedArea);
+        this.selectedSubAreaUuid.set(savedSubArea);
+        this.selectedCommuneUuid.set(savedCommune);
+
+        // Reload area list
+        if (this.availableAreas().length === 0) {
+          this.routeplanService.getDistinctAreas(this.currentUser()!.province_uuid)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(areas => this.availableAreas.set(areas));
+        }
+        // Reload subarea list if area is set
+        if (savedArea && this.availableSubAreas().length === 0) {
+          this.routeplanService.getDistinctSubAreas(savedArea)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(subareas => this.availableSubAreas.set(subareas));
+        }
+        // Reload commune list if subarea is set
+        if (savedSubArea && this.availableCommunes().length === 0) {
+          this.routeplanService.getDistinctCommunes(savedSubArea)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(communes => this.availableCommunes.set(communes));
+        }
+        // Reload POS cache for the restored filter
+        if (this.posRawCache().length === 0) {
+          this.getAllPos(this.currentUser()!, true);
+        }
+      } else {
+        // No saved filter — reset local state and load areas list
+        this.selectedAreaUuid.set('');
+        this.selectedSubAreaUuid.set('');
+        this.selectedCommuneUuid.set('');
+        this.posRawCache.set([]);
+        this.filteredOptions.set([]);
+        if (this.availableAreas().length === 0) {
+          this.routeplanService.getDistinctAreas(this.currentUser()!.province_uuid)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(areas => this.availableAreas.set(areas));
+        }
+      }
+    }
 
     // Vérifier d'abord si c'est un plan local en attente de sync
     const localPlan = this.dataListLocal().find(

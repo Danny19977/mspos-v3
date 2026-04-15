@@ -236,6 +236,74 @@
         <div class="" style="background-color: aliceblue; padding: 10px;">
 
             <div class="tasks-activity tasks collapse show" id="forms">
+                <!-- Territory filter for ASM (hides all POS loading until an area is selected) -->
+                @if (currentUser()?.role === 'ASM') {
+                <div class="mb-3 p-2 rounded border" style="background:#f0f7ff;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <small class="fw-semibold text-primary">
+                            <i class="ti ti-filter me-1"></i>Filtrer les POS par territoire
+                        </small>
+                        @if (selectedAreaUuid()) {
+                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" (click)="resetPosFilter()" title="Réinitialiser le filtre">
+                            <i class="ti ti-x me-1"></i>Réinitialiser
+                        </button>
+                        }
+                    </div>
+                    <div class="row g-2">
+                        <!-- Area selector -->
+                        <div class="col-12">
+                            <select class="form-select form-select-sm"
+                                [ngModel]="selectedAreaUuid()"
+                                (ngModelChange)="onAreaFilterChange($event)"
+                                [ngModelOptions]="{standalone: true}">
+                                <option value="">-- Sélectionner une Area --</option>
+                                @for (area of availableAreas(); track area.uuid) {
+                                <option [value]="area.uuid">{{ area.name }}</option>
+                                }
+                            </select>
+                        </div>
+                        <!-- SubArea selector (visible after area selected) -->
+                        @if (selectedAreaUuid() && availableSubAreas().length > 0) {
+                        <div class="col-12">
+                            <select class="form-select form-select-sm"
+                                [ngModel]="selectedSubAreaUuid()"
+                                (ngModelChange)="onSubAreaFilterChange($event)"
+                                [ngModelOptions]="{standalone: true}">
+                                <option value="">-- Toutes les SubAreas --</option>
+                                @for (sa of availableSubAreas(); track sa.uuid) {
+                                <option [value]="sa.uuid">{{ sa.name }}</option>
+                                }
+                            </select>
+                        </div>
+                        }
+                        <!-- Commune selector (visible after subarea selected) -->
+                        @if (selectedSubAreaUuid() && availableCommunes().length > 0) {
+                        <div class="col-12">
+                            <select class="form-select form-select-sm"
+                                [ngModel]="selectedCommuneUuid()"
+                                (ngModelChange)="onCommuneFilterChange($event)"
+                                [ngModelOptions]="{standalone: true}">
+                                <option value="">-- Toutes les Communes --</option>
+                                @for (c of availableCommunes(); track c.uuid) {
+                                <option [value]="c.uuid">{{ c.name }}</option>
+                                }
+                            </select>
+                        </div>
+                        }
+                    </div>
+                    @if (!selectedAreaUuid()) {
+                    <small class="text-muted d-block mt-1">
+                        <i class="ti ti-info-circle me-1"></i>Sélectionnez une area pour charger les POS correspondants.
+                    </small>
+                    } @else {
+                    <small class="text-success d-block mt-1">
+                        <i class="ti ti-check me-1"></i>{{ posRawCache().length }} POS chargés
+                        @if (selectedSubAreaUuid()) { · SubArea filtrée }
+                        @if (selectedCommuneUuid()) { · Commune filtrée }
+                    </small>
+                    }
+                </div>
+                }
                 <form [formGroup]="formGroup()" (ngSubmit)="onSubmitItem()">
                     <div class="row">
                         <div class="col-md-12">
@@ -243,7 +311,11 @@
                                 <label class="col-form-label" for="text">POS <span class="text-danger">*</span></label>
                                 <input #pos_uuid type="text" matInput formControlName="pos_uuid"
                                     [matAutocomplete]="autopos1" placeholder="Selectionner le POS" class="form-control"
-                                    (input)="onPosInput()" (focus)="getAllPos(currentUser()!)">
+                                    (input)="onPosInput()" (focus)="getAllPos(currentUser()!)"
+                                    [disabled]="currentUser()?.role === 'ASM' && !selectedAreaUuid()">
+                                @if (currentUser()?.role === 'ASM' && !selectedAreaUuid()) {
+                                <small class="text-muted">Sélectionnez d'abord une area ci-dessus.</small>
+                                }
                                 @if (isload()) {
                                 <div class="d-flex align-items-center">
                                     <strong role="status">Loading...</strong>
