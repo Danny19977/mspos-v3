@@ -304,6 +304,59 @@
                     }
                 </div>
                 }
+                <!-- Territory filter for Supervisor (subarea → commune) -->
+                @if (currentUser()?.role === 'Supervisor') {
+                <div class="mb-3 p-2 rounded border" style="background:#f0fff4;">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <small class="fw-semibold text-success">
+                            <i class="ti ti-filter me-1"></i>Filtrer les POS par territoire
+                        </small>
+                        @if (selectedSubAreaUuid()) {
+                        <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" (click)="resetPosFilter()" title="Réinitialiser le filtre">
+                            <i class="ti ti-x me-1"></i>Réinitialiser
+                        </button>
+                        }
+                    </div>
+                    <div class="row g-2">
+                        <!-- SubArea selector -->
+                        <div class="col-12">
+                            <select class="form-select form-select-sm"
+                                [ngModel]="selectedSubAreaUuid()"
+                                (ngModelChange)="onSubAreaFilterChange($event)"
+                                [ngModelOptions]="{standalone: true}">
+                                <option value="">-- Sélectionner une SubArea --</option>
+                                @for (sa of availableSubAreas(); track sa.uuid) {
+                                <option [value]="sa.uuid">{{ sa.name }}</option>
+                                }
+                            </select>
+                        </div>
+                        <!-- Commune selector (visible after subarea selected) -->
+                        @if (selectedSubAreaUuid() && availableCommunes().length > 0) {
+                        <div class="col-12">
+                            <select class="form-select form-select-sm"
+                                [ngModel]="selectedCommuneUuid()"
+                                (ngModelChange)="onCommuneFilterChange($event)"
+                                [ngModelOptions]="{standalone: true}">
+                                <option value="">-- Toutes les Communes --</option>
+                                @for (c of availableCommunes(); track c.uuid) {
+                                <option [value]="c.uuid">{{ c.name }}</option>
+                                }
+                            </select>
+                        </div>
+                        }
+                    </div>
+                    @if (!selectedSubAreaUuid()) {
+                    <small class="text-muted d-block mt-1">
+                        <i class="ti ti-info-circle me-1"></i>Sélectionnez une subarea pour charger les POS correspondants.
+                    </small>
+                    } @else {
+                    <small class="text-success d-block mt-1">
+                        <i class="ti ti-check me-1"></i>{{ posRawCache().length }} POS chargés
+                        @if (selectedCommuneUuid()) { · Commune filtrée }
+                    </small>
+                    }
+                </div>
+                }
                 <form [formGroup]="formGroup()" (ngSubmit)="onSubmitItem()">
                     <div class="row">
                         <div class="col-md-12">
@@ -312,9 +365,12 @@
                                 <input #pos_uuid type="text" matInput formControlName="pos_uuid"
                                     [matAutocomplete]="autopos1" placeholder="Selectionner le POS" class="form-control"
                                     (input)="onPosInput()" (focus)="getAllPos(currentUser()!)"
-                                    [disabled]="currentUser()?.role === 'ASM' && !selectedAreaUuid()">
+                                    [disabled]="(currentUser()?.role === 'ASM' && !selectedAreaUuid()) || (currentUser()?.role === 'Supervisor' && !selectedSubAreaUuid())">
                                 @if (currentUser()?.role === 'ASM' && !selectedAreaUuid()) {
                                 <small class="text-muted">Sélectionnez d'abord une area ci-dessus.</small>
+                                }
+                                @if (currentUser()?.role === 'Supervisor' && !selectedSubAreaUuid()) {
+                                <small class="text-muted">Sélectionnez d'abord une subarea ci-dessus.</small>
                                 }
                                 @if (isload()) {
                                 <div class="d-flex align-items-center">

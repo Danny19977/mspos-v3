@@ -200,6 +200,11 @@ export class RouteplanComponent implements OnInit {
       return; // Attendre que l'utilisateur sélectionne une area (areas chargées via findValue)
     }
 
+    // Pour Supervisor : ne charger QUE si une subarea est sélectionnée
+    if (currentUser.role === 'Supervisor' && !this.selectedSubAreaUuid() && !this.selectedCommuneUuid()) {
+      return; // Attendre que l'utilisateur sélectionne une subarea (chargées via findValue)
+    }
+
     // Cache déjà chargé → juste filtrer en mémoire, aucun accès DB
     if (this.posRawCache().length > 0 && !forceReload) {
       this.applyPosFilter();
@@ -276,14 +281,22 @@ export class RouteplanComponent implements OnInit {
       this.routeplanService.getDistinctSubAreas(areaUuid)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(subareas => this.availableSubAreas.set(subareas));
-      this.getAllPos(this.currentUser()!, true);
+
+      if (this.isOnline()) {
+        // If online, refresh the cache for this area from the API before loading
+        this.routeplanService.refreshPosForTerritory('area', areaUuid)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe(() => this.getAllPos(this.currentUser()!, true));
+      } else {
+        this.getAllPos(this.currentUser()!, true);
+      }
     } else {
       this.filteredOptions.set([]);
       this.hasMorePos.set(false);
     }
   }
 
-  /** Called when ASM selects a SubArea from the filter dropdown */
+  /** Called when ASM or Supervisor selects a SubArea from the filter dropdown */
   onSubAreaFilterChange(subAreaUuid: string): void {
     this.selectedSubAreaUuid.set(subAreaUuid);
     this.selectedCommuneUuid.set('');
@@ -297,7 +310,15 @@ export class RouteplanComponent implements OnInit {
       this.routeplanService.getDistinctCommunes(subAreaUuid)
         .pipe(takeUntilDestroyed(this.destroyRef))
         .subscribe(communes => this.availableCommunes.set(communes));
-      this.getAllPos(this.currentUser()!, true);
+
+      // Supervisor selects subarea as first filter: refresh cache from API if online
+      if (this.isOnline() && this.currentUser()?.role === 'Supervisor') {
+        this.routeplanService.refreshPosForTerritory('subarea', subAreaUuid)
+          .pipe(takeUntilDestroyed(this.destroyRef))
+          .subscribe(() => this.getAllPos(this.currentUser()!, true));
+      } else {
+        this.getAllPos(this.currentUser()!, true);
+      }
     } else if (this.selectedAreaUuid()) {
       this.getAllPos(this.currentUser()!, true);
     }
@@ -312,7 +333,7 @@ export class RouteplanComponent implements OnInit {
     this.getAllPos(this.currentUser()!, true);
   }
 
-  /** Reset territoire filter (ASM) */
+  /** Reset territoire filter (ASM / Supervisor) */
   resetPosFilter(): void {
     this.selectedAreaUuid.set('');
     this.selectedSubAreaUuid.set('');
@@ -328,6 +349,12 @@ export class RouteplanComponent implements OnInit {
     this.routeplanService.persistedCommuneUuid.set('');
     if (this.pos_uuid?.nativeElement) {
       this.pos_uuid.nativeElement.value = '';
+    }
+    // For Supervisor: reload subareas list after reset
+    if (this.currentUser()?.role === 'Supervisor') {
+      this.routeplanService.getDistinctSubAreas(this.currentUser()!.area_uuid)
+        .pipe(takeUntilDestroyed(this.destroyRef))
+        .subscribe(subareas => this.availableSubAreas.set(subareas));
     }
   }
 
@@ -627,6 +654,45 @@ export class RouteplanComponent implements OnInit {
           this.routeplanService.getDistinctAreas(this.currentUser()!.province_uuid)
             .pipe(takeUntilDestroyed(this.destroyRef))
             .subscribe(areas => this.availableAreas.set(areas));
+        }
+      }
+    }
+
+    // Restore persisted territory filter for Supervisor, then reload dependent dropdowns/POS
+    if (this.currentUser()?.role === 'Supervisor') {
+      const savedSubArea = this.routeplanService.persistedSubAreaUuid();
+      const savedCommune = this.routeplanService.persistedCommuneUuid();
+
+      if (savedSubArea) {
+        this.selectedSubAreaUuid.set(savedSubArea);
+        this.selectedCommuneUuid.set(savedCommune);
+
+        // Reload subarea list from user's area_uuid
+        if (this.availableSubAreas().length === 0) {
+          this.routeplanService.getDistinctSubAreas(this.currentUser()!.area_uuid)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(subareas => this.availableSubAreas.set(subareas));
+        }
+        // Reload commune list if subarea is set
+        if (savedSubArea && this.availableCommunes().length === 0) {
+          this.routeplanService.getDistinctCommunes(savedSubArea)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(communes => this.availableCommunes.set(communes));
+        }
+        // Reload POS cache for the restored filter
+        if (this.posRawCache().length === 0) {
+          this.getAllPos(this.currentUser()!, true);
+        }
+      } else {
+        // No saved filter — reset local state and load subareas list
+        this.selectedSubAreaUuid.set('');
+        this.selectedCommuneUuid.set('');
+        this.posRawCache.set([]);
+        this.filteredOptions.set([]);
+        if (this.availableSubAreas().length === 0) {
+          this.routeplanService.getDistinctSubAreas(this.currentUser()!.area_uuid)
+            .pipe(takeUntilDestroyed(this.destroyRef))
+            .subscribe(subareas => this.availableSubAreas.set(subareas));
         }
       }
     }

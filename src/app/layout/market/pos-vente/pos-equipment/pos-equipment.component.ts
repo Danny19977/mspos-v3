@@ -119,7 +119,7 @@ export class PosEquipmentComponent implements OnInit {
   loadBrandsByRole() {
     const currentUser = this.currentUser();
     if (!currentUser) return;
-     this.brandService.getAllByASM(currentUser.province_uuid).subscribe({
+     this.brandService.getBrandsOfflineFirst(currentUser.province_uuid || undefined).subscribe({
         next: (res: any) => {
           const brands = res.data || [];
           // Ajouter l'option "Pas d'équipement" au début de la liste

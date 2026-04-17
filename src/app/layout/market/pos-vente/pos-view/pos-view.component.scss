@@ -1,3 +1,10 @@
+// Ensure the tab nav card doesn't create a stacking context that overlaps the offcanvas
+#posDetailsTabs,
+.card.mb-3 {
+  position: relative;
+  z-index: 0;
+}
+
 // Optimisation mobile pour l'offcanvas
 .offcanvas-large {
   @media (max-width: 768px) {

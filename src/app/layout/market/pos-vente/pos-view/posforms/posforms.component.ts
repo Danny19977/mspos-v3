@@ -173,10 +173,8 @@ export class PosformsComponent implements OnInit, AfterViewInit {
             this.dataSource.sort = this.sort; // Bind sort to dataSource
             this.cdr.detectChanges(); // Trigger change detection
 
-            // Initialiser les marques si l'utilisateur a une province
-            if (this.currentUser().province_uuid) {
-              this.getAllBrand();
-            }
+            // Initialiser la liste des marques
+            this.getAllBrand();
 
             this.posformService.refreshDataList$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
               this.fetchProducts(this.posUUId);
@@ -262,7 +260,7 @@ export class PosformsComponent implements OnInit, AfterViewInit {
 
     // BACKGROUND SYNC — si en ligne, synchroniser avec le serveur
     if (this.networkService.isOnline()) {
-      this.posformService.getPaginatedRangeDateByUUID(
+      this.posformService.getPaginatedRangeDateByPosUUID(
         uuid, this.current_page(), this.page_size(), this.search(),
         this.start_date(), this.end_date()
       ).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
@@ -334,10 +332,7 @@ export class PosformsComponent implements OnInit, AfterViewInit {
       
       // Charger les éléments PosForm et les marques
       this.getAllPosFormItem(this.idItem());
-      
-      if (this.currentUser().province_uuid) {
-        this.getAllBrand();
-      }
+      this.getAllBrand();
     });
   }
 
@@ -706,7 +701,7 @@ export class PosformsComponent implements OnInit, AfterViewInit {
     const filterValue = this.brand_uuid?.nativeElement.value.toLowerCase();
     this.isloadBrand.set(true);
 
-    this.brandService.getAllByASM(this.currentUser().province_uuid).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.brandService.getBrandsOfflineFirst(this.currentUser().province_uuid || undefined).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         this.brandList.set(res.data);
 

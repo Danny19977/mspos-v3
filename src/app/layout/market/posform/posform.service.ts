@@ -230,6 +230,18 @@ export class PosformService extends ApiService {
     return this.http.get<any>(`${this.endpoint}/all/paginate/user/${userUuid}`, { params });
   }
 
+  /** Fetch paginated posforms for a specific POS UUID, filtered by date range */
+  getPaginatedRangeDateByPosUUID(posUuid: string, page: number, pageSize: number, search: string,
+    startDateStr: string, endDateStr: string): Observable<any> {
+    const params = new HttpParams()
+      .set('page', page.toString())
+      .set('limit', pageSize.toString())
+      .set('search', search)
+      .set('start_date', startDateStr)
+      .set('end_date', endDateStr);
+    return this.http.get<any>(`${this.endpoint}/all/paginate/${posUuid}`, { params });
+  }
+
   /**
    * Exporte les données PosForm en Excel via l'API backend
    * Utilise l'endpoint GET /posforms/export/excel
@@ -601,7 +613,7 @@ export class PosformService extends ApiService {
           uuid: item.uuid,
           posform_uuid,
           brand_uuid: item.brand_uuid,
-          brand_name: item.brand_name,
+          brand_name: item.brand_name || item.Brand?.name || '',
           number_farde: item.number_farde ?? 0,
           counter: item.counter ?? 0,
           sold: item.sold ?? 0,
@@ -815,8 +827,12 @@ export class PosformService extends ApiService {
   ): Promise<any> {
     let posforms = await db.posForms.where('pos_uuid').equals(posUuid).toArray();
 
-    const start = new Date(startDate);
-    const end = new Date(endDate);
+    // Exclude locally-deleted records
+    posforms = posforms.filter(pf => pf.sync_status !== 'deleted');
+
+    // Use local-time parsing (same as getFromLocalCacheFiltered) to avoid UTC offset issues
+    const start = new Date(startDate + 'T00:00:00');
+    const end = new Date(endDate + 'T23:59:59.999');
     posforms = posforms.filter(pf => {
       if (!pf.CreatedAt) return true;
       const d = new Date(pf.CreatedAt);
@@ -824,6 +840,9 @@ export class PosformService extends ApiService {
     });
 
     posforms.sort((a, b) => {
+      const aIsLocal = a.sync_status === 'pending' || a.sync_status === 'error' ? 0 : 1;
+      const bIsLocal = b.sync_status === 'pending' || b.sync_status === 'error' ? 0 : 1;
+      if (aIsLocal !== bIsLocal) return aIsLocal - bIsLocal;
       const da = a.CreatedAt ? new Date(a.CreatedAt).getTime() : 0;
       const db2 = b.CreatedAt ? new Date(b.CreatedAt).getTime() : 0;
       return db2 - da;
@@ -834,9 +853,28 @@ export class PosformService extends ApiService {
     const offset = (page - 1) * pageSize;
     const paginated = posforms.slice(offset, offset + pageSize);
 
+    // Hydrate PosFormItems from local cache (db.posformItems)
+    const posformUuids = paginated.map(pf => pf.uuid).filter(Boolean) as string[];
+    const posformItemsMap = new Map<string, IPosFormItem[]>();
+    if (posformUuids.length > 0) {
+      const allItems = await (db.posformItems as any).where('posform_uuid').anyOf(posformUuids).toArray();
+      allItems.forEach((item: IPosFormItem) => {
+        if (item.posform_uuid) {
+          const existing = posformItemsMap.get(item.posform_uuid) || [];
+          existing.push(item);
+          posformItemsMap.set(item.posform_uuid, existing);
+        }
+      });
+    }
+
+    const hydratedPaginated = paginated.map(pf => ({
+      ...pf,
+      PosFormItems: pf.uuid ? (posformItemsMap.get(pf.uuid) ?? []) : []
+    }));
+
     console.log(`📦 Posforms locaux (POS ${posUuid}): ${total_records} total, page ${page}/${total_pages}`);
     return {
-      data: paginated,
+      data: hydratedPaginated,
       pagination: {
         total_pages,
         total_records,

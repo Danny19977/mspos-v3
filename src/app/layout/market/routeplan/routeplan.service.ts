@@ -1,7 +1,7 @@
 import { Injectable, Injector, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, from, throwError } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { switchMap, catchError } from 'rxjs/operators';
 import { ApiService } from '../../../shared/services/api.service';
 import { environment } from '../../../../environments/environment';
 import { NetworkService } from '../../../services/network.service';
@@ -269,6 +269,39 @@ export class RouteplanService extends ApiService {
         return Array.from(seen.entries()).map(([uuid, name]) => ({ uuid, name }))
           .sort((a, b) => a.name.localeCompare(b.name));
       })()
+    );
+  }
+
+  /**
+   * Télécharge les POS depuis l'API pour un territoire donné (area ou subarea)
+   * et les fusionne dans le cache IndexedDB local.
+   * À appeler quand le cache est vide ou incomplet pour le filtre sélectionné.
+   */
+  refreshPosForTerritory(type: 'area' | 'subarea', uuid: string): Observable<void> {
+    const endpointMap: Record<string, string> = {
+      area:    `${environment.apiUrl}/pos/all/areas/${uuid}`,
+      subarea: `${environment.apiUrl}/pos/all/subareas/${uuid}`,
+    };
+    return this.http.get<any>(endpointMap[type]).pipe(
+      switchMap(async (res) => {
+        const posList: any[] = res?.data || [];
+        if (!posList.length) return;
+        const posToStore = posList.map((pos: any) => ({
+          ...pos,
+          sync_status: 'synced',
+          area_name:     pos.area_name     || (typeof pos.Area?.name     === 'string' ? pos.Area.name     : '') || '',
+          subarea_name:  pos.subarea_name  || (typeof pos.SubArea?.name  === 'string' ? pos.SubArea.name  : '') || '',
+          province_name: pos.province_name || (typeof pos.Province?.name === 'string' ? pos.Province.name : '') || '',
+          commune_name:  pos.commune_name  || (typeof pos.Commune?.name  === 'string' ? pos.Commune.name  : '') || '',
+          country_name:  pos.country_name  || (typeof pos.Country?.name  === 'string' ? pos.Country.name  : '') || '',
+        }));
+        await db.pos.bulkPut(posToStore);
+        console.log(`✅ ${posToStore.length} POS (${type}: ${uuid}) rafraîchis dans le cache`);
+      }),
+      catchError(err => {
+        console.warn(`⚠️ Impossible de rafraîchir les POS (${type}: ${uuid}) depuis l'API:`, err?.message);
+        return from(Promise.resolve()); // non-fatal — keep using local cache
+      })
     );
   }
 

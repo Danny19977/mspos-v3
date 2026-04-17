@@ -252,6 +252,20 @@ export class PosformItemService extends ApiService {
       .equals(posform_uuid)
       .toArray();
 
+    // Hydrate brand_name from db.brands for items missing it
+    const missingBrandUuids = [...new Set(
+      items.filter(i => !i.brand_name && i.brand_uuid).map(i => i.brand_uuid)
+    )];
+    if (missingBrandUuids.length > 0) {
+      const brandRecords = await db.brands.where('uuid').anyOf(missingBrandUuids).toArray();
+      const brandMap = new Map(brandRecords.map(b => [b.uuid, b.name]));
+      items.forEach(i => {
+        if (!i.brand_name && i.brand_uuid && brandMap.has(i.brand_uuid)) {
+          i.brand_name = brandMap.get(i.brand_uuid);
+        }
+      });
+    }
+
     console.log(`📦 ${items.length} PosformItems récupérés pour posform_uuid=${posform_uuid}`);
     return items;
   }

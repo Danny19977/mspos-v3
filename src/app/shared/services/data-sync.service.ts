@@ -111,25 +111,42 @@ export class DataSyncService {
 
   /**
    * Télécharge les POS pour l'utilisateur selon son rôle
+   * Utilise les endpoints territoriaux corrects selon le rôle.
    */
   private async downloadUserPos(userId: string, userRole?: string): Promise<void> {
     try {
       const token = localStorage.getItem('auth_uuid');
       const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
 
-      // L'endpoint backend doit filtrer selon le rôle de l'utilisateur
-      const response = await firstValueFrom(
-        this.http.get<any>(`${environment.apiUrl}/pos/user/${userId}${tokenParam}`)
-      );
+      // Lire les données utilisateur depuis localStorage pour récupérer l'UUID territoire
+      let storedUser: any = null;
+      try {
+        const raw = localStorage.getItem('auth_user');
+        if (raw) storedUser = JSON.parse(raw);
+      } catch { /* ignore */ }
 
+      // Sélectionner le bon endpoint selon le rôle
+      let apiUrl: string;
+      if (userRole === 'ASM' && storedUser?.province_uuid) {
+        apiUrl = `${environment.apiUrl}/pos/all/provinces/${storedUser.province_uuid}${tokenParam}`;
+      } else if (userRole === 'Supervisor' && storedUser?.area_uuid) {
+        apiUrl = `${environment.apiUrl}/pos/all/areas/${storedUser.area_uuid}${tokenParam}`;
+      } else if (userRole === 'DR' && storedUser?.sub_area_uuid) {
+        apiUrl = `${environment.apiUrl}/pos/all/subareas/${storedUser.sub_area_uuid}${tokenParam}`;
+      } else if (userRole === 'Cyclo') {
+        apiUrl = `${environment.apiUrl}/pos/all/cyclo/${userId}${tokenParam}`;
+      } else {
+        console.log('📦 POS : rôle non pris en charge pour le téléchargement automatique (Manager/Support ignoré).');
+        return;
+      }
+
+      const response = await firstValueFrom(this.http.get<any>(apiUrl));
       const posList = response?.data || [];
 
-      // Marquer tous comme synchronisés et stocker en local
+      // Normaliser et stocker en local
       const posToStore = posList.map((pos: any) => ({
         ...pos,
         sync_status: 'synced',
-        id: pos.ID || pos.id,
-        // Normaliser les champs plats depuis les objets imbriqués
         area_name: pos.area_name || (typeof pos.Area?.name === 'string' ? pos.Area.name : '') || '',
         subarea_name: pos.subarea_name || (typeof pos.SubArea?.name === 'string' ? pos.SubArea.name : '') || '',
         province_name: pos.province_name || (typeof pos.Province?.name === 'string' ? pos.Province.name : '') || '',
@@ -137,11 +154,9 @@ export class DataSyncService {
         country_name: pos.country_name || (typeof pos.Country?.name === 'string' ? pos.Country.name : '') || ''
       }));
 
-      // Vider la table et insérer les nouvelles données
       await db.pos.clear();
       await db.pos.bulkPut(posToStore);
-
-      console.log(`✅ ${posToStore.length} POS téléchargés et stockés`);
+      console.log(`✅ ${posToStore.length} POS téléchargés et stockés (${userRole})`);
     } catch (error) {
       console.error('❌ Erreur téléchargement POS:', error);
       throw error;

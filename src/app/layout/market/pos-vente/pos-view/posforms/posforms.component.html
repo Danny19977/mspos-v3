@@ -608,3 +608,189 @@
         </div>
     </div>
 </div>
+
+<!-- Visibility report -->
+<div class="offcanvas offcanvas-end offcanvas-large" tabindex="-1" id="offcanvas_visibility">
+    <div class="offcanvas-header border-bottom">
+        <h4>👁️ Détails du rapport de visite</h4>
+        <button type="button"
+            class="btn-close custom-btn-close border p-1 me-0 d-flex align-items-center justify-content-center rounded-circle"
+            data-bs-dismiss="offcanvas" aria-label="Close">
+            <i class="ti ti-x"></i>
+        </button>
+    </div>
+    <div class="offcanvas-body">
+        @if (dataItem()) {
+        <div class="row">
+            <!-- Informations générales -->
+            <div class="col-12 mb-4">
+                <div class="card border-info">
+                    <div class="card-header bg-info text-white">
+                        <h6 class="mb-0">📋 Informations de la visite</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <p>
+                                        <strong>Pays :</strong><br>
+                                        @if (dataItem()?.Country?.name) {
+                                        <span>{{dataItem()?.Country?.name}}</span>
+                                        } @else {
+                                        <small>Pas disponible</small>
+                                        }
+                                    </p>
+                                </div>
+                                <div class="mb-3">
+                                    <p>
+                                        <strong>Area :</strong><br>
+                                        @if (dataItem()?.Area?.name) {
+                                        <span>{{dataItem()?.Area?.name}}</span>
+                                        } @else {
+                                        <small>Pas disponible</small>
+                                        }
+                                    </p>
+                                </div>
+                                <div class="mb-3">
+                                    <p>
+                                        <strong>Commune (Quartier) :</strong><br>
+                                        @if (dataItem()?.Commune?.name) {
+                                        <span>{{ dataItem()?.Commune?.name }}</span>
+                                        } @else {
+                                        <small>Pas disponible</small>
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <p>
+                                        <strong>Province :</strong><br>
+                                        @if (dataItem()?.Province?.name) {
+                                        <span>{{dataItem()?.Province?.name}}</span>
+                                        } @else {
+                                        <small>Pas disponible</small>
+                                        }
+                                    </p>
+                                </div>
+                                <div class="mb-3">
+                                    <p>
+                                        <strong>Sous Area :</strong><br>
+                                        @if (dataItem()?.SubArea?.name) {
+                                        <span>{{dataItem()?.SubArea?.name}}</span>
+                                        } @else {
+                                        <small>Pas disponible</small>
+                                        }
+                                    </p>
+                                </div>
+                                <div class="mb-3">
+                                    <p>
+                                        <strong>Date de soumission :</strong><br>
+                                        <span>{{ dataItem()?.CreatedAt | date: 'dd/MM/yyyy HH:mm' }}</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <p>
+                                        <strong>🏪 Point de vente visité :</strong><br>
+                                        <span class="text-primary">{{dataItem()?.Pos?.name || 'Non renseigné'}}
+                                            @if (dataItem()?.Pos?.shop) {<span> | {{dataItem()?.Pos?.shop}}</span>}
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <p>
+                                        <strong>💰 Coût de la visite :</strong><br>
+                                        <span class="badge bg-success fs-6">{{ dataItem()?.price || '0' }} FC</span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Marques observées -->
+            @if (dataListPosFormItem() && dataListPosFormItem().length > 0) {
+            <div class="col-12 mb-4">
+                <div class="card border-success">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">🏷️ Marques observées ({{dataListPosFormItem().length}})</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @if (isLoadingPosFormItem()) {
+                            <div class="d-flex align-items-center justify-content-center w-100">
+                                <strong role="status">Chargement...</strong>
+                                <div class="spinner-border ms-2" aria-hidden="true"></div>
+                            </div>
+                            }
+                            @if (!isLoadingPosFormItem()) {
+                                @for (item of dataListPosFormItem(); track $index) {
+                                <div class="col-md-4 mb-3">
+                                    <div class="card task-card border-success">
+                                        <div class="card-body">
+                                            <div class="task-info">
+                                                <p class="mb-2"><strong>🏷️ Marque :</strong>
+                                                    {{ item.Brand?.name || item.brand_name }}
+                                                </p>
+                                                <p class="mb-2"><strong>📦 Fardes :</strong>
+                                                    {{ item.number_farde }}
+                                                </p>
+                                                @if (item.sold > 0) {
+                                                <p class="mb-0 text-success">
+                                                    <strong>💰 {{ item.sold > 1 ? 'Ventes :' : 'Vente :' }}</strong>
+                                                    {{ item.sold }}
+                                                </p>
+                                                }
+                                                @if (item.sold === 0) {
+                                                <p class="mb-0 text-muted">
+                                                    <strong>Aucune vente</strong>
+                                                </p>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                }
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            } @else {
+            <div class="col-12 mb-4">
+                <div class="alert alert-warning">
+                    <h6><i class="ti ti-alert-triangle me-2"></i>Aucune marque enregistrée</h6>
+                    <p class="mb-0">Aucune marque n'a été observée ou enregistrée lors de cette visite.</p>
+                </div>
+            </div>
+            }
+
+            <!-- Commentaires -->
+            <div class="col-md-12">
+                <div class="card border-warning">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0">💬 Commentaires et observations</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0" style="white-space: pre-wrap;">{{ dataItem()?.comment || 'Aucun commentaire ajouté.' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        } @else {
+        <div class="alert alert-warning">
+            <h6><i class="ti ti-alert-triangle me-2"></i>Aucune donnée disponible</h6>
+            <p class="mb-0">Impossible de charger les détails du rapport. Veuillez réessayer.</p>
+        </div>
+        }
+    </div>
+</div>
+<!-- /Visibility report -->
